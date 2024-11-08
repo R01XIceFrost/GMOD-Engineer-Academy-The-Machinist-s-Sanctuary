@@ -1,0 +1,15 @@
+@name Absolute Basics 
+@inputs A B C D E F G H I
+@outputs J K L M N O P Q R
+#Arbiter's Garrysmod Tutorials E2 Absolute Basics 
+#Nov 20, 2010
+
+J = A
+K = B
+L = C
+M = D 
+N = E 
+O = F
+P = G
+Q = H
+R = I
