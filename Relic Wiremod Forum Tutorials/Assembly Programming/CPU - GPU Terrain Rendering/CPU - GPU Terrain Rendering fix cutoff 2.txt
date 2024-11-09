@@ -1,0 +1,95 @@
+CPU Note: This is all really unoptimized.
+
+Code:
+data
+float *cameraPos = 65536 + 5000; // 3
+float *cameraTarget = 65536 + 5003; // 3
+float *terrSwap  = 65536 + 5006; // 1
+float *terrain0  = 65536 + 5007;
+float *terrain1  = 65536 + 9615;
+
+code {
+    cameraPos[0] = 0;
+    cameraPos[1] = -20;
+    cameraPos[2] = -20;
+
+    cameraTarget[0] = 0;
+    cameraTarget[1] = 0;
+    cameraTarget[2] = 0;
+    
+    while(1) {
+        float time;
+        timer time;
+        time /= 4;
+        float m;
+        fsin m, time;
+        cameraPos[0] = m * -20;
+        fcos m, time;
+        cameraPos[2] = m * -20;
+        time *= 16;
+        
+        float *t
+        if(*terrSwap) {
+            t = terrain0;
+        } else {
+            t = terrain1;
+        }
+        
+        float x, z, i, v;
+        for(x = 0; x < 16; x++) {
+            for(z = 0; z < 16; z++) {
+                float hx = x - 8;
+                float hz = z - 8;
+                
+                v = hx * hx + hz * hz
+                fpwr v, 0.5;
+                v += time;
+                fsin v, v;
+                t[i]      = hx;
+                t[i + 1]  = v;
+                t[i + 2]  = hz;
+                
+                v = hx * hx + (hz + 1) * (hz + 1)
+                fpwr v, 0.5;
+                v += time;
+                fsin v, v;
+                t[i + 3]  = hx;
+                t[i + 4]  = v;
+                t[i + 5]  = hz + 1;
+                
+                t[i + 9]  = hx;
+                t[i + 10] = v;
+                t[i + 11] = hz + 1;
+                
+                v = (hx + 1) * (hx + 1) + hz * hz
+                fpwr v, 0.5;
+                v += time;
+                fsin v, v;
+                t[i + 6]  = hx + 1;
+                t[i + 7]  = v;
+                t[i + 8]  = hz;
+                
+                t[i + 15]  = hx + 1;
+                t[i + 16]  = v;
+                t[i + 17]  = hz;
+                
+                v = (hx + 1) * (hx + 1) + (hz + 1) * (hz + 1)
+                fpwr v, 0.5;
+                v += time;
+                fsin v, v;
+                t[i + 12] = hx + 1;
+                t[i + 13] = v;
+                t[i + 14] = hz + 1;
+                
+                i += 18;
+            }
+        }
+        i = 0;
+        if(*terrSwap == 0) {
+            *terrSwap = 1;
+        } else {
+            *terrSwap = 0;
+        }
+    }
+    db 0;
+}

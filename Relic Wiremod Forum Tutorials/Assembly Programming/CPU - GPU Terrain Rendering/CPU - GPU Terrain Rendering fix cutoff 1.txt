@@ -1,0 +1,52 @@
+GPU
+
+Code:
+data
+#include <drivers\drv_gl.txt>
+
+float *cameraPos = 5000; // 3
+float *cameraTarget = 5003; // 2
+float *terrSwap  = 5006; // 1
+float *terrain0  = 5007;
+float *terrain1  = 9615;
+
+code {
+    glCoordPipe(GL_CPIPE_N1_1); // -1..1
+    glVertexPipe(GL_VPIPE_XYZTRANSFORM);
+    
+    glLightPos(20, -20, 0);
+    glLightColor(255, 255, 255, 255);
+
+    glPerspective(30, 1, 1, 40);
+    
+    glEnable(GL_VERTEX_BUFFER);
+    glEnable(GL_VERTEX_ZSORT);
+    
+    glLookAt(
+        cameraPos[0], cameraPos[1], cameraPos[2], // Camera pos
+        cameraTarget[0], cameraTarget[1], cameraTarget[2], // Camera target
+        0, 1, 0 // Camera up
+    );
+    
+    glVertexMode(1);
+    // Uncomment for textures. (they might be misaligned)
+    //glColor(255, 255, 255, 255);
+    //glBindTexture('brick/brick_model');
+    glFillMode(GL_FILL_WIREFRAME);
+    glColor(255, 0, 255);
+    
+    float *t
+    if(*terrSwap == 0) {
+        t = terrain0;
+    } else {
+        t = terrain1;
+    }
+    
+    glPoly3D(t, 128);
+    glPoly3D(t + 128 * 9, 128);
+    glPoly3D(t + 128 * 2 * 9, 128);
+    glPoly3D(t + 128 * 3 * 9, 128);
+    glFlush();
+
+    glExit(); // Exit
+}
