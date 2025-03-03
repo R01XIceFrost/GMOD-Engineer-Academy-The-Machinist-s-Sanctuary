@@ -1,9 +1,0 @@
-@name if else practice
-@inputs Button Button2 Button3
-@outputs Out Out2 Out3
-
-if (Button) {Out = 10} else {Out = 5} 
-
-if (Button2) {Out = 15} 
- 
-if (Button3) {Out = 20}
