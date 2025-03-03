@@ -1,0 +1,4 @@
+@name if else practice 2
+@inputs Button
+@outputs A 
+if (Button) {A = 5+5} else {A = 20+20}

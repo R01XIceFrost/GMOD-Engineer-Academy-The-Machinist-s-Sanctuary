@@ -1,0 +1,15 @@
+@name My first code!!!
+@inputs B1 B2 B3
+@outputs ADD1 ADD2 ADD3
+
+if
+
+(B1) {ADD1 = 2+2}
+
+if
+
+(B2) {ADD2 = 4+4}
+
+if
+
+(B3) {ADD3 = 8+8}
