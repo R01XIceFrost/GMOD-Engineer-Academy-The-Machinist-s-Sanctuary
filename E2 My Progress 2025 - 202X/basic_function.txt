@@ -1,0 +1,11 @@
+@name basic function
+@inputs A B
+@outputs C
+
+if (A | B){
+    C = abs(-1)
+}
+
+else {
+    C = -1
+}

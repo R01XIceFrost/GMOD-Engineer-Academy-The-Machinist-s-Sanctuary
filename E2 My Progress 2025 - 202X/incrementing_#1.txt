@@ -1,0 +1,19 @@
+@name incrementing #1
+@inputs Button
+@outputs A B C D
+
+
+
+if (Button) {
+    A++
+} 
+if (A > 0) {
+    B = 1
+}
+if (A > 1) {
+    C = 1
+}
+
+if (A > 2) {
+    D = 1
+}

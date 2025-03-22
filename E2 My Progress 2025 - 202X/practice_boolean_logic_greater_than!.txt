@@ -1,0 +1,12 @@
+@name practice boolean logic Greater Than!
+@inputs A B
+@outputs Value
+
+if 
+(A > B) {
+    Value = 1
+}
+
+else {
+    Value = 0
+}

@@ -1,0 +1,8 @@
+@name practice boolean logic 2
+@inputs A B
+@outputs V1
+
+if 
+(A*B) {
+    V1 = A*B
+} 

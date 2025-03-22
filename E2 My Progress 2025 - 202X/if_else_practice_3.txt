@@ -1,0 +1,21 @@
+@name if else practice 3
+@inputs A   
+@outputs B C D
+
+if (A > 0) {
+    B = 1
+}
+else {
+    B = 0
+}
+if (A > 1) {
+    C = 1
+}
+else {
+    C = 0
+}
+if (A > 2) {
+    D = 1 
+}
+else {D = 0
+}

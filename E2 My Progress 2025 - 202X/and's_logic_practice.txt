@@ -1,0 +1,10 @@
+@name AND
+@inputs A B C D
+@outputs F
+
+if (A > B & C > 7 & D > 7) {
+    F = 1
+}
+else {
+    F = 0
+}

@@ -1,0 +1,6 @@
+@name Understanding Entity #1
+@inputs Weight:entity Mass:entity
+
+Weight:setMass(100)
+print(Mass:mass())
+

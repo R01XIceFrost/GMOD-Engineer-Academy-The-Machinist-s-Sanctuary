@@ -1,0 +1,7 @@
+@name playing with timer
+@inputs A
+@outputs B
+
+if (A) {
+    B = curtime()
+}

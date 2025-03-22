@@ -1,0 +1,13 @@
+@name Proper indentation 
+@inputs Button
+@outputs B 
+
+B = 0
+
+if (Button) {
+    B++ #Add
+}
+
+else {
+    B-- #Minus
+}
