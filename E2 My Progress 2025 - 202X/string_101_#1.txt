@@ -1,6 +1,0 @@
-@name String 101 #1
-@inputs 
-@outputs A:string B:string
-
-A = "whatever":upper()
-B = "WOW":lower()
