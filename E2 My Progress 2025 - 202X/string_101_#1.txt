@@ -4,5 +4,5 @@
 #March 29, 2025
 #Wired Screen to E2 (Plug & Play!)
 
-A = "Test"
+A = "TEST"
 A = A:lower()
