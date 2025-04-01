@@ -1,0 +1,14 @@
+@name Simple Timers 101 #1
+@inputs A
+
+#March 22, 2025
+
+if (A) { 
+    print("A") # Prints A's when Button A pressed
+}
+else {
+    timer("0", 1,5, function() {
+        print("B") # Prints B's 5 times every 1 sec then self-destruct (it stopped printting after 5 times) 
+    })
+}
+

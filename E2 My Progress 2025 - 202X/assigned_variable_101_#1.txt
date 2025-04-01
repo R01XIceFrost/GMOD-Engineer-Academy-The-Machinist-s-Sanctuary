@@ -1,0 +1,20 @@
+@name Assigned Variable 101 #1
+@inputs A
+@outputs E
+
+#March 24, 2025
+
+# Wired Screen to E2 Chip (Play & Play!)
+# Wired E2 Chip to Button (Plug & Play!)
+
+C = 1
+D = 1
+F = -1
+G = -1
+if (A) {
+    E = C + D # If Button A is pressed, assign the result of C + D to E
+}
+
+else {
+    E = F + G # if Button A not pressed, assign the result of F + G assigned to E
+}

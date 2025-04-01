@@ -1,0 +1,20 @@
+@name My First Complex Code 1.0!!!
+@inputs Button Fire:entity
+
+#March 24, 2025
+
+#Log #1: More precise with timing and message prints
+
+if (Button) {
+    timer("igniting",5,3, function(){
+        Fire:ignite(1), print("Ignite NPC!")
+    })
+}
+else {
+    print("inactive")
+}
+if (Button) {
+    timer("finished", 15.8, 1, function(){
+        print("Ignition NPC Over!!!")
+    })
+}

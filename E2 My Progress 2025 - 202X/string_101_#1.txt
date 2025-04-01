@@ -1,0 +1,8 @@
+@name String 101 #1
+@outputs A:string
+
+#March 29, 2025
+#Wired Screen to E2 (Plug & Play!)
+
+A = "Test"
+A = A:lower()

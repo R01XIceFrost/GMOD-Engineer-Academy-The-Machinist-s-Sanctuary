@@ -1,0 +1,7 @@
+@name Wirelink 101 #1
+@inputs A:wirelink
+
+#March 25, 2025
+#Connect E2 Chip to Screen (Plug & play)
+
+A["A", number] = 10 #When wirelink plugged to Screen, it shows number 10!

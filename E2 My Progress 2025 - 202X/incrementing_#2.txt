@@ -1,0 +1,17 @@
+@name incrementing #2
+@inputs A
+@outputs B C
+
+#Wired Screen B, Screen C to E2 & E2 to Button (Plug & Play!)
+
+#March 30, 2025
+
+
+if (A) { 
+    B--
+}
+if (B == -5) { 
+    B = abs(B), C++ #increments +1 on C everytime A reaches -5 value
+}
+   
+

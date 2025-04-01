@@ -1,0 +1,19 @@
+@name String 101 #2
+@inputs A:entity B:entity
+@outputs Str1:string Str2:string
+
+#Not showing up on the Text Screen but you get the idea yeah?
+#March 30, 2025
+
+A:pos()
+Str1 = toString(A:pos())
+
+#Other way to string
+
+B:pos()
+
+Str2 = B:toString()
+
+
+
+
