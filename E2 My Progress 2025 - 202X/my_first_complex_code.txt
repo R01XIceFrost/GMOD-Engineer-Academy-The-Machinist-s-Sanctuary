@@ -1,6 +1,9 @@
 @name My First Complex Code!!!
 @inputs Button Fire:entity
 
+#E2 to Target Finder
+#E2 to Button
+
 #March 22, 2025
 
 if (Button) {
