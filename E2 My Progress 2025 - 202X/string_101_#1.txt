@@ -5,4 +5,4 @@
 #Wired Screen to E2 (Plug & Play!)
 
 A = "TEST"
-A = A:lower()
+A = A:lower() #lowercase TEST to test
