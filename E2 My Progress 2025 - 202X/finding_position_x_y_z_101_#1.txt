@@ -1,0 +1,19 @@
+@name Finding Position X Y Z 101 #1
+@inputs Postion:entity
+@outputs X Y Z
+
+#April 1, 2025
+#Wire E2 to a prop or anything
+#Wire 3 Screens to E2 X Y Z to split the coordinates instead of formatted as a whole
+
+event tick() { #replacement depreciated functions for interval() or runOnTick()
+
+Pos = round(Postion:pos()) #nice & round numbers instead of decimals numbers (yikes!)
+##
+X = Pos:x()
+Y = Pos:y()
+Z = Pos:z()
+
+print(Pos:x(),Pos:y(),Pos:z()) #spams XYZ positions on your chat lollll
+
+}
