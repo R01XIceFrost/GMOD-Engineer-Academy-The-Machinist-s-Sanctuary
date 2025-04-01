@@ -2,6 +2,8 @@
 @inputs Button Fire:entity
 
 #March 24, 2025
+#E2 to Target Finder
+#E2 to Button
 
 #Log #1: More precise with timing and message prints
 
