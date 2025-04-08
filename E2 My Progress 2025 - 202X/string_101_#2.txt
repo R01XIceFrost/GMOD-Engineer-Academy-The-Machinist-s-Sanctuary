@@ -2,17 +2,23 @@
 @inputs A:entity B:entity
 @outputs Str1:string Str2:string
 
-#Not showing up on the Text Screen but you get the idea yeah?
+#---to setup the coordinates displayer:
+#E2 (A) to a prop or anything entity
+#Text screen to E2 Str1[STRING] to get entity coordinates on the screen
+#----------------------------------------------------------------
+#Not showing up on the Text Screen but you get the idea yeah? (FIXED April 7,2025)
 #March 30, 2025
 
 A:pos()
-Str1 = toString(A:pos())
+Str1 = toString(round(A:pos())) #display coordinates with rounded values!
 
 #Other way to string
 
-B:pos()
+#---to setup the entity displayer
+#E2 (B) to a prop or anything entity
+#Text screen to E2 Str2[STRING] to get entity name & id on the screen
 
-Str2 = B:toString()
+Str2 = B:toString() #gets entity name & id
 
 
 
