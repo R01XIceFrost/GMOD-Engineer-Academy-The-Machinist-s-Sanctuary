@@ -1,0 +1,18 @@
+@name if elseif else combine 101 #1 simple
+@inputs A 
+@outputs OUT
+
+#E2 (OUT) to Screen
+#E2 (A) to Button
+#April 6, 2025
+
+if (A > 3) {
+    print("value exceeded") #if value greather than 3 PRINT the message
+    
+} elseif (A > 1) { #max value 2-3 otherwise print the message "value exceeded"!
+    OUT = 1
+}
+
+else {
+    OUT = 0 #if button not pressed show the value of 0 at all times!
+} 

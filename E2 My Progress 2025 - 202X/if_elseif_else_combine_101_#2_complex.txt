@@ -1,0 +1,35 @@
+@name if elseif else combine 101 #2 complex
+@inputs A 
+@outputs Out
+
+#[ **April 7, 2025**
+
+- E2 (A) to Button (choose value 1-4 to get feel of how this code works!)
+
+- Screen to E2 (Out)
+
+- issues: condition 1 & 2 won't display values 
+but the rest conditions will show the display values. 
+Not perfect code but you get the idea!
+
+]#
+
+if (A == 1) {
+    Out = -1, print("condition 1") #if A is equal to 1, display -1 & print condition 1
+}
+elseif (A > 2) {
+    Out = 1, print("condition 2") #if A greather than 3, display 1 & print condition 2
+}
+
+if (A > 3) {
+    Out = 2, print("condition 3") #if A greather than 3, display 1 & print condition 3
+}
+elseif (A == 2) {
+    Out = -2, print("condition 4") #if A is equal to 2, display -2 & print condition 4
+}
+
+else {
+    Out = 0 #display value 0 at all times if nothing is happening!
+}
+
+

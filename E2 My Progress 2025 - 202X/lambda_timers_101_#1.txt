@@ -1,0 +1,25 @@
+@name Lambda Timers 101 #1
+@outputs Color1:entity Color2:entity Color3:entity
+
+#April 2, 2025
+
+timer("RED", 5,1, function() { #E2 Chip becomes RED in 5 secs one time only
+     Color1 = entity() #calls function color RED
+Color1:setColor(255,0,0)
+
+})
+
+timer("GREEN", 10,1, function() { #E2 Chip becomes GREEN in 10 secs one time only
+     Color2 = entity() #calls function color GREEN
+Color2:setColor(0,255,0)
+
+})
+
+timer("BLUE", 15,1, function() { #E2 Chip becomes BLUE in 15 secs one time only
+     Color3 = entity() #calls function color BLUE
+Color3:setColor(0,0,255)
+
+})
+
+
+
