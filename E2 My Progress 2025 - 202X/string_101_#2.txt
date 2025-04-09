@@ -21,5 +21,3 @@ Str1 = toString(round(A:pos())) #display coordinates with rounded values!
 Str2 = B:toString() #gets entity name & id
 
 
-
-
