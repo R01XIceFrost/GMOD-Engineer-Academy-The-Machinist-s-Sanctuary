@@ -1,0 +1,113 @@
+@name GHud
+@inputs EGP:wirelink [Gun Gun2 Seat Engine Gearbox Base]:entity Active
+@outputs Speed
+@persist  
+@persist Color:vector ForwardReference:entity ReadyCount:string
+
+#Source: Discord ACF Community Resources Leopard 2A4 (ACF-3)
+
+if(first()|dupefinished()){
+    
+    holoCreate(1,vec())
+    holoScaleUnits(1,vec())
+    holoAlpha(1,0)
+    ForwardReference = holoCreate(2, Base:pos(), vec(1), Base:toWorld(ang(0, 0, 0)), vec4(0,0,0,0), "models/sprops/misc/origin.mdl")
+    holoParent(2,Base)
+    Color = vec(75,255,50)
+    
+    #holoCreate(3,Gun:pos()+Gun:forward()*85,vec(1),Gun:angles(),vec4(255),"models/sprops/misc/origin.mdl")
+    #[
+    144,208,68 - green
+    190,60,255 - purple
+    ]#
+    ####--Control bindings--####
+}
+
+if(changed(Active) & Active)
+{
+    EGP:egpClear()
+    DEBUG = 0
+    Driver = Seat:driver()
+    ScrRes = egpScrSize(Driver ?: owner())
+    Y = ScrRes:y()
+    X = ScrRes:x()
+    ScrC = vec2(X/2,Y/2)
+    holoAlpha(2,DEBUG)
+##3D trackers EGP stuff
+    holoCreate(1,vec())
+    holoScaleUnits(1,vec())
+    holoAlpha(1,0)
+    EGP:egpBoxOutline(2,vec2(0),vec2(24))
+    EGP:egpLine(3,vec2(12,0),vec2(30,0))
+    EGP:egpLine(4,vec2(24,10),vec2(48,10))
+    EGP:egpLine(5,vec2(24,-10),vec2(48,-10))
+    EGP:egpLine(6,vec2(-12,0),vec2(-30,0))
+    EGP:egpLine(7,vec2(-24,10),vec2(-48,10))
+    EGP:egpLine(8,vec2(-24,-10),vec2(-48,-10))
+    EGP:egpLine(9,vec2(0,12),vec2(0,30))
+    EGP:egpLine(10,vec2(0,-12),vec2(0,-30))
+    EGP:egpBoxOutline(11,vec2(),vec2(2))
+##3D tracker stuff
+    
+    holoScaleUnits(1,vec())
+    holoAlpha(1,0)
+    
+    EGP:egp3DTracker(1,holoEntity(1):pos())
+    for(I = 2, 11){EGP:egpParent(I,1)}
+    EGP:egpParent(1,holoEntity(1))
+    
+    rangerFilter(Gun)
+    rangerPersist(1)
+    rangerFilter(entity():getConstraints())
+##hood
+    EGP:egpLine(12,ScrC+vec2(240,-150),ScrC+vec2(240,-120))
+    EGP:egpLine(13,ScrC+vec2(240,-150),ScrC+vec2(210,-150))
+    EGP:egpLine(14,ScrC+vec2(-240,-150),ScrC+vec2(-240,-120))
+    EGP:egpLine(15,ScrC+vec2(-240,-150),ScrC+vec2(-210,-150))
+    EGP:egpLine(16,ScrC+vec2(-240,150),ScrC+vec2(-240,120))
+    EGP:egpLine(17,ScrC+vec2(-240,150),ScrC+vec2(-210,150))
+    EGP:egpLine(18,ScrC+vec2(240,150),ScrC+vec2(240,120))
+    EGP:egpLine(19,ScrC+vec2(240,150),ScrC+vec2(210,150))
+    EGP:egpCircleOutline(20,ScrC,vec2(2))
+    
+    for(I = 12,19){EGP:egpSize(I,2)}    
+##Text
+    EGP:egpText(21,"Ammo Counter",ScrC+vec2(-120, 170))
+    EGP:egpText(22,"Range",ScrC+vec2(-20,-170))
+    EGP:egpText(23,"RPM",ScrC+vec2(245,-30))
+    EGP:egpText(24,"Gear",ScrC+vec2(245,-15))
+    EGP:egpText(25,"Speed",ScrC+vec2(245,0))
+    EGP:egpText(26,"Fuel",ScrC+vec2(245,15))
+    EGP:egpText(27,"2nd Ammo counter",ScrC+vec2(-120,185))
+    
+    for(I=12,27){EGP:egpColor(I,Color)}
+    for(I=20,27){EGP:egpFont(I,"debugFixed")}
+}
+if(Active)
+{
+    interval(100)
+    BaseVel = ForwardReference:toLocalAxis(Base:vel())
+    Speed = round(toUnit("km/h",BaseVel[1]))
+    Fuel = Engine:acfFuelLevel() * 100
+    RelInd = round(round(Gun:acfReloadTime() , 2) * (1 - Gun:acfReloadProgress()) , 2)
+    if(!Gun:acfReady()) { ReadyCount = "" + RelInd + "s"} else {ReadyCount = "Ready"}
+    
+    Dist = Gun:attachmentPos("muzzle"):distance(holoEntity(1):pos())
+    if(changed(Dist)) {EGP:egpSetText(22,""+round(Dist/39.37)    +"m")}
+    
+    Pos = (rangerOffset(999999999999,Gun:pos()+Gun:forward()*85,Gun:forward())):pos()
+    holoPos(1,Pos)
+    
+    Ready = Gun:acfReady()
+    if(Ready){ for(I = 2,11){EGP:egpColor(I,vec(75,255,50))} } else { for(I = 2,11){EGP:egpColor(I,vec(255,0,0))} }
+    
+    EGP:egpSetText(21,""+Gun:acfCaliber()+"mm " + Gun:acfAmmoType() + ": " + Gun:acfMagRounds() + "/" +Gun:acfAmmoCount() + "|" + ReadyCount)
+    
+    EGP:egpSetText(27,""+Gun2:acfCaliber()+"mm " +  Gun2:acfAmmoType() + ": " + Gun2:acfMagRounds() + "/" +Gun2:acfAmmoCount())
+    
+    if(changed(Gearbox:acfGear()||Gearbox:acfGearRatio(Gearbox:acfGear()))) {EGP:egpSetText(24,""+Gearbox:acfGear() + "/" + Gearbox:acfGearRatio(Gearbox:acfGear()))}
+    if(changed(Engine:acfRPM())) {EGP:egpSetText(23,""+Engine:acfRPM()+" RPM")}
+    if(changed(Speed)) {EGP:egpSetText(25,""+round(Speed)+" kp/h")}
+    if(changed(Fuel)) {EGP:egpSetText(26,""+Fuel+"% @ " + Engine:acfFuel() + "L")}
+
+}

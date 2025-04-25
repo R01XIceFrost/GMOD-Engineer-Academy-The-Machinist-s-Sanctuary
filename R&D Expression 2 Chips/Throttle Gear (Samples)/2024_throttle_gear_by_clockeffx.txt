@@ -1,0 +1,86 @@
+@name clock_cardrive
+@model models/hunter/plates/plate025x025.mdl
+ 
+
+@inputs Active [ PodController ]:wirelink [ Base ]:entity
+@outputs Engine_On Engine_Throttle Gearbox_Gear Gearbox_Clutch Differential_Brake Handbrake
+ 
+@persist [ E ]:entity
+@persist TurnRate MaxAng MinAng BrakeForce
+@persist Engine_On Engine_Throttle Gearbox_Gear Gearbox_Clutch Differential_Brake Ang
+ 
+#Source: https://youtu.be/VIR1Amr2xn8?si=ClJr2X_YVjgzH06N
+
+# with love, ClockEFFX
+ 
+if ( dupefinished() ) {
+    reset()
+}
+if ( first() ) {
+ 
+    # settings
+    TurnRate = 0.2
+    MaxAng = 45
+    MinAng = 10
+    BrakeForce = 100
+    # settings
+ 
+ 
+    E = entity()
+    Engine_On = 0
+    Engine_Throttle = 0
+    Gearbox_Gear = 1
+    Gearbox_Clutch = 0
+    Differential_Brake = 0
+    Ang = 0
+    Handbrake = 0
+ 
+    timer( "update", 1 )
+}
+if ( clk( "update" ) ) {
+ 
+    timer( "update", 50 )
+ 
+    local W = PodController[ "W", number ]
+    local S = PodController[ "S", number ]
+    local A = PodController[ "A", number ]
+    local D = PodController[ "D", number ]
+    local Space = PodController[ "Space", number ]
+    local Shift = PodController[ "Shift", number ]
+ 
+ 
+    Engine_Throttle = ( W || S ) * 100
+    Engine_On = Active
+ 
+    Differential_Brake = Space * BrakeForce
+    Gearbox_Clutch = !Engine_Throttle || Shift
+    Gearbox_Gear = 1 + S
+ 
+    Handbrake = !Active
+ 
+ 
+    if ( Base:isValid() ) {
+ 
+        if ( A ) {
+            Ang = Ang + TurnRate
+        } elseif ( D ) {
+            Ang = Ang - TurnRate
+        } else {
+            Ang = Ang - clamp( Ang, -TurnRate, TurnRate )
+        }
+ 
+        Ang = clamp( Ang, -1, 1 )
+ 
+        local MinAngSpeed = 1 - clamp( Base:vel():length() / 1500, 0, 1 - ( MinAng / MaxAng ) )
+ 
+        local AngToBase = Base:toWorld( ang( 0, Ang * MaxAng * MinAngSpeed, 0 ) )
+ 
+        E:setAng( AngToBase )
+ 
+    }
+ 
+    if ( !E:isPlayerHolding() ) {
+        E:propFreeze( 1 )
+    }
+ 
+}

@@ -1,0 +1,223 @@
+@name RDC's Turret Tank M V1.01
+@inputs Gunready Gunlock LaseKey ZoomIn ZoomOut Gun:entity Active Aimpos:vector Base:entity Cam:wirelink ElevPos:array EGP:wirelink
+@persist CamOffsetGunsight:vector CamDistGunsight SightEGP RangeEGP ReloadAngle LoadPosition Reloading EGPGunReady Lase TravelTime Distance SElevation RTIncrements CamDist FOV Rotation CamOffset:vector Inertia:angle Elevation Depression Yaw RotateSpeed GunAng:angle
+@outputs Latched
+@trigger Gunready Gunlock LaseKey ZoomIn ZoomOut Active
+
+#Source: https://youtu.be/2AWomepPfqA?si=XfQdL1Em9DsNAt5Q
+
+#Base e2 was originally Generic Gyro Turret, this chip is created by RDC
+#This version is adapted by Gmodism for beginner friendliness
+#Setup:
+#Link up Gun to the turret's main gun, EGP to the EGP, Active to the the Pod Active,
+#Aimpos to the Cam Controller Hitpos Base to whatever the cam is based off of (Turretring or hull)
+#Baseplate, Cam to the Cam Controller and Elevpos to the Tablegen's output arrays
+
+#ZoomIn and ZoomOut inputs effect field of view of the camera effectively serving
+#As a zoom
+
+#Cam settings
+#Check Cords local to parent
+#Check Client side movement
+#Uncheck Localized movement unless you want the aimer to rotate when you turn
+#Uncheck Client Side zooming
+
+#Notes: This gun accepts input from a ballistic calculator that does full drag computation
+
+#This e2 was released at irritation at certain tank e2s using 700 US, talking
+#to you EZ tank turret and Turret Hud Combo, use it over those due to optimization
+
+#The gunlock is mandatory, use a weld latch to control the latch and have it activate on the latch input
+
+
+interval(100)
+
+if (first()|dupefinished()) {
+    Elevation = 70 #Gun Elevation 
+    Depression = 30 #Gun Depression
+    Yaw = 180 #Turret ability to rotate around, 180 is a complete circle   
+    Rotation = 4000 #Turret rotation speed, be reasonable please  
+    CamOffset=vec(0,0,10) #Default possition of the camera
+    CamDist=200 #Default camera zoom
+    CamOffsetGunsight=vec(0,0,5) #The position of the scope.
+    CamDistGunsight=0
+    HudColor=vec(0,255,0) #Hud color
+    EGPAlpha=255 #Hud Alpha
+    
+    LoadPosition=0 #Elevate gun to specific angle to load
+    ReloadAngle=3 #Angle to elevate gun to
+    
+    Lase=1 #Set to 1 if you want to press a key to lase a range, else auto range aquisition
+    
+    #Unless you know what your doing dont edit below here    
+    Elevation*=-1
+    Inertia = shiftL(ang(Gun:inertia()))
+    RTIncrements=20*39.37
+#EGP
+        ScreenRes=egpScrSize(owner())
+        Res=ScreenRes/2
+        EGP:egpClear()
+
+function cEGP(EGPType:string,EGPPos1:vector2,EGPPos2:vector2,EGPSize,EGPColor:vector,EGPInAlpha,EGPNber,EGPIn:wirelink)
+{if(EGPType=="C"){EGPIn:egpCircle(EGPNber,EGPPos1,EGPPos2)}elseif(EGPType=="CO"){EGPIn:egpCircleOutline(EGPNber,EGPPos1,EGPPos2)}elseif(EGPType=="B"){EGPIn:egpBox(EGPNber,EGPPos1,EGPPos2)}elseif(EGPType=="BO"){EGPIn:egpBoxOutline(EGPNber,EGPPos1,EGPPos2)}elseif(EGPType=="L"){EGPIn:egpLine(EGPNber,EGPPos1,EGPPos2)},EGPIn:egpSize(EGPNber,EGPSize),EGPIn:egpColor(EGPNber,EGPColor),EGPIn:egpAlpha(EGPNber,EGPInAlpha)}
+EGPN=1
+
+cEGP("CO",Res+vec2(0,0),vec2(10,10),1,HudColor,EGPAlpha,EGPN,EGP),EGPN++,cEGP("B",Res+vec2(0,-25),vec2(1,30),1,HudColor,EGPAlpha,EGPN,EGP),EGPN++,cEGP("B",Res+vec2(0,25),vec2(1,30),1,HudColor,EGPAlpha,EGPN,EGP),EGPN++    ,cEGP("B",Res+vec2(25,0),vec2(30,1),1,HudColor,EGPAlpha,EGPN,EGP),EGPN++,cEGP("B",Res+vec2(-25,0),vec2(30,1),1,HudColor,EGPAlpha,EGPN,EGP),EGPN++,cEGP("B",Res+vec2(-25,0),vec2(30,1),1,HudColor,EGPAlpha,EGPN,EGP),EGPN++,cEGP("C",Res+vec2(0,0),vec2(1,1),1,HudColor,EGPAlpha,EGPN,EGP),EGPN++,cEGP("B",Res+vec2(60,15),vec2(30,1),1,HudColor,EGPAlpha,EGPN,EGP),EGPN++,cEGP("B",Res+vec2(60,-15),vec2(30,1),1,HudColor,EGPAlpha,EGPN,EGP),EGPN++,cEGP("B",Res+vec2(-60,15),vec2(30,1),1,HudColor,EGPAlpha,EGPN,EGP),EGPN++,cEGP("B",Res+vec2(-60,-15),vec2(30,1),1,HudColor,EGPAlpha,EGPN,EGP),EGPN++,cEGP("B",Res+vec2(120,0),vec2(30,1),1,HudColor,EGPAlpha,EGPN,EGP),EGPN++,cEGP("B",Res+vec2(-120,0),vec2(30,1),1,HudColor,EGPAlpha,EGPN,EGP),EGPN++
+
+SightEGP=EGPN
+cEGP("CO",Res+vec2(0,0),vec2(1100,1100),1000,vec(0),255,EGPN,EGP)
+EGPN++
+
+cEGP("CO",Res+vec2(0,0),vec2(1090,1090),1000,vec(0),50,EGPN,EGP)
+EGPN++
+
+    EGP:egpAlpha(SightEGP,0)  
+    EGP:egpAlpha(SightEGP+1,0)    
+
+if(Lase)
+{
+    RangeEGP=EGPN
+    EGP:egpText(EGPN,"RANGE",Res+vec2(0,220))
+    EGP:egpColor(EGPN,vec(130,0,0))
+    EGP:egpAlign(EGPN,1) #Aligning is optional
+    EGP:egpSize(EGPN,21)
+    EGPN++  
+}
+#[
+Angle=45
+cEGP("B",Res+Position+vec2(80*sin(-Angle)*SizeMult,80*sin(90+Angle)*SizeMult),vec2(5,20)*SizeMult,1.5,MarkerColors[1,vector],255,EGPN,EGP) 
+EGP:egpAngle(EGPN,-Angle)
+EGPN++
+Angle=90
+cEGP("B",Res+Position+vec2(80*sin(-Angle)*SizeMult,80*sin(90+Angle)*SizeMult),vec2(5,20)*SizeMult,1.5,MarkerColors[2,vector],255,EGPN,EGP) 
+EGP:egpAngle(EGPN,-Angle)
+EGPN++
+Angle=135
+cEGP("B",Res+Position+vec2(80*sin(-Angle)*SizeMult,80*sin(90+Angle)*SizeMult),vec2(5,20)*SizeMult,1.5,MarkerColors[3,vector],255,EGPN,EGP) 
+EGP:egpAngle(EGPN,-Angle)
+EGPN++
+
+Angle=180
+cEGP("B",Res+Position+vec2(80*sin(-Angle)*SizeMult,80*sin(90+Angle)*SizeMult),vec2(5,20)*SizeMult,1.5,MarkerColors[4,vector],255,EGPN,EGP) 
+EGP:egpAngle(EGPN,-Angle)
+EGPN++
+
+Angle=225
+cEGP("B",Res+Position+vec2(80*sin(-Angle)*SizeMult,80*sin(90+Angle)*SizeMult),vec2(5,20)*SizeMult,1.5,MarkerColors[5,vector],255,EGPN,EGP) 
+EGP:egpAngle(EGPN,-Angle)
+EGPN++
+
+Angle=270
+cEGP("B",Res+Position+vec2(80*sin(-Angle)*SizeMult,80*sin(90+Angle)*SizeMult),vec2(5,20)*SizeMult,1.5,MarkerColors[6,vector],255,EGPN,EGP) 
+EGP:egpAngle(EGPN,-Angle)
+EGPN++
+
+Angle=315
+cEGP("B",Res+Position+vec2(80*sin(-Angle)*SizeMult,80*sin(90+Angle)*SizeMult),vec2(5,20)*SizeMult,1.5,MarkerColors[7,vector],255,EGPN,EGP) 
+EGP:egpAngle(EGPN,-Angle)
+EGPN++
+]#
+        function number interpolatearray(Array:array, Dist) {
+        TableSlot=Dist/RTIncrements
+        TableNum=floor(TableSlot)
+        Rat=(Dist-floor(TableSlot))/RTIncrements
+        Smaller=Array[TableNum,number]
+        Larger=Array[TableNum+1,number]
+        
+        return Smaller+(Larger-Smaller)/Rat
+    }
+    
+    RotateSpeed = Rotation/Gun:mass()*10
+}  
+
+if (~ZoomIn|~ZoomOut) {
+    FOV = clamp(FOV + (ZoomIn - ZoomOut) * 10,10,90)
+    Cam["FOV",number]=FOV
+    if(FOV<70)
+    {
+    EGP:egpAlpha(SightEGP,255)  
+    EGP:egpAlpha(SightEGP+1,50)     
+    Cam["Distance",number]=CamDistGunsight    
+    Cam["Position",vector]=CamOffsetGunsight       
+    }
+    else
+    {
+    EGP:egpAlpha(SightEGP,0)  
+    EGP:egpAlpha(SightEGP+1,0)            
+    Cam["Distance",number]=CamDist    
+    Cam["Position",vector]=CamOffset 
+    }
+    
+}    
+                                        
+if (~Active) {
+    FOV=70
+    Latched=1    
+
+if(Active)
+{
+    Cam["FOV",number]=FOV
+    Cam["Activated",number]=1
+    Cam["Parent",entity]=Base
+    Cam["Distance",number]=CamDist    
+    Cam["Position",vector]=CamOffset
+}
+} 
+
+if( Active ) {
+
+    if(~Gunlock&Gunlock)
+    {
+    Latched=!Latched    
+    if(!Latched)
+    {
+    hint("Gun Unlatched",1)
+    }
+    else
+    {
+    hint("Gun latched",1)    
+    }
+
+    }  
+
+    if(!Latched)
+    {        
+    if(!Lase|~LaseKey&LaseKey)
+    {
+    Distance=Gun:attachmentPos("muzzle"):distance(Aimpos)
+    if(~LaseKey)
+    {
+    EGP:egpSetText(RangeEGP,""+round(Distance/39.37)+" M")   
+    }
+    SElevation = -elevation(vec(0),ang(0),vec(Distance,0,interpolatearray(ElevPos,Distance)))
+    }
+    
+    if(Reloading&LoadPosition)
+    {
+    GunAng =(Aimpos - Gun:pos()):toAngle():setPitch(0)+ang(entity():angles():pitch()-ReloadAngle,0,0)
+    }
+    else
+    {
+    GunAng =(Aimpos - Gun:pos()):toAngle()+ang(SElevation,0,0)      
+    }
+    
+    Gun:applyAngForce((Gun:toLocal(entity():toWorld(clamp(entity():toLocal(Gun:toWorld(clamp(Gun:toLocal(GunAng),ang(-RotateSpeed),ang(RotateSpeed)))),ang(Elevation,-Yaw,-1),ang(Depression,Yaw,1)))) * 250 - Gun:angVel() * 30) * Inertia)
+    }
+}
+else
+{
+Latched=1    
+}
+
+if(~Gunready)
+{
+if(Gunready)
+{
+        Reloading=0
+}    
+else
+{       
+        Reloading=1
+}    
+}
+

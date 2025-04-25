@@ -1,0 +1,27 @@
+@name ACF
+@inputs W S
+@outputs Throttle Gear
+@persist
+@trigger
+
+#Source: https://youtu.be/BHVapC8lVa0?si=05lzdobCeYlnWgJV by Slim 
+
+if(first())
+{ Gear = 1
+}
+ 
+ 
+if(W == 1)
+{ if(Gear == 6) { Gear = 1 Throttle = 100 } else { Throttle = 100 }
+}
+else
+{ Throttle = 0
+}
+ 
+if(S == 1)
+{ Gear = 6 Throttle = 100
+}
+ 
+if(dupefinished())
+{ reset()
+}
