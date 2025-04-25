@@ -1,0 +1,35 @@
+@name demos/findclosest by Darmagon (tinkered)
+@outputs Nearest:entity
+
+#April 11, 2025
+#shoutout to Darmagon from Wiremod Discord for showing me example to use find functions
+
+timer("SCAN", 5, 0, function() { #start scanning in 5 secs
+findByClass("prop_physics") #scans any props
+Nearest = findClosest(entity():pos())
+
+})
+
+event tick() { #spams the print prop id
+print(Nearest)
+}
+
+
+#Orginal code below:
+
+#[
+
+
+@name demos/findclosest
+@inputs Scan:number
+@outputs Nearest:entity
+@strict
+
+if(Scan&findCanQuery()){
+    findByClass("prop_physics")
+    Nearest=findClosest(entity():pos())
+}
+
+
+]#
+

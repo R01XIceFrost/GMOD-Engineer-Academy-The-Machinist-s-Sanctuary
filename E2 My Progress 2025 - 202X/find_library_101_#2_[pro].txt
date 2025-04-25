@@ -1,0 +1,24 @@
+@name demos/findclosest_continuous by Darmagon
+@outputs Nearest:entity
+@strict
+
+#April 13, 2025
+
+#Not coded by me, I will experiment this later on and see what I can do with it!
+
+
+
+event tick() {                            #whenever a physics tick happens (usually 66 times per second),
+    
+    if(findCanQuery()){                    #if find will not error,
+        findByClass("prop_physics")         #find all prop_physics
+    }                                      #
+    
+    Nearest = findClosest(entity():pos())  #set nearest to found prop_physics closest to e2
+                                           # This may sometimes not be the actual closest prop_physics,
+                                           # but is usually less than one second out-of-date.
+    
+    if(playerCanPrint()){                  #if print will work,
+        print(Nearest)                      #print nearest
+    }                                      #
+}                                         #

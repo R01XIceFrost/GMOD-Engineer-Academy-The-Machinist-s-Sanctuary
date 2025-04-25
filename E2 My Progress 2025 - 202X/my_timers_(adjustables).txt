@@ -1,0 +1,34 @@
+@name My Timers (adjustables)
+@outputs A B C D 
+@strict
+
+#SCREEN A TO E2, SCREEN B TO E2 AND SO ON!
+
+#April 18 - 20 2025
+
+
+timer("Timer 1", 1,0, function() { #1 second equivalent to gate timer (I think)
+        A++ #start incrementing A
+        
+})
+
+timer("Timer 2",1,0, function() { #1 second, infinity loop
+
+if (A > 5) { #Start Timer 2 if Timer 1 reaches 6 secs
+    B++ #start incrementing B
+}
+})
+
+timer("Timer 3",1,0, function() { #1 second, infinity loop
+
+if (A > 10) { #Start Timer 3 if Timer 1 reaches 11 secs
+    C++ ##start incrementing C
+}
+})
+
+timer("Timer 4",1,0, function() { #1 second, infinity loop
+
+if (A > 15) { #Start Timer 4 if Timer 1 reaches 16 secs
+    D++ #start incrementing D
+}
+})
