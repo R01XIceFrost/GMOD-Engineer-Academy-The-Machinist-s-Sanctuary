@@ -1,0 +1,65 @@
+@name CameraChip
+@inputs Pod:wirelink CamController:wirelink Scope CamToggle
+@outputs Zoom
+@persist Active CamToggle ThirdPerson FirstPerson CAMTIME ThirdPos:vector ThirdDist FirstPos:vector FirstDist Magnification
+@trigger 
+
+#Source: https://steamcommunity.com/groups/DakTek
+
+if(first()|dupefinished()){
+#Instructions - Revision 13
+ 
+#IMPORTANT: if you want the camera to work then the only thing you should check is to have
+#client side movement checked, though you can have the extras checked without any issue
+#for example: auto unclipping and hide player, you can set client side movement if you want,
+#but I setup extra view modes and a section to change them if you understand how.
+ 
+#Wire Pod to the pod controller
+#Wire CamController to the cam controller
+#Wire Seat to the Pod controller
+#Wire CamToggle to your preference of key on the pod controller, this swaps views
+#Wire FOV on the cam controller to Zoom on the e2
+#Wire Scope to your preference of key on the pod controller
+ 
+#tips
+#by default the camera is first person, set a key for toggling to go to third
+#there has been an issue with the zoom since the wiremod update, on spawning just change weapons if the camera zooms in
+ 
+#this is the beginning of the section you modify, just select things
+#and read instructions and you will be fine.
+ 
+#Zoom Options
+Magnification = 10 #Scope's zoom value - goes from 1 to 90, 1 is highest zoom, 90 is lowest
+ 
+ThirdPos=vec(0,0,100)
+ThirdDist=250
+FirstPos=vec(0,10,50)
+FirstDist=0
+#end of section you should modify
+}
+interval(100)
+ 
+Active = Pod["Active",number]
+Seat = Pod["Entity",entity]
+if(changed(Active)){reset()}
+if(Active==1){ 
+if(ThirdPerson == 0 & FirstPerson == 0 & CamToggle == 0){FirstPerson = 1, ThirdPerson = 0}
+CAMTIME = CAMTIME - 1
+if(CamToggle & CAMTIME<0){
+if(ThirdPerson==1){FirstPerson = 1, ThirdPerson = 0, CAMTIME=10}
+elseif(FirstPerson==1){FirstPerson = 0, ThirdPerson = 1, CAMTIME=10}}
+ 
+if(ThirdPerson){
+    CAMPOSITION=entity():isWeldedTo():toWorld(ThirdPos)
+    CAMDIST=ThirdDist}
+ 
+if(FirstPerson){    
+    CAMPOSITION=Seat:toWorld(FirstPos)
+    CAMDIST=FirstDist}
+ 
+CamController["Activated", number] = Active
+CamController["Position", vector] = CAMPOSITION
+CamController["Distance", number] = CAMDIST
+CamController["Parent", entity] = Seat
+ 
+if(Scope){Zoom=Magnification}else{Zoom=90}}

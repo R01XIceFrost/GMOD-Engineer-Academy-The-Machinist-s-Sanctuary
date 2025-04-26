@@ -1,0 +1,63 @@
+@name rotato
+@inputs Fire Base:entity [Gun1 Gun2 Gun3 Gun4 Gun5 Gun6 Gun7 Gun8 Gun9 Gun10]:entity StableBase:entity
+@outputs Angle:angle RPM TargetRPM Fire1 Fire2 Fire3 Fire4 Fire5 Fire6 Fire7 Fire8 Fire9 Fire10 BaseZ
+@persist Cooldown Guns BaseZ TargetRPM
+@trigger 
+ 
+#Source: https://steamcommunity.com/groups/DakTek
+
+#INSTRUCTIONS:
+ 
+#NOTE: I recommend using small gun models for the aimer and rotator so you know which direction is forward on the prop at all times.
+#NOTE2: There must be one lowest mounted gun in the ring, so if you have a tri gun mount there must be 1 gun on bottom and 2 above it.
+ 
+#To use this e2 properly you must have a properly constructed base to use it on.
+#You need one base prop that is the aimer for the weapon, same as you'd use for basing a normal gun on.
+#Set the weight of the base prop to 245 kg.
+#Next you'll need a rotator prop, place this directly inline with the aimer, it can be infront or behind it, 
+#but cannot be offset to the side or above/below it in any way.
+#Set this rotator prop to 5 kg.
+#Axis center the rotator prop to the aimer prop.
+#Now you have to place the guns in a circle around the rotator prop near perfectly.
+#Start by setting the angle for each gun you wish to add to the rotator (up to 10).
+#Once the guns are angled move their mass center to the mass center of the rotator with precision alignment.
+#Now that that is done use the Precision tool's push and pull ability to push/pull each gun the same distance 
+#away from the center so they are not clipping and are far enough apart to register properly in the e2.
+#Parent a gate to the rotator prop.
+#Parent all guns to the gate on the rotator prop
+#Now you must wire the guns in order. Gun1 is the lowest mounted gun in the ring, you can make Gun2 either one beside it, 
+#but follow that way sequentially until you have wired all guns.
+#Now wire the fire input on each gun to the fire output on the chip with the same number as the gun.
+#Copy and paste your mech or refresh the chip and it should work properly if it is unfrozen.
+ 
+if(first()|dupefinished()){
+    Cooldown = 0.2
+    Guns = 10
+    #Gun1 must be the lowest gun
+    BaseZ=StableBase:toLocal(Gun1:pos()):z()
+    TargetRPM = 60/(Cooldown+0.05)
+    }
+interval(1)
+Angle=Base:angVel()
+RPM = abs(Base:angVel():roll()/360*60)
+if(Fire){
+Base:applyTorque(vec(1,0,0)*(TargetRPM-RPM)*Base:mass())
+}else{
+interval(100)
+ANG=entity():toWorld(ang(0,0,0))
+Q=quat(ANG)/quat(Base)
+Torque=Base:toLocal(rotationVector(Q) + Base:pos())
+Torque=((Torque*250) -Base:angVelVector()* 50)*Base:inertia()
+Base:applyTorque(Torque)
+Base:applyTorque(-Base:angVelVector()*pi()/180*Base:inertia()*1550.1*1/2)
+}
+if(StableBase:toLocal(Gun1:pos()):z()-0.5<BaseZ&Fire){Fire1=1}else{Fire1=0}
+if(StableBase:toLocal(Gun2:pos()):z()-0.5<BaseZ&Fire){Fire2=1}else{Fire2=0}
+if(StableBase:toLocal(Gun3:pos()):z()-0.5<BaseZ&Fire){Fire3=1}else{Fire3=0}
+if(StableBase:toLocal(Gun4:pos()):z()-0.5<BaseZ&Fire){Fire4=1}else{Fire4=0}
+if(StableBase:toLocal(Gun5:pos()):z()-0.5<BaseZ&Fire){Fire5=1}else{Fire5=0}
+if(StableBase:toLocal(Gun6:pos()):z()-0.5<BaseZ&Fire){Fire6=1}else{Fire6=0}
+if(StableBase:toLocal(Gun7:pos()):z()-0.5<BaseZ&Fire){Fire7=1}else{Fire7=0}
+if(StableBase:toLocal(Gun8:pos()):z()-0.5<BaseZ&Fire){Fire8=1}else{Fire8=0}
+if(StableBase:toLocal(Gun9:pos()):z()-0.5<BaseZ&Fire){Fire9=1}else{Fire9=0}
+if(StableBase:toLocal(Gun10:pos()):z()-0.5<BaseZ&Fire){Fire10=1}else{Fire10=0}

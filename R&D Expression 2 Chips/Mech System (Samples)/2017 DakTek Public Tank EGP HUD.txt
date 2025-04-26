@@ -1,0 +1,277 @@
+@name DakTek Mech HUD Public V2
+@inputs EGP:wirelink Pod:wirelink Gyro:entity Target:entity Targets:array CT LT RT LA RA LL RL Rear Engine Heat MaxHeat JumpFuel Group1Cooldown Group1Ammo Group2Cooldown Group2Ammo Group3Cooldown Group3Ammo Group4Cooldown Group4Ammo
+@outputs
+@persist Size:vector2 Driver:entity ScaleW ScaleH SeatChanged Distance GroupCount GroupTable:array AmmoTable:array CooldownTable:array LastSound Prev:array PPos:vector Time
+@trigger none
+ 
+#Source: https://steamcommunity.com/groups/DakTek
+ 
+#INSTRUCTIONS:
+#Weld or weld parent the chip to the torso.
+#Make sure the chip points forward.
+#The Hud is setup for mechs, it can technically be used on other vehicles, but you won't have the right hitboxes and there will be a useless jumpjet gauge.
+#Wire stuff to their corresponding values.
+#CT,LT,RT,LA,RA,LL,RL, and Rear are wired to hitbox health percentage outputs.
+#engine is wired to the engine's health output.
+#Heat and MaxHeat come from the engine.
+#gyros output JumpFuel.
+#for the cooldowns wire it to the gun's cooldownpercent, not the cooldown itself, only wire it to one gun out of the group.
+ 
+#Below in that area that says "EDIT VALUES" change the 4 group names to what you want them to be called.
+#Do not change anything else.
+#4 groups is the maximum.
+ 
+if(first()|SeatChanged==1){
+    GroupCount = 4
+    #EDIT VALUES
+    Group1Name = "SRM4s"
+    Group2Name = "Heavy PPC"
+    Group3Name = "LRM20"
+    Group4Name = "Machine Guns"
+ 
+    GroupTable = array(Group1Name,Group2Name,Group3Name,Group4Name)
+    AmmoTable = array(Group1Ammo,Group2Ammo,Group3Ammo,Group4Ammo)
+    CooldownTable = array(Group1Cooldown,Group2Cooldown,Group3Cooldown,Group4Cooldown)
+ 
+    Active = Pod["Active",number]
+    Seat = Pod["Entity",entity]
+ 
+    EGP:egpClear()
+    EGP:egpResolution(vec2(),vec2(512))
+    EGP:egpDrawTopLeft(0)
+    Driver = Seat:driver()
+    Size=egpScrSize(Driver)
+    #ScaleW = egpScrW(Driver)/1920
+    ScaleH = egpScrH(Driver)/1080
+    ScaleW = ScaleH
+ 
+ 
+    #Crosshair
+    EGP:egpDrawTopLeft(1)
+    EGP:egpCircleOutline(1,(Size/2),vec2(30*ScaleW,30*ScaleH))
+    EGP:egpColor(1,vec4(50,255,50,250))
+    EGP:egpLine(2,(Size/2)+vec2(0,25*ScaleH),(Size/2)+vec2(0,-25*ScaleH))
+    EGP:egpColor(2,vec4(50,255,50,225))
+    EGP:egpLine(3,(Size/2)+vec2(25*ScaleW,0),(Size/2)+vec2(-25*ScaleW,0))
+    EGP:egpColor(3,vec4(50,255,50,225))
+ 
+ 
+    #Radar
+    EGP:egpBox(4,vec2(egpScrW(Driver)/2,egpScrH(Driver)/1.15),vec2(250*ScaleW,250*ScaleH))
+    EGP:egpColor(4,vec4(25,150,25,225))
+    EGP:egpCircle(5,vec2(egpScrW(Driver)/2,egpScrH(Driver)/1.15),vec2(100*ScaleW,100*ScaleH))
+    EGP:egpColor(5,vec4(50,150,50,225))
+    EGP:egpCircleOutline(6,vec2(egpScrW(Driver)/2,egpScrH(Driver)/1.15),vec2(100*ScaleW,100*ScaleH))
+    EGP:egpColor(6,vec4(0,255,0,250))
+    EGP:egpCircleOutline(7,vec2(egpScrW(Driver)/2,egpScrH(Driver)/1.15),vec2(75*ScaleW,75*ScaleH))
+    EGP:egpColor(7,vec4(255,150,0,250))
+    EGP:egpCircleOutline(8,vec2(egpScrW(Driver)/2,egpScrH(Driver)/1.15),vec2(50*ScaleW,50*ScaleH))
+    EGP:egpColor(8,vec4(255,150,0,250))
+    EGP:egpCircleOutline(9,vec2(egpScrW(Driver)/2,egpScrH(Driver)/1.15),vec2(25*ScaleW,25*ScaleH))
+    EGP:egpColor(9,vec4(255,150,0,250))
+ 
+    # Direction Indicator
+    EGP:egpCircle(10,vec2(egpScrW(Driver)/2,egpScrH(Driver)/1.15),vec2(5*ScaleW,5*ScaleH))
+    EGP:egpColor(10,vec4(255,255,50,250))
+ 
+    ### Health hud
+    EGP:egpBox(12,vec2(egpScrW(Driver)/4,egpScrH(Driver)/1.15),vec2(250*ScaleW,250*ScaleH))
+    EGP:egpColor(12,vec4(25,150,25,225))
+    #CT
+    EGP:egpBox(13,vec2(egpScrW(Driver)/4,egpScrH(Driver)/1.175),vec2(50*ScaleW,125*ScaleH))
+    EGP:egpColor(13,vec4(250,2.5,0,250))
+    #Side Torsos
+    EGP:egpBox(14,vec2(egpScrW(Driver)/4+50*ScaleW,egpScrH(Driver)/1.20),vec2(40*ScaleW,60*ScaleH))
+    EGP:egpColor(14,vec4(250,2.5,0,250))
+    EGP:egpBox(15,vec2(egpScrW(Driver)/4-50*ScaleW,egpScrH(Driver)/1.20),vec2(40*ScaleW,60*ScaleH))
+    EGP:egpColor(15,vec4(250,2.5,0,250))
+    #Legs
+    EGP:egpBox(16,vec2(egpScrW(Driver)/4+50*ScaleW,egpScrH(Driver)/1.20+100*ScaleH),vec2(40*ScaleW,100*ScaleH))
+    EGP:egpColor(16,vec4(250,2.5,0,250))
+    EGP:egpBox(17,vec2(egpScrW(Driver)/4-50*ScaleW,egpScrH(Driver)/1.20+100*ScaleH),vec2(40*ScaleW,100*ScaleH))
+    EGP:egpColor(17,vec4(250,2.5,0,250))
+    #Arms
+    EGP:egpBox(18,vec2(egpScrW(Driver)/4+85*ScaleW,egpScrH(Driver)/1.20+25*ScaleH),vec2(20*ScaleW,75*ScaleH))
+    EGP:egpColor(18,vec4(250,2.5,0,250))
+    EGP:egpBox(19,vec2(egpScrW(Driver)/4-85*ScaleW,egpScrH(Driver)/1.20+25*ScaleH),vec2(20*ScaleW,75*ScaleH))
+    EGP:egpColor(19,vec4(250,2.5,0,250))
+    #Rear
+    EGP:egpBox(20,vec2(egpScrW(Driver)/4-75*ScaleW,egpScrH(Driver)/1.20-50*ScaleH),vec2(50*ScaleW,20*ScaleH))
+    EGP:egpColor(20,vec4(250,2.5,0,250))
+    EGP:egpText(21,"Rear",vec2(egpScrW(Driver)/4-75-22.5*ScaleW,egpScrH(Driver)/1.20-85*ScaleH))
+    EGP:egpColor(21,vec4(250,2.5,0,250))
+    #Structure
+    EGP:egpBox(22,vec2(egpScrW(Driver)/4+75*ScaleW,egpScrH(Driver)/1.20-50*ScaleH),vec2(50*ScaleW,20*ScaleH))
+    EGP:egpColor(22,vec4(250,2.5,0,250))
+    EGP:egpText(23,"Struc",vec2(egpScrW(Driver)/4+75-22.5*ScaleW,egpScrH(Driver)/1.20-85*ScaleH))
+    EGP:egpColor(23,vec4(250,2.5,0,250))
+ 
+    EGP:egp3DTracker(25,entity():pos()) 
+    EGP:egpCircle(26,vec2(0,0),vec2(50*ScaleW,50*ScaleH)) 
+    EGP:egpColor(26,vec4(255,0,0,225)) 
+    EGP:egpParent(26,25)
+ 
+    #outline
+    for(I=1,clamp(GroupCount,0,4)){
+        EGP:egpBoxOutline(27+I,vec2(egpScrW(Driver)/1.175+50*ScaleW,(egpScrH(Driver)/5)+(12.5*ScaleH)-(200*ScaleH)+(I*(25*ScaleH))),vec2(400*ScaleW,25*ScaleH))
+        EGP:egpColor(27+I,vec4(25,25,25,250))
+    }
+    #backing
+    for(I=1,clamp(GroupCount,0,4)){
+        EGP:egpBox(31+I,vec2(egpScrW(Driver)/1.175+50*ScaleW,(egpScrH(Driver)/5)+(12.5*ScaleH)-(200*ScaleH)+(I*(25*ScaleH))),vec2(400*ScaleW,25*ScaleH))
+        EGP:egpColor(31+I,vec4(25,150,25,225))
+    }
+    #name
+    for(I=0,clamp(GroupCount,0,4)){
+        EGP:egpText(36+I,GroupTable[I,string],vec2(egpScrW(Driver)/1.25+50*ScaleW,(egpScrH(Driver)/5)+(3*ScaleH)-(200*ScaleH)+(I*(25*ScaleH))))
+        EGP:egpColor(36+I,vec4(25,120,25,250))
+    }
+    #ammo
+    for(I=1,clamp(GroupCount,0,4)){
+        EGP:egpText(40+I,AmmoTable[I,number]:toString(),vec2(egpScrW(Driver)/1.25+50*ScaleW,(egpScrH(Driver)/5)+(3*ScaleH)-(200*ScaleH)+(I*(25*ScaleH))))
+        EGP:egpColor(40+I,vec4(25,120,25,250))
+    }    
+ 
+    #Heat bar
+    EGP:egpBox(45,vec2(egpScrW(Driver)/2+(155*ScaleW),egpScrH(Driver)/1.15),vec2(50*ScaleW,250*ScaleH))
+    EGP:egpColor(45,vec4(25,25,25,225))
+    EGP:egpBox(46,vec2(egpScrW(Driver)/2+(155*ScaleW),egpScrH(Driver)/1.15),vec2(40*ScaleW,250*ScaleH))
+    EGP:egpColor(46,vec4(255,25,25,250))
+ 
+    #Jump bar
+    EGP:egpBox(47,vec2(egpScrW(Driver)/2-(155*ScaleW),egpScrH(Driver)/1.15),vec2(50*ScaleW,250*ScaleH))
+    EGP:egpColor(47,vec4(25,25,25,225))
+    EGP:egpBox(48,vec2(egpScrW(Driver)/2-(155*ScaleW),egpScrH(Driver)/1.15),vec2(40*ScaleW,250*ScaleH))
+    EGP:egpColor(48,vec4(255,255,25,250))
+ 
+    #Speed
+    EGP:egpBox(49,vec2(egpScrW(Driver)/2+(260*ScaleW),egpScrH(Driver)/1.055),vec2(150*ScaleW,50*ScaleH))
+    EGP:egpColor(49,vec4(25,25,25,225))
+    EGP:egpText(50,"Speed (KPH)",vec2(egpScrW(Driver)/2+(190*ScaleW),egpScrH(Driver)/1.075))
+    EGP:egpColor(50,vec4(0,255,0,250))
+    EGP:egpText(51,0:toString(),vec2(egpScrW(Driver)/2+(190*ScaleW),egpScrH(Driver)/1.05))
+    EGP:egpColor(51,vec4(0,255,0,250))
+ 
+ 
+    SeatChanged = 0
+    #LastSound = 0
+}
+interval(250)
+AmmoTable = array(Group1Ammo,Group2Ammo,Group3Ammo,Group4Ammo)
+CooldownTable = array(Group1Cooldown,Group2Cooldown,Group3Cooldown,Group4Cooldown)
+Active = Pod["Active",number]
+Seat = Pod["Entity",entity]
+ 
+#fix health issue not showing in right color
+EGP:egpColor(13,vec4(250*((100-CT)/100),2.5*CT,0,250))
+EGP:egpColor(14,vec4(250*((100-RT)/100),2.5*RT,0,250))
+EGP:egpColor(15,vec4(250*((100-LT)/100),2.5*LT,0,250))
+EGP:egpColor(16,vec4(250*((100-RL)/100),2.5*RL,0,250))
+EGP:egpColor(17,vec4(250*((100-LL)/100),2.5*LL,0,250))
+EGP:egpColor(18,vec4(250*((100-RA)/100),2.5*RA,0,250))
+EGP:egpColor(19,vec4(250*((100-LA)/100),2.5*LA,0,250))
+EGP:egpColor(20,vec4(250*((100-Rear)/100),2.5*Rear,0,250))
+EGP:egpColor(21,vec4(250*((100-Rear)/100),2.5*Rear,0,250))
+EGP:egpColor(22,vec4(250*((100-Engine)/100),2.5*Engine,0,250))
+EGP:egpColor(23,vec4(250*((100-Engine)/100),2.5*Engine,0,250))
+ 
+if(CT<=0){EGP:egpColor(13,vec4(50,50,50,200))}
+if(RT<=0){EGP:egpColor(14,vec4(50,50,50,200))}
+if(LT<=0){EGP:egpColor(15,vec4(50,50,50,200))}
+if(RL<=0){EGP:egpColor(16,vec4(50,50,50,200))}
+if(LL<=0){EGP:egpColor(17,vec4(50,50,50,200))}
+if(RA<=0){EGP:egpColor(18,vec4(50,50,50,200))}
+if(LA<=0){EGP:egpColor(19,vec4(50,50,50,200))}
+if(Rear<=0){EGP:egpColor(20,vec4(50,50,50,200))
+    EGP:egpColor(21,vec4(50,50,50,200))
+    }
+if(Engine<=0){EGP:egpColor(22,vec4(50,50,50,200))
+    EGP:egpColor(23,vec4(50,50,50,200))
+    }
+ 
+Distance = 100
+if(Targets:count()>0){
+    for(I=1,Targets:count()){
+        if(Targets[I,entity]:pos():distance(Gyro:pos())>Distance){
+        Distance = Targets[I,entity]:pos():distance(Gyro:pos())
+        }
+    }
+}
+ 
+if(Targets:count()>0){
+    for(I=1,Targets:count()){
+        if(Targets[I,entity]:isValid()){
+        #if(!EGP:egpHasObject(500+I)){
+        EGP:egpCircle(52+I,(Size/2),vec2(5*ScaleW,5*ScaleH))
+        EGP:egpColor(52+I,vec4(255,50,50,225))
+        #}
+        Pos = entity():toLocal(Targets[I,entity]:pos())-entity():toLocal(Gyro:pos())
+        EGP:egpPos(52+I,vec2(egpScrW(Driver)/2,egpScrH(Driver)/1.15)+vec2(-Pos:y()/Distance*100*ScaleW,-Pos:x()/Distance*100*ScaleH))
+        }else{
+        EGP:egpColor(52+I,vec4(255,50,50,0))
+        }
+    }
+}
+if(Target){
+    EGP:egpPos(25,Target:pos())
+    EGP:egpColor(25,vec4(255,0,0,225))
+    #if(!EGP:egpHasObject(500)){
+        EGP:egpCircleOutline(52,(Size/2),vec2(5*ScaleW,5*ScaleH))
+        EGP:egpColor(52,vec4(50,255,50,225))
+    #}
+        Pos = entity():toLocal(Target:pos())-entity():toLocal(Gyro:pos())
+        EGP:egpPos(52,vec2(egpScrW(Driver)/2,egpScrH(Driver)/1.15)+vec2(-Pos:y()/Distance*100*ScaleW,-Pos:x()/Distance*100*ScaleH)) 
+        EGP:egpColor(26,vec4(255,50,50,75))
+}else{
+EGP:egpPos(25,Target:pos())
+EGP:egpColor(25,vec4(255,0,0,0))
+EGP:egpColor(26,vec4(255,0,0,0)) 
+EGP:egpPos(52,entity():pos())
+EGP:egpColor(52,vec4(50,255,50,0))
+}
+#fix direction indicator
+#torso
+EGP:egpLine(11,vec2(egpScrW(Driver)/2,egpScrH(Driver)/1.15),vec2(egpScrW(Driver)/2,egpScrH(Driver)/1.15)+vec2(0,-1*100*ScaleH))
+EGP:egpColor(11,vec4(255,255,50,250))
+#gyro
+#EGP:egpLine(27,vec2(egpScrW(Driver)/2,egpScrH(Driver)/1.15),vec2(egpScrW(Driver)/2,egpScrH(Driver)/1.15)+vec2((entity():angles()-ang(0,90,0)-Gyro:angles()):forward():x()*100*ScaleW,(entity():angles()-ang(0,90,0)-Gyro:angles()):forward():y()*100*ScaleH))
+EGP:egpLine(27,vec2(egpScrW(Driver)/2,egpScrH(Driver)/1.15),vec2(egpScrW(Driver)/2,egpScrH(Driver)/1.15)+ vec2(-entity():toLocal(Gyro:angles()):forward():y()*100*ScaleW,-entity():toLocal(Gyro:angles()):forward():x()*100*ScaleH) )
+EGP:egpColor(27,vec4(50,50,50,250))
+ 
+for(I=1,GroupCount){
+        EGP:egpColor(31+I,vec4(2.5*CooldownTable[I,number],250*(100-CooldownTable[I,number])/100,0,225))
+        EGP:egpText(40+I,AmmoTable[I,number]:toString(),vec2(egpScrW(Driver)/1.3+50*ScaleW,(egpScrH(Driver)/5)+(3*ScaleH)-(200*ScaleH)+(I*(25*ScaleH))))
+    }
+ 
+#Speed
+ 
+if(Prev:count()>=2){Prev:removeNumber(1)}
+NPos=entity():pos()
+D=(NPos-PPos):length()
+PPos=NPos
+Time=curtime()
+Prev:pushNumber((D/$Time)/(84480/1609))
+Speed=round(Prev:average()*3.6)
+ 
+ 
+EGP:egpText(51,Speed:toString(),vec2(egpScrW(Driver)/2+(190*ScaleW),egpScrH(Driver)/1.05))
+#heat
+EGP:egpBox(46,vec2(egpScrW(Driver)/2+(155*ScaleW),egpScrH(Driver)/1.15+(125*ScaleH)-(125*ScaleH*Heat/MaxHeat)),vec2(40*ScaleW,(250*ScaleH)*Heat/MaxHeat))
+EGP:egpColor(46,vec4(255,25,25,250))
+#jump
+EGP:egpBox(48,vec2(egpScrW(Driver)/2-(155*ScaleW),egpScrH(Driver)/1.15+(125*ScaleH)-(125*ScaleH*JumpFuel/100)),vec2(40*ScaleW,(250*ScaleH)*JumpFuel/100))
+EGP:egpColor(48,vec4(255,255,25,250))
+ 
+if(Heat/MaxHeat>1){
+    if(LastSound == 0){
+        soundPurge()
+        soundPlay(1,2,"dak/Extra Sounds/Misc/warning_damage_main.wav")  
+        LastSound=5
+    }
+}
+if(LastSound>0){LastSound-=1} 
+ 
+if(changed(Targets:count())){
+    SeatChanged = 1
+}
+if(changed(Seat:driver())){SeatChanged = 1}

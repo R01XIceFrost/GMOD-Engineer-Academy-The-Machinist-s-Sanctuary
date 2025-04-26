@@ -1,0 +1,47 @@
+@name Mech Gun stuff V2
+@inputs Gun:entity Pod:wirelink Cam:wirelink
+@outputs
+@persist AngleOffset:angle RotationSpeed Elevation Depression YawMin YawMax Tank:array
+@trigger 
+interval(100)
+ 
+#Source: https://steamcommunity.com/groups/DakTek
+
+#Place this chip on the prop that the gun is ballsocketed to
+#Make sure the arrow is pointing forward on the chip.
+ 
+if(first()|dupefinished()){
+ 
+Tank = entity():getConstraints()
+rangerFilter(Tank)
+rangerPersist(1)
+ 
+AngleOffset=ang(0,0,0) #edit the third value here to change the gun's rotation, 180 will flip it over.
+RotationSpeed = 60
+Elevation = 45
+Depression = 45
+YawMin = 45
+YawMax = 45
+}
+ 
+ 
+Active = Pod["Active",number]
+ 
+if(Active==1){
+    CAM2 = Cam["HitPos", vector]
+    CAMANG = Cam["CamAng", angle]
+    GunPos = Gun:pos()
+    GunAng = (rangerOffset(9999999999,CAM2,CAMANG:forward()):pos() - GunPos):toAngle()
+    ANGLE = clamp(Gun:toLocal(GunAng),ang(-RotationSpeed),ang(RotationSpeed))
+    CLAMPANG = clamp(entity():toLocal(Gun:toWorld(ANGLE)),ang(-Elevation,-YawMin,-1),ang(Depression,YawMax,1))
+    Gun:applyAngForce((Gun:toLocal(entity():toWorld(CLAMPANG)) * 250 - Gun:angVel() * 30) * shiftL(ang(Gun:inertia())))
+}
+ 
+if(Active==0){
+    ANG=entity():toWorld(ang(0,0,0)+AngleOffset)
+    Q=quat(ANG)/quat(Gun)
+    Torque=Gun:toLocal(rotationVector(Q) + Gun:pos())
+    Torque=((Torque*250) -Gun:angVelVector()* 50)*Gun:inertia()
+    Gun:applyTorque(Torque)
+    Gun:applyTorque(-Gun:angVelVector()*pi()/180*Gun:inertia()*1550.1*1/2)
+}

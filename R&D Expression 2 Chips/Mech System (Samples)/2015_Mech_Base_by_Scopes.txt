@@ -1,0 +1,373 @@
+@name bfw_v5
+@inputs ADV:wirelink X Y
+@outputs SetYaw Debug
+#inputs
+@persist For Back Right Left FiltX FiltY Jump Boost Crouch Pod:entity Swap Active
+#entities
+@persist Tot:array
+@persist [Torso Hip]:entity Feet:array FeetC TotL
+@persist [TorsoMDL HipMDL FootMDL]:string
+#vectors
+#-held information
+@persist [LatD RigD UpD CamD]:vector
+#-position
+@persist [HSP FLSP FRSP]:vector FSP:array
+@persist [HCP FLCP FRCP]:vector FCP:array
+@persist [HOP FLOP FROP]:vector FOP:array LAS:array
+#-direction
+@persist [HipHeld HipCur]:quaternion
+@persist [TorsoHeld TorsoCur]:quaternion
+#-walking
+@persist [LefA RigA]:vector
+@persist [HipPos HipVel Adjusted ForceVec]:vector
+#numbers
+#-stepsize stuff
+@persist MaxH StepS ThrM Time Perc CrouchAmount
+#-torso/hip force
+@persist HipNat FootHoldForce
+#-jumping bidness
+@persist JumpForce JTGL Tow:vector
+#-Sound Bools
+@persist SCH Jpit Spit Rpit Dpit [JumpSND StepSND RunSND DeadSND]:string
+@persist ALIVE SC:vector TrimTorso TrimHip VMul Accm Acceleration Thresh
+#temporary values
+@persist N TempE:entity TempS:string TempD:vector TotMass Q JFlag
+@trigger 
+
+
+#Source: https://youtu.be/SwzG5bmSuX4?si=MUwbmXycr7DuAoMj
+
+if(dupefinished())
+{
+    reset()
+}
+
+if(first())
+{
+    #HELLO AND WELCOME TO THE BASIC WALKING CHIP
+    #I AM YOUR HOST SESTZE
+    
+    #SO RIGHT, MY SUGGESTION FOR BALLSOCKETS IS AS FOLLOWS
+    #BETWEEN HIP and FEET, use -0.1 to 0.1 for X, Y, and Z, with FREE MOVEMENT CHECKED
+    #Between the LOWER LEG and FOOT, use the BALLSOCKET CENTER TOOL or use BALLSOCKET LINEDRAW
+    #Between the UPPER and LOWER LEG, use -45 to 45 or so for X, it seems to work. -0.1 to 0.1 for the others
+    #Between the HIP and UPPER LEG, use -45 to 45 X or so, and -35 to 35 Y, or so. -0.1 to 0.1 for Z
+    #BETWEEN THE HIP AND TORSO USE BALLSOCKET CENTER ON THE TORSO TO THE HIP
+    #THEN LIMIT IT'S ROTATION BY APPLYING AN ADVANCED BALLSOCKET WITH -45 to 45 X, -0.1 to 0.1 Y AND Z WITH FREE MOVMENT CHECKED BETWEEN THEM
+    #NEED AN EYEPOD WITH CUMULATIVE OUTPUT, Ymin -180, ymax 180, xmin 0, xmax 0
+    #NEED AN ADVANCED POD CONTROLLER, USE THE WIRELINK CREATOR TO MAKE IT A WIRELINK
+    #THAT'S ABOUT IT. HAVE FUN!
+    
+    #it now supports any number of legs - if you're using this for ACF,
+    #I think it'd be balanced to get an extra 3 tons worth of armor for
+    #every leg beyond 2 you have. So:
+    #2 legs - 20t
+    #3 legs - 23t
+    #4 legs - 26t
+    #etc, etc, etc.
+    
+    #place models here!
+    TorsoMDL = "models/hunter/blocks/cube1x1x025.mdl"
+    HipMDL = "models/sprops/cuboids/height36/size_1/cube_36x60x36.mdl"
+    FootMDL = "models/hunter/blocks/cube05x05x05.mdl"
+    
+    #place sounds here! use "<NONE>" for no sound
+    Jpit = 80
+    Spit = 60
+    Rpit = 60
+    Dpit = 100
+    JumpSND = "npc/waste_scanner/grenade_fire.wav"
+    StepSND = "npc/antlion/shell_impact4.wav"
+    RunSND = "npc/turret_wall/turret_loop1.wav"
+    DeadSND = "ambient/levels/labs/electric_explosion2.wav"
+    
+    #Trims the strength of the active KUs
+    TrimTorso = 0.55 #Torso
+    TrimHip = 0.5 #Hip
+    #Adjusts the step height of your robot. VMul * StepLength
+    VMul = 1
+    #Adjusts how fast the mech snaps to walking. This does not increase the overall
+    #speed of your contraption if you make it really large. Just sayin'.
+    Acceleration = 6
+    
+    #Adjusts the minimum threshold speed to move the mech
+    Thresh = 3
+    
+    #the rest is done automagically
+    timer("checkstuff", 500)
+}
+
+if(clk("checkstuff"))
+{
+    Tot = entity():getConstraints()
+    Tot[Tot:count()+1, entity] = entity()
+    N = 1
+    TotMass = 0
+    FeetC = 0
+    MaxH = 0
+    timer("firstchecks", 10)
+}
+if(clk("firstchecks"))
+{
+    while(perf() & (N <= Tot:count()))
+    {
+        TempE = Tot[N, entity]
+        TempS = Tot[N, entity]:model():lower()
+        if(!(TempE:parent()))
+        {
+            if(TempS == TorsoMDL:lower())
+            {
+                Torso = TempE
+            }
+            if(TempS == HipMDL:lower())
+            {
+                Hip = TempE
+            }
+            if(TempS == FootMDL:lower())
+            {
+                FeetC++
+                Feet[FeetC, entity] = TempE
+                MaxH += TempE:massCenter():z()
+            }
+        }
+        if(!(TempE:parent()))
+        {
+            TotMass += TempE:mass()
+        }
+        N++
+    }
+    if(N <= Tot:count())
+    {
+        print(N + " Items Checked")
+        timer("firstchecks", 100)
+    }
+    else
+    {
+        timer("secondchecks", 10)
+    }
+}
+if(clk("secondchecks"))
+{
+    MaxH = abs(Hip:massCenter():z() - MaxH/FeetC)
+    TotL = FeetC
+    StepS = MaxH / 2.5
+    if(StepS)
+    {
+        ThrM = 420/StepS
+    }
+    else
+    {
+        ThrM = 6
+    }
+    
+    LatD = vec(0, 1, 0)
+    RigD = vec(0, 0, -1):cross(LatD)
+    UpD = vec(0, 0, 1)
+    
+    ForceVec = vec(0, 1, 0)
+    
+    Accm = 0.9
+    
+    HipHeld = inv(quat(Hip)) * quat(LatD, UpD)
+    TorsoHeld = inv(quat(Torso)) * quat(LatD, UpD)
+    
+    THF = Torso:toLocal(Torso:pos()+LatD)
+    THR = Torso:toLocal(Torso:pos()+RigD)
+    HHF = Hip:toLocal(Hip:pos()+LatD)
+    HHR = Hip:toLocal(Hip:pos()+RigD)
+    
+    N = 1
+    HSP = vec()
+    while(N <= FeetC)
+    {
+        TempD = (Hip:massCenter() - Feet[N, entity]:massCenter())
+        FSP[N, vector] = TempD:dot(LatD)*vec(1,0,0)+TempD:dot(RigD)*vec(0,1,0)+TempD:dot(UpD)*vec(0,0,1)
+        HSP = (HSP * (N - 1) + (FSP[N, vector]))/N
+        N++
+    }
+    
+    HipNat = TotMass/Hip:mass() * 2/3
+    FootHoldForce = HipNat
+    
+    JumpForce = TotMass/Torso:mass() * 32
+    
+    if(Hip & Torso & (FeetC > 1))
+    {
+        hint("Mech ready!", 3)
+        timer("ntrvl", 20)    
+    }
+    else
+    {
+        hint("Error: missing bits! Please Refresh", 3)
+    }
+}
+
+if(clk("ntrvl"))
+{
+    ALIVE = (Hip & Torso & (FeetC >= TotL))
+    #Controls
+    For = ADV["W", number]
+    Back = ADV["S", number]
+    Right = ADV["D", number]
+    Left = ADV["A", number]
+    FiltX = X/4
+    FiltY = Y/4
+    Jump = ADV["Space", number]
+    Boost = ADV["Shift", number]
+    Crouch = ADV["Alt", number]
+    Pod = ADV["Entity", entity]
+    Swap = ADV["R", number]
+    Active = ADV["Active", number]
+    SetYaw = Active * 90
+    CrouchAmount = clamp(CrouchAmount+((Crouch)-(!Crouch))*0.05, 0, 1)
+    #Hip stuff
+    
+    HipPos = Hip:massCenter()
+    HipVel = $HipPos
+    #TIME
+    Q = (abs(For - Back) | abs(Right - Left)) & (CrouchAmount == 0)
+    ForceVec = ((For - Back) * LatD + (Right - Left) * RigD):normalized()
+    if(Q)
+    {
+        ForceVec = ForceVec:normalized()
+    }
+    Adjusted = Accm*(HipVel:setZ(0) + ForceVec * Acceleration)
+    Time = Time + clamp(Adjusted:length() * 360 / (StepS * 2 * pi()), 0, ThrM*(1.5)^Boost) 
+    L = (Adjusted:length() > Thresh)
+    Perc = clamp(Perc + 0.1*(L-!L), 0, 1)*!JTGL
+    
+    SCH = ((Time % (360/FeetC)) < 5) & (Q) & !JTGL
+    if(SCH & ($SCH > 0) & (StepSND != "<NONE>"))
+    {
+        soundPlay(entity():id()+"step", 4, StepSND)
+        soundPitch(entity():id()+"step", Spit-5+random(10))
+    }
+    
+    #Vector Hibbetyjibbety
+    LatD = vec(sin(FiltX), cos(FiltX), 0)
+    RigD = vec(0, 0, -1):cross(LatD)
+    CamD = vec(sin(FiltX)*cos(FiltY), cos(FiltX)*cos(FiltY), sin(FiltY))
+    
+    #-torso dir
+    TDF = CamD - (Torso:toWorld(THF)-Torso:pos()):normalized()
+    TDR = RigD - (Torso:toWorld(THR)-Torso:pos()):normalized()
+    
+    #-hip dir
+    HDF = LatD - (Hip:toWorld(HHF)-Hip:pos()):normalized()
+    HDR = RigD - (Hip:toWorld(HHR)-Hip:pos()):normalized()
+    
+    #-hip/feet pos
+    N = 1
+    HCP = vec()
+    while(N <= FeetC)
+    {
+        if(Feet[N, entity])
+        {
+            TempD = (Hip:massCenter() - Feet[N, entity]:massCenter())
+            FCP[N, vector] = TempD:dot(LatD)*vec(1,0,0)+TempD:dot(RigD)*vec(0,1,0)+TempD:dot(UpD)*vec(0,0,1)
+            TempD = FCP[N, vector] - FSP[N, vector]
+            SC = ((Right | Left) & (!For & !Back)) * LatD*StepS*0.5
+            LefA = StepS*Perc*(Adjusted:normalized()*sin(Time+(360/FeetC)*N)+VMul*UpD*cos(Time+(360/FeetC)*N)) + SC*((N%2)==0) - SC*((N%2)==1)
+            #LefA = StepS*Perc*((For-Back)*LatD*sin(Time+(360/FeetC)*N)+(Right-Left)*RigD*sin(Time+(360/FeetC)*N)+VMul*UpD*cos(Time+(360/FeetC)*N)) + SC*((N%2)==0) - SC*((N%2)==1)
+            LAS[N, vector] = FOP[N, vector]
+            FOP[N, vector] = TempD:x()*LatD+TempD:y()*RigD+TempD:z()*UpD + LefA
+            TempD = FOP[N, vector] - LAS[N, vector]
+            Feet[N, entity]:applyForce((FOP[N, vector] + TempD * 2.5)*FootHoldForce*Perc*Feet[N, entity]:mass())
+            HCP = (HCP * (N - 1) + FCP[N, vector])/N
+            N++
+        }
+        else
+        {
+            FSP:remove(N)
+            FCP:remove(N)
+            LAS:remove(N)
+            FOP:remove(N)
+            Feet:remove(N)
+            FeetC--
+        }
+    }
+    TempD = ((HSP - vec(0, 0, CrouchAmount*MaxH*1/3)) - HCP)
+    HOP = TempD:x()*LatD+TempD:y()*RigD+(TempD:z())*UpD
+    #Forces
+    if(ALIVE)
+    {
+        Hip:applyForce((HOP+$HOP*2.5)*HipNat*Hip:mass())
+        
+        Temp = RigD:cross(CamD)
+    
+        HipCur = quat(Hip) * HipHeld
+        TorsoCur = quat(Torso) * TorsoHeld
+        
+        Hip:applyTorque(Hip:inertia() * TrimHip * 100 * (Hip:toLocal(Hip:pos()+rotationVector(quat(LatD, vec(0, 0, 1))/HipCur))*15-Hip:angVelVector()))
+        Torso:applyTorque(Torso:inertia() * TrimTorso * 100 * (Torso:toLocal(Torso:pos()+rotationVector(quat(CamD, Temp)/TorsoCur))*15-Torso:angVelVector()))
+    }
+    #Hopping
+    if(Jump & ($Jump > 0) & !JTGL)
+    {
+        JTGL = 1
+        if(JumpSND != "<NONE>")
+        {
+            soundPlay(entity():id()+"jump", 2.5, JumpSND)
+            soundPitch(entity():id()+"jump", Jpit-10+random(20))
+        }
+        timer("stopjump", 50)
+    }
+    if(RunSND != "<NONE>")
+    {
+        if(Boost & ($Boost > 0))
+        {
+            soundPlay(entity():id()+"boost", 0, RunSND)
+            soundPitch(entity():id()+"boost", Rpit-10+random(20))
+        }
+        if(!Boost & ($Boost < 0))
+        {
+            soundStop(entity():id()+"boost", 0.5)
+        }
+    }
+    if(JTGL == 1)
+    {
+        TempD = CamD:cross(RigD) * -1
+        Torso:applyForce(TempD * JumpForce * Torso:mass())
+        Hip:applyForce(TempD * JumpForce * Hip:mass())
+        N = 1
+        while(N<=FeetC)
+        {
+            if(Feet[N, entity])
+            {
+                Feet[N, entity]:applyForce(TempD * JumpForce * Feet[N, entity]:mass())
+                N++
+            }
+        }
+    }
+    #Check if I'm still alive!
+    if(Hip & Torso & (FeetC >= TotL))
+    {
+        timer("ntrvl", 20)
+    }
+    else
+    {
+        Pod:hintDriver("Error: missing bits, probably destroyed! Shutting down.", 3)
+        if(DeadSND != "<NONE>")
+        {
+            soundPlay(entity():id()+"dead", 0, DeadSND)
+            soundPitch(entity():id()+"dead", Dpit)
+        }
+    }
+}
+if(clk("stopjump"))
+{
+    timer("resetjump", 2000)
+    JTGL = 2
+}
+if(clk("resetjump"))
+{
+    JTGL = 0
+}
+
+if(last())
+{
+    soundStop(entity():id()+"boost")
+    soundStop(entity():id()+"dead")
+    soundStop(entity():id()+"jump")
+    soundStop(entity():id()+"step")
+} 

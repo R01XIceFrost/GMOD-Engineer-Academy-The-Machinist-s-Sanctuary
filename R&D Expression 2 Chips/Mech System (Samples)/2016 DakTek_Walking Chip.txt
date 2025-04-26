@@ -1,0 +1,441 @@
+@name DakMek 2016
+@inputs [Pod Left Right]:entity CAM:wirelink W A S D Jump Crouch Sprint Alt Active Zoom [L1 L2 L3 L4 L5 L6]:entity
+@outputs JumpFuel FOV Ded JetOn HitLeft HitRight Left:entity Right:entity StepSoundPitch [DeathSound AlarmSound JetSound StepSound]:string
+@persist I CurHipVel:vector CurHipPos:vector CurRightVel:vector CurRightPos:vector CurLeftVel:vector CurLeftPos:vector AbsPerc JumpFuelMax Accel HipMass RightMass LeftMass JumpFootForce:vector JumpHipForce:vector EngineSoundMaxPitch EngineSoundIdlePitch EngineSound:string E2DefaultYaw HipDefaultYaw ThirdDist ThirdPos:vector FirstPos:vector Alt ExtraHeight [DeathSound AlarmSound JetSound StepSound]:string StepSoundPitch LegPieces HipBobMultiplier WalkSpeed Perc JumpFuel MaxJumpFuel CrouchSpeed HipHeight Inertia:angle HipForwardPerc SprintStrideLength SprintStrideHeight ThirdPerson FirstPerson MaxAng MinAng SprintSpeed CrouchDist CrouchHeight TurnSpeed Radius Speed WalkStrideLength WalkStrideHeight X LeftIncrement RightIncrement Force E:entity StandHeight Array:array LeftRelPos:vector RightRelPos:vector
+@trigger
+
+#Source: https://steamcommunity.com/groups/DakTek
+
+#############################################################################################
+#-PLEASE READ THESE NOTES, IT INCLUDES TIPS AND INSTRUCTIONS ON HOW TO USE THE CHIP, THANKS-#
+#############################################################################################
+#############################################################################################
+#Hi, I'm Dakota, creator of this chip.                                                      #
+#I focused on keeping the chip as low OP and low CPU time as possible                       #
+#   while retaining quality animations and stability.                                       #
+#Below are instructions and tips to make your life easier when trying to use it.            #
+#############################################################################################
+#-WIRING KEY--------------------------------------------------------------------------------#
+#############################################################################################
+#Inputs:                                                                                    #
+#Pod: Link to the Pod Controller                                                            #
+#Left: Link to the Left Foot                                                                #
+#Right: Link to the Right Foot                                                              #
+#CAM: Link to the Cam Controller                                                            #
+#W A S D: Link to the WASD values on the Pod Controller                                     #
+#Jump: Link to the key you want to be the jump key on the Pod Controller                    #
+#Crouch: Link to the key you want to be the crouch key on the Pod Controller                #
+#Sprint: Link to the key you want to be the sprint key on the Pod Controller                #
+#Alt: Link to the key you want to be the change view key on the Pod Controller              #
+#Active: Link to the Active value on the Pod Controller                                     #
+#Zoom: Link to the key you want to be the visual zoom key on the Pod Controller             #
+#L1 L2 L3 L4 L5 L6: Link to the leg entities, more info below                               #
+#                                                                                           #
+#Outputs:                                                                                   #
+#JumpFuel: Outputs how much fuel is left in the jump pack                                   #
+#FOV: Link this to the Fov on the cam controller for zooming                                #
+#Ded: Outputs if the mech is dead or not, also links to the StepSounds e2                   #
+#JetOn: Outputs if the Jetpack is on, also links to the StepSounds e2                       #
+#HitLeft: Outputs if the Left foot is contacting the ground, links to the StepSound e2      #
+#HitRight Outputs if the Right foot is contacting the ground, links to the StepSound e2     #
+#Left: Outputs Left foot entity, links to StepSound e2                                      #
+#Right: Outputs Right foot entity, links to StepSound e2                                    #
+#StepSoundPitch: Outputs StepSoundPitch, links to StepSound e2                              #
+#DeathSound: Outputs the Chosen Death sound, links to Stepsound e2                          #
+#AlarmSound: Outputs the Chosen Second Death sound, links to Stepsound e2                   #
+#JetSound: Outputs the Chosen Jetpack sound, links to Stepsound e2                          #
+#StepSound: Outputs the Chosen Step sound, Links to the Stepsound e2                        #
+#############################################################################################
+#-Tips and Instructions---------------------------------------------------------------------#
+#############################################################################################
+#-The E2 must have the arrow pointing forward.                                              #
+#                                                                                           #
+#-The E2 must be welded or weld parented to the Hip.                                        #
+#                                                                                           #
+#-The Hip should be as wide as the distance from the furthest part of                       #
+#    one leg to the other and at least that same distance in the square direction.          #
+#                                                                                           #
+#-It is a good idea to make your torso the same size as the hip though the                  #
+#    torso is not included in this chip, its just good practice.                            #
+#                                                                                           #
+#-Visclip the parts of the Hip that are further out than needed, same with the Torso.       #
+#                                                                                           #
+#-This chip is to be used in conjunction with the "StepSounds" e2, which handles the        #
+#    playing of all sounds, not just stepping. Found here: http://pastebin.com/pN9qhw3P     #
+#                                                                                           #
+#-If you have any issues contact me, Dakota, on steam for help, I may come up with updates. #
+#   http://steamcommunity.com/profiles/76561198035645276/ is where you can find me.         #
+#                                                                                           #
+#-You will need to tweak the values in the editing area below heavily if you want your      #
+#    stride to be perfect, play around with the options for something you like.             #
+#                                                                                           #
+#-Increasing the Sprint and Walk Speed Multipliers too high will cause spazzy walking.      #
+#                                                                                           #
+#-Increasing the Stride heights too far can be noticed by the hip shaking in its roll       #
+#    angle heavily when walking.                                                            #
+#                                                                                           #
+#-Be sure to reset the chip or respawn the mech once its all put together.                  #
+#                                                                                           #
+#-L1-L6 are the leg piece entities. When one of these breaks the mech falls.                #
+#   These are not the feet, but the portions of the leg itself.                             #
+#   You select how many you have, up to a max of 6, lower in the code.                      #
+#   You must have as many pieces wired as that number for the mech to activate.             #
+#                                                                                           #
+#-A Keep Upright Constraint can help immensely with hip stability.                          #
+#                                                                                           #
+#-The mech uses the position of the feet when the chip is reset as the base position for the#
+#   feet. That said, you should always start with a fresh, frozen build when editing the e2.#
+#############################################################################################
+#-Constraint Tutorial-----------------------------------------------------------------------#
+#############################################################################################
+#-Always have nocollide checked when parenting so that the rangers can filter props.        #
+#                                                                                           #
+#-I recommend using ADV ballsocket to connect the legs to the hip and the leg portions to   #
+#    each other.                                                                            #                  #
+#                                                                                           #
+#-Make sure the y and z min and max are -0.1 and 0.1 respectively.                          #
+#                                                                                           #
+#-The x min and max value should be changed based on the mech walking type, -180 to 180     #
+#    will give you a full circle of motion and is good for testing.                         #
+#                                                                                           #
+#To connect the feet you must use ADV ballsocket to connect the foot to the lower leg.      #
+#    Settings should be x: -40,45; y: -0.1,0.1; z: -0.1,0.1.                                #
+#                                                                                           #
+#-Don't forget to nocollide the connected leg portions to each other.                       #
+#                                                                                           #
+#-Keep the leg portion weight lower than the foot weight, usually no more than half.        #
+#    If you wish to armor the leg portions more, add extra armor plates and parent them on. #
+#############################################################################################
+
+
+if(duped()||dupefinished()){reset()}
+if(first()){
+    runOnLast(1)
+    rangerFilter(entity():getConstraints())
+    rangerPersist(1)
+    E=entity():isWeldedTo()
+    rangerFilter(E)
+    rangerFilter(players())
+   
+    ####################
+    #Begin Editing Here#
+    ####################
+    
+    ExtraHeight = 0 #Increases or Decreases normal stance height 
+    StandHeight=abs(E:pos():z()-Left:pos():z())+ExtraHeight #Don't change this, it auto adjusts for the mech, add extra height as needed
+    CrouchHeight=StandHeight*0.60 #How high off the ground the hip is when crouching (Just Edit the multiplier after StandHeight)
+    
+    Force = 10 #Skeleton Holding Force (Usually you shouldn't change this ever)
+    Radius = 70 #Stride Radius
+    WalkSpeed = 0.5 #walk speed multiplier
+    SprintSpeed = 0.75 #sprint speed multiplier
+    WalkStrideLength = 2.5 #Stride Length Multipler
+    WalkStrideHeight = 0.5 #Stride Height Multipler
+    SprintStrideLength = 2.0 #Sprint Stride Length Multipler
+    SprintStrideHeight = 0.3 #Sprint Stride Height Multipler
+    TurnSpeed = 2.5 #Turn Speed Multiplier
+    HipForwardPerc = 0.75 #How far along the Hip stays with the Feet (0 leaves the hip behind while 1 puts it ahead of the feet)
+    HipBobMultiplier = 0.4 #How much the hip bobs
+    CrouchSpeed = 2.5 #How fast does it crouch?
+    LegPieces = 4 #how many pieces make up the legs?
+    FirstPos = vec(0,12,25) #camera position for first person view, relative to seat
+    ThirdPos = vec(0,0,150) #Camera position for third person view, relative to the Hip
+    ThirdDist = 500 #Camera distance from third person view
+
+    #Sounds!
+    StepSound = "physics/metal/metal_barrel_impact_hard5.wav"
+    StepSoundPitch = 90
+    JetSound = "acf_extra/airfx/orca_fire.wav"
+    AlarmSound = "acf_extra/tankfx/gnomefather/17pdr1.wav"
+    DeathSound = "acf_extra/vehiclefx/engines/gnomefather/is7down.wav"
+    EngineSound = "acf_extra/tankfx/tankinside4.wav"
+    EngineSoundIdlePitch = 100
+    EngineSoundMaxPitch = 200
+ 
+    ###################
+    #Stop Editing Here#
+    ###################
+ 
+    MaxAng = 75
+    MinAng = 10
+    Speed = 25 #Don't touch this or it breaks things, edit the multipliers up top instead
+    HipHeight = StandHeight
+    HipDefaultYaw = E:angles():yaw()
+    if(abs(round(HipDefaultYaw)-abs(round(entity():angles():yaw())))==90){E2DefaultYaw = -entity():angles():yaw()}
+    if(abs(abs(round(HipDefaultYaw))-abs(round(entity():angles():yaw())))==0){E2DefaultYaw = entity():angles():yaw()}
+    X = E2DefaultYaw
+    Inertia = shiftL(ang(E:inertia())):setYaw(0)
+    LeftRelPos = entity():toLocal(Left:pos()-vec(0,0,ExtraHeight))
+    RightRelPos = entity():toLocal(Right:pos()-vec(0,0,ExtraHeight))
+    Array = entity():getConstraints()
+    I = 0
+    HipMass = E:mass()
+    RightMass = Right:mass()
+    LeftMass = Left:mass()
+    timer("interval1",50)
+    timer("dedcheck",1000)
+    JumpFootForce = E:mass()*vec(0,0,-gravity()/10)
+    JumpHipForce = E:mass()*vec(0,0,4*(gravity()/10))
+    Accel=0.1
+    JumpFuelMax = 100
+    soundPurge()
+    E:soundPlay(1,0,EngineSound)    
+}
+
+if(clk("interval1")){
+    if(I < Array:count()){
+        I += 1
+        Array[I,entity]:propGravity(0)
+    }
+    if(I == Array:count()){
+        I += 1
+       print("Mech Ready")  
+    }
+    
+    if(Ded == 0){
+        AbsPerc = abs(Perc)
+        CurHipVel = E:vel()
+        CurHipPos = E:pos()
+        CurRightVel = Right:vel()
+        CurRightPos = Right:pos()
+        CurLeftVel = Left:vel()
+        CurLeftPos = Left:pos()
+        
+        #crouch stuff
+        if(!Jump){
+            if(Crouch){
+                if(HipHeight>CrouchHeight){HipHeight-=CrouchSpeed}
+            }
+            else{
+                if(HipHeight<StandHeight){HipHeight+=CrouchSpeed}
+            }
+        }
+         
+        #sprint and acceleration stuff
+        SpeedVal = -Speed
+        if(Sprint){
+            MaxSpeed=SprintSpeed
+            StrideLength=SprintStrideLength
+            StrideHeight=SprintStrideHeight}
+        else{
+            MaxSpeed=WalkSpeed
+            StrideLength=WalkStrideLength
+            StrideHeight=WalkStrideHeight}
+        
+        if(W&Perc>=0){
+            if(Perc == 0){Perc+=Accel}
+            else{
+                if(Perc < 1*MaxSpeed){
+                Perc += (Accel/Perc)*Accel
+                }
+            }
+        }
+        if(S&Perc<=0){
+            if(Perc == 0){Perc-=Accel}
+            else{
+                if(Perc > -1*MaxSpeed){
+                Perc += (Accel/Perc)*Accel
+                }
+            }
+        }
+        if((!W&!S)|(S&Perc>0)|(W&Perc<0)|(AbsPerc>MaxSpeed)){
+            if(Perc<0){Perc -= (Perc/Accel)*(Accel^2)}
+            if(Perc>0){Perc -= (Perc/Accel)*(Accel^2)}
+            if(AbsPerc <= Accel){Perc=0}
+        }
+         
+        #turning stuff
+        X = X + ((A-D)*TurnSpeed)
+        if(acos(vec(1,0,0):rotate(0,X,0):dot(vec(1,0,0):rotate(0,E:angles():yaw(),0)))>30){X=E:angles():yaw()}
+        ANG=ang(0,X,0)
+         
+        #Foot default position
+        RightPos = entity():pos()+(RightRelPos-vec(0,0,HipHeight-StandHeight)):rotate(ANG-ang(0,E2DefaultYaw - HipDefaultYaw,0))
+        LeftPos = entity():pos()+(LeftRelPos-vec(0,0,HipHeight-StandHeight)):rotate(ANG-ang(0,E2DefaultYaw - HipDefaultYaw,0))
+         
+        #position and terrain detection
+        GroundRay=rangerOffset(100000,entity():isWeldedTo():pos(),vec(0,0,-1))
+        POS=GroundRay:pos()
+        TerrainAngle=ang(90,0,0)+entity():toLocal(GroundRay:hitNormal():toAngle())
+         
+        #jumpin stuff
+        Height = GroundRay:distance()
+         
+        if((Jump&JumpFuel>0)|Height>HipHeight*2){
+            Right:applyForce(((entity():toWorld(RightRelPos)-CurRightPos))*HipMass)
+            Left:applyForce(((entity():toWorld(LeftRelPos)-CurLeftPos))*HipMass)    
+            Left:applyForce(-CurLeftVel*HipMass*vec(0.1,0.1,0))
+            Right:applyForce(-CurRightVel*HipMass*vec(0.1,0.1,0))  
+        }
+         
+        if(Jump&JumpFuel>0){
+            JumpFuel-=2.5
+            if(JumpFuel>0){
+                E:applyForce(JumpHipForce*1.5)
+                JetOn=1
+            }
+            Right:applyForce(JumpFootForce)
+            Left:applyForce(JumpFootForce)
+            }
+        if(!Jump|(Jump&JumpFuel<=0)){JetOn=0}
+           
+        if(Height>HipHeight*2&(!Jump|(Jump&JumpFuel<=0))){Right:applyForce(HipMass*vec(0,0,-gravity()/2)),Left:applyForce(HipMass*vec(0,0,-gravity()/2))}
+        if(Height<HipHeight*2&!Jump){if(JumpFuel<JumpFuelMax){JumpFuel += 0.5}}
+         
+        #walking stuff
+        if((!Jump|(Jump&JumpFuel<=0))&Height<HipHeight*2){
+            if(inrange(TerrainAngle:yaw(),90,180)){Climbing=1, StrideModifier = (TerrainAngle:yaw()/180)-0.5}
+            if(inrange(TerrainAngle:yaw(),-180,-90)){Climbing=1, StrideModifier = (TerrainAngle:yaw()/-180)-0.5}
+            if(inrange(TerrainAngle:yaw(),0,90)){Falling=1, StrideModifier = -(1-(TerrainAngle:yaw()/90))*0.5}
+            if(inrange(TerrainAngle:yaw(),-90,0)){Falling=1, StrideModifier = -(1-(TerrainAngle:yaw()/-90))*0.5}
+           
+            if((W|S)|AbsPerc>0){
+                if(Perc>0){
+                    RightIncrement+=1*AbsPerc
+                    LeftIncrement=RightIncrement+180
+               
+                    if(TerrainAngle:pitch()*StrideModifier*4<=MinAng){
+                        ForwardVec=vec(-SpeedVal*2*Perc*StrideLength,0,0):rotate(ANG-ang(0,E2DefaultYaw - HipDefaultYaw,0))
+                    }
+               
+                    if(TerrainAngle:pitch()*StrideModifier*4>MinAng & TerrainAngle:pitch()*StrideModifier*4<MaxAng){
+                        ForwardVec=vec(-SpeedVal*2*Perc*StrideLength,0,0):rotate(ANG-ang(TerrainAngle:pitch()*StrideModifier*4,E2DefaultYaw - HipDefaultYaw,0))
+                    }
+               
+                    if(TerrainAngle:pitch()>=MaxAng){
+                        ForwardVec=vec(0,0,0)
+                        StrideHeight = 0
+                        StrideLenght = 0
+                    }
+                }
+           
+                if(Perc<0){
+                    RightIncrement-=1*AbsPerc
+                    LeftIncrement=RightIncrement+180
+                    if(RightIncrement < -360){RightIncrement = 0}
+                    if(TerrainAngle:pitch()*StrideModifier*4<=MinAng){
+                        ForwardVec=vec(-SpeedVal*2*Perc*StrideLength,0,0):rotate(ANG-ang(0,E2DefaultYaw - HipDefaultYaw,0))
+                    }
+               
+                    if(TerrainAngle:pitch()*StrideModifier*4>MinAng & TerrainAngle:pitch()*StrideModifier*4<MaxAng){
+                        ForwardVec=vec(-SpeedVal*2*Perc*StrideLength,0,0):rotate(ANG-ang(TerrainAngle:pitch()*StrideModifier*4,E2DefaultYaw - HipDefaultYaw,0))
+                    }
+               
+                    if(TerrainAngle:pitch()>=MaxAng){
+                        ForwardVec=vec(0,0,0)
+                        StrideHeight = 0
+                        StrideLenght = 0}
+                }
+           
+                RightStride = (vec(0,cos(RightIncrement*SpeedVal)*Radius*StrideLength,sin(RightIncrement*SpeedVal)*Radius*StrideHeight+(Radius/4)))
+                LeftStride = (vec(0,cos(LeftIncrement*SpeedVal)*Radius*StrideLength,sin(LeftIncrement*SpeedVal)*Radius*StrideHeight+(Radius/4)))
+           
+                RightStride=RightStride:rotate(ANG-ang(0,90+E2DefaultYaw - HipDefaultYaw,0))+ForwardVec*2/HipForwardPerc
+                LeftStride=LeftStride:rotate(ANG-ang(0,90+E2DefaultYaw - HipDefaultYaw,0))+ForwardVec*2/HipForwardPerc
+           
+                HoverPos=vec((CurHipPos):x(),(CurHipPos):y(),HipHeight+POS:z())    
+                LeftForce = ((LeftPos-CurLeftPos)+((LeftStride+((ForwardVec*-HipForwardPerc)*2/HipForwardPerc))*clamp(AbsPerc,0,1))-CurLeftVel*vec(1.0,1.0,1)*0.1)
+                RightForce = ((RightPos-CurRightPos)+((RightStride+((ForwardVec*-HipForwardPerc)*2/HipForwardPerc))*clamp(AbsPerc,0,1))-CurRightVel*vec(1.0,1.0,1)*0.1)
+                Bob = HipBobMultiplier*((LeftForce + RightForce):z()/2)  
+           
+                E:applyForce((HoverPos+vec(0,0,-Bob*2)-CurHipPos+((ForwardVec)*clamp(AbsPerc,0,1))-CurHipVel*vec(1.0,1.0,1)*0.1)*HipMass*Force)
+                Right:applyForce(RightForce*RightMass*Force)
+                Left:applyForce(LeftForce*LeftMass*Force)
+         
+            }else{
+                if(A|D){
+                RightIncrement+=0.5
+                LeftIncrement=RightIncrement+180
+                   
+                RightStride = vec(0,0,sin(RightIncrement*SpeedVal)*Radius*StrideHeight*0.5+(Radius/4))
+                LeftStride = vec(0,0,sin(LeftIncrement*SpeedVal)*Radius*StrideHeight*0.5+(Radius/4))
+         
+                RightStride=RightStride:rotate(ANG-ang(0,90,0))
+                LeftStride=LeftStride:rotate(ANG-ang(0,90,0))
+         
+                LeftForce = ((LeftPos-CurLeftPos)+LeftStride-CurLeftVel*0.1)
+                RightForce = ((RightPos-CurRightPos)+RightStride-CurRightVel*0.1)
+                Bob = HipBobMultiplier*((LeftForce + RightForce):z()/2)  
+           
+                HoverPos=vec((CurHipPos):x(),(CurHipPos):y(),HipHeight+POS:z())
+                E:applyForce((HoverPos+vec(0,0,-Bob*2)-CurHipPos-CurHipVel*0.1)*HipMass*Force)
+                Right:applyForce(RightForce*RightMass*Force)
+                Left:applyForce(LeftForce*LeftMass*Force)
+                }
+                else{
+                LeftDistRange=rangerOffset(Radius,Left:boxCenterW(),vec(0,0,-1))
+                RightDistRange=rangerOffset(Radius,Right:boxCenterW(),vec(0,0,-1))
+                
+                Bob = HipBobMultiplier*((LeftForce + RightForce):z()/2)             
+                HoverPos=vec((CurLeftPos:x()+CurRightPos:x())/2,(CurLeftPos:y()+CurRightPos:y())/2,HipHeight+(POS:z()+CurLeftPos:z()+CurRightPos:z())/3)
+                E:applyForce((HoverPos+vec(0,0,-Bob*2)-CurHipPos-CurHipVel*0.1)*HipMass*Force)
+                HoverLeftPos=vec(((CurHipPos-LeftDistRange:pos()):x())+LeftDistRange:pos():x(),((CurHipPos-LeftDistRange:pos()):y())+LeftDistRange:pos():y(),LeftDistRange:pos():z())#LeftDistRange:pos()
+                HoverRightPos=vec(((CurHipPos-RightDistRange:pos()):x())+RightDistRange:pos():x(),((CurHipPos-RightDistRange:pos()):y())+RightDistRange:pos():y(),RightDistRange:pos():z())#RightDistRange:pos()
+                CurHoverLeftPos=vec(((CurHipPos-CurLeftPos):x())+CurLeftPos:x(),((CurHipPos-CurLeftPos):y())+CurLeftPos:y(),CurLeftPos:z())#LeftDistRange:pos()
+                CurHoverRightPos=vec(((CurHipPos-CurLeftPos):x())+CurLeftPos:x(),((CurHipPos-CurLeftPos):y())+CurLeftPos:y(),CurLeftPos:z())#RightDistRange:pos()
+                CurHipPos+entity():toLocal(Left:pos()-vec(0,0,ExtraHeight))
+                Right:applyForce( clamp((HoverRightPos-CurHoverRightPos)*RightMass*Force/2,vec(0,0,-25000),vec(0,0,-25000)) )
+                Left:applyForce( clamp((HoverLeftPos-CurHoverLeftPos)*LeftMass*Force/2,vec(0,0,-25000),vec(0,0,-25000)) )
+                }
+            }  
+        } 
+        Q=quat(ANG)/quat(E)
+        Torque=E:toLocal(rotationVector(Q) + CurHipPos)
+        Torque=((Torque*1500) -E:angVelVector()* 30)*E:inertia()
+        E:applyTorque(Torque)
+        E:applyAngForce((-E:angles() * 500 - E:angVel() * 30) * Inertia)
+        
+        #SOUNDS!
+        rangerPersist(1)
+        LeftRanger=rangerOffset((Radius*StrideHeight*clamp(AbsPerc,0,1))-1,Left:boxCenterW(),vec(0,0,-1))
+        RightRanger=rangerOffset((Radius*StrideHeight*clamp(AbsPerc,0,1))-1,Right:boxCenterW(),vec(0,0,-1))
+        HitLeft = LeftRanger:hit()
+        HitRight = RightRanger:hit()
+        soundPitch(1,clamp(EngineSoundIdlePitch*(abs(Perc/2)+1),EngineSoundIdlePitch,EngineSoundMaxPitch))
+    
+    }
+    if(changed(Ded)&Ded==1){
+        for(I = 1, Array:count()){Array[I,entity]:propGravity(1)}
+    }
+    if(last()){
+        for(I = 1, Array:count()){Array[I,entity]:propGravity(1)}
+    }
+    timer("interval1",50)
+}
+
+if(clk("dedcheck")){
+    if(L1){Piece1=1}else{Piece1=0}
+    if(L2){Piece2=1}else{Piece2=0}
+    if(L3){Piece3=1}else{Piece3=0}
+    if(L4){Piece4=1}else{Piece4=0}
+    if(L5){Piece5=1}else{Piece5=0}
+    if(L6){Piece6=1}else{Piece6=0}
+    Pieces = Piece1+Piece2+Piece3+Piece4+Piece5+Piece6
+    if((Pieces < LegPieces)|!Pod|!Left|!Right){Ded = 1}else{Ded=0}
+    timer("dedcheck",1000)
+}
+
+#Camera Stuff
+
+if(ThirdPerson == 0 & FirstPerson == 0 & Alt == 0){FirstPerson = 1, ThirdPerson = 0}
+if(changed(Alt)&Alt){
+    if(ThirdPerson==1){FirstPerson = 1, ThirdPerson = 0}
+    elseif(FirstPerson==1){FirstPerson = 0, ThirdPerson = 1}
+}
+ 
+if(ThirdPerson){
+    CAMPOSITION=entity():toWorld(ThirdPos)
+    CAMDIST=ThirdDist
+}
+   
+if(FirstPerson){    
+    CAMPOSITION=Pod:toWorld(FirstPos)
+    CAMDIST=0
+}
+ 
+CAM["Activated", number] = Active
+CAM["Position", vector] = CAMPOSITION
+CAM["Distance", number] = CAMDIST
+CAM["Parent", entity] = Pod
+ 
+if(Zoom){FOV=25}else{FOV=90}

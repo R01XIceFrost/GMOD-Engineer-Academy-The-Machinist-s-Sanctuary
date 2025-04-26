@@ -1,0 +1,70 @@
+@name Mech Torso stuff
+@inputs Torso:entity Pod:wirelink Cam:wirelink Ded
+@outputs
+@persist PLSWORKANGLE:angle AngleOffset:angle RotationSpeed Elevation Depression FlipPitch FlipRoll SwapRollAndPitch
+@trigger 
+
+#Source: https://steamcommunity.com/groups/DakTek
+
+interval(1)
+ 
+#NOTES
+#Make this E2 point forward
+#This should be welded to the HIP
+#The e2 finds the angle of the torso when you refresh it
+#Only refresh the e2 when you have the torso angle where you want it
+#Make sure to refresh the e2 after spawning it
+#Wire Ded to the Ded output on the DakMek 2016 chip
+ 
+if(first()|dupefinished()){
+AngleOffset=entity():toLocal(Torso:angles())
+ 
+############
+#EDIT START#
+############
+ 
+RotationSpeed = 15 #Speed of Rotation
+Elevation = 20 #max Pitch
+Depression = 20 #min Pitch
+FlipPitch = 0
+SwapRollAndPitch = 0
+FlipRoll = 0
+PLSWORKANGLE = ang(-0,0,0) #edit this when things aren't turned right, to make things not always be terrible, try using plates more than blocks or random props, please.
+ 
+###########
+#EDIT STOP#
+###########
+}
+ 
+Active = Pod["Active",number]
+ 
+ 
+if(Ded==0){
+    if(Active==1){
+        CA = Cam["CamAng", angle]
+        if(FlipPitch){Pitch = -CA:pitch()}else{Pitch = CA:pitch()}
+        if(FlipRoll){Roll = -CA:roll()}else{Roll = CA:roll()}
+        if(SwapRollAndPitch){CAMANG = ang(Roll,CA:yaw(),Pitch)}else{CAMANG = ang(Pitch,CA:yaw(),Roll)}
+        TorsoPos = Torso:pos()
+        TorsoAng = Torso:toLocal(CAMANG+AngleOffset)*ang(1,1,1)
+        ANGLE = clamp(TorsoAng,ang(-RotationSpeed),ang(RotationSpeed))
+        YAW = abs(TorsoAng:yaw())
+        if(YAW >45){ANGLE = clamp(ANGLE,ang(-180,-180,-180),ang(180,180,180))*ang(1,1,1)
+        }else{ANGLE = clamp(TorsoAng,ang(-RotationSpeed),ang(RotationSpeed))}
+        if(SwapRollAndPitch){CLAMPANG = clamp(Torso:toWorld(ANGLE),ang(0 ,-180,-min(Elevation,abs(CAMANG:roll()))),ang(0,180,min(Depression,abs(CAMANG:roll()))))}
+        else{CLAMPANG = clamp(Torso:toWorld(ANGLE),ang(-min(Elevation,abs(CAMANG:pitch())) ,-180,0),ang(min(Depression,abs(CAMANG:pitch())),180,0))}
+        Torso:applyAngForce((Torso:toLocal(CLAMPANG+PLSWORKANGLE) * 250 - Torso:angVel() * 30) * shiftL(ang(Torso:inertia())))
+    }
+ 
+    if(Active==0){
+        CAMANG = entity():angles()
+        TorsoPos = Torso:pos()
+        TorsoAng = Torso:toLocal(CAMANG+AngleOffset)*ang(1,1,1)
+        ANGLE = clamp(TorsoAng,ang(-RotationSpeed),ang(RotationSpeed))
+        YAW = abs(TorsoAng:yaw())
+        if(YAW >45){ANGLE = clamp(ANGLE,ang(-180,-180,0),ang(180,180,0))*ang(1,1,1)
+        }else{ANGLE = clamp(TorsoAng,ang(-RotationSpeed),ang(RotationSpeed))}
+        CLAMPANG = clamp(Torso:toWorld(ANGLE),ang(-min(Elevation,abs(CAMANG:pitch())) ,-180,0),ang(min(Depression,abs(CAMANG:pitch())),180,0))    
+        Torso:applyAngForce((Torso:toLocal(CLAMPANG+PLSWORKANGLE) * 250 - Torso:angVel() * 30) * shiftL(ang(Torso:inertia())))
+    }
+}
