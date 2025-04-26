@@ -1,0 +1,151 @@
+@name E2_Helicopter_V1.0
+@inputs [Base Seat]:entity EyePod:vector2 CamController:wirelink [MainRotor TailRotor]:entity
+@outputs Active
+@persist KEYS:table Driver:entity [Vel LocalEyePos CurrEyePos]:vector MR_Speed TR_Speed MR_Ang TR_Ang
+@persist INVERTED UPFORCE ALTITUDE_DAMPING [PYR_TORQUE PYR_DAMPING DRAG]:vector LIFT DOWNFORCE_PCT VIEW_BOBBING_MAX TAIL_OFFSET TAIL_OFFSET_POS:vector 
+@persist TAIL_FEEDBACK VIEW_BOBBING_SPEED MAIN_ROTOR_RADIUS TAIL_ROTOR_RADIUS ROTOR_SPEED ENGINE_SOUND:string
+@persist MR_Holo TR_Holo
+@trigger 
+ 
+#Source: https://youtu.be/TZ4j98hwHUg?si=6EHRhT7pyZUf83M0
+ 
+if (first() | dupefinished())
+{
+    # # #          # # #     
+    # # # SETTINGS # # #
+    # # #          # # # 
+    INVERTED = 1                        # Is the pitch inverted?
+    UPFORCE = 2.3                       # Strength of the main rotor in G's (must be higher than 1 for it to get off the ground)
+    ALTITUDE_DAMPING = 5e-3             # Damping of the vertical movement
+    LIFT = 3e-5                         # Lift of the pseudo-wing caused by the propeller (helps turning)
+    DOWNFORCE_PCT = 0.7                 # Percentage of lift applied on the top side of the rotor
+    DRAG = vec(7e-7, 3e-6, 1e-6)        # Drag in the forward, sideways and upwards directions
+    TAIL_OFFSET = 2.0e+2                # How far back the tail rotor (only has an effect on physics)
+    TAIL_FEEDBACK = 6.0e-5              # How strong the straghtening power of the tail is
+    PYR_TORQUE = vec(3e1,3e1,3e1)       # Torque of the rotation
+    PYR_DAMPING = vec(1e+0,1e+0,1e+0)   # Damping of the rotation
+ 
+    VIEW_BOBBING_SPEED = 2e-1           # How fast the head can swing in units per tick
+    VIEW_BOBBING_MAX = 1e+1             # Max amount of head swing
+    MAIN_ROTOR_RADIUS = 1.2e+2          # The radius of the main rotor
+    TAIL_ROTOR_RADIUS = 3.7e+1          # The radius of the main rotor
+    ROTOR_SPEED = 2e+1                  # Base rotor speed in degrees/tick
+    ENGINE_SOUND = "NPC_AttackHelicopter.Rotors"
+ 
+    ###########################################################
+    # You probably shouldn't mess with stuff below this line! #
+    ###########################################################
+ 
+    runOnTick(1)
+    interval(1000)
+    Base:propDrag(0)
+ 
+    TAIL_OFFSET_POS = vec(-TAIL_OFFSET, 0, 0)
+    holoCreate(1, Base:toWorld(TAIL_OFFSET_POS))
+    holoAng(1, Base:angles())
+    holoParent(1, Base)
+ 
+    KEYS = table()  # Table where the current pressed keys are stored
+ 
+    # Holos
+    MR_Holo = 1
+    holoCreate(MR_Holo, MainRotor:pos(), vec(1), Base:angles())
+    holoModel(MR_Holo, "models/holograms/hq_cylinder.mdl")
+    holoScale(MR_Holo, vec(MAIN_ROTOR_RADIUS / 12, MAIN_ROTOR_RADIUS / 12, 0.2))
+    holoColor(MR_Holo, vec(40))
+    holoParent(MR_Holo, Base)
+    MainRotor:parentTo(holoEntity(MR_Holo))
+    TR_Holo = 2
+    holoCreate(TR_Holo, TailRotor:pos(), vec(1), Base:toWorld(ang(0,0,90)))
+    holoModel(TR_Holo, "models/holograms/hq_cylinder.mdl")
+    holoScale(TR_Holo, vec(TAIL_ROTOR_RADIUS / 12, TAIL_ROTOR_RADIUS / 12, 0.2))
+    holoColor(TR_Holo, vec(40))
+    holoParent(TR_Holo, Base)
+    TailRotor:parentTo(holoEntity(TR_Holo))
+}
+elseif (clk())
+{
+    if (Driver != Seat:driver())
+    {
+        KEYS = table()
+        runOnKeys(Driver, 0)
+        Driver = Seat:driver()
+        if (Driver)
+        { 
+            Active = (Driver != noentity())
+            runOnKeys(Driver, 1)
+            LocalEyePos = Base:toLocal(Driver:shootPos())
+            CurrEyePos = LocalEyePos
+            CamController["Angle", angle] = ang(0, 0, 0)
+            Base:soundPlay(1, 0, ENGINE_SOUND)
+        }
+        else
+        {
+            soundStop(1, 2)
+        }
+    }
+    interval(1000)
+}
+elseif (keyClk(Driver))
+{
+    local Push = keyClk(Driver)
+    local Pressed = keyClkPressed()
+    KEYS[Pressed, number] = max(Push, 0)
+}
+elseif (tickClk())
+{
+    if (Driver)
+    {
+        # # #         # # #
+        # # # PHYSICS # # #
+        # # #         # # # 
+        local Collective = KEYS["w", number] - KEYS["s", number]
+        local Pitch = clamp(EyePod:y(), -1, 1) * (-1+2*INVERTED)
+        local Yaw = KEYS["a", number] - KEYS["d", number]
+        local Roll = clamp(EyePod:x(), -1, 1)
+ 
+        # Main rotor thrust
+        local Thrust = clamp(1 + (Collective - Base:vel():z()*ALTITUDE_DAMPING*(1-0.7*abs(Collective))) * (UPFORCE - 1), 0, UPFORCE)
+        local ThrustStrength = Base:mass() * -propGravity():z() * tickInterval()
+        Base:applyForce(Thrust * ThrustStrength * Base:up())
+        # Main rotor "wing"
+        Vel = Base:vel()
+        local VelLength = Vel:length()
+        local DotProdUp = Base:up():dot(Vel) * VelLength
+        DotProdUp *= (DotProdUp > 0 ? DOWNFORCE_PCT : 1)
+        Base:applyForce(-DotProdUp * LIFT * Base:mass() * Base:up())
+        # Drag 
+        local DotProdForward = Base:forward():dot(Vel) * VelLength
+        local DotProdRight = Base:right():dot(Vel) * VelLength
+        Base:applyForce(-(DRAG:x()*DotProdForward*Base:forward() + DRAG:y()*DotProdRight*Base:right() + DRAG:z()*DotProdUp*Base:up()) * Base:mass())
+        # Tail feedback
+        local TailFeedback = DotProdRight * TAIL_FEEDBACK
+        Base:applyOffsetForce(-TailFeedback * Base:right(), Base:toWorld(TAIL_OFFSET_POS))
+        # Rotational forces
+        local AngVel = Base:angVel()
+        local Inertia = Base:inertia()
+        local YawThrust = Yaw * PYR_TORQUE:y() - AngVel:yaw() * PYR_DAMPING:y()*(1-0.7*abs(Yaw))
+        Base:applyTorque((Pitch * PYR_TORQUE:x() - AngVel:pitch() * PYR_DAMPING:x()*(1-0.7*abs(Pitch))) * vec(0,1,0) * Inertia:y())
+        Base:applyTorque(YawThrust * vec(0,0,1) * Inertia:z())
+        Base:applyTorque((Roll * PYR_TORQUE:z() - AngVel:roll() * PYR_DAMPING:z()*(1-0.7*abs(Roll))) * vec(1,0,0) * Inertia:x())
+ 
+        # Head swing cause by acceleration
+        local TargetHeadPos = LocalEyePos - $Vel * VIEW_BOBBING_MAX * tickInterval()
+        CurrEyePos += clamp(TargetHeadPos - CurrEyePos, 0, VIEW_BOBBING_SPEED)
+        CamController["Position", vector] = CurrEyePos
+        # Rotor spin
+        MR_Speed += (Thrust / UPFORCE - MR_Speed) * 1e-2
+        TR_Speed = TR_Speed + (YawThrust / PYR_TORQUE:y() - TR_Speed + 1.2)* 1e-2
+    }
+    else
+    {
+        MR_Speed *= 0.99
+        TR_Speed *= 0.99
+    }
+    MR_Ang = (MR_Ang + MR_Speed * ROTOR_SPEED * 2)%360
+    TR_Ang = (TR_Ang + TR_Speed * ROTOR_SPEED)%360
+    holoAng(MR_Holo, Base:toWorld(ang(0,MR_Ang,0)))
+    holoAlpha(MR_Holo, 200 * MR_Speed)
+    holoAng(TR_Holo, Base:toWorld(ang(TR_Ang,0,90)))
+    holoAlpha(TR_Holo, 200 * (TR_Speed-0.6))
+}
