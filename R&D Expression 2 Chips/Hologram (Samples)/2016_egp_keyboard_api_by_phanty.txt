@@ -3,6 +3,8 @@
 @persist Count Caps Txt Text:table Keyboard SKeyboard
 @trigger 
 
+#Source: https://youtu.be/kJ8nR2GcSEM?si=2Vzo4u4kYLzSYtTC
+
 function number wirelink:egpHoverBox(Index,User:entity){
         local Cursor = This:egpCursor(User)
     local Pos = This:egpPos(Index)
