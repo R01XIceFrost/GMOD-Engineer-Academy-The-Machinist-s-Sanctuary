@@ -1,0 +1,2309 @@
+@name Holo Maker 3
+@inputs X Y Use OnScreen Link:wirelink User:entity On
+@outputs Plate:entity Cube:entity Cubeangle:angle Position:vector Angle:angle Distance:vector Quadrant:vector2 Ops 
+@persist Hologram:array Holosize:array Holoangle:array Maindex:array Mindex:array Holocolor:array Holoposition:array
+@persist Modelname:array Model:array Materialname:array Material:array Changerate:array Temp:array 
+@outputs Temp:array Filename:string Clk Reset Save Generate Load Copy Paste N M I Rate Maxholos Menu Selected Power
+
+#Source: https://youtu.be/U_99813bNmA?si=YY969vHyptoQ-EUR
+
+if(first()|duped()) {
+    Clk = 1
+    Reset = 1
+    Menu = 1
+    N = 1
+    Modelindex = 1
+    Rate = 5
+    Plate = entity():isWeldedTo()
+    findByModel("models/hunter/blocks/cube075x075x025.mdl")
+    findSortByDistance(entity():pos())
+    Cube = find()
+    Cubeangle = Cube:angles()
+    if(Cube:isFrozen() == 1) {
+        hint("No-Collide (everything) and Unfreeze the floating props to enable them to follow you.",10)
+    }
+    if(egpMaxObjects() >= 257) {
+        print("=====Welcome to Holo Maker V3 by Holywiremod======\n|=Useful Info:\n|-Turn Key to start\n|-[USE] or [Attack1] Key - Push buttons\n|-[Attack2] or [Right Click] - Remove currently active Hologram\n|-Type /cmd for Commands List")
+        Maxholos = holoRemainingSpawns()
+        print("|=Max Holograms Allowed: "+Maxholos)
+        hint("Read the Chat Box for important key bindings.",10)
+    }
+    else {
+        print("Error: Cannot use Holo Maker V3. EGP Objects [257] exceed server limit ["+egpMaxObjects()+".] Please try another server/singleplayer.")
+        selfDestructAll()   
+    }
+    runOnList(1)
+    runOnFile(1)
+    Temp = array(
+    )
+    Hologram = array(
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+    )
+    Holosize = array(
+        vec(1,1,1),
+        vec(1,1,1),
+        vec(1,1,1),
+        vec(1,1,1),
+        vec(1,1,1),
+        vec(1,1,1),
+        vec(1,1,1),
+        vec(1,1,1),
+        vec(1,1,1),
+        vec(1,1,1),
+        vec(1,1,1),
+        vec(1,1,1),
+        vec(1,1,1),
+        vec(1,1,1),
+        vec(1,1,1),
+        vec(1,1,1),
+        vec(1,1,1),
+        vec(1,1,1),
+        vec(1,1,1),
+        vec(1,1,1)
+    )
+    Holoangle = array(
+        ang(vec()),
+        ang(vec()),
+        ang(vec()),
+        ang(vec()),
+        ang(vec()),
+        ang(vec()),
+        ang(vec()),
+        ang(vec()),
+        ang(vec()),
+        ang(vec()),
+        ang(vec()),
+        ang(vec()),
+        ang(vec()),
+        ang(vec()),
+        ang(vec()),
+        ang(vec()),
+        ang(vec()),
+        ang(vec()),
+        ang(vec()),
+        ang(vec())
+    )
+    Holoposition = array(
+        entity():pos() + vec(0,0,20),
+        entity():pos() + vec(0,0,20),
+        entity():pos() + vec(0,0,20),
+        entity():pos() + vec(0,0,20),
+        entity():pos() + vec(0,0,20),
+        entity():pos() + vec(0,0,20),
+        entity():pos() + vec(0,0,20),
+        entity():pos() + vec(0,0,20),
+        entity():pos() + vec(0,0,20),
+        entity():pos() + vec(0,0,20),
+        entity():pos() + vec(0,0,20),
+        entity():pos() + vec(0,0,20),
+        entity():pos() + vec(0,0,20),
+        entity():pos() + vec(0,0,20),
+        entity():pos() + vec(0,0,20),
+        entity():pos() + vec(0,0,20),
+        entity():pos() + vec(0,0,20),
+        entity():pos() + vec(0,0,20),
+        entity():pos() + vec(0,0,20),
+        entity():pos() + vec(0,0,20)
+    )
+    Holocolor = array(
+        vec4(255,255,255,255),
+        vec4(255,255,255,255),
+        vec4(255,255,255,255),
+        vec4(255,255,255,255),
+        vec4(255,255,255,255),
+        vec4(255,255,255,255),
+        vec4(255,255,255,255),
+        vec4(255,255,255,255),
+        vec4(255,255,255,255),
+        vec4(255,255,255,255),
+        vec4(255,255,255,255),
+        vec4(255,255,255,255),
+        vec4(255,255,255,255),
+        vec4(255,255,255,255),
+        vec4(255,255,255,255),
+        vec4(255,255,255,255),
+        vec4(255,255,255,255),
+        vec4(255,255,255,255),
+        vec4(255,255,255,255),
+        vec4(255,255,255,255)
+    )
+    Mindex = array( 
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+    )
+    Maindex = array(
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+    )
+    Model = array(
+        #Normal Models
+        "cube",                 
+        "cone",
+        "cylinder",
+        "hexagon",              #5-1
+        "icosphere",
+        "icosphere2",
+        "icosphere3",
+        "octagon",
+        "plane",                #10-1
+        "prism",
+        "pyramid",
+        "right_prism",
+        "sphere",
+        "sphere2",              #15-1
+        "sphere3",
+        "tetra",
+        "torus",
+        "torus2",
+        "torus3",               #20-1
+        
+        #HQ Models
+        "hq_cube",
+        "hq_cubinder",
+        "hq_cylinder",
+        "hq_dome",
+        "hq_hdome",             #25-1
+        "hq_hdome_thick",
+        "hq_hdome_thin",
+        "hq_icosphere",
+        "hq_rcube",
+        "hq_rcube_thick",       #30-1
+        "hq_rcube_thin",
+        "hq_rcylinder",
+        "hq_rcylinder_thick",
+        "hq_rcylinder_thin",
+        "hq_sphere",            #35-1
+        "hq_stube",
+        "hq_stube_thick",
+        "hq_stube_thin",
+        "hq_torus",
+        "hq_torus_thick",       #40-1
+        "hq_torus_thin",
+        "hq_tube",
+        "hq_tube_thick",
+        "hq_tube_thin"    
+    )
+    Modelname = array(
+        #Normal Models
+        "Cube      ",
+        "Cone      ",
+        "Cylinder  ",
+        "Hexagon   ", #5-1
+        "Icosphere ",
+        "Icosphere 2",
+        "Icosphere 3",
+        "Octagon   ",
+        "Plane     ", #10-1
+        "Prism     ",
+        "Pyramid   ",
+        "R Prism   ",
+        "Sphere    ",
+        "Sphere 2   ", #15-1
+        "Sphere 3   ",
+        "Tetra     ",
+        "Torus     ",
+        "Torus 2    ",
+        "Torus 3    ", #20-1
+        
+        #HQ Models
+        "HQ Cube   ",
+        "HQ Cubinder",
+        "HQ Cylinder",
+        "HQ Dome   ",
+        "HQ H Dome ", #25-1
+        "HQ H Dome 2",
+        "HQ H Dome 3",
+        "HQ Icosphere",
+        "HQ R Cube ",
+        "HQ R Cube 2", #30-1
+        "HQ R Cube 3",
+        "HQ R Cylinder",
+        "HQ R Cylinder 2",
+        "HQ R Cylinder 3",
+        "HQ Sphere ", #35-1
+        "HQ S Tube ",
+        "HQ S Tube 2",
+        "HQ S Tube 3",
+        "HQ Torus  ",
+        "HQ Torus 2", #40-1
+        "HQ Torus 3",
+        "HQ Tube   ",
+        "HQ Tube 2 ",
+        "HQ Tube 3 " 
+    )
+    Material = array(
+        "",
+        "phoenix_storms/bluemetal",
+        "brick/brick_model",
+        "Models/effects/comball_sphere",                #5-1
+        "Models/effects/comball_tape",
+        "models/props_combine/com_shield001a",
+        "phoenix_storms/cube",
+        "debug/env_cubemap_model",
+        "models/debug/debugwhite",                      #10-1
+        "phoenix_storms/dome",
+        "models/flesh",
+        "models/props_c17/frostedglass_01a",
+        "models/props_c17/FurnitureFabric003a",
+        "models/props_c17/FurnitureMetal001a",          #15-1
+        "phoenix_storms/gear",
+        "models/props_pipes/GutterMetal01a",
+        "phoenix_storms/metalfloor_2-3",
+        "phoenix_storms/metalset_1-2",
+        "hunter/myplastic",                             #20-1
+        "models/props_c17/paper01",
+        "phoenix_storms/wire/pcb_blue",
+        "phoenix_storms/wire/pcb_green",
+        "phoenix_storms/wire/pcb_red",
+        "models/props_pipes/Pipesystem01a_skin3",       #25-1
+        "phoenix_storms/plastic",
+        "models/props_combine/portalball001_sheet",
+        "models/rendertarget",
+        "models/screenspace",
+        "models/shadertest/shader3",                    #30-1
+        "models/shadertest/shader4",
+        "models/shadertest/shader5",
+        "models/shiny",
+        "Models/effects/splodearc_sheet",
+        "models/props_combine/stasisshield_sheet",     #35-1
+        "phoenix_storms/stripes",
+        "models/props_lab/Tank_Glass001",
+        "models/props_combine/tprings_globe",
+        "models/props_foliage/tree_deciduous_01a_trunk",
+        "Models/effects/vol_light001",                 #40-1
+        "models/wireframe",
+        "phoenix_storms/wood",
+        "models/props_wasteland/wood_fence01a"
+    )
+    Materialname = array(
+        "None",
+        "Blue Metal",
+        "Brick",
+        "Comball Sphere",       #5-1
+        "Comball Tape",
+        "Com Shield",
+        "Cube",
+        "Cubemap Model",
+        "Debug White",          #10-1
+        "Dome",
+        "Flesh",
+        "Frosted Glass",
+        "Furniture Fabric",
+        "Furniture Metal",      #15-1
+        "Gear",
+        "Gutter Metal",
+        "Metal Floor",
+        "Metal Set",
+        "My Plastic",           #20-1
+        "Paper",
+        "PCB Blue",
+        "PCB Green",
+        "PCB Red",
+        "Pipesystem Skin",      #25-1
+        "Plastic",
+        "Portal Ball",
+        "Render Target",
+        "Screen Space",
+        "Shader3",              #30-1
+        "Shader4",
+        "Shader5",
+        "Shiny",
+        "Splodearc",
+        "Stasis Shield",       #35-1
+        "Stripes",
+        "Tank Glass",
+        "Tsprings Globe",
+        "Tree Trunk",
+        "Vol Light",           #40-1
+        "Wireframe",
+        "Wood",
+        "Wood Fence"
+    )
+    Changerate = array(
+        1/100,
+        1/10,
+        1/4,
+        1/2,
+        1,
+        5,
+        10,
+        25,
+        50,
+        100,
+        250,
+        500,
+        1000    
+    )
+}
+
+#Holo Maker 3 by Holywiremod ( http://www.youtube.com/user/SouthJeffersonDavis )
+
+if(Power == 0 & On) {
+    Power = 1
+    soundPlay(1,0,"/buttons/button19.wav")
+    
+    Link:egpBox(1,vec2(0,0),vec2(1024,1024))            #Blue 
+    Link:egpColor(1,vec(0,0,100))
+    Link:egpBox(2,vec2(450,0),vec2(574,924))            #Black 
+    Link:egpColor(2,vec(0,0,0))
+    Link:egpBox(3,vec2(82,95),vec2(150,150))            #Graph 1
+    Link:egpColor(3,vec(0,25,0))
+    Link:egpBoxOutline(4,vec2(82,95),vec2(150,150))     #Outline
+    Link:egpColor(4,vec(0,100,0))
+    Link:egpBoxOutline(5,vec2(82,95),vec2(1,150))       #Y-Axis
+    Link:egpColor(5,vec(0,100,0))
+    Link:egpBoxOutline(6,vec2(82,95),vec2(150,1))       #X-Axis
+    Link:egpColor(6,vec(0,100,0))
+    Link:egpBox(7,vec2(82,255),vec2(150,150))           #Graph 2
+    Link:egpColor(7,vec(0,25,0))
+    Link:egpBoxOutline(8,vec2(82,255),vec2(150,150))    #Outline
+    Link:egpColor(8,vec(0,100,0))
+    Link:egpBoxOutline(9,vec2(82,255),vec2(1,150))      #Z-Axis
+    Link:egpColor(9,vec(0,100,0))
+    Link:egpBoxOutline(10,vec2(82,255),vec2(150,1))     #Y-Axis
+    Link:egpColor(10,vec(0,100,0))
+    Link:egpBox(11,vec2(82,415),vec2(150,150))          #Graph 3
+    Link:egpColor(11,vec(0,25,0))
+    Link:egpBoxOutline(12,vec2(82,415),vec2(150,150))   #Outline
+    Link:egpColor(12,vec(0,100,0))
+    Link:egpBoxOutline(13,vec2(82,415),vec2(1,150))     #Z-Axis
+    Link:egpColor(13,vec(0,100,0))
+    Link:egpBoxOutline(14,vec2(82,415),vec2(150,1))     #X-Axis
+    Link:egpColor(14,vec(0,100,0))
+    Link:egpCircle(15,vec2(375,485),vec2(30,15))        #Generate Button
+    Link:egpCircle(16,vec2(455,485),vec2(30,15))        #Save Button
+    Link:egpText(17,"y",vec2(78,10))                    #Labels
+    Link:egpText(18,"x",vec2(153,83))
+    Link:egpText(19,"z",vec2(78,170))
+    Link:egpText(20,"y",vec2(153,243))
+    Link:egpText(21,"z",vec2(78,330))
+    Link:egpText(22,"x",vec2(153,403))
+    Link:egpText(23,"By: Holywiremod",vec2(170,475))
+    Link:egpText(24,"Gen",vec2(360,475))
+    Link:egpText(25,"Save",vec2(437,475))
+    
+    Link:egpBox(26,vec2(337,30),vec2(330,60))           #Header
+    Link:egpColor(26,vec(0,0,150))
+    Link:egpBox(27,vec2(337,250),vec2(330,310))         #Body
+    Link:egpColor(27,vec(0,0,150))
+    Link:egpBox(28,vec2(337,420),vec2(330,60))          #Footer
+    Link:egpColor(28,vec(0,0,200))
+    
+    Link:egpCircle(29,vec2(187,405),vec2(10,10))        #Footer Dots Row 1
+    Link:egpCircle(30,vec2(212,405),vec2(10,10))
+    Link:egpCircle(31,vec2(237,405),vec2(10,10))
+    Link:egpCircle(32,vec2(262,405),vec2(10,10))
+    Link:egpCircle(33,vec2(287,405),vec2(10,10))
+    Link:egpCircle(34,vec2(312,405),vec2(10,10))
+    Link:egpCircle(35,vec2(337,405),vec2(10,10))
+    Link:egpCircle(36,vec2(362,405),vec2(10,10))
+    Link:egpCircle(37,vec2(387,405),vec2(10,10))
+    Link:egpCircle(38,vec2(412,405),vec2(10,10))    
+    
+    Link:egpCircle(39,vec2(187,435),vec2(10,10))        #Footer Dots Row 2
+    Link:egpCircle(40,vec2(212,435),vec2(10,10))
+    Link:egpCircle(41,vec2(237,435),vec2(10,10))
+    Link:egpCircle(42,vec2(262,435),vec2(10,10))
+    Link:egpCircle(43,vec2(287,435),vec2(10,10))
+    Link:egpCircle(44,vec2(312,435),vec2(10,10))
+    Link:egpCircle(45,vec2(337,435),vec2(10,10))
+    Link:egpCircle(46,vec2(362,435),vec2(10,10))
+    Link:egpCircle(47,vec2(387,435),vec2(10,10))
+    Link:egpCircle(48,vec2(412,435),vec2(10,10))
+    
+    Link:egpBox(49,vec2(465,420),vec2(75,60))           #Holo Select
+    Link:egpColor(49,vec(0,0,100))
+    Link:egpText(50,"Hologram",vec2(429,402))
+    Link:egpText(51,"Select",vec2(443,422))
+    
+    Link:egpText(52,"1",vec2(182,396))                  #Holo Dot Labels Row 1
+    Link:egpText(53,"2",vec2(207,396))
+    Link:egpText(54,"3",vec2(232,396))
+    Link:egpText(55,"4",vec2(257,396))
+    Link:egpText(56,"5",vec2(282,396))
+    Link:egpText(57,"6",vec2(307,396))
+    Link:egpText(58,"7",vec2(332,396))
+    Link:egpText(59,"8",vec2(357,396))
+    Link:egpText(60,"9",vec2(382,396))
+    Link:egpText(61,"10",vec2(402,396))
+    
+    Link:egpText(62,"11",vec2(177,426))                 #Holo Dot Labels Row 2
+    Link:egpText(63,"12",vec2(202,426))
+    Link:egpText(64,"13",vec2(227,426))
+    Link:egpText(65,"14",vec2(252,426))
+    Link:egpText(66,"15",vec2(277,426))
+    Link:egpText(67,"16",vec2(302,426))
+    Link:egpText(68,"17",vec2(327,426))
+    Link:egpText(69,"18",vec2(352,426))
+    Link:egpText(70,"19",vec2(377,426))
+    Link:egpText(71,"20",vec2(403,426))
+    
+    Link:egpBox(72,vec2(202,85),vec2(60,20))            #Tabs
+    Link:egpBox(73,vec2(263,85),vec2(60,20))
+    Link:egpBox(74,vec2(324,85),vec2(60,20))
+    Link:egpBox(75,vec2(385,85),vec2(60,20))
+    Link:egpBox(76,vec2(446,85),vec2(60,20))
+    
+    Link:egpText(77,"Holo Maker V3",vec2(190,5))        #Title
+    Link:egpFont(77,"Times New Roman",50)
+    
+    Link:egpText(78,"Home",vec2(182,75))                #Tab Labels
+    Link:egpText(79,"Pos",vec2(250,75))
+    Link:egpText(80,"Skin",vec2(308,75))
+    Link:egpText(81,"Load",vec2(368,75))
+    Link:egpText(82,"Reset",vec2(425,75))
+    
+    Link:egpBox(83,vec2(337,243),vec2(320,285))         #Menu 1 (Home)
+    Link:egpText(84,"   Welcome to Holo Maker version 3.0 by  ",vec2(180,150))
+    Link:egpText(85,"Holywiremod. This device is touch screen.",vec2(180,170))
+    Link:egpText(86,"Buttons can be activated by pressing your",vec2(180,190))
+    Link:egpText(87,"assigned [USE] key. Buttons are defined  ",vec2(180,210))
+    Link:egpText(88,"by the following color and shapes:       ",vec2(180,230))
+    Link:egpText(244,"Right Click removes the current hologram.",vec2(180,310))
+    Link:egpBox(89,vec2(240,280),vec2(60,20))
+    Link:egpCircle(90,vec2(335,280),vec2(10,10))
+    Link:egpCircle(91,vec2(430,280),vec2(30,15))
+
+    Link:egpBox(92,vec2(256,110),vec2(158,20))          #Menu 2 (Pos)
+    Link:egpBox(93,vec2(256,162),vec2(158,80))
+    Link:egpBox(94,vec2(417,110),vec2(160,20))
+    Link:egpBox(95,vec2(417,162),vec2(160,80))
+    Link:egpBox(96,vec2(337,214),vec2(320,20))
+    Link:egpBox(97,vec2(337,266),vec2(320,80))
+    Link:egpBox(98,vec2(337,318),vec2(320,20))
+    Link:egpBox(99,vec2(352,318),vec2(55,20))
+    
+    Link:egpText(100,"Holo #"+N+" Angle",vec2(180,100)) #Menu 2 Labels
+    Link:egpText(101,"Holo #"+N+" Scale",vec2(340,100)) 
+    Link:egpText(102,"Holo #"+N+" Position",vec2(180,204))  
+    Link:egpText(103,"Changerate:",vec2(180,308))
+    Link:egpText(104,"x",vec2(327,308))
+    
+    Link:egpText(105,"Pitch:",vec2(180,120))        #Angle
+    Link:egpText(106,"Yaw:",vec2(180,140))
+    Link:egpText(107,"Roll:",vec2(180,160))      
+    Link:egpBox(108,vec2(300,152),vec2(70,60))
+    Link:egpText(109,""+round(Holoangle[N,angle]:pitch(),2),vec2(270,120))        
+    Link:egpText(110,""+round(Holoangle[N,angle]:yaw(),2),vec2(270,140))
+    Link:egpText(111,""+round(Holoangle[N,angle]:roll(),2),vec2(270,160))
+
+    Link:egpText(112,"X:",vec2(340,120))            #Scale
+    Link:egpText(113,"Y:",vec2(340,140))
+    Link:egpText(114,"Z:",vec2(340,160))   
+    Link:egpBox(115,vec2(463,152),vec2(70,60))
+    Link:egpText(116,""+round(Holosize[N,vector]:x(),2),vec2(430,120))        
+    Link:egpText(117,""+round(Holosize[N,vector]:y(),2),vec2(430,140))
+    Link:egpText(118,""+round(Holosize[N,vector]:z(),2),vec2(430,160))
+    
+    Link:egpText(119,"X:",vec2(180,224))            #Position
+    Link:egpText(120,"Y:",vec2(180,244))
+    Link:egpText(121,"Z:",vec2(180,264))      
+    Link:egpBox(122,vec2(310,256),vec2(90,60))
+    Link:egpText(123,""+round(Holoposition[N,vector]:x(),2),vec2(270,224))        
+    Link:egpText(124,""+round(Holoposition[N,vector]:y(),2),vec2(270,244))
+    Link:egpText(125,""+round(Holoposition[N,vector]:z(),2),vec2(270,264))
+    
+    Link:egpCircle(126,vec2(282,318),vec2(10,10))   #Menu 2 Buttons
+    Link:egpCircle(127,vec2(308,318),vec2(10,10))
+    Link:egpText(128,"<",vec2(276,308))
+    Link:egpText(129,">",vec2(304,308)) 
+    
+    Link:egpBox(130,vec2(207,192),vec2(60,20))      #Angle
+    Link:egpText(131,"Reset",vec2(185,182))
+    Link:egpBox(132,vec2(305,192),vec2(60,20))
+    Link:egpText(133,"Round",vec2(282,182))
+    Link:egpCircle(134,vec2(232,130),vec2(8,8))     
+    Link:egpCircle(135,vec2(255,130),vec2(8,8))
+    Link:egpCircle(136,vec2(232,150),vec2(8,8))
+    Link:egpCircle(137,vec2(255,150),vec2(8,8))
+    Link:egpCircle(138,vec2(232,170),vec2(8,8))
+    Link:egpCircle(139,vec2(255,170),vec2(8,8))
+    Link:egpText(140,"<",vec2(226,120))
+    Link:egpText(141,">",vec2(251,120))
+    Link:egpText(142,"<",vec2(226,140))
+    Link:egpText(143,">",vec2(251,140))
+    Link:egpText(144,"<",vec2(226,160))
+    Link:egpText(145,">",vec2(251,160))
+    
+    Link:egpBox(146,vec2(367,192),vec2(60,20))      #Scale
+    Link:egpText(147,"Reset",vec2(345,182))
+    Link:egpBox(148,vec2(467,192),vec2(60,20))
+    Link:egpText(149,"Round",vec2(445,182))
+    Link:egpCircle(150,vec2(395,130),vec2(8,8))
+    Link:egpCircle(151,vec2(418,130),vec2(8,8))
+    Link:egpCircle(152,vec2(395,150),vec2(8,8))
+    Link:egpCircle(153,vec2(418,150),vec2(8,8))
+    Link:egpCircle(154,vec2(395,170),vec2(8,8))
+    Link:egpCircle(155,vec2(418,170),vec2(8,8))
+    Link:egpText(156,"<",vec2(389,120))
+    Link:egpText(157,">",vec2(414,120))
+    Link:egpText(158,"<",vec2(389,140))
+    Link:egpText(159,">",vec2(414,140))
+    Link:egpText(160,"<",vec2(389,160))
+    Link:egpText(161,">",vec2(414,160))
+    
+    Link:egpBox(162,vec2(207,296),vec2(60,20))      #Position
+    Link:egpText(163,"Reset",vec2(185,286))
+    Link:egpBox(164,vec2(305,296),vec2(60,20))
+    Link:egpText(165,"Round",vec2(282,286))
+    Link:egpCircle(166,vec2(232,234),vec2(8,8))
+    Link:egpCircle(167,vec2(255,234),vec2(8,8))
+    Link:egpCircle(168,vec2(232,254),vec2(8,8))
+    Link:egpCircle(169,vec2(255,254),vec2(8,8))
+    Link:egpCircle(170,vec2(232,274),vec2(8,8))
+    Link:egpCircle(171,vec2(255,274),vec2(8,8))
+    Link:egpText(172,"<",vec2(226,224))
+    Link:egpText(173,">",vec2(251,224))
+    Link:egpText(174,"<",vec2(226,244))
+    Link:egpText(175,">",vec2(251,244))
+    Link:egpText(176,"<",vec2(226,264))
+    Link:egpText(177,">",vec2(251,264))
+    
+    Link:egpBox(178,vec2(337,110),vec2(320,20))    #Menu 3 (Skin)
+    Link:egpBox(179,vec2(337,142),vec2(320,40))
+    Link:egpBox(180,vec2(337,174),vec2(320,20))
+    Link:egpBox(181,vec2(337,226),vec2(320,80))
+    Link:egpBox(182,vec2(337,278),vec2(320,20))
+    Link:egpBox(183,vec2(352,278),vec2(55,20))
+    
+    Link:egpText(184,"Holo #"+N+" Model & Skin",vec2(180,100)) #Menu 3 Labels
+    Link:egpText(185,"Holo #"+N+" Color",vec2(180,164))  
+    Link:egpText(186,"Changerate:",vec2(180,268))
+    Link:egpText(187,"x",vec2(327,268))
+    
+    Link:egpText(188,"Model:",vec2(180,120))        #Model & Skin
+    Link:egpText(189,"Skin:",vec2(180,140))  
+    Link:egpBox(190,vec2(355,142),vec2(165,40))
+    Link:egpText(191,""+Model[Mindex[N,number],string],vec2(275,120))        
+    Link:egpText(192,""+Material[Maindex[N,number],string],vec2(275,140))
+    
+    Link:egpText(193,"Red:",vec2(180,184))        #Color
+    Link:egpText(194,"Green:",vec2(180,204))
+    Link:egpText(195,"Blue:",vec2(180,224))
+    Link:egpText(196,"Alpha:",vec2(180,244))   
+    Link:egpBox(197,vec2(307,226),vec2(70,80))
+    Link:egpText(198,""+Holocolor[N,vector4]:x(),vec2(275,184))        
+    Link:egpText(199,""+Holocolor[N,vector4]:y(),vec2(275,204))
+    Link:egpText(200,""+Holocolor[N,vector4]:z(),vec2(275,224))        
+    Link:egpText(201,""+Holocolor[N,vector4]:w(),vec2(275,244))
+
+    
+    Link:egpCircle(202,vec2(282,278),vec2(10,10))   #Menu 3 Buttons
+    Link:egpCircle(203,vec2(308,278),vec2(10,10))
+    Link:egpText(204,"<",vec2(276,268))
+    Link:egpText(205,">",vec2(304,268)) 
+    
+    Link:egpBox(206,vec2(467,132),vec2(60,20))      #Model & Skin
+    Link:egpText(207,"Reset",vec2(447,122))
+    Link:egpBox(208,vec2(467,152),vec2(60,20))
+    Link:egpText(209,"Reset",vec2(447,142))
+    Link:egpCircle(210,vec2(239,130),vec2(8,8))     
+    Link:egpCircle(211,vec2(262,130),vec2(8,8))
+    Link:egpCircle(212,vec2(239,150),vec2(8,8))
+    Link:egpCircle(213,vec2(262,150),vec2(8,8))
+    Link:egpText(214,"<",vec2(233,120))
+    Link:egpText(215,">",vec2(258,120))
+    Link:egpText(216,"<",vec2(233,140))
+    Link:egpText(217,">",vec2(258,140))
+    
+    Link:egpBox(218,vec2(467,256),vec2(60,20))      #Color
+    Link:egpText(219,"Round",vec2(445,246))
+    Link:egpCircle(220,vec2(239,194),vec2(8,8))     
+    Link:egpCircle(221,vec2(262,194),vec2(8,8))
+    Link:egpCircle(222,vec2(239,214),vec2(8,8))
+    Link:egpCircle(223,vec2(262,214),vec2(8,8))
+    Link:egpCircle(224,vec2(239,234),vec2(8,8))
+    Link:egpCircle(225,vec2(262,234),vec2(8,8))
+    Link:egpCircle(226,vec2(239,254),vec2(8,8))
+    Link:egpCircle(227,vec2(262,254),vec2(8,8))
+    Link:egpText(228,"<",vec2(233,184))
+    Link:egpText(229,">",vec2(258,184))
+    Link:egpText(230,"<",vec2(233,204))
+    Link:egpText(231,">",vec2(258,204))
+    Link:egpText(232,"<",vec2(233,224))
+    Link:egpText(233,">",vec2(258,224))
+    Link:egpText(234,"<",vec2(233,244))
+    Link:egpText(235,">",vec2(258,244))
+    
+    Link:egpCircle(236,vec2(379,194),vec2(8,8))     
+    Link:egpCircle(237,vec2(402,194),vec2(8,8))
+    Link:egpCircle(238,vec2(379,214),vec2(8,8))
+    Link:egpCircle(239,vec2(402,214),vec2(8,8))
+    Link:egpCircle(240,vec2(379,234),vec2(8,8))
+    Link:egpCircle(241,vec2(402,234),vec2(8,8))
+    Link:egpCircle(242,vec2(379,254),vec2(8,8))
+    Link:egpCircle(243,vec2(402,254),vec2(8,8))
+    
+    Link:egpCircle(245,vec2(468,214),vec2(15,15))
+    
+    #Graphing
+    Link:egpBoxOutline(246,vec2(82+Holosize[N,vector]:x(),95),vec2(1,150))        #X-Axis
+    Link:egpColor(246,vec(0,200,0))
+    Link:egpBoxOutline(247,vec2(82,95-Holosize[N,vector]:y()),vec2(150,1))        #Y-Axis
+    Link:egpColor(247,vec(0,200,0))     
+    Link:egpBoxOutline(248,vec2(82+Holosize[N,vector]:y(),255),vec2(1,150))       #Y-Axis
+    Link:egpColor(248,vec(0,200,0))
+    Link:egpBoxOutline(249,vec2(82,255-Holosize[N,vector]:z()),vec2(150,1))       #Z-Axis
+    Link:egpColor(249,vec(0,200,0)) 
+    Link:egpBoxOutline(250,vec2(82+Holosize[N,vector]:x(),415),vec2(1,150))       #X-Axis
+    Link:egpColor(250,vec(0,200,0))
+    Link:egpBoxOutline(251,vec2(82,415-Holosize[N,vector]:z()),vec2(150,1))       #Z-Axis
+    Link:egpColor(251,vec(0,200,0))
+    Link:egpBoxOutline(252,vec2(82-Holosize[N,vector]:x(),95),vec2(1,150))        #-X-Axis
+    Link:egpColor(252,vec(0,200,0))
+    Link:egpBoxOutline(253,vec2(82,95+Holosize[N,vector]:y()),vec2(150,1))        #-Y-Axis
+    Link:egpColor(253,vec(0,200,0))     
+    Link:egpBoxOutline(254,vec2(82-Holosize[N,vector]:y(),255),vec2(1,150))       #-Y-Axis
+    Link:egpColor(254,vec(0,200,0))
+    Link:egpBoxOutline(255,vec2(82,255+Holosize[N,vector]:z()),vec2(150,1))       #-Z-Axis
+    Link:egpColor(255,vec(0,200,0)) 
+    Link:egpBoxOutline(256,vec2(82-Holosize[N,vector]:x(),415),vec2(1,150))       #-X-Axis
+    Link:egpColor(256,vec(0,200,0))
+    Link:egpBoxOutline(257,vec2(82,415+Holosize[N,vector]:z()),vec2(150,1))       #-Z-Axis
+    Link:egpColor(257,vec(0,200,0))     
+}
+
+if(Power == 1) {
+    if(~Use | ~X | ~Power) {
+        #Row 1    
+        Link:egpColor(29,vec(125-125*!(floor(Maxholos/1))-125*Hologram[1,number],125-125*!(floor(Maxholos/1))-125*Hologram[1,number],255-55*!(floor(Maxholos/1))-125*Hologram[1,number]))
+        Link:egpColor(30,vec(125-125*!(floor(Maxholos/2))-125*Hologram[2,number],125-125*!(floor(Maxholos/2))-125*Hologram[2,number],255-55*!(floor(Maxholos/2))-125*Hologram[2,number]))
+        Link:egpColor(31,vec(125-125*!(floor(Maxholos/3))-125*Hologram[3,number],125-125*!(floor(Maxholos/3))-125*Hologram[3,number],255-55*!(floor(Maxholos/3))-125*Hologram[3,number]))
+        Link:egpColor(32,vec(125-125*!(floor(Maxholos/4))-125*Hologram[4,number],125-125*!(floor(Maxholos/4))-125*Hologram[4,number],255-55*!(floor(Maxholos/4))-125*Hologram[4,number]))
+        Link:egpColor(33,vec(125-125*!(floor(Maxholos/5))-125*Hologram[5,number],125-125*!(floor(Maxholos/5))-125*Hologram[5,number],255-55*!(floor(Maxholos/5))-125*Hologram[5,number]))
+        Link:egpColor(34,vec(125-125*!(floor(Maxholos/6))-125*Hologram[6,number],125-125*!(floor(Maxholos/6))-125*Hologram[6,number],255-55*!(floor(Maxholos/6))-125*Hologram[6,number]))
+        Link:egpColor(35,vec(125-125*!(floor(Maxholos/7))-125*Hologram[7,number],125-125*!(floor(Maxholos/7))-125*Hologram[7,number],255-55*!(floor(Maxholos/7))-125*Hologram[7,number]))
+        Link:egpColor(36,vec(125-125*!(floor(Maxholos/8))-125*Hologram[8,number],125-125*!(floor(Maxholos/8))-125*Hologram[8,number],255-55*!(floor(Maxholos/8))-125*Hologram[8,number]))
+        Link:egpColor(37,vec(125-125*!(floor(Maxholos/9))-125*Hologram[9,number],125-125*!(floor(Maxholos/9))-125*Hologram[9,number],255-55*!(floor(Maxholos/9))-125*Hologram[9,number]))
+        Link:egpColor(38,vec(125-125*!(floor(Maxholos/10))-125*Hologram[10,number],125-125*!(floor(Maxholos/10))-125*Hologram[10,number],255-55*!(floor(Maxholos/10))-125*Hologram[10,number]))
+        #Row 2
+        Link:egpColor(39,vec(125-125*!(floor(Maxholos/11))-125*Hologram[11,number],125-125*!(floor(Maxholos/11))-125*Hologram[11,number],255-55*!(floor(Maxholos/11))-125*Hologram[11,number]))
+        Link:egpColor(40,vec(125-125*!(floor(Maxholos/12))-125*Hologram[12,number],125-125*!(floor(Maxholos/12))-125*Hologram[12,number],255-55*!(floor(Maxholos/12))-125*Hologram[12,number]))
+        Link:egpColor(41,vec(125-125*!(floor(Maxholos/13))-125*Hologram[13,number],125-125*!(floor(Maxholos/13))-125*Hologram[13,number],255-55*!(floor(Maxholos/13))-125*Hologram[13,number]))
+        Link:egpColor(42,vec(125-125*!(floor(Maxholos/14))-125*Hologram[14,number],125-125*!(floor(Maxholos/14))-125*Hologram[14,number],255-55*!(floor(Maxholos/14))-125*Hologram[14,number]))
+        Link:egpColor(43,vec(125-125*!(floor(Maxholos/15))-125*Hologram[15,number],125-125*!(floor(Maxholos/15))-125*Hologram[15,number],255-55*!(floor(Maxholos/15))-125*Hologram[15,number]))
+        Link:egpColor(44,vec(125-125*!(floor(Maxholos/16))-125*Hologram[16,number],125-125*!(floor(Maxholos/16))-125*Hologram[16,number],255-55*!(floor(Maxholos/16))-125*Hologram[16,number]))
+        Link:egpColor(45,vec(125-125*!(floor(Maxholos/17))-125*Hologram[17,number],125-125*!(floor(Maxholos/17))-125*Hologram[17,number],255-55*!(floor(Maxholos/17))-125*Hologram[17,number]))
+        Link:egpColor(46,vec(125-125*!(floor(Maxholos/18))-125*Hologram[18,number],125-125*!(floor(Maxholos/18))-125*Hologram[18,number],255-55*!(floor(Maxholos/18))-125*Hologram[18,number]))
+        Link:egpColor(47,vec(125-125*!(floor(Maxholos/19))-125*Hologram[19,number],125-125*!(floor(Maxholos/19))-125*Hologram[19,number],255-55*!(floor(Maxholos/19))-125*Hologram[19,number]))
+        Link:egpColor(48,vec(125-125*!(floor(Maxholos/20))-125*Hologram[20,number],125-125*!(floor(Maxholos/20))-125*Hologram[20,number],255-55*!(floor(Maxholos/20))-125*Hologram[20,number]))
+        #Row 1 Text
+        Link:egpColor(52,vec(255-255*!(floor(Maxholos/1)),255-255*!(floor(Maxholos/1)),255-55*!(floor(Maxholos/1))))
+        Link:egpColor(53,vec(255-255*!(floor(Maxholos/2)),255-255*!(floor(Maxholos/2)),255-55*!(floor(Maxholos/2))))
+        Link:egpColor(54,vec(255-255*!(floor(Maxholos/3)),255-255*!(floor(Maxholos/3)),255-55*!(floor(Maxholos/3))))
+        Link:egpColor(55,vec(255-255*!(floor(Maxholos/4)),255-255*!(floor(Maxholos/4)),255-55*!(floor(Maxholos/4))))
+        Link:egpColor(56,vec(255-255*!(floor(Maxholos/5)),255-255*!(floor(Maxholos/5)),255-55*!(floor(Maxholos/5))))
+        Link:egpColor(57,vec(255-255*!(floor(Maxholos/6)),255-255*!(floor(Maxholos/6)),255-55*!(floor(Maxholos/6))))
+        Link:egpColor(58,vec(255-255*!(floor(Maxholos/7)),255-255*!(floor(Maxholos/7)),255-55*!(floor(Maxholos/7))))
+        Link:egpColor(59,vec(255-255*!(floor(Maxholos/8)),255-255*!(floor(Maxholos/8)),255-55*!(floor(Maxholos/8))))
+        Link:egpColor(60,vec(255-255*!(floor(Maxholos/9)),255-255*!(floor(Maxholos/9)),255-55*!(floor(Maxholos/9))))
+        Link:egpColor(61,vec(255-255*!(floor(Maxholos/10)),255-255*!(floor(Maxholos/10)),255-55*!(floor(Maxholos/10))))
+        #Row 2 Text
+        Link:egpColor(62,vec(255-255*!(floor(Maxholos/11)),255-255*!(floor(Maxholos/11)),255-55*!(floor(Maxholos/11))))
+        Link:egpColor(63,vec(255-255*!(floor(Maxholos/12)),255-255*!(floor(Maxholos/12)),255-55*!(floor(Maxholos/12))))
+        Link:egpColor(64,vec(255-255*!(floor(Maxholos/13)),255-255*!(floor(Maxholos/13)),255-55*!(floor(Maxholos/13))))
+        Link:egpColor(65,vec(255-255*!(floor(Maxholos/14)),255-255*!(floor(Maxholos/14)),255-55*!(floor(Maxholos/14))))
+        Link:egpColor(66,vec(255-255*!(floor(Maxholos/15)),255-255*!(floor(Maxholos/15)),255-55*!(floor(Maxholos/15))))
+        Link:egpColor(67,vec(255-255*!(floor(Maxholos/16)),255-255*!(floor(Maxholos/16)),255-55*!(floor(Maxholos/16))))
+        Link:egpColor(68,vec(255-255*!(floor(Maxholos/17)),255-255*!(floor(Maxholos/17)),255-55*!(floor(Maxholos/17))))
+        Link:egpColor(69,vec(255-255*!(floor(Maxholos/18)),255-255*!(floor(Maxholos/18)),255-55*!(floor(Maxholos/18))))
+        Link:egpColor(70,vec(255-255*!(floor(Maxholos/19)),255-255*!(floor(Maxholos/19)),255-55*!(floor(Maxholos/19))))
+        Link:egpColor(71,vec(255-255*!(floor(Maxholos/20)),255-255*!(floor(Maxholos/20)),255-55*!(floor(Maxholos/20))))
+        #Tabs
+        Link:egpColor(72,vec(125,125+119*floor(!(((Menu/1)-(1/Menu)))),255))
+        Link:egpColor(73,vec(125,125+119*floor(!(((Menu/2)-(2/Menu)))),255))
+        Link:egpColor(74,vec(125,125+119*floor(!(((Menu/3)-(3/Menu)))),255))
+        Link:egpColor(75,vec(125,125,255))
+        Link:egpColor(76,vec(125,125,255))
+        #Tabs Text
+        Link:egpColor(78,vec(255-255*floor(!(((Menu/1)-(1/Menu)))),255-255*floor(!(((Menu/1)-(1/Menu)))),255-255*floor(!(((Menu/1)-(1/Menu))))))
+        Link:egpColor(79,vec(255-255*floor(!(((Menu/2)-(2/Menu)))),255-255*floor(!(((Menu/2)-(2/Menu)))),255-255*floor(!(((Menu/2)-(2/Menu))))))
+        Link:egpColor(80,vec(255-255*floor(!(((Menu/3)-(3/Menu)))),255-255*floor(!(((Menu/3)-(3/Menu)))),255-255*floor(!(((Menu/3)-(3/Menu))))))
+        Link:egpColor(81,vec(255,255,255))
+        Link:egpColor(82,vec(255,255,255))
+        #Gen + Save
+        Link:egpColor(15,vec(125,125,255))
+        Link:egpColor(16,vec(125,125,255))
+        #Gen + Save Text
+        Link:egpColor(24,vec(255,255,255))
+        Link:egpColor(25,vec(255,255,255))
+    #####Menu 1
+        Link:egpColor(83,vec4(100,100,100,100-100*floor(!(!((Menu/1)-(1/Menu))))))
+        Link:egpColor(84,vec4(255,255,255,255-255*floor(!(!((Menu/1)-(1/Menu))))))
+        Link:egpColor(85,vec4(230,230,255,255-255*floor(!(!((Menu/1)-(1/Menu))))))
+        Link:egpColor(86,vec4(205,205,255,255-255*floor(!(!((Menu/1)-(1/Menu))))))
+        Link:egpColor(87,vec4(180,180,255,255-255*floor(!(!((Menu/1)-(1/Menu))))))
+        Link:egpColor(88,vec4(145,145,255,255-255*floor(!(!((Menu/1)-(1/Menu))))))
+        Link:egpColor(244,vec4(120,120,255,255-255*floor(!(!((Menu/1)-(1/Menu))))))
+        Link:egpColor(89,vec4(125,125,255,255-255*floor(!(!((Menu/1)-(1/Menu))))))
+        Link:egpColor(90,vec4(125,125,255,255-255*floor(!(!((Menu/1)-(1/Menu))))))
+        Link:egpColor(91,vec4(125,125,255,255-255*floor(!(!((Menu/1)-(1/Menu))))))
+    #####Menu 2
+        Link:egpColor(92,vec4(50,50,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(93,vec4(100,100,100,100-100*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(94,vec4(50,50,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(95,vec4(100,100,100,100-100*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(96,vec4(50,50,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(97,vec4(100,100,100,100-100*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(98,vec4(50,50,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(99,vec4(0,30,0,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        
+        Link:egpSetText(100,"Holo #"+N+" Angle")                                        #Menu 2 Labels
+        Link:egpSetText(101,"Holo #"+N+" Scale") 
+        Link:egpSetText(102,"Holo #"+N+" Position")  
+        Link:egpColor(100,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu)))))) 
+        Link:egpColor(101,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu)))))) 
+        Link:egpColor(102,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu)))))) 
+        Link:egpColor(103,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu)))))) 
+        Link:egpSetText(104,"x"+Changerate[Rate,number])
+        Link:egpColor(104,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+    
+        Link:egpColor(105,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu)))))) 
+        Link:egpColor(106,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu)))))) 
+        Link:egpColor(107,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu)))))) 
+        Link:egpColor(108,vec4(0,25,0,255-255*floor(!(!((Menu/2)-(2/Menu)))))) 
+        Link:egpColor(109,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(110,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(111,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpSetText(109,""+round(Holoangle[N,angle]:pitch(),2))        
+        Link:egpSetText(110,""+round(Holoangle[N,angle]:yaw(),2))
+        Link:egpSetText(111,""+round(Holoangle[N,angle]:roll(),2))
+        
+        Link:egpColor(112,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu)))))) 
+        Link:egpColor(113,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu)))))) 
+        Link:egpColor(114,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu)))))) 
+        Link:egpColor(115,vec4(0,25,0,255-255*floor(!(!((Menu/2)-(2/Menu)))))) 
+        Link:egpColor(116,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(117,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(118,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpSetText(116,""+round(Holosize[N,vector]:x(),2))        
+        Link:egpSetText(117,""+round(Holosize[N,vector]:y(),2))
+        Link:egpSetText(118,""+round(Holosize[N,vector]:z(),2))
+        
+        Link:egpColor(119,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu)))))) 
+        Link:egpColor(120,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu)))))) 
+        Link:egpColor(121,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu)))))) 
+        Link:egpColor(122,vec4(0,25,0,255-255*floor(!(!((Menu/2)-(2/Menu)))))) 
+        Link:egpColor(123,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(124,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(125,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpSetText(123,""+round(Holoposition[N,vector]:x(),2))        
+        Link:egpSetText(124,""+round(Holoposition[N,vector]:y(),2))
+        Link:egpSetText(125,""+round(Holoposition[N,vector]:z(),2))
+        
+        Link:egpColor(126,vec4(125,125,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))   #Buttons
+        Link:egpColor(127,vec4(125,125,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(128,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(129,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu)))))) 
+        Link:egpColor(130,vec4(125,125,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))   
+        Link:egpColor(131,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu)))))) 
+        Link:egpColor(132,vec4(125,125,255,255-255*floor(!(!((Menu/2)-(2/Menu)))))) 
+        Link:egpColor(133,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        
+        Link:egpColor(134,vec4(125,125,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(135,vec4(125,125,255,255-255*floor(!(!((Menu/2)-(2/Menu)))))) 
+        Link:egpColor(136,vec4(125,125,255,255-255*floor(!(!((Menu/2)-(2/Menu)))))) 
+        Link:egpColor(137,vec4(125,125,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(138,vec4(125,125,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(139,vec4(125,125,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))  
+        Link:egpColor(140,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(141,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(142,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(143,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(144,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(145,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        
+        Link:egpColor(146,vec4(125,125,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(147,vec4(225,225,255,255-255*floor(!(!((Menu/2)-(2/Menu)))))) 
+        Link:egpColor(148,vec4(125,125,255,255-255*floor(!(!((Menu/2)-(2/Menu)))))) 
+        Link:egpColor(149,vec4(225,225,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+         
+        Link:egpColor(150,vec4(125,125,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(151,vec4(125,125,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(152,vec4(125,125,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(153,vec4(125,125,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(154,vec4(125,125,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(155,vec4(125,125,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))  
+        Link:egpColor(156,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(157,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(158,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(159,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(160,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(161,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        
+        Link:egpColor(162,vec4(125,125,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(163,vec4(225,225,255,255-255*floor(!(!((Menu/2)-(2/Menu)))))) 
+        Link:egpColor(164,vec4(125,125,255,255-255*floor(!(!((Menu/2)-(2/Menu)))))) 
+        Link:egpColor(165,vec4(225,225,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+         
+        Link:egpColor(166,vec4(125,125,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(167,vec4(125,125,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(168,vec4(125,125,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(169,vec4(125,125,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(170,vec4(125,125,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(171,vec4(125,125,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))  
+        Link:egpColor(172,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(173,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(174,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(175,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(176,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+        Link:egpColor(177,vec4(255,255,255,255-255*floor(!(!((Menu/2)-(2/Menu))))))
+    
+    #####Menu 3
+        Link:egpColor(178,vec4(50,50,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(179,vec4(100,100,100,100-100*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(180,vec4(50,50,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(181,vec4(100,100,100,100-100*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(182,vec4(50,50,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(183,vec4(0,30,0,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        
+        Link:egpSetText(184,"Holo #"+N+" Model & Skin")                                        #Menu 3 Labels
+        Link:egpSetText(185,"Holo #"+N+" Color") 
+        Link:egpColor(184,vec4(255,255,255,255-255*floor(!(!((Menu/3)-(3/Menu)))))) 
+        Link:egpColor(185,vec4(255,255,255,255-255*floor(!(!((Menu/3)-(3/Menu)))))) 
+        Link:egpColor(186,vec4(255,255,255,255-255*floor(!(!((Menu/3)-(3/Menu)))))) 
+        Link:egpSetText(187,"x"+Changerate[Rate,number])
+        Link:egpColor(187,vec4(255,255,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        
+        Link:egpColor(188,vec4(255,255,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))            #Model & Skin
+        Link:egpColor(189,vec4(255,255,255,255-255*floor(!(!((Menu/3)-(3/Menu)))))) 
+        Link:egpColor(190,vec4(0,25,0,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(191,vec4(255,255,255,255-255*floor(!(!((Menu/3)-(3/Menu)))))) 
+        Link:egpColor(192,vec4(255,255,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpSetText(191,""+Modelname[Mindex[N,number],string])        
+        Link:egpSetText(192,""+Materialname[Maindex[N,number],string])    
+        
+        Link:egpColor(193,vec4(255,255,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))            #Color
+        Link:egpColor(194,vec4(255,255,255,255-255*floor(!(!((Menu/3)-(3/Menu)))))) 
+        Link:egpColor(195,vec4(255,255,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(196,vec4(255,255,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(197,vec4(0,25,0,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(198,vec4(255,0,0,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(199,vec4(0,255,0,255-255*floor(!(!((Menu/3)-(3/Menu)))))) 
+        Link:egpColor(200,vec4(0,0,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(201,vec4(255,255,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpSetText(198,""+Holocolor[N,vector4]:x())        
+        Link:egpSetText(199,""+Holocolor[N,vector4]:y())
+        Link:egpSetText(200,""+Holocolor[N,vector4]:z())        
+        Link:egpSetText(201,""+Holocolor[N,vector4]:w())
+        
+        Link:egpColor(202,vec4(125,125,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))            #Buttons
+        Link:egpColor(203,vec4(125,125,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))  
+        Link:egpColor(204,vec4(255,255,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(205,vec4(255,255,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        
+        Link:egpColor(206,vec4(125,125,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))            #Model & Skin
+        Link:egpColor(207,vec4(255,255,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(208,vec4(125,125,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(209,vec4(255,255,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        
+        Link:egpColor(210,vec4(125,125,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(211,vec4(125,125,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(212,vec4(125,125,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(213,vec4(125,125,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(214,vec4(255,255,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(215,vec4(255,255,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(216,vec4(255,255,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(217,vec4(255,255,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        
+        Link:egpColor(218,vec4(125,125,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))            #Color
+        Link:egpColor(219,vec4(255,255,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        
+        Link:egpColor(220,vec4(125,125,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(221,vec4(125,125,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(222,vec4(125,125,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(223,vec4(125,125,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(224,vec4(125,125,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(225,vec4(125,125,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(226,vec4(125,125,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(227,vec4(125,125,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(228,vec4(255,255,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(229,vec4(255,255,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(230,vec4(255,255,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(231,vec4(255,255,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(232,vec4(255,255,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(233,vec4(255,255,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(234,vec4(255,255,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(235,vec4(255,255,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        
+        Link:egpColor(236,vec4(0,0,0,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(237,vec4(255,255,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(238,vec4(255,0,0,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(239,vec4(255,120,0,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(240,vec4(255,255,0,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(241,vec4(0,255,0,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(242,vec4(0,0,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(243,vec4(140,0,255,255-255*floor(!(!((Menu/3)-(3/Menu))))))
+        Link:egpColor(245,vec4(Holocolor[N,vector4]:x(),Holocolor[N,vector4]:y(),Holocolor[N,vector4]:z(),Holocolor[N,vector4]:w()-Holocolor[N,vector4]:w()*floor(!(!((Menu/3)-(3/Menu))))))
+        
+        #Graphing
+        Link:egpPos(246,vec2(82+Holosize[N,vector]:x()*4/3,95))       #X-Axis
+        Link:egpPos(247,vec2(82,95-Holosize[N,vector]:y()*4/3))       #Y-Axis
+        Link:egpPos(252,vec2(82-Holosize[N,vector]:x()*4/3,95))       #-X-Axis
+        Link:egpPos(253,vec2(82,95+Holosize[N,vector]:y()*4/3))       #-Y-Axis
+        
+        Link:egpPos(248,vec2(82+Holosize[N,vector]:y()*4/3,255))       #Y-Axis
+        Link:egpPos(249,vec2(82,255-Holosize[N,vector]:z()*4/3))       #Z-Axis
+        Link:egpPos(254,vec2(82-Holosize[N,vector]:y()*4/3,255))       #-Y-Axis
+        Link:egpPos(255,vec2(82,255+Holosize[N,vector]:z()*4/3))       #-Z-Axis
+        
+        Link:egpPos(250,vec2(82+Holosize[N,vector]:x()*4/3,415))       #X-Axis
+        Link:egpPos(251,vec2(82,415-Holosize[N,vector]:z()*4/3))       #Z-Axis
+        Link:egpPos(256,vec2(82-Holosize[N,vector]:x()*4/3,415))       #-X-Axis
+        Link:egpPos(257,vec2(82,415+Holosize[N,vector]:z()*4/3))       #-Z-Axis
+        
+        
+    
+        #Function    
+        if(Y >= (144/1000) & Y <= (184/1000)) {
+            if(X >= (335/1000) & X <= (454/1000)) {
+                Link:egpColor(72,vec(195,244,255))
+                Link:egpColor(78,vec(0,0,0))
+                if(Use) {
+                    Link:egpColor(72,vec(170,200,255))
+                    Menu = 1
+                }
+        
+            }
+            elseif(X >= (454/1000) & X <= (573/1000)) {
+                Link:egpColor(73,vec(195,244,255))
+                Link:egpColor(79,vec(0,0,0))
+                if(Use) {
+                    Link:egpColor(73,vec(170,200,255))
+                    Menu = 2
+                }
+            }
+            elseif(X >= (573/1000) & X <= (692/1000)) {
+                Link:egpColor(74,vec(195,244,255))
+                Link:egpColor(80,vec(0,0,0))
+                if(Use) {
+                    Link:egpColor(74,vec(170,200,255))
+                    Menu = 3
+                }
+            }
+            elseif(X >= (692/1000) & X <= (811/1000)) {
+                Link:egpColor(75,vec(195,244,255))
+                Link:egpColor(81,vec(0,0,0))
+                if(~Use & Use & Load == 0 & !Save & !Generate & !Copy & !Paste) {
+                    Link:egpColor(75,vec(170,200,255))
+                    hint("Please follow the instructions in chat.",10)
+                    print("Type the name of the save file you wish to load:\n-Exclude typing the \".txt\" file extension at the end.\n-Max length is 16 characters.") 
+                    I = 0
+                    M = 0
+                    Load = 1
+                }
+            }
+            elseif(X >= (811/1000) & X <= (930/1000)) {
+                Link:egpColor(76,vec(195,244,255))
+                Link:egpColor(82,vec(0,0,0))
+                if(~Use & Use) {
+                    Link:egpColor(76,vec(170,200,255))
+                    Holocolor[N,vector4] = vec4(255,255,255,255)
+                    Mindex[N,number] = 1
+                    Maindex[N,number] = 1
+                    Holoposition[N,vector] = entity():pos() + vec(0,0,20)
+                    Holoangle[N,angle] = ang(0,0,0)
+                    Holosize[N,vector] = vec(1,1,1)
+                    print("Holo #"+N+" reset to default values.")
+                }
+            }
+        }
+        elseif(Y >= (769/1000) & Y <= (809/1000)) {
+            if(X >= (345/1000) & X <= (385/1000)) {
+                Link:egpColor(29,vec(195,244,255))
+                Link:egpColor(52,vec(0,0,0))
+                if(~Use & Use & (Maxholos >= 1)) {
+                    Link:egpColor(29,vec(170,200,255))
+                    N = 1
+                    if(Hologram[N,number] == 0) {
+                        print("Holo #"+N+" created.")
+                        Hologram[N,number] = 1
+                        holoCreate(N,entity():pos() + vec(0,0,20))
+                        holoModel(N,Model[Mindex[N,number],string])
+                        holoScale(N,Holosize[N,vector])
+                        holoAng(N,Holoangle[N,angle])
+                        holoMaterial(N,Material[Maindex[N,number],string])
+                        holoColor(N,Holocolor[N,vector])
+                        Selected++
+                    }
+                    print("Holo #"+N+" selected.")
+                }
+            }
+            elseif(X >= (395/1000) & X <= (435/1000)) {
+                Link:egpColor(30,vec(195,244,255))
+                Link:egpColor(53,vec(0,0,0))
+                if(~Use & Use & (Maxholos >= 2)) {
+                    Link:egpColor(30,vec(170,200,255))
+                    N = 2
+                    if(Hologram[N,number] == 0) {
+                        print("Holo #"+N+" created.")
+                        Hologram[N,number] = 1
+                        holoCreate(N,entity():pos() + vec(0,0,20))
+                        holoModel(N,Model[Mindex[N,number],string])
+                        holoScale(N,Holosize[N,vector])
+                        holoAng(N,Holoangle[N,angle])
+                        holoMaterial(N,Material[Maindex[N,number],string])
+                        holoColor(N,Holocolor[N,vector])
+                        Selected++
+                    }
+                    print("Holo #"+N+" selected.")
+                }
+            }
+            elseif(X >= (445/1000) & X <= (485/1000)) {
+                Link:egpColor(31,vec(195,244,255))
+                Link:egpColor(54,vec(0,0,0))
+                if(~Use & Use & (Maxholos >= 3)) {
+                    Link:egpColor(31,vec(170,200,255))
+                    N = 3
+                    if(Hologram[N,number] == 0) {
+                        print("Holo #"+N+" created.")
+                        Hologram[N,number] = 1
+                        holoCreate(N,entity():pos() + vec(0,0,20))
+                        holoModel(N,Model[Mindex[N,number],string])
+                        holoScale(N,Holosize[N,vector])
+                        holoAng(N,Holoangle[N,angle])
+                        holoMaterial(N,Material[Maindex[N,number],string])
+                        holoColor(N,Holocolor[N,vector])
+                        Selected++
+                    }
+                    print("Holo #"+N+" selected.")
+                }
+            }
+            elseif(X >= (495/1000) & X <= (535/1000)) {
+                Link:egpColor(32,vec(195,244,255))
+                Link:egpColor(55,vec(0,0,0))
+                if(~Use & Use & (Maxholos >= 4)) {
+                    Link:egpColor(32,vec(170,200,255))
+                    N = 4
+                    if(Hologram[N,number] == 0) {
+                        print("Holo #"+N+" created.")
+                        Hologram[N,number] = 1
+                        holoCreate(N,entity():pos() + vec(0,0,20))
+                        holoModel(N,Model[Mindex[N,number],string])
+                        holoScale(N,Holosize[N,vector])
+                        holoAng(N,Holoangle[N,angle])
+                        holoMaterial(N,Material[Maindex[N,number],string])
+                        holoColor(N,Holocolor[N,vector])
+                        Selected++
+                    }
+                    print("Holo #"+N+" selected.")
+                }
+            }
+            elseif(X >= (545/1000) & X <= (585/1000)) {
+                Link:egpColor(33,vec(195,244,255))
+                Link:egpColor(56,vec(0,0,0))
+                if(~Use & Use & (Maxholos >= 5)) {
+                    Link:egpColor(33,vec(170,200,255))
+                    N = 5
+                    if(Hologram[N,number] == 0) {
+                        print("Holo #"+N+" created.")
+                        Hologram[N,number] = 1
+                        holoCreate(N,entity():pos() + vec(0,0,20))
+                        holoModel(N,Model[Mindex[N,number],string])
+                        holoScale(N,Holosize[N,vector])
+                        holoAng(N,Holoangle[N,angle])
+                        holoMaterial(N,Material[Maindex[N,number],string])
+                        holoColor(N,Holocolor[N,vector])
+                        Selected++
+                    }
+                    print("Holo #"+N+" selected.")
+                }
+            }
+            elseif(X >= (595/1000) & X <= (635/1000)) {
+                Link:egpColor(34,vec(195,244,255))
+                Link:egpColor(57,vec(0,0,0))
+                if(~Use & Use & (Maxholos >= 6)) {
+                    Link:egpColor(34,vec(170,200,255))
+                    N = 6
+                    if(Hologram[N,number] == 0) {
+                        print("Holo #"+N+" created.")
+                        Hologram[N,number] = 1
+                        holoCreate(N,entity():pos() + vec(0,0,20))
+                        holoModel(N,Model[Mindex[N,number],string])
+                        holoScale(N,Holosize[N,vector])
+                        holoAng(N,Holoangle[N,angle])
+                        holoMaterial(N,Material[Maindex[N,number],string])
+                        holoColor(N,Holocolor[N,vector])
+                        Selected++
+                    }
+                    print("Holo #"+N+" selected.")
+                }
+            }
+            elseif(X >= (645/1000) & X <= (685/1000)) {
+                Link:egpColor(35,vec(195,244,255))
+                Link:egpColor(58,vec(0,0,0))
+                if(~Use & Use & (Maxholos >= 7)) {
+                    Link:egpColor(35,vec(170,200,255))
+                    N = 7
+                    if(Hologram[N,number] == 0) {
+                        print("Holo #"+N+" created.")
+                        Hologram[N,number] = 1
+                        holoCreate(N,entity():pos() + vec(0,0,20))
+                        holoModel(N,Model[Mindex[N,number],string])
+                        holoScale(N,Holosize[N,vector])
+                        holoAng(N,Holoangle[N,angle])
+                        holoMaterial(N,Material[Maindex[N,number],string])
+                        holoColor(N,Holocolor[N,vector])
+                        Selected++
+                    }
+                    print("Holo #"+N+" selected.")
+                }
+            }
+            elseif(X >= (695/1000) & X <= (735/1000)) {
+                Link:egpColor(36,vec(195,244,255))
+                Link:egpColor(59,vec(0,0,0))
+                if(~Use & Use & (Maxholos >= 8)) {
+                    Link:egpColor(36,vec(170,200,255))
+                    N = 8
+                    if(Hologram[N,number] == 0) {
+                        print("Holo #"+N+" created.")
+                        Hologram[N,number] = 1
+                        holoCreate(N,entity():pos() + vec(0,0,20))
+                        holoModel(N,Model[Mindex[N,number],string])
+                        holoScale(N,Holosize[N,vector])
+                        holoAng(N,Holoangle[N,angle])
+                        holoMaterial(N,Material[Maindex[N,number],string])
+                        holoColor(N,Holocolor[N,vector])
+                        Selected++
+                    }
+                    print("Holo #"+N+" selected.")
+                }
+            }
+             elseif(X >= (745/1000) & X <= (785/1000)) {
+                Link:egpColor(37,vec(195,244,255))
+                Link:egpColor(60,vec(0,0,0))
+                if(~Use & Use & (Maxholos >= 9)) {
+                    Link:egpColor(37,vec(170,200,255))
+                    N = 9
+                    if(Hologram[N,number] == 0) {
+                        print("Holo #"+N+" created.")
+                        Hologram[N,number] = 1
+                        holoCreate(N,entity():pos() + vec(0,0,20))
+                        holoModel(N,Model[Mindex[N,number],string])
+                        holoScale(N,Holosize[N,vector])
+                        holoAng(N,Holoangle[N,angle])
+                        holoMaterial(N,Material[Maindex[N,number],string])
+                        holoColor(N,Holocolor[N,vector])
+                        Selected++
+                    }
+                    print("Holo #"+N+" selected.")
+                }
+            }
+            elseif(X >= (795/1000) & X <= (835/1000)) {
+                Link:egpColor(38,vec(195,244,255))
+                Link:egpColor(61,vec(0,0,0))
+                if(~Use & Use & (Maxholos >= 10)) {
+                    Link:egpColor(38,vec(170,200,255))
+                    N = 10
+                    if(Hologram[N,number] == 0) {
+                        print("Holo #"+N+" created.")
+                        Hologram[N,number] = 1
+                        holoCreate(N,entity():pos() + vec(0,0,20))
+                        holoModel(N,Model[Mindex[N,number],string])
+                        holoScale(N,Holosize[N,vector])
+                        holoAng(N,Holoangle[N,angle])
+                        holoMaterial(N,Material[Maindex[N,number],string])
+                        holoColor(N,Holocolor[N,vector])
+                        Selected++
+                    }
+                    print("Holo #"+N+" selected.")
+                }
+            }
+        }
+        elseif(Y >= (827/1000) & Y <= (866/1000)) {
+            if(X >= (345/1000) & X <= (385/1000)) {
+                Link:egpColor(39,vec(195,244,255))
+                Link:egpColor(62,vec(0,0,0))
+                if(~Use & Use & (Maxholos >= 11)) {
+                    Link:egpColor(39,vec(170,200,255))
+                    N = 11
+                    if(Hologram[N,number] == 0) {
+                        print("Holo #"+N+" created.")
+                        Hologram[N,number] = 1
+                        holoCreate(N,entity():pos() + vec(0,0,20))
+                        holoModel(N,Model[Mindex[N,number],string])
+                        holoScale(N,Holosize[N,vector])
+                        holoAng(N,Holoangle[N,angle])
+                        holoMaterial(N,Material[Maindex[N,number],string])
+                        holoColor(N,Holocolor[N,vector])
+                        Selected++
+                    }
+                    print("Holo #"+N+" selected.")
+                }
+            }
+            elseif(X >= (395/1000) & X <= (435/1000)) {
+                Link:egpColor(40,vec(195,244,255))
+                Link:egpColor(63,vec(0,0,0))
+                if(~Use & Use & (Maxholos >= 12)) {
+                    Link:egpColor(40,vec(170,200,255))
+                    N = 12
+                    if(Hologram[N,number] == 0) {
+                        print("Holo #"+N+" created.")
+                        Hologram[N,number] = 1
+                        holoCreate(N,entity():pos() + vec(0,0,20))
+                        holoModel(N,Model[Mindex[N,number],string])
+                        holoScale(N,Holosize[N,vector])
+                        holoAng(N,Holoangle[N,angle])
+                        holoMaterial(N,Material[Maindex[N,number],string])
+                        holoColor(N,Holocolor[N,vector])
+                        Selected++
+                    }
+                    print("Holo #"+N+" selected.")
+                }
+            }
+            elseif(X >= (445/1000) & X <= (485/1000)) {
+                Link:egpColor(41,vec(195,244,255))
+                Link:egpColor(64,vec(0,0,0))
+                if(~Use & Use & (Maxholos >= 13)) {
+                    Link:egpColor(41,vec(170,200,255))
+                    N = 13
+                    if(Hologram[N,number] == 0) {
+                        print("Holo #"+N+" created.")
+                        Hologram[N,number] = 1
+                        holoCreate(N,entity():pos() + vec(0,0,20))
+                        holoModel(N,Model[Mindex[N,number],string])
+                        holoScale(N,Holosize[N,vector])
+                        holoAng(N,Holoangle[N,angle])
+                        holoMaterial(N,Material[Maindex[N,number],string])
+                        holoColor(N,Holocolor[N,vector])
+                        Selected++
+                    }
+                    print("Holo #"+N+" selected.")
+                }
+            }
+            elseif(X >= (495/1000) & X <= (535/1000)) {
+                Link:egpColor(42,vec(195,244,255))
+                Link:egpColor(65,vec(0,0,0))
+                if(~Use & Use & (Maxholos >= 14)) {
+                    Link:egpColor(42,vec(170,200,255))
+                    N = 14
+                    if(Hologram[N,number] == 0) {
+                        print("Holo #"+N+" created.")
+                        Hologram[N,number] = 1
+                        holoCreate(N,entity():pos() + vec(0,0,20))
+                        holoModel(N,Model[Mindex[N,number],string])
+                        holoScale(N,Holosize[N,vector])
+                        holoAng(N,Holoangle[N,angle])
+                        holoMaterial(N,Material[Maindex[N,number],string])
+                        holoColor(N,Holocolor[N,vector])
+                        Selected++
+                    }
+                    print("Holo #"+N+" selected.")
+                }
+            }
+            elseif(X >= (545/1000) & X <= (585/1000)) {
+                Link:egpColor(43,vec(195,244,255))
+                Link:egpColor(66,vec(0,0,0))
+                if(~Use & Use & (Maxholos >= 15)) {
+                    Link:egpColor(43,vec(170,200,255))
+                    N = 15
+                    if(Hologram[N,number] == 0) {
+                        print("Holo #"+N+" created.")
+                        Hologram[N,number] = 1
+                        holoCreate(N,entity():pos() + vec(0,0,20))
+                        holoModel(N,Model[Mindex[N,number],string])
+                        holoScale(N,Holosize[N,vector])
+                        holoAng(N,Holoangle[N,angle])
+                        holoMaterial(N,Material[Maindex[N,number],string])
+                        holoColor(N,Holocolor[N,vector])
+                        Selected++
+                    }
+                    print("Holo #"+N+" selected.")
+                }
+            }
+            elseif(X >= (595/1000) & X <= (635/1000)) {
+                Link:egpColor(44,vec(195,244,255))
+                Link:egpColor(67,vec(0,0,0))
+                if(~Use & Use & (Maxholos >= 16)) {
+                    Link:egpColor(44,vec(170,200,255))
+                    N = 16
+                    if(Hologram[N,number] == 0) {
+                        print("Holo #"+N+" created.")
+                        Hologram[N,number] = 1
+                        holoCreate(N,entity():pos() + vec(0,0,20))
+                        holoModel(N,Model[Mindex[N,number],string])
+                        holoScale(N,Holosize[N,vector])
+                        holoAng(N,Holoangle[N,angle])
+                        holoMaterial(N,Material[Maindex[N,number],string])
+                        holoColor(N,Holocolor[N,vector])
+                        Selected++
+                    }
+                    print("Holo #"+N+" selected.")
+                }
+            }
+            elseif(X >= (645/1000) & X <= (685/1000)) {
+                Link:egpColor(45,vec(195,244,255))
+                Link:egpColor(68,vec(0,0,0))
+                if(~Use & Use & (Maxholos >= 17)) {
+                    Link:egpColor(45,vec(170,200,255))
+                    N = 17
+                    if(Hologram[N,number] == 0) {
+                        print("Holo #"+N+" created.")
+                        Hologram[N,number] = 1
+                        holoCreate(N,entity():pos() + vec(0,0,20))
+                        holoModel(N,Model[Mindex[N,number],string])
+                        holoScale(N,Holosize[N,vector])
+                        holoAng(N,Holoangle[N,angle])
+                        holoMaterial(N,Material[Maindex[N,number],string])
+                        holoColor(N,Holocolor[N,vector])
+                        Selected++
+                    }
+                    print("Holo #"+N+" selected.")
+                }
+            }
+            elseif(X >= (695/1000) & X <= (735/1000)) {
+                Link:egpColor(46,vec(195,244,255))
+                Link:egpColor(69,vec(0,0,0))
+                if(~Use & Use & (Maxholos >= 18)) {
+                    Link:egpColor(46,vec(170,200,255))
+                    N = 18
+                    if(Hologram[N,number] == 0) {
+                        print("Holo #"+N+" created.")
+                        Hologram[N,number] = 1
+                        holoCreate(N,entity():pos() + vec(0,0,20))
+                        holoModel(N,Model[Mindex[N,number],string])
+                        holoScale(N,Holosize[N,vector])
+                        holoAng(N,Holoangle[N,angle])
+                        holoMaterial(N,Material[Maindex[N,number],string])
+                        holoColor(N,Holocolor[N,vector])
+                        Selected++
+                    }
+                    print("Holo #"+N+" selected.")
+                }
+            }
+            elseif(X >= (745/1000) & X <= (785/1000)) {
+                Link:egpColor(47,vec(195,244,255))
+                Link:egpColor(70,vec(0,0,0))
+                if(~Use & Use & (Maxholos >= 19)) {
+                    Link:egpColor(47,vec(170,200,255))
+                    N = 19
+                    if(Hologram[N,number] == 0) {
+                        print("Holo #"+N+" created.")
+                        Hologram[N,number] = 1
+                        holoCreate(N,entity():pos() + vec(0,0,20))
+                        holoModel(N,Model[Mindex[N,number],string])
+                        holoScale(N,Holosize[N,vector])
+                        holoAng(N,Holoangle[N,angle])
+                        holoMaterial(N,Material[Maindex[N,number],string])
+                        holoColor(N,Holocolor[N,vector])
+                        Selected++
+                    }
+                    print("Holo #"+N+" selected.")
+                }
+            }
+            elseif(X >= (795/1000) & X <= (835/1000)) {
+                Link:egpColor(48,vec(195,244,255))
+                Link:egpColor(71,vec(0,0,0))
+                if(~Use & Use & (Maxholos >= 20)) {
+                    Link:egpColor(48,vec(170,200,255))
+                    N = 20
+                    if(Hologram[N,number] == 0) {
+                        print("Holo #"+N+" created.")
+                        Hologram[N,number] = 1
+                        holoCreate(N,entity():pos() + vec(0,0,20))
+                        holoModel(N,Model[Mindex[N,number],string])
+                        holoScale(N,Holosize[N,vector])
+                        holoAng(N,Holoangle[N,angle])
+                        holoMaterial(N,Material[Maindex[N,number],string])
+                        holoColor(N,Holocolor[N,vector])
+                        Selected++
+                    }
+                    print("Holo #"+N+" selected.")
+                }
+            }
+        }
+        elseif(Y >= (916/1000) & Y <= (975/1000)) {
+             if(X >= (673/1000) & X <= (791/1000)) {
+                Link:egpColor(15,vec(195,244,255))
+                Link:egpColor(24,vec(0,0,0))
+                if(~Use & Use & Selected != 0 & Generate == 0 & !Save & !Load & !Copy & !Paste) {
+                    Link:egpColor(15,vec(170,200,255))
+                    hint("Code generated to console; [`] or [~] key.",5)
+                    print(2,"=================\nGenerated Code: \n=================\n\n@name "+owner():name()+"s Hologram")
+                    print(2,"\n#Hologram design by "+owner():name()+". This hologram was made using Holo Maker v3 by Holywiremod.")
+                    print(2,"\nif(first() | duped()) {")
+                    I = 1
+                    M = 0
+                    Generate = 1
+                }
+                elseif(~Use & Use & Selected == 0) {
+                    hint("Error: No holograms selected.",5)
+                }
+            }
+            elseif(X >= (830/1000) & X <= (950/1000)) {
+                Link:egpColor(16,vec(195,244,255))
+                Link:egpColor(25,vec(0,0,0))
+                if(~Use & Use & Save == 0 & !Generate & !Load & !Copy & !Paste) {
+                    Link:egpColor(16,vec(170,200,255))
+                    if(fileCanWrite()) {
+                        hint("Please follow the instructions in chat.",10)
+                        print("Type the name of your save file:\n-Exclude typing the \".txt\" file extension at the end.\n-Max length is 16 characters.") 
+                        I = 0
+                        M = 0
+                        Save = 1
+                    }
+                    else {
+                        hint("Error: Cannot write files. Use Copy command to save code.",5)
+                    }
+                }    
+            }
+        }
+        if(Menu == 2) {
+            if(Y >= (236/1000) & Y <= (266/1000)) {
+                if(X >= (438/1000) & X <= (468/1000)) {
+                    Link:egpColor(134,vec(195,244,255))
+                    Link:egpColor(140,vec(0,0,0))
+                    if(~Use & Use) {
+                        Link:egpColor(134,vec(170,200,255))
+                        Holoangle[N,angle] = Holoangle[N,angle] - ang(Changerate[Rate,number],0,0)
+                        if(Holoangle[N,angle]:pitch() < 0) {
+                            Holoangle[N,angle] = ang(0,Holoangle[N,angle]:yaw(),Holoangle[N,angle]:roll())
+                        }
+                    }
+                }
+                elseif(X >= (482/1000) & X <= (512/1000)) {
+                    Link:egpColor(135,vec(195,244,255))
+                    Link:egpColor(141,vec(0,0,0))
+                    if(~Use & Use) {
+                        Link:egpColor(135,vec(170,200,255))
+                        Holoangle[N,angle] = Holoangle[N,angle] + ang(Changerate[Rate,number],0,0)
+                        if(Holoangle[N,angle]:pitch() > 360) {
+                            Holoangle[N,angle] = ang(360,Holoangle[N,angle]:yaw(),Holoangle[N,angle]:roll())
+                        }
+                    }
+                }
+                elseif(X >= (757/1000) & X <= (787/1000)) {
+                    Link:egpColor(150,vec(195,244,255))
+                    Link:egpColor(156,vec(0,0,0))
+                    if(~Use & Use) {
+                        Link:egpColor(150,vec(170,200,255))
+                        Holosize[N,vector] = Holosize[N,vector] - vec(Changerate[Rate,number],0,0)
+                        if(Holosize[N,vector]:x() < 0) {
+                            Holosize[N,vector] = vec(0,Holosize[N,vector]:y(),Holosize[N,vector]:z())
+                        }
+                    }
+                }
+                elseif(X >= (800/1000) & X <= (830/1000)) {
+                    Link:egpColor(151,vec(195,244,255))
+                    Link:egpColor(157,vec(0,0,0))
+                    if(~Use & Use) {
+                        Link:egpColor(151,vec(170,200,255))
+                        Holosize[N,vector] = Holosize[N,vector] + vec(Changerate[Rate,number],0,0)
+                        if(Holosize[N,vector]:x() > 50) {
+                            Holosize[N,vector] = vec(50,Holosize[N,vector]:y(),Holosize[N,vector]:z())
+                        }
+                    }
+                }
+            }
+            elseif(Y >= (275/1000) & Y <= (305/1000)) {
+                if(X >= (438/1000) & X <= (468/1000)) {
+                    Link:egpColor(136,vec(195,244,255))
+                    Link:egpColor(142,vec(0,0,0))
+                    if(~Use & Use) {
+                        Link:egpColor(136,vec(170,200,255))
+                        Holoangle[N,angle] = Holoangle[N,angle] - ang(0,Changerate[Rate,number],0)
+                        if(Holoangle[N,angle]:yaw() < 0) {
+                            Holoangle[N,angle] = ang(Holoangle[N,angle]:pitch(),0,Holoangle[N,angle]:roll())
+                        }
+                    }
+                }
+                elseif(X >= (482/1000) & X <= (512/1000)) {
+                    Link:egpColor(137,vec(195,244,255))
+                    Link:egpColor(143,vec(0,0,0))
+                    if(~Use & Use) {
+                        Link:egpColor(137,vec(170,200,255))
+                        Holoangle[N,angle] = Holoangle[N,angle] + ang(0,Changerate[Rate,number],0)
+                        if(Holoangle[N,angle]:yaw() > 360) {
+                            Holoangle[N,angle] = ang(Holoangle[N,angle]:pitch(),360,Holoangle[N,angle]:roll())
+                        }
+                    }
+                }
+                elseif(X >= (757/1000) & X <= (787/1000)) {
+                    Link:egpColor(152,vec(195,244,255))
+                    Link:egpColor(158,vec(0,0,0))
+                    if(~Use & Use) {
+                        Link:egpColor(152,vec(170,200,255))
+                        Holosize[N,vector] = Holosize[N,vector] - vec(0,Changerate[Rate,number],0)
+                        if(Holosize[N,vector]:y() < 0) {
+                            Holosize[N,vector] = vec(Holosize[N,vector]:x(),0,Holosize[N,vector]:z())
+                        }
+                    }
+                    
+                }
+                elseif(X >= (800/1000) & X <= (830/1000)) {
+                    Link:egpColor(153,vec(195,244,255))
+                    Link:egpColor(159,vec(0,0,0))
+                    if(~Use & Use) {
+                        Link:egpColor(153,vec(170,200,255))
+                        Holosize[N,vector] = Holosize[N,vector] + vec(0,Changerate[Rate,number],0)
+                        if(Holosize[N,vector]:y() > 50) {
+                            Holosize[N,vector] = vec(Holosize[N,vector]:x(),50,Holosize[N,vector]:z())
+                        }
+                    }
+                    
+                }
+            }
+            elseif(Y >= (314/1000) & Y <= (344/1000)) {
+                if(X >= (438/1000) & X <= (468/1000)) {
+                    Link:egpColor(138,vec(195,244,255))
+                    Link:egpColor(144,vec(0,0,0))
+                    if(~Use & Use) {
+                        Link:egpColor(138,vec(170,200,255))
+                        Holoangle[N,angle] = Holoangle[N,angle] - ang(0,0,Changerate[Rate,number])
+                        if(Holoangle[N,angle]:roll() < 0) {
+                            Holoangle[N,angle] = ang(Holoangle[N,angle]:pitch(),Holoangle[N,angle]:yaw(),0)
+                        }
+                    }
+                }
+                elseif(X >= (482/1000) & X <= (512/1000)) {
+                    Link:egpColor(139,vec(195,244,255))
+                    Link:egpColor(145,vec(0,0,0))
+                    if(~Use & Use) {
+                        Link:egpColor(139,vec(170,200,255))
+                        Holoangle[N,angle] = Holoangle[N,angle] + ang(0,0,Changerate[Rate,number])
+                        if(Holoangle[N,angle]:roll() > 360) {
+                            Holoangle[N,angle] = ang(Holoangle[N,angle]:pitch(),Holoangle[N,angle]:yaw(),360)
+                        }
+                    }
+                }
+                elseif(X >= (757/1000) & X <= (787/1000)) {
+                    Link:egpColor(154,vec(195,244,255))
+                    Link:egpColor(160,vec(0,0,0))
+                    if(~Use & Use) {
+                        Link:egpColor(154,vec(170,200,255))
+                        Holosize[N,vector] = Holosize[N,vector] - vec(0,0,Changerate[Rate,number])
+                        if(Holosize[N,vector]:z() < 0) {
+                            Holosize[N,vector] = vec(Holosize[N,vector]:x(),Holosize[N,vector]:y(),0)
+                        }
+                    }
+                }
+                elseif(X >= (800/1000) & X <= (830/1000)) {
+                    Link:egpColor(155,vec(195,244,255))
+                    Link:egpColor(161,vec(0,0,0))
+                    if(~Use & Use) {
+                        Link:egpColor(155,vec(170,200,255))
+                        Holosize[N,vector] = Holosize[N,vector] + vec(0,0,Changerate[Rate,number])
+                        if(Holosize[N,vector]:z() > 50) {
+                            Holosize[N,vector] = vec(Holosize[N,vector]:x(),Holosize[N,vector]:y(),50)
+                        }
+                    }
+                }
+            }
+            elseif(Y >= (353/1000) & Y <= (391/1000)) {
+                if(X >= (346/1000) & X <= (461/1000)) {
+                    Link:egpColor(130,vec(195,244,255))
+                    Link:egpColor(131,vec(0,0,0))
+                    if(~Use & Use) {
+                        Link:egpColor(130,vec(170,200,255))
+                        Holoangle[N,angle] = ang(0,0,0)
+                    }
+                }
+                elseif(X >= (538/1000) & X <= (656/1000)) {
+                    Link:egpColor(132,vec(195,244,255))
+                    Link:egpColor(133,vec(0,0,0))
+                    if(~Use & Use) {
+                        Link:egpColor(132,vec(170,200,255))
+                        Holoangle[N,angle] = ang(round(Holoangle[N,angle]:pitch()),round(Holoangle[N,angle]:yaw()),round(Holoangle[N,angle]:roll()))
+                    }
+                }
+                elseif(X >= (658/1000) & X <= (776/1000)) {
+                    Link:egpColor(146,vec(195,244,255))
+                    Link:egpColor(147,vec(0,0,0))
+                    if(~Use & Use) {
+                        Link:egpColor(146,vec(170,200,255))
+                        Holosize[N,vector] = vec(1,1,1)
+                    }
+                }
+                elseif(X >= (854/1000) & X <= (970/1000)) {
+                    Link:egpColor(148,vec(195,244,255))
+                    Link:egpColor(149,vec(0,0,0))
+                    if(~Use & Use) {
+                        Link:egpColor(148,vec(170,200,255))
+                        Holosize[N,vector] = vec(round(Holosize[N,vector]:x()),round(Holosize[N,vector]:y()),round(Holosize[N,vector]:z()))
+                    }
+                }
+            }
+            elseif(Y >= (439/1000) & Y <= (469/1000)) {
+                if(X >= (438/1000) & X <= (468/1000)) {
+                    Link:egpColor(166,vec(195,244,255))
+                    Link:egpColor(172,vec(0,0,0))
+                    if(~Use & Use) {
+                        Link:egpColor(166,vec(170,200,255))
+                        Holoposition[N,vector] = Holoposition[N,vector] - vec(Changerate[Rate,number],0,0)
+                    }
+                }
+                elseif(X >= (482/1000) & X <= (512/1000)) {
+                    Link:egpColor(167,vec(195,244,255))
+                    Link:egpColor(173,vec(0,0,0))
+                    if(~Use & Use) {
+                        Link:egpColor(167,vec(170,200,255))
+                        Holoposition[N,vector] = Holoposition[N,vector] + vec(Changerate[Rate,number],0,0)
+                    }
+                }
+            }
+            elseif(Y >= (477/1000) & Y <= (507/1000)) {if(X >= (438/1000) & X <= (468/1000)) {
+                    Link:egpColor(168,vec(195,244,255))
+                    Link:egpColor(174,vec(0,0,0))
+                    if(~Use & Use) {
+                        Link:egpColor(168,vec(170,200,255))
+                        Holoposition[N,vector] = Holoposition[N,vector] - vec(0,Changerate[Rate,number],0)
+                    }
+                }
+                elseif(X >= (482/1000) & X <= (512/1000)) {
+                    Link:egpColor(169,vec(195,244,255))
+                    Link:egpColor(175,vec(0,0,0))
+                    if(~Use & Use) {
+                        Link:egpColor(169,vec(170,200,255))
+                        Holoposition[N,vector] = Holoposition[N,vector] + vec(0,Changerate[Rate,number],0)
+                    }
+                }
+            }
+            elseif(Y >= (516/1000) & Y <= (546/1000)) {
+                if(X >= (438/1000) & X <= (468/1000)) {
+                    Link:egpColor(170,vec(195,244,255))
+                    Link:egpColor(176,vec(0,0,0))
+                    if(~Use & Use) {
+                        Link:egpColor(170,vec(170,200,255))
+                        Holoposition[N,vector] = Holoposition[N,vector] - vec(0,0,Changerate[Rate,number])
+                    }
+                }
+                elseif(X >= (482/1000) & X <= (512/1000)) {
+                    Link:egpColor(171,vec(195,244,255))
+                    Link:egpColor(177,vec(0,0,0))
+                    if(~Use & Use) {
+                        Link:egpColor(171,vec(170,200,255))
+                        Holoposition[N,vector] = Holoposition[N,vector] + vec(0,0,Changerate[Rate,number])
+                    }
+                }
+            }
+            elseif(Y >= (556/1000) & Y <= (594/1000)) {
+                if(X >= (353/1000) & X <= (465/1000)) {
+                    Link:egpColor(162,vec(195,244,255))
+                    Link:egpColor(163,vec(0,0,0))
+                    if(~Use & Use) {
+                        Link:egpColor(162,vec(170,200,255))
+                        Holoposition[N,vector] = entity():pos() + vec(0,0,20)
+                    }
+                }
+                elseif(X >= (538/1000) & X <= (656/1000)) {
+                    Link:egpColor(164,vec(195,244,255))
+                    Link:egpColor(165,vec(0,0,0))
+                    if(~Use & Use) {
+                        Link:egpColor(164,vec(170,200,255))
+                        Holoposition[N,vector] = vec(round(Holoposition[N,vector]:x()),round(Holoposition[N,vector]:y()),round(Holoposition[N,vector]:z()))
+                    }
+                }
+            }
+            elseif(Y >= (598/1000) & Y <= (636/1000)) {
+                if(X >= (532/1000) & X <= (571/1000)) {
+                    Link:egpColor(126,vec(195,244,255))
+                    Link:egpColor(128,vec(0,0,0))
+                    if(~Use & Use & Rate > 1) {
+                        Link:egpColor(126,vec(170,200,255))
+                        Rate--
+                    }
+                }
+                elseif(X >= (582/1000) & X <= (622/1000)) {
+                    Link:egpColor(127,vec(195,244,255))
+                    Link:egpColor(129,vec(0,0,0))
+                    if(~Use & Use & Rate < 13) {
+                        Link:egpColor(127,vec(170,200,255))
+                        Rate++
+                    }
+                } 
+            }
+        }
+        elseif(Menu == 3) {
+            if(Y >= (521/1000) & Y <= (559/1000)) {
+                if(X >= (532/1000) & X <= (571/1000)) {
+                    Link:egpColor(202,vec(195,244,255))
+                    Link:egpColor(204,vec(0,0,0))
+                    if(~Use & Use & Rate > 1) {
+                        Link:egpColor(202,vec(170,200,255))
+                        Rate--
+                    }
+                }
+                elseif(X >= (582/1000) & X <= (622/1000)) {
+                    Link:egpColor(203,vec(195,244,255))
+                    Link:egpColor(205,vec(0,0,0))
+                    if(~Use & Use & Rate < 13) {
+                        Link:egpColor(203,vec(170,200,255))
+                        Rate++
+                    }
+                }
+            }
+            elseif(X >= (451/1000) & X <= (481/1000)) {
+                if(Y >= (236/1000) & Y <= (266/1000)) {
+                    Link:egpColor(210,vec(195,244,255))
+                    Link:egpColor(214,vec(0,0,0))
+                    if(~Use & Use & Mindex[N,number] > 1) {
+                        Link:egpColor(210,vec(170,200,255))
+                        Mindex[N,number] = Mindex[N,number] - 1
+                    }
+                }
+                elseif(Y >= (274/1000) & Y <= (304/1000)) {
+                    Link:egpColor(212,vec(195,244,255))
+                    Link:egpColor(216,vec(0,0,0))
+                    if(~Use & Use & Maindex[N,number] > 1) {
+                        Link:egpColor(212,vec(170,200,255))
+                        Maindex[N,number] = Maindex[N,number] - 1
+                    }
+                }
+                elseif(Y >= (360/1000) & Y <= (390/1000)) {
+                    Link:egpColor(220,vec(195,244,255))
+                    Link:egpColor(228,vec(0,0,0))
+                    if(~Use & Use) {
+                        Link:egpColor(220,vec(170,200,255))
+                        Holocolor[N,vector4] = Holocolor[N,vector4] - vec4(Changerate[Rate,number],0,0,0)
+                        if(Holocolor[N,vector4]:x() < 0) {
+                            Holocolor[N,vector4] = vec4(0,Holocolor[N,vector4]:y(),Holocolor[N,vector4]:z(),Holocolor[N,vector4]:w())
+                        }
+                    }
+                }
+                elseif(Y >= (398/1000) & Y <= (428/1000)) {
+                    Link:egpColor(222,vec(195,244,255))
+                    Link:egpColor(230,vec(0,0,0))
+                    if(~Use & Use) {
+                        Link:egpColor(222,vec(170,200,255))
+                        Holocolor[N,vector4] = Holocolor[N,vector4] - vec4(0,Changerate[Rate,number],0,0)
+                        if(Holocolor[N,vector4]:y() < 0) {
+                            Holocolor[N,vector4] = vec4(Holocolor[N,vector4]:x(),0,Holocolor[N,vector4]:z(),Holocolor[N,vector4]:w())
+                        }
+                    }
+                }
+                elseif(Y >= (438/1000) & Y <= (468/1000)) {
+                    Link:egpColor(224,vec(195,244,255))
+                    Link:egpColor(232,vec(0,0,0))
+                    if(~Use & Use) {
+                        Link:egpColor(224,vec(170,200,255))
+                        Holocolor[N,vector4] = Holocolor[N,vector4] - vec4(0,0,Changerate[Rate,number],0)
+                        if(Holocolor[N,vector4]:z() < 0) {
+                            Holocolor[N,vector4] = vec4(Holocolor[N,vector4]:x(),Holocolor[N,vector4]:y(),0,Holocolor[N,vector4]:w())
+                        }
+                    }
+                }
+                elseif(Y >= (475/1000) & Y <= (515/1000)) {
+                    Link:egpColor(226,vec(195,244,255))
+                    Link:egpColor(234,vec(0,0,0))
+                    if(~Use & Use) {
+                        Link:egpColor(226,vec(170,200,255))
+                        Holocolor[N,vector4] = Holocolor[N,vector4] - vec4(0,0,0,Changerate[Rate,number])
+                        if(Holocolor[N,vector4]:w() < 0) {
+                            Holocolor[N,vector4] = vec4(Holocolor[N,vector4]:x(),Holocolor[N,vector4]:y(),Holocolor[N,vector4]:z(),0)
+                        }
+                    }
+                }
+            }
+            elseif(X >= (495/1000) & X <= (525/1000)) {
+                if(Y >= (236/1000) & Y <= (266/1000)) {
+                    Link:egpColor(211,vec(195,244,255))
+                    Link:egpColor(215,vec(0,0,0))
+                    if(~Use & Use & Mindex[N,number] < 43) {
+                        Link:egpColor(211,vec(170,200,255))
+                        Mindex[N,number] = Mindex[N,number] + 1
+                    }
+                }
+                elseif(Y >= (274/1000) & Y <= (304/1000)) {
+                    Link:egpColor(213,vec(195,244,255))
+                    Link:egpColor(217,vec(0,0,0))
+                    if(~Use & Use & Maindex[N,number] < 42) {
+                        Link:egpColor(213,vec(170,200,255))
+                        Maindex[N,number] = Maindex[N,number] + 1
+                    }
+                }
+                elseif(Y >= (360/1000) & Y <= (390/1000)) {
+                    Link:egpColor(221,vec(195,244,255))
+                    Link:egpColor(229,vec(0,0,0))
+                    if(~Use & Use ) {
+                        Link:egpColor(221,vec(170,200,255))
+                        Holocolor[N,vector4] = Holocolor[N,vector4] + vec4(Changerate[Rate,number],0,0,0)
+                        if(Holocolor[N,vector4]:x() > 255) {
+                            Holocolor[N,vector4] = vec4(255,Holocolor[N,vector4]:y(),Holocolor[N,vector4]:z(),Holocolor[N,vector4]:w())
+                        }
+                    }
+                }
+                elseif(Y >= (398/1000) & Y <= (428/1000)) {
+                    Link:egpColor(223,vec(195,244,255))
+                    Link:egpColor(231,vec(0,0,0))
+                    if(~Use & Use) {
+                        Link:egpColor(223,vec(170,200,255))
+                        Holocolor[N,vector4] = Holocolor[N,vector4] + vec4(0,Changerate[Rate,number],0,0)
+                        if(Holocolor[N,vector4]:y() > 255) {
+                            Holocolor[N,vector4] = vec4(Holocolor[N,vector4]:x(),255,Holocolor[N,vector4]:z(),Holocolor[N,vector4]:w())
+                        }
+                    }
+                }
+                elseif(Y >= (438/1000) & Y <= (468/1000)) {
+                    Link:egpColor(225,vec(195,244,255))
+                    Link:egpColor(233,vec(0,0,0))
+                    if(~Use & Use) {
+                        Link:egpColor(225,vec(170,200,255))
+                        Holocolor[N,vector4] = Holocolor[N,vector4] + vec4(0,0,Changerate[Rate,number],0)
+                        if(Holocolor[N,vector4]:z() > 255) {
+                            Holocolor[N,vector4] = vec4(Holocolor[N,vector4]:x(),Holocolor[N,vector4]:y(),255,Holocolor[N,vector4]:w())
+                        }
+                    }
+                }
+                elseif(Y >= (475/1000) & Y <= (515/1000)) {
+                    Link:egpColor(227,vec(195,244,255))
+                    Link:egpColor(235,vec(0,0,0))
+                    if(~Use & Use) {
+                        Link:egpColor(227,vec(170,200,255))
+                        Holocolor[N,vector4] = Holocolor[N,vector4] + vec4(0,0,0,Changerate[Rate,number])
+                        if(Holocolor[N,vector4]:w() > 255) {
+                            Holocolor[N,vector4] = vec4(Holocolor[N,vector4]:x(),Holocolor[N,vector4]:y(),Holocolor[N,vector4]:z(),255)
+                        }
+                    }
+                }
+            }
+            elseif(X >= (725/1000) & X <= (755/1000)) {
+                if(Y >= (360/1000) & Y <= (390/1000)) {
+                    Link:egpColor(236,vec(195,244,255))
+                    if(~Use & Use) {
+                        Link:egpColor(236,vec(170,200,255))
+                        Holocolor[N,vector4] = vec4(0,0,0,Holocolor[N,vector4]:w())
+                    }
+                }
+                elseif(Y >= (398/1000) & Y <= (428/1000)) {
+                    Link:egpColor(238,vec(195,244,255))
+                    if(~Use & Use) {
+                        Link:egpColor(238,vec(170,200,255))
+                        Holocolor[N,vector4] = vec4(255,0,0,Holocolor[N,vector4]:w())
+                    }
+                }
+                elseif(Y >= (438/1000) & Y <= (468/1000)) {
+                    Link:egpColor(240,vec(195,244,255))
+                    if(~Use & Use) {
+                        Link:egpColor(240,vec(170,200,255))
+                        Holocolor[N,vector4] = vec4(255,255,0,Holocolor[N,vector4]:w())
+                    }
+                }
+                elseif(Y >= (475/1000) & Y <= (515/1000)) {
+                    Link:egpColor(242,vec(195,244,255))
+                    if(~Use & Use) {
+                        Link:egpColor(242,vec(170,200,255))
+                        Holocolor[N,vector4] = vec4(0,0,255,Holocolor[N,vector4]:w())
+                    }
+                }
+            }
+            elseif(X >= (769/1000) & X <= (799/1000)) {
+                if(Y >= (360/1000) & Y <= (390/1000)) {
+                    Link:egpColor(237,vec(195,244,255))
+                    if(~Use & Use) {
+                        Link:egpColor(237,vec(170,200,255))
+                        Holocolor[N,vector4] = vec4(255,255,255,Holocolor[N,vector4]:w())
+                    }
+                }
+                elseif(Y >= (398/1000) & Y <= (428/1000)) {
+                    Link:egpColor(239,vec(195,244,255))
+                    if(~Use & Use) {
+                        Link:egpColor(239,vec(170,200,255))
+                        Holocolor[N,vector4] = vec4(255,120,0,Holocolor[N,vector4]:w())
+                    }
+                }
+                elseif(Y >= (438/1000) & Y <= (468/1000)) {
+                    Link:egpColor(241,vec(195,244,255))
+                    if(~Use & Use) {
+                        Link:egpColor(241,vec(170,200,255))
+                        Holocolor[N,vector4] = vec4(0,255,0,Holocolor[N,vector4]:w())
+                    }
+                }
+                elseif(Y >= (475/1000) & Y <= (515/1000)) {
+                    Link:egpColor(243,vec(195,244,255))
+                    if(~Use & Use) {
+                        Link:egpColor(243,vec(170,200,255))
+                        Holocolor[N,vector4] = vec4(140,0,255,Holocolor[N,vector4]:w())
+                    }
+                }
+            }        
+            elseif(X >= (852/1000) & X <= (971/1000)) {
+                if(Y >= (236/1000) & Y <= (273/1000)) {
+                    Link:egpColor(206,vec(195,244,255))
+                    Link:egpColor(207,vec(0,0,0))
+                    if(~Use & Use) {
+                        Link:egpColor(206,vec(170,200,255))
+                        Mindex[N,number] = 1
+                    }
+                }
+                elseif(Y >= (274/1000) & Y <= (311/1000)) {
+                    Link:egpColor(208,vec(195,244,255))
+                    Link:egpColor(209,vec(0,0,0))
+                    if(~Use & Use) {
+                        Link:egpColor(208,vec(170,200,255))
+                        Maindex[N,number] = 1
+                    }
+                }
+                elseif(Y >= (478/1000) & Y <= (515/1000)) {
+                    Link:egpColor(218,vec(195,244,255))
+                    Link:egpColor(219,vec(0,0,0))
+                    if(~Use & Use) {
+                        Link:egpColor(218,vec(170,200,255))
+                        Holocolor[N,vector4] = vec4(round(Holocolor[N,vector4]:x()),round(Holocolor[N,vector4]:y()),round(Holocolor[N,vector4]:z()),round(Holocolor[N,vector4]:w()))
+                    }
+                }
+            }
+        }
+    }
+    elseif(~Y) {
+        if(owner():keyAttack2() & Hologram[N,number] == 1) {
+            Link:egpColor(76,vec(170,200,255))
+            holoDelete(N)
+            Hologram[N,number] = 0
+            print("Holo #"+N+" removed.")
+            Selected--
+            Use = 1
+        }
+    }
+    else {
+        
+        interval(10)
+        runOnChat(10)
+        
+        if(chatClk(owner())) {
+            T = lastSaid():explode(" ")
+            if(T[1,string] == "/cmd") {
+                hideChat(1)
+                print("============\nCommand List:\n============\n/cmd - Opens command list.")
+                print("/copy - Copies and prints raw data for every hologram (represented by 1 line each) to chat window. Copy desired lines to use for paste.")
+                print("/paste - Pastes 1-2 lines of copy code entered into chat window.\n/clone # - Clones #'s [user input from 1-20] properties to current hologram.")
+                print("/random - Randomizes the values of the currently selected hologram.")
+            }
+            elseif(T[1,string] == "/copy") {
+                hideChat(1)
+                print("=========================\nCopy Code printed below:\n=========================")
+                I = 1
+                M = 0
+                Copy = 1
+            }
+            elseif(T[1,string] == "/paste") {
+                hideChat(1)
+                print("=================\nPaste Instructions:\n=================\nPaste/Type up to two lines from your Copy Code into chat.\n\nExample: 1,10,10,.5,0,0,0,0,0,10,0,0,255,255,38,40,19;1,1,1,5,180,0,180,0,0,20,255,255,125,125,3,8,20;")
+                I = 1
+                M = 0
+                Paste = 1
+            }
+            elseif(T[1,string] == "/clone") {
+                hideChat(1)
+                if(T[2,string]:toNumber() >= 1 & T[2,string]:toNumber() <= 20 & N >= 1) {
+                    Maindex[N,number] = Maindex[T[2,string]:toNumber(),number]
+                    Mindex[N,number] = Mindex[T[2,string]:toNumber(),number]
+                    Holocolor[N,vector4] = Holocolor[T[2,string]:toNumber(),vector4]
+                    Holoposition[N,vector] = Holoposition[T[2,string]:toNumber(),vector] 
+                    Holoangle[N,angle] = Holoangle[T[2,string]:toNumber(),angle]
+                    Holosize[N,vector] = Holosize[T[2,string]:toNumber(),vector]
+                    if(Hologram[T[2,string]:toNumber(),number] == 1 & Hologram[N,number] == 0) {
+                        holoCreate(T[2,string]:toNumber(),Holoposition[N,vector])
+                        Selected++                
+                    }
+                    elseif(Hologram[T[2,string]:toNumber(),number] == 0 & Hologram[N,number] == 1) {
+                        Hologram[N,number] == 0
+                        holoDelete(N)
+                        Selected--                
+                    }
+                    Hologram[N,number] = Hologram[T[2,string]:toNumber(),number]
+                    hint("Sucessfully cloned hologram #"+T[2,string]+" to hologram #"+N,5)
+                }
+                else{
+                    hint("Error: Invalid input. Provide a # between 1-20.",5)
+                    hint("Example: /clone 5",5)    
+                }
+            }
+            elseif(T[1,string] == "/random") {
+                hideChat(1)
+                Maindex[N,number] = randint(1,42)
+                Mindex[N,number] = randint(1,43)
+                Holocolor[N,vector4] = vec4(randint(0,255),randint(0,255),randint(0,255),randint(0,255))
+                Holoangle[N,angle] = ang(randint(0,360),randint(0,360),randint(0,360))
+                Holosize[N,vector] = vec(randint(0,50),randint(0,50),randint(0,50))
+                if(Hologram[N,number] == 0) {
+                    holoCreate(N,Holoposition[N,vector])
+                    Hologram[N,number] = 1
+                    Selected++                
+                }
+            }
+        }                   
+        if(Save == 1) { 
+            if(chatClk(owner())) {
+                if(owner():lastSaid():length() <= 16) {
+                    hideChat(1)
+                    Temp:pushString(lastSaid())
+                    Temp[1,string] = (Temp[1,string]+".txt")
+                    I = 1
+                }
+                else{
+                    hint("Error: File name length too long.",5)
+                    Save = 0
+                }
+            }
+            if(I >= 1 & I <= 20) {
+                if(M == 0) {
+                    Temp:pushString(Hologram[I,number]:toString()+","
+                        +(Holosize[I,vector]:x()):toString()+","
+                        +(Holosize[I,vector]:y()):toString()+","
+                        +(Holosize[I,vector]:z()):toString()+","
+                        +(Holoangle[I,angle]:pitch()):toString()+","
+                        +(Holoangle[I,angle]:yaw()):toString()+","
+                        +(Holoangle[I,angle]:roll()):toString()+","
+                        +((Holoposition[I,vector]:x()-entity():pos():x())):toString()+","
+                        +((Holoposition[I,vector]:y()-entity():pos():y())):toString()+","
+                        +((Holoposition[I,vector]:z()-entity():pos():z())):toString()+","
+                        +(Holocolor[I,vector4]:x()):toString()+","
+                        +(Holocolor[I,vector4]:y()):toString()+","
+                        +(Holocolor[I,vector4]:z()):toString()+","
+                        +(Holocolor[I,vector4]:w()):toString()+","
+                        +Mindex[I,number]:toString()+","
+                        +Maindex[I,number]:toString()+","
+                        +I+";"
+                    )
+                }
+                else {
+                    Temp:popString()  
+                }
+                I++
+                if(I == 21 & M == 0) {
+                    Filename = Temp[1,string]
+                    Temp:remove(1)
+                    fileWrite(Filename,Temp:concat())
+                    M = 1
+                    I = 1
+                }
+                elseif(I == 21 & M == 1) {
+                    hint("Sucessfully saved "+Filename,5)
+                    Filename = ""
+                    Save = 0
+                }                
+            }
+        }
+        elseif(Generate == 1) { 
+            if(Hologram[I,number] == 1) {
+                print(2,"   holoCreate("+I+","+"entity():pos() + vec("+round((Holoposition[I,vector]:x()-entity():pos():x())*100)+"/100,"+round((Holoposition[I,vector]:y()-entity():pos():y())*100)+"/100,"+round((Holoposition[I,vector]:z()-entity():pos():z())*100)+"/100))")
+                print(2,"   holoModel("+I+",\""+Model[Mindex[I,number],string]+"\")")
+                print(2,"   holoScale("+I+",vec("+Holosize[I,vector]:x()*100+"/100,"+Holosize[I,vector]:y()*100+"/100,"+Holosize[I,vector]:z()*100+"/100))")
+                print(2,"   holoAng("+I+",ang("+Holoangle[I,angle]:pitch()*100+"/100,"+Holoangle[I,angle]:yaw()*100+"/100,"+Holoangle[I,angle]:roll()*100+"/100))")
+                print(2,"   holoMaterial("+I+",\""+Material[Maindex[I,number],string]+"\")")
+                print(2,"   holoColor("+I+",vec4("+Holocolor[I,vector4]:x()*100+"/100,"+Holocolor[I,vector4]:y()*100+"/100,"+Holocolor[I,vector4]:z()*100+"/100,"+Holocolor[I,vector4]:w()*100+"/100))\n ")
+            }        
+            if(I == 20) {
+                print(2,"}\n\n=================\nEnd Code \n=================")
+            }
+            I++
+            Generate = !floor(I/21)
+        }
+        elseif(fileClk()) {
+            Temp = fileRead():explode(";")
+            Temp:pop()
+            I = 1
+        }
+        elseif(Load >= 1) {
+            if(chatClk(owner()) & I == 0) {
+                if(owner():lastSaid():length() <= 16) {
+                    Filename = owner():lastSaid()+".txt"
+                    if(fileCanLoad()) {
+                        fileLoad(Filename)
+                    }
+                    else {
+                        hint("Error: File cannot be loaded at this time. Try rejoining server.",5)
+                        Load = 0                        
+                    }
+                }
+                else{
+                    hint("Error: File name must be under 17 characters long.",5)
+                    Load = 0
+                }
+            }
+            if(I >= 1 & I <= 20) {
+                T = Temp[1,string]:explode(",")
+                if(T[17,string]:replace(";",""):toNumber() >= 1 & T[17,string]:replace(";",""):toNumber() <= 20 & T:count() == 17) {                        
+                    N = T[17,string]:toNumber()
+                    Maindex[N,number] = T[16,string]:toNumber()
+                    Mindex[N,number] = T[15,string]:toNumber()
+                    Holocolor[N,vector4] = vec4(Holocolor[N,vector4]:x(),Holocolor[N,vector4]:y(),Holocolor[N,vector4]:z(),T[14,string]:toNumber())
+                    Holocolor[N,vector4] = vec4(Holocolor[N,vector4]:x(),Holocolor[N,vector4]:y(),T[13,string]:toNumber(),Holocolor[N,vector4]:w()) 
+                    Holocolor[N,vector4] = vec4(Holocolor[N,vector4]:x(),T[12,string]:toNumber(),Holocolor[N,vector4]:z(),Holocolor[N,vector4]:w()) 
+                    Holocolor[N,vector4] = vec4(T[11,string]:toNumber(),Holocolor[N,vector4]:y(),Holocolor[N,vector4]:z(),Holocolor[N,vector4]:w()) 
+                    Holoposition[N,vector] = vec(Holoposition[N,vector]:x(),Holoposition[N,vector]:y(),T[10,string]:toNumber() + entity():pos():z()) 
+                    Holoposition[N,vector] = vec(Holoposition[N,vector]:x(),T[9,string]:toNumber() + entity():pos():y(),Holoposition[N,vector]:z()) 
+                    Holoposition[N,vector] = vec(T[8,string]:toNumber() + entity():pos():x(),Holoposition[N,vector]:y(),Holoposition[N,vector]:z()) 
+                    Holoangle[N,angle] = ang(Holoangle[N,angle]:pitch(),Holoangle[N,angle]:yaw(),T[7,string]:toNumber()) 
+                    Holoangle[N,angle] = ang(Holoangle[N,angle]:pitch(),T[6,string]:toNumber(),Holoangle[N,angle]:roll())
+                    Holoangle[N,angle] = ang(T[5,string]:toNumber(),Holoangle[N,angle]:yaw(),Holoangle[N,angle]:roll())
+                    Holosize[N,vector] = vec(Holosize[N,vector]:x(),Holosize[N,vector]:y(),T[4,string]:toNumber()) 
+                    Holosize[N,vector] = vec(Holosize[N,vector]:x(),T[3,string]:toNumber(),Holosize[N,vector]:z()) 
+                    Holosize[N,vector] = vec(T[2,string]:toNumber(),Holosize[N,vector]:y(),Holosize[N,vector]:z()) 
+                    M = 1 + Hologram[N,number]  #Store old value
+                    Hologram[N,number] = T[1,string]:toNumber()
+                    if(M != 1 + Hologram[N,number] & M == 1) {
+                        holoCreate(N,Holoposition[N,vector])
+                        Selected++                
+                    }
+                    print("Save Code Line #"+I+" loaded.")    
+                    Temp:remove(1)     
+                }
+                else{
+                    hint("Error: Save Code Line #"+I+" is invalid.",5)
+                }
+                I++
+                Load = !floor(I/21)
+            }
+        }
+        elseif(Paste == 1) { 
+            if(chatClk(owner()) | I >= 2) {
+                if(lastSaid():find(";") | I >= 2) {
+                    if(I == 1) {
+                        Temp = owner():lastSaid():explode(";")
+                        Temp:pop()
+                    }                     
+                    T = Temp[1,string]:explode(",")
+                    if(T[17,string]:replace(";",""):toNumber() >= 1 & T[17,string]:replace(";",""):toNumber() <= 20 & T:count() == 17) {                        
+                        N = T[17,string]:toNumber()
+                        Maindex[N,number] = T[16,string]:toNumber()
+                        Mindex[N,number] = T[15,string]:toNumber()
+                        Holocolor[N,vector4] = vec4(Holocolor[N,vector4]:x(),Holocolor[N,vector4]:y(),Holocolor[N,vector4]:z(),T[14,string]:toNumber())
+                        Holocolor[N,vector4] = vec4(Holocolor[N,vector4]:x(),Holocolor[N,vector4]:y(),T[13,string]:toNumber(),Holocolor[N,vector4]:w()) 
+                        Holocolor[N,vector4] = vec4(Holocolor[N,vector4]:x(),T[12,string]:toNumber(),Holocolor[N,vector4]:z(),Holocolor[N,vector4]:w()) 
+                        Holocolor[N,vector4] = vec4(T[11,string]:toNumber(),Holocolor[N,vector4]:y(),Holocolor[N,vector4]:z(),Holocolor[N,vector4]:w()) 
+                        Holoposition[N,vector] = vec(Holoposition[N,vector]:x(),Holoposition[N,vector]:y(),T[10,string]:toNumber() + entity():pos():z()) 
+                        Holoposition[N,vector] = vec(Holoposition[N,vector]:x(),T[9,string]:toNumber() + entity():pos():y(),Holoposition[N,vector]:z()) 
+                        Holoposition[N,vector] = vec(T[8,string]:toNumber() + entity():pos():x(),Holoposition[N,vector]:y(),Holoposition[N,vector]:z()) 
+                        Holoangle[N,angle] = ang(Holoangle[N,angle]:pitch(),Holoangle[N,angle]:yaw(),T[7,string]:toNumber()) 
+                        Holoangle[N,angle] = ang(Holoangle[N,angle]:pitch(),T[6,string]:toNumber(),Holoangle[N,angle]:roll())
+                        Holoangle[N,angle] = ang(T[5,string]:toNumber(),Holoangle[N,angle]:yaw(),Holoangle[N,angle]:roll())
+                        Holosize[N,vector] = vec(Holosize[N,vector]:x(),Holosize[N,vector]:y(),T[4,string]:toNumber()) 
+                        Holosize[N,vector] = vec(Holosize[N,vector]:x(),T[3,string]:toNumber(),Holosize[N,vector]:z()) 
+                        Holosize[N,vector] = vec(T[2,string]:toNumber(),Holosize[N,vector]:y(),Holosize[N,vector]:z()) 
+                        M = 1 + Hologram[N,number]  #Store old value
+                        Hologram[N,number] = T[1,string]:toNumber()
+                        if(M != 1 + Hologram[N,number] & M == 1) {
+                            holoCreate(N,Holoposition[N,vector])
+                            Selected++                
+                        }
+                        print("Code #"+I+" pasted.")
+                        Temp:remove(1)          
+                    }
+                    else{
+                        hint("Error: Paste Code #"+I+" is invalid.",5)
+                    }
+                    I++
+               }
+               else {
+                    hint("Error: Invalid input.",5)
+                    Paste = 0   
+               }
+            }
+            Paste = !floor(I/3)    
+        }
+        elseif(Copy == 1) {
+            if(I < 21) {
+                print(Hologram[I,number]:toString()+","
+                +(Holosize[I,vector]:x()):toString()+","
+                +(Holosize[I,vector]:y()):toString()+","
+                +(Holosize[I,vector]:z()):toString()+","
+                +(Holoangle[I,angle]:pitch()):toString()+","
+                +(Holoangle[I,angle]:yaw()):toString()+","
+                +(Holoangle[I,angle]:roll()):toString()+","
+                +((Holoposition[I,vector]:x()-entity():pos():x())):toString()+","
+                +((Holoposition[I,vector]:y()-entity():pos():y())):toString()+","
+                +((Holoposition[I,vector]:z()-entity():pos():z())):toString()+","
+                +(Holocolor[I,vector4]:x()):toString()+","
+                +(Holocolor[I,vector4]:y()):toString()+","
+                +(Holocolor[I,vector4]:z()):toString()+","
+                +(Holocolor[I,vector4]:w()):toString()+","
+                +Mindex[I,number]:toString()+","
+                +Maindex[I,number]:toString()+","
+                +I+";")
+                I++
+            }
+            Copy = !floor(I/21)
+        }
+        Ops = ops()
+        holoModel(N,Model[Mindex[N,number],string])
+        holoScale(N,Holosize[N,vector])
+        holoAng(N,Holoangle[N,angle])
+        holoMaterial(N,Material[Maindex[N,number],string])
+        holoColor(N,Holocolor[N,vector4])
+        holoPos(N,Holoposition[N,vector])
+        Distance = entity():pos() - owner():pos()
+        Quadrant = vec2(Distance:x()/abs(Distance:x()),Distance:y()/abs(Distance:y()))
+        Cubeangle = Cube:angles()
+        if((abs(Distance:x()) - 400 >= 0) | (abs(Distance:y()) - 400 >= 0) | (abs(Distance:z()) - 400 >= 0)) {
+        }
+        else {
+            if(Quadrant == vec2(1,1)) { 
+                Position = (owner():pos() - Cube:pos() + vec(50*cos(0),50*sin(0),40))*100
+                Angle = angnorm(entity():angles() + ang(45,60,45) - Cube:angles())*150
+            }
+            elseif(Quadrant == vec2(-1,1)) {
+                Position = (owner():pos() - Cube:pos() + vec(50*cos(90),50*sin(90),40))*100 
+                Angle = angnorm(entity():angles() + ang(45,150,45) - Cube:angles())*150
+            }
+            elseif(Quadrant == vec2(-1,-1)) {
+                Position = (owner():pos() - Cube:pos() + vec(50*cos(-180),50*sin(-180),40))*100 
+                Angle = angnorm(entity():angles() + ang(45,-120,45) - Cube:angles())*150
+            }
+            elseif(Quadrant == vec2(1,-1)) {
+                Position = (owner():pos() - Cube:pos() + vec(50*cos(-90),50*sin(-90),40))*100
+                Angle = angnorm(entity():angles() + ang(45,-30,45) - Cube:angles())*150 
+            }
+            Cube:applyForce(Position + $Position*5)
+            Cube:applyAngForce(Angle + $Angle*5)
+        } 
+    }
+}
+#Holo Maker 3 by Holywiremod ( http://www.youtube.com/user/SouthJeffersonDavis )
+        
+        
