@@ -1,0 +1,3288 @@
+@name Holo Editor
+@inputs E:wirelink User:entity
+@persist PMenu MMenu CMenu SMenu IMenu SvMenu LMenu PXMenu PYMenu PZMenu SXMenu SYMenu SZMenu CRMenu CGMenu CBMenu CAMenu NKeyboard MLQMenu MHQMenu CPMenu MatMenu SettingsMenu SettingsButtonMenu SettingsFileMenu
+@persist PosMenu MainMenu SizeMenu ColorMenu InfoMenu SaveMenu LoadMenu PosXMenu PosYMenu PosZMenu SizeXMenu SizeYMenu SizeZMenu ColorRMenu ColorGMenu ColorBMenu ColorAMenu NumberKeyboard ModelsMenuLQ ModelsMenuHQ ColorPMenu MaterialMenu
+@persist PosX:array PosY:array PosZ:array Size:array Color:array Model:array X Y Z SX SY SZ R G B A SizeX:array SizeY:array SizeZ:array ColorR:array ColorG:array ColorB:array ColorA:array Count1 Count2 CR CG CB CA Save:array Material:array
+@persist Once Count3 AMenu AnglesMenu APMenu AYMenu ARMenu AnglesPMenu AnglesYMenu AnglesRMenu SetMenu KeyboardSmall KeyboardS Blink UnHighlight Pos:array IMenu2 InfoMenu2 HoloSaveInfo:table SaveCodeArray:string
+@persist AP AY AR AngleP:array AngleY:array AngleR:array Angles:array BtnAlpha BtnMaterial:string BtnMatNum HoloMatNum HoloMaterial:array HoloSelectMenu HSelect HoloNum HoloList:array HoloCount SaveCode:string
+@persist LocalPos:vector LocalAngle:angle MPMenu ModelsPropsMenu SaveFolder:string SBM SFM FileOutput STM SettingsTextMenu TextR TextG TextB
+@trigger User
+runOnFile(1)
+#include "lib/EGP_Keyboard_api"
+
+#Source: https://youtu.be/GYhHy9uuJz0?si=NxHzunI91Sms1Neh
+
+WeldedTo = entity():isWeldedTo()
+
+if(first()){
+    HoloSelectMenu = 1
+    E:egpClear()
+    Blk = vec(0,0,0)
+    BtnAlpha = 100
+    BtnMaterial = "vgui/gradient_down"
+    BtnMatNum = 1
+    HoloMatNum = 1
+    HoloNum = 0
+    HoloCount = 50
+    LocalPos = entity():pos()
+    LocalAngle = entity():angles()
+    SaveFolder = ""
+    FileOutput = 1
+    TextR = 50
+    TextG = 50
+    TextB = 50
+    Version = "2.1"
+    
+    function void wirelink:roundedBox(Index,Pos:vector2,Size:vector2,Material:string,Alpha){
+        This:egpRoundedBox(Index,Pos,Size)
+        This:egpAlpha(Index,Alpha)
+        This:egpMaterial(Index,Material)
+        }
+    
+    function void holoSelectMenu(){
+        if(!HSelect){
+            E:egpClear()
+            
+            E:egpTxt(9,"Holo Select",vec2(256,32),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:egpBox(3,vec2(220,192),vec2(32,16))
+            E:egpBox(4,vec2(292,192),vec2(32,16))
+            
+            E:roundedBox(1,vec2(200,192),vec2(96,64),BtnMaterial,BtnAlpha)
+            E:roundedBox(2,vec2(312,192),vec2(96,64),BtnMaterial,BtnAlpha)
+            
+            E:egpTriangle(5,vec2(170,192),vec2(215,180),vec2(215,204))
+            E:egpTriangle(6,vec2(340,192),vec2(305,180),vec2(305,204))
+            
+            E:egpTxt(7,HoloNum:toString(),vec2(220,130),1,1,48,vec(TextR,TextG,TextB))
+            E:egpTxt(8,"/ "+HoloCount:toString(),vec2(292,130),1,1,48,vec(TextR,TextG,TextB))
+            
+            E:roundedBox(18,vec2(464,32),vec2(64,32),BtnMaterial,BtnAlpha)
+            E:egpTxt(19,"Next",vec2(464,32),1,1,24,vec(255,255,255))
+            
+            for(I=1,4){
+                if(HoloNum==0){
+                E:roundedBox(9+I,vec2(-45+(120*I),350),vec2(100,64),BtnMaterial,25)
+                }
+                else{E:roundedBox(9+I,vec2(-45+(120*I),350),vec2(100,64),BtnMaterial,BtnAlpha)}
+            }
+            
+            if(HoloNum==0){
+                E:egpTxt(14,"Create",vec2(75,350),1,1,32,vec(50,50,50))
+                E:egpTxt(15,"Delete",vec2(195,350),1,1,32,vec(50,50,50))
+                E:egpTxt(16,"Highlight",vec2(315,350),1,1,24,vec(50,50,50))
+                E:egpTxt(17,"Unhighlight",vec2(435,350),1,1,20,vec(50,50,50))
+                }
+            else{
+                E:egpTxt(14,"Create",vec2(75,350),1,1,32,vec(TextR,TextG,TextB))
+                E:egpTxt(15,"Delete",vec2(195,350),1,1,32,vec(TextR,TextG,TextB))
+                E:egpTxt(16,"Highlight",vec2(315,350),1,1,24,vec(TextR,TextG,TextB))
+                E:egpTxt(17,"Unhighlight",vec2(435,350),1,1,20,vec(TextR,TextG,TextB))
+                }
+            
+            HSelect = 1
+            }
+        }
+            
+    function void settingsButtonMenu(){
+        if(!SBM){
+            E:egpClear()
+            
+            E:egpTxt(3,"Button Settings",vec2(256,32),1,1,50,vec(TextR,TextG,TextB))
+            
+            E:roundedBox(1,vec2(48,32),vec2(64,32),BtnMaterial,BtnAlpha)
+			         E:egpTxt(2,"Back",vec2(48,32),1,1,24,vec(255,255,255))
+            
+            E:egpLine(4,vec2(275,128),vec2(275,512))
+            E:egpSize(4,5)
+            E:egpAlpha(4,100)
+            
+            E:egpLine(5,vec2(0,128),vec2(512,128))
+            E:egpSize(5,5)
+            E:egpAlpha(5,100)
+            
+            E:egpLine(19,vec2(0,320),vec2(275,320))
+            E:egpSize(19,5)
+            E:egpAlpha(19,100)
+            
+            E:egpTxt(6,"Material",vec2(137.5,165),1,1,48,vec(TextR,TextG,TextB))
+            E:roundedBox(7,vec2(65,225),vec2(100,32),BtnMaterial,BtnAlpha)
+            E:roundedBox(8,vec2(65,410),vec2(100,32),BtnMaterial,BtnAlpha)
+            
+            E:egpTxt(11,"Brightness",vec2(137.5,350),1,1,48,vec(TextR,TextG,TextB))
+            
+            E:roundedBox(9,vec2(200,225),vec2(65,32),BtnMaterial,BtnAlpha)
+            E:roundedBox(10,vec2(200,410),vec2(65,32),BtnMaterial,BtnAlpha)
+            
+            E:egpTxt(12,"Previous",vec2(65,225),1,1,24,vec(255,255,255))
+            E:egpTxt(13,"Previous",vec2(65,410),1,1,24,vec(255,255,255))
+            
+            E:egpTxt(14,"Next",vec2(200,225),1,1,24,vec(255,255,255))
+            E:egpTxt(15,"Next",vec2(200,410),1,1,24,vec(255,255,255))
+            
+            if(BtnMatNum==1){
+                E:egpTxt(16,"Default",vec2(137.5,280),1,1,48,vec(TextR,TextG,TextB))
+            }
+            elseif(BtnMatNum==2){
+                E:egpTxt(16,"Classic",vec2(137.5,280),1,1,48,vec(TextR,TextG,TextB))
+                }
+            elseif(BtnMatNum==3){
+                E:egpTxt(16,"Gradient Up",vec2(137.5,280),1,1,44,vec(TextR,TextG,TextB))
+                }
+            elseif(BtnMatNum==4){
+                E:egpTxt(16,"Gradient Right",vec2(137.5,280),1,1,44,vec(TextR,TextG,TextB))
+                }
+            elseif(BtnMatNum==5){
+                E:egpTxt(16,"Gradient Left",vec2(137.5,280),1,1,48,vec(TextR,TextG,TextB))
+                }
+            
+            E:egpTxt(20,BtnAlpha:toString(),vec2(137.5,470),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(17,"Preview",vec2(374.5,165),1,1,48,vec(TextR,TextG,TextB))
+            E:roundedBox(18,vec2(374.5,256),vec2(128,64),BtnMaterial,BtnAlpha)
+            
+            SBM = 1
+            }
+        }
+    function void settingsMenu(){
+        if(!SetMenu){
+            E:egpClear()
+            
+            E:roundedBox(1,vec2(256,64),vec2(256,64),BtnMaterial,BtnAlpha)
+			         E:roundedBox(2,vec2(256,148),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:roundedBox(8,vec2(256,232),vec2(256,64),BtnMaterial,BtnAlpha)
+            
+            E:egpTxt(3,"Buttons",vec2(256,64),1,1,64,vec(TextR,TextG,TextB))
+			         E:egpTxt(4,"Text",vec2(256,148),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(7,"Saving",vec2(256,232),1,1,64,vec(TextR,TextG,TextB))
+                        
+            E:roundedBox(5,vec2(48,32),vec2(64,32),BtnMaterial,BtnAlpha)
+			         E:egpTxt(6,"Back",vec2(48,32),1,1,24,vec(255,255,255))
+            }
+        }
+    function void settingsFileMenu(){
+        if(!SFM){
+            E:egpClear()
+            
+            E:egpTxt(3,"Saving Settings",vec2(256,32),1,1,50,vec(TextR,TextG,TextB))
+            
+            E:roundedBox(1,vec2(48,32),vec2(64,32),BtnMaterial,BtnAlpha)
+			         E:egpTxt(2,"Back",vec2(48,32),1,1,24,vec(255,255,255))
+            
+            E:egpLine(5,vec2(0,128),vec2(512,128))
+            E:egpSize(5,5)
+            E:egpAlpha(5,100)
+            
+            E:egpTxt(7,"File Output",vec2(277.5,165),1,1,48,vec(TextR,TextG,TextB))
+            E:roundedBox(8,vec2(205,225),vec2(100,32),BtnMaterial,BtnAlpha)
+            E:roundedBox(9,vec2(340,225),vec2(65,32),BtnMaterial,BtnAlpha)
+            
+            E:egpTxt(10,"Previous",vec2(205,225),1,1,24,vec(255,255,255))
+            E:egpTxt(11,"Next",vec2(340,225),1,1,24,vec(255,255,255))
+            
+            if(FileOutput==1){
+                E:egpTxt(12,"E2Files",vec2(277.5,280),1,1,48,vec(TextR,TextG,TextB))
+            }
+            elseif(FileOutput==2){
+                E:egpTxt(12,"E1Shared",vec2(277.5,280),1,1,48,vec(TextR,TextG,TextB))
+                }
+            elseif(FileOutput==3){
+                E:egpTxt(12,"E2Shared",vec2(277.5,280),1,1,44,vec(TextR,TextG,TextB))
+                }
+            elseif(FileOutput==4){
+                E:egpTxt(12,"CPUShared",vec2(277.5,280),1,1,44,vec(TextR,TextG,TextB))
+                }
+            elseif(FileOutput==5){
+                E:egpTxt(12,"GPUShared",vec2(277.5,280),1,1,48,vec(TextR,TextG,TextB))
+                }
+            SFM = 1
+            }
+        }
+    function void settingsTextMenu(){
+        if(!STM){
+            E:egpClear()
+            E:egpClear()
+            
+            E:egpTxt(3,"Text Settings",vec2(256,32),1,1,50,vec(TextR,TextG,TextB))
+            
+            E:roundedBox(1,vec2(48,32),vec2(64,32),BtnMaterial,BtnAlpha)
+			         E:egpTxt(2,"Back",vec2(48,32),1,1,24,vec(255,255,255))
+            
+            E:egpLine(4,vec2(275,64),vec2(275,512))
+            E:egpSize(4,5)
+            E:egpAlpha(4,100)
+            
+            E:egpLine(5,vec2(0,64),vec2(512,64))
+            E:egpSize(5,5)
+            E:egpAlpha(5,100)
+            
+            E:egpTxt(11,"Red",vec2(137.5,90),1,1,48,vec(TextR,TextG,TextB))
+            E:egpTxt(24,"Green",vec2(137.5,245),1,1,48,vec(TextR,TextG,TextB))
+            E:egpTxt(25,"Blue",vec2(137.5,395),1,1,48,vec(TextR,TextG,TextB))
+            
+            E:roundedBox(9,vec2(200,140),vec2(65,32),BtnMaterial,BtnAlpha)
+            E:roundedBox(10,vec2(200,290),vec2(65,32),BtnMaterial,BtnAlpha)
+            E:roundedBox(22,vec2(200,440),vec2(65,32),BtnMaterial,BtnAlpha)
+            
+            E:roundedBox(7,vec2(65,140),vec2(100,32),BtnMaterial,BtnAlpha)
+            E:roundedBox(8,vec2(65,290),vec2(100,32),BtnMaterial,BtnAlpha)
+            E:roundedBox(23,vec2(65,440),vec2(100,32),BtnMaterial,BtnAlpha)
+            
+            E:egpTxt(12,"Previous",vec2(65,140),1,1,24,vec(255,255,255))
+            E:egpTxt(29,"Previous",vec2(65,290),1,1,24,vec(255,255,255))
+            E:egpTxt(13,"Previous",vec2(65,440),1,1,24,vec(255,255,255))
+            
+            E:egpTxt(14,"Next",vec2(200,140),1,1,24,vec(255,255,255))
+            E:egpTxt(28,"Next",vec2(200,290),1,1,24,vec(255,255,255))
+            E:egpTxt(15,"Next",vec2(200,440),1,1,24,vec(255,255,255))
+            
+            E:egpTxt(26,TextR:toString(),vec2(137.5,185),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(27,TextG:toString(),vec2(137.5,335),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(20,TextB:toString(),vec2(137.5,485),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:egpTxt(17,"Preview",vec2(374.5,165),1,1,48,vec(TextR,TextG,TextB))
+            
+            E:egpTxt(21,"Test",vec2(374.5,256),1,1,64,vec(TextR,TextG,TextB))
+            STM = 1
+            }
+        } 
+            
+    function void mainMenu(){
+        if(!MMenu){
+			         E:egpClear()
+			         E:roundedBox(1,vec2(256,64),vec2(256,64),BtnMaterial,BtnAlpha)
+			         E:roundedBox(2,vec2(256,148),vec2(256,64),BtnMaterial,BtnAlpha)
+			         E:roundedBox(3,vec2(256,232),vec2(256,64),BtnMaterial,BtnAlpha)
+			         E:roundedBox(4,vec2(256,316),vec2(256,64),BtnMaterial,BtnAlpha)
+			         E:roundedBox(5,vec2(190,395),vec2(125,64),BtnMaterial,BtnAlpha)
+			         E:roundedBox(6,vec2(322,395),vec2(125,64),BtnMaterial,BtnAlpha)
+			         E:roundedBox(7,vec2(256,474),vec2(256,64),BtnMaterial,BtnAlpha)
+    
+			         E:egpTxt(8,"Position",vec2(256,64),1,1,64,vec(TextR,TextG,TextB))
+			         E:egpTxt(9,"Size",vec2(256,148),1,1,64,vec(TextR,TextG,TextB))
+			         E:egpTxt(10,"Color",vec2(256,232),1,1,64,vec(TextR,TextG,TextB))
+			         E:egpTxt(11,"Info",vec2(256,316),1,1,64,vec(TextR,TextG,TextB))
+			         E:egpTxt(12,"Save",vec2(190,400),1,1,60,vec(TextR,TextG,TextB))
+			         E:egpTxt(13,"Load",vec2(322,400),1,1,60,vec(TextR,TextG,TextB))
+			         E:egpTxt(14,"Reset",vec2(256,474),1,1,64,vec(TextR,TextG,TextB))
+			         
+            E:roundedBox(15,vec2(450,450),vec2(64,64),BtnMaterial,BtnAlpha)
+            E:egpCircleOutline(16,vec2(450,450),vec2(12,12))
+            E:egpSize(16,10)
+            E:egpBox(17,vec2(450,466),vec2(10,16))
+            E:egpBox(18,vec2(450,434),vec2(10,16))
+            E:egpBox(19,vec2(466,450),vec2(16,10))
+            E:egpBox(20,vec2(434,450),vec2(16,10))
+            E:egpBox(21,vec2(465,465),vec2(10,12))
+            E:egpAngle(21,45)
+            E:egpBox(22,vec2(465,434),vec2(12,10))
+            E:egpAngle(22,45)
+            E:egpBox(23,vec2(435,435),vec2(10,12))
+            E:egpAngle(23,-45)
+            E:egpBox(24,vec2(435,465),vec2(12,10))
+            E:egpAngle(24,-45)
+            
+            for(I=1,9){
+                E:egpColor(15+I,vec(TextR,TextG,TextB))
+                }
+            
+            E:roundedBox(25,vec2(48,32),vec2(64,32),BtnMaterial,BtnAlpha)
+			         E:egpTxt(26,"Back",vec2(48,32),1,1,24,vec(255,255,255))
+            
+			         MMenu = 1
+		      }
+	   }
+    
+    function void posMenu(){
+        if(!PMenu){
+            
+            E:egpClear()
+			         E:roundedBox(1,vec2(256,84),vec2(256,64),BtnMaterial,BtnAlpha)
+			         E:roundedBox(2,vec2(256,168),vec2(256,64),BtnMaterial,BtnAlpha)
+			         E:roundedBox(3,vec2(256,252),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:roundedBox(11,vec2(256,336),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:roundedBox(4,vec2(256,420),vec2(256,64),BtnMaterial,BtnAlpha)
+			
+            E:egpTxt(5,"X",vec2(256,84),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(6,"Y",vec2(256,168),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(7,"Z",vec2(256,252),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(12,"Angles",vec2(256,336),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(8,"Reset",vec2(256,420),1,1,64,vec(TextR,TextG,TextB))
+			
+			         E:roundedBox(9,vec2(48,32),vec2(64,32),BtnMaterial,BtnAlpha)
+			         E:egpTxt(10,"Back",vec2(48,32),1,1,24,vec(255,255,255))
+			
+            PMenu = 1
+        }
+    }
+    
+    function void anglesMenu(){
+        if(!AMenu){
+            E:egpClear()
+			         E:roundedBox(1,vec2(256,148),vec2(256,64),BtnMaterial,BtnAlpha)
+			         E:roundedBox(2,vec2(256,232),vec2(256,64),BtnMaterial,BtnAlpha)
+			         E:roundedBox(3,vec2(256,316),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:roundedBox(4,vec2(256,400),vec2(256,64),BtnMaterial,BtnAlpha)
+			
+            E:egpTxt(5,"Pitch",vec2(256,148),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(6,"Yaw",vec2(256,232),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(7,"Roll",vec2(256,316),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(8,"Reset",vec2(256,400),1,1,64,vec(TextR,TextG,TextB))
+			
+			         E:roundedBox(9,vec2(48,32),vec2(64,32),BtnMaterial,BtnAlpha)
+			         E:egpTxt(10,"Back",vec2(48,32),1,1,24,vec(255,255,255))
+            
+            AMenu = 1
+            }
+        }
+    function void anglesPMenu(){
+        if(!APMenu){
+            E:egpClear()
+            E:roundedBox(1,vec2(96,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(2,vec2(206,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(3,vec2(316,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(4,vec2(426,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:egpTxt(5,"+",vec2(24,187.5),1,1,72,vec(100,100,100))
+            
+            E:roundedBox(6,vec2(96,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(7,vec2(206,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(8,vec2(316,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(9,vec2(426,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:egpTxt(10,"-",vec2(24,291.5),1,1,72,vec(100,100,100))
+            
+            E:egpTxt(11,"0.5",vec2(96,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(12,"1",vec2(206,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(13,"5",vec2(316,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(14,"10",vec2(426,196),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:egpTxt(15,"0.5",vec2(96,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(16,"1",vec2(206,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(17,"5",vec2(316,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(18,"10",vec2(426,300),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:egpTxt(19,"Pitch: "+AngleP[HoloNum,number],vec2(256,64),1,1,96,vec(100,100,100))
+            
+            E:roundedBox(22,vec2(256,400),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:roundedBox(23,vec2(256,475),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:egpTxt(24,"...",vec2(256,390),1,1,96,vec(TextR,TextG,TextB))
+            E:egpTxt(25,"Reset",vec2(256,475),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:roundedBox(20,vec2(48,32),vec2(64,32),BtnMaterial,BtnAlpha)
+            E:egpTxt(21,"Back",vec2(48,32),1,1,24,vec(255,255,255))
+            AXMenu = 1
+            }
+        }
+    function void anglesYMenu(){
+        if(!AYMenu){
+            E:egpClear()
+            E:roundedBox(1,vec2(96,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(2,vec2(206,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(3,vec2(316,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(4,vec2(426,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:egpTxt(5,"+",vec2(24,187.5),1,1,72,vec(100,100,100))
+            
+            E:roundedBox(6,vec2(96,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(7,vec2(206,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(8,vec2(316,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(9,vec2(426,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:egpTxt(10,"-",vec2(24,291.5),1,1,72,vec(100,100,100))
+            
+            E:egpTxt(11,"0.5",vec2(96,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(12,"1",vec2(206,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(13,"5",vec2(316,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(14,"10",vec2(426,196),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:egpTxt(15,"0.5",vec2(96,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(16,"1",vec2(206,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(17,"5",vec2(316,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(18,"10",vec2(426,300),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:egpTxt(19,"Yaw: "+AngleY[HoloNum,number],vec2(256,64),1,1,96,vec(100,100,100))
+            
+            E:roundedBox(22,vec2(256,400),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:roundedBox(23,vec2(256,475),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:egpTxt(24,"...",vec2(256,390),1,1,96,vec(TextR,TextG,TextB))
+            E:egpTxt(25,"Reset",vec2(256,475),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:roundedBox(20,vec2(48,32),vec2(64,32),BtnMaterial,BtnAlpha)
+            E:egpTxt(21,"Back",vec2(48,32),1,1,24,vec(255,255,255))
+            AYMenu = 1
+            }
+        }
+    function void anglesRMenu(){
+        if(!ARMenu){
+            E:egpClear()
+            E:roundedBox(1,vec2(96,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(2,vec2(206,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(3,vec2(316,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(4,vec2(426,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:egpTxt(5,"+",vec2(24,187.5),1,1,72,vec(100,100,100))
+            
+            E:roundedBox(6,vec2(96,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(7,vec2(206,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(8,vec2(316,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(9,vec2(426,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:egpTxt(10,"-",vec2(24,291.5),1,1,72,vec(100,100,100))
+            
+            E:egpTxt(11,"0.5",vec2(96,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(12,"1",vec2(206,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(13,"5",vec2(316,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(14,"10",vec2(426,196),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:egpTxt(15,"0.5",vec2(96,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(16,"1",vec2(206,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(17,"5",vec2(316,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(18,"10",vec2(426,300),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:egpTxt(19,"Roll: "+AngleR[HoloNum,number],vec2(256,64),1,1,96,vec(100,100,100))
+            
+            E:roundedBox(22,vec2(256,400),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:roundedBox(23,vec2(256,475),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:egpTxt(24,"...",vec2(256,390),1,1,96,vec(TextR,TextG,TextB))
+            E:egpTxt(25,"Reset",vec2(256,475),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:roundedBox(20,vec2(48,32),vec2(64,32),BtnMaterial,BtnAlpha)
+            E:egpTxt(21,"Back",vec2(48,32),1,1,24,vec(255,255,255))
+            ARMenu = 1
+            }
+        }
+
+    function void posXMenu(){
+        if(!PXMenu){
+            E:egpClear()
+            E:roundedBox(1,vec2(96,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(2,vec2(206,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(3,vec2(316,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(4,vec2(426,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:egpTxt(5,"+",vec2(24,187.5),1,1,72,vec(100,100,100))
+            
+            E:roundedBox(6,vec2(96,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(7,vec2(206,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(8,vec2(316,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(9,vec2(426,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:egpTxt(10,"-",vec2(24,291.5),1,1,72,vec(100,100,100))
+            
+            E:egpTxt(11,"0.5",vec2(96,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(12,"1",vec2(206,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(13,"5",vec2(316,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(14,"10",vec2(426,196),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:egpTxt(15,"0.5",vec2(96,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(16,"1",vec2(206,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(17,"5",vec2(316,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(18,"10",vec2(426,300),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:egpTxt(19,"X: "+PosX[HoloNum,number],vec2(256,64),1,1,96,vec(100,100,100))
+            
+            E:roundedBox(22,vec2(256,400),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:roundedBox(23,vec2(256,475),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:egpTxt(24,"...",vec2(256,390),1,1,96,vec(TextR,TextG,TextB))
+            E:egpTxt(25,"Reset",vec2(256,475),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:roundedBox(20,vec2(48,32),vec2(64,32),BtnMaterial,BtnAlpha)
+            E:egpTxt(21,"Back",vec2(48,32),1,1,24,vec(255,255,255))
+            PXMenu = 1
+            }
+        }
+    function void posYMenu(){
+        if(!PYMenu){
+            E:egpClear()
+            E:roundedBox(1,vec2(96,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(2,vec2(206,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(3,vec2(316,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(4,vec2(426,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:egpTxt(5,"+",vec2(24,187.5),1,1,72,vec(100,100,100))
+            
+            E:roundedBox(6,vec2(96,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(7,vec2(206,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(8,vec2(316,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(9,vec2(426,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:egpTxt(10,"-",vec2(24,291.5),1,1,72,vec(100,100,100))
+            
+            E:egpTxt(11,"0.5",vec2(96,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(12,"1",vec2(206,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(13,"5",vec2(316,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(14,"10",vec2(426,196),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:egpTxt(15,"0.5",vec2(96,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(16,"1",vec2(206,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(17,"5",vec2(316,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(18,"10",vec2(426,300),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:egpTxt(19,"Y: "+PosY[HoloNum,number],vec2(256,64),1,1,96,vec(100,100,100))
+            
+            E:roundedBox(22,vec2(256,400),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:roundedBox(23,vec2(256,475),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:egpTxt(24,"...",vec2(256,390),1,1,96,vec(TextR,TextG,TextB))
+            E:egpTxt(25,"Reset",vec2(256,475),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:roundedBox(20,vec2(48,32),vec2(64,32),BtnMaterial,BtnAlpha)
+            E:egpTxt(21,"Back",vec2(48,32),1,1,24,vec(255,255,255))
+            PYMenu = 1
+            }
+        }
+    function void posZMenu(){
+        if(!PZMenu){
+            E:egpClear()
+            E:roundedBox(1,vec2(96,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(2,vec2(206,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(3,vec2(316,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(4,vec2(426,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:egpTxt(5,"+",vec2(24,187.5),1,1,72,vec(100,100,100))
+            
+            E:roundedBox(6,vec2(96,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(7,vec2(206,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(8,vec2(316,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(9,vec2(426,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:egpTxt(10,"-",vec2(24,291.5),1,1,72,vec(100,100,100))
+            
+            E:egpTxt(11,"0.5",vec2(96,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(12,"1",vec2(206,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(13,"5",vec2(316,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(14,"10",vec2(426,196),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:egpTxt(15,"0.5",vec2(96,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(16,"1",vec2(206,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(17,"5",vec2(316,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(18,"10",vec2(426,300),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:egpTxt(19,"Z: "+PosZ[HoloNum,number],vec2(256,64),1,1,96,vec(100,100,100))
+            
+            E:roundedBox(22,vec2(256,400),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:roundedBox(23,vec2(256,475),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:egpTxt(24,"...",vec2(256,390),1,1,96,vec(TextR,TextG,TextB))
+            E:egpTxt(25,"Reset",vec2(256,475),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:roundedBox(20,vec2(48,32),vec2(64,32),BtnMaterial,BtnAlpha)
+            E:egpTxt(21,"Back",vec2(48,32),1,1,24,vec(255,255,255))
+            PZMenu = 1
+            }
+        }
+    function void numberKeyboard(){
+        E:egpKeyboardNumber(User)
+        if(!NKeyboard){
+            E:roundedBox(35,vec2(48,32),vec2(64,32),BtnMaterial,BtnAlpha)
+            E:egpTxt(36,"Back",vec2(48,32),1,1,24,vec(255,255,255))
+            E:egpBox(37,vec2(387.5,312.5),vec2(32,32))
+            E:egpTxt(38,"Set",vec2(387.5,312.5),1,1,22,vec(TextR,TextG,TextB))
+            
+            NKeyboard = 1
+            }
+        }
+    
+    function void sizeMenu(){
+        if(!SMenu){
+            E:egpClear()
+            E:roundedBox(1,vec2(256,84),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:roundedBox(2,vec2(256,168),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:roundedBox(3,vec2(256,252),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:roundedBox(4,vec2(256,336),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:roundedBox(5,vec2(256,420),vec2(256,64),BtnMaterial,BtnAlpha)
+        
+            E:egpTxt(6,"X",vec2(256,84),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(7,"Y",vec2(256,168),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(8,"Z",vec2(256,252),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(9,"Models",vec2(256,336),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(10,"Reset",vec2(256,420),1,1,64,vec(TextR,TextG,TextB))
+        
+            E:roundedBox(11,vec2(48,32),vec2(64,32),BtnMaterial,BtnAlpha)
+            E:egpTxt(12,"Back",vec2(48,32),1,1,24,vec(255,255,255))
+        
+            SMenu = 1
+        }
+    }
+    function void sizeXMenu(){
+        if(!SXMenu){
+            E:egpClear()
+            E:roundedBox(1,vec2(96,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(2,vec2(206,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(3,vec2(316,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(4,vec2(426,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:egpTxt(5,"+",vec2(24,187.5),1,1,72,vec(100,100,100))
+            
+            E:roundedBox(6,vec2(96,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(7,vec2(206,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(8,vec2(316,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(9,vec2(426,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:egpTxt(10,"-",vec2(24,291.5),1,1,72,vec(100,100,100))
+            
+            E:egpTxt(11,"0.5",vec2(96,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(12,"1",vec2(206,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(13,"5",vec2(316,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(14,"10",vec2(426,196),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:egpTxt(15,"0.5",vec2(96,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(16,"1",vec2(206,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(17,"5",vec2(316,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(18,"10",vec2(426,300),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:egpTxt(19,"X: "+SizeX[HoloNum,number],vec2(256,64),1,1,96,vec(100,100,100))
+            
+            E:roundedBox(22,vec2(256,400),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:roundedBox(23,vec2(256,475),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:egpTxt(24,"...",vec2(256,390),1,1,96,vec(TextR,TextG,TextB))
+            E:egpTxt(25,"Reset",vec2(256,475),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:roundedBox(20,vec2(48,32),vec2(64,32),BtnMaterial,BtnAlpha)
+            E:egpTxt(21,"Back",vec2(48,32),1,1,24,vec(255,255,255))
+            SXMenu = 1
+            }
+        }
+    function void sizeYMenu(){
+        if(!SYMenu){
+            E:egpClear()
+            E:roundedBox(1,vec2(96,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(2,vec2(206,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(3,vec2(316,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(4,vec2(426,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:egpTxt(5,"+",vec2(24,187.5),1,1,72,vec(100,100,100))
+            
+            E:roundedBox(6,vec2(96,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(7,vec2(206,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(8,vec2(316,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(9,vec2(426,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:egpTxt(10,"-",vec2(24,291.5),1,1,72,vec(100,100,100))
+            
+            E:egpTxt(11,"0.5",vec2(96,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(12,"1",vec2(206,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(13,"5",vec2(316,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(14,"10",vec2(426,196),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:egpTxt(15,"0.5",vec2(96,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(16,"1",vec2(206,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(17,"5",vec2(316,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(18,"10",vec2(426,300),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:egpTxt(19,"Y: "+SizeY[HoloNum,number],vec2(256,64),1,1,96,vec(100,100,100))
+            
+            E:roundedBox(22,vec2(256,400),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:roundedBox(23,vec2(256,475),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:egpTxt(24,"...",vec2(256,390),1,1,96,vec(TextR,TextG,TextB))
+            E:egpTxt(25,"Reset",vec2(256,475),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:roundedBox(20,vec2(48,32),vec2(64,32),BtnMaterial,BtnAlpha)
+            E:egpTxt(21,"Back",vec2(48,32),1,1,24,vec(255,255,255))
+            SYMenu = 1
+            }
+        }
+    function void sizeZMenu(){
+        if(!SZMenu){
+            E:egpClear()
+            E:roundedBox(1,vec2(96,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(2,vec2(206,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(3,vec2(316,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(4,vec2(426,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:egpTxt(5,"+",vec2(24,187.5),1,1,72,vec(100,100,100))
+            
+            E:roundedBox(6,vec2(96,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(7,vec2(206,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(8,vec2(316,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(9,vec2(426,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:egpTxt(10,"-",vec2(24,291.5),1,1,72,vec(100,100,100))
+            
+            E:egpTxt(11,"0.5",vec2(96,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(12,"1",vec2(206,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(13,"5",vec2(316,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(14,"10",vec2(426,196),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:egpTxt(15,"0.5",vec2(96,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(16,"1",vec2(206,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(17,"5",vec2(316,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(18,"10",vec2(426,300),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:egpTxt(19,"Z: "+SizeZ[HoloNum,number],vec2(256,64),1,1,96,vec(100,100,100))
+            
+            E:roundedBox(22,vec2(256,400),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:roundedBox(23,vec2(256,475),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:egpTxt(24,"...",vec2(256,390),1,1,96,vec(TextR,TextG,TextB))
+            E:egpTxt(25,"Reset",vec2(256,475),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:roundedBox(20,vec2(48,32),vec2(64,32),BtnMaterial,BtnAlpha)
+            E:egpTxt(21,"Back",vec2(48,32),1,1,24,vec(255,255,255))
+            SZMenu = 1
+            }
+        }
+    function number touchButton(Index){
+        local Cursor = E:egpCursor(User)
+        local Pos = E:egpPos(Index)
+        local Size = E:egpSize(Index)
+        
+        local Corner1 = Pos-Size/2
+        local Corner2 = Pos+Size/2
+        if(inrange(Cursor,Corner1,Corner2)){
+            return 1
+        }
+        else{
+            return 0
+        }
+    }
+    function void colorMenu(){
+        if(!CMenu){
+            E:egpClear()
+            E:roundedBox(1,vec2(256,64),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:roundedBox(2,vec2(256,148),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:roundedBox(3,vec2(256,232),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:roundedBox(13,vec2(256,316),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:roundedBox(4,vec2(256,395),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:roundedBox(5,vec2(256,474),vec2(256,64),BtnMaterial,BtnAlpha)
+        
+            E:egpTxt(6,"Red",vec2(256,64),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(7,"Green",vec2(256,148),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(8,"Blue",vec2(256,232),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(14,"Preset",vec2(256,316),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(9,"Alpha",vec2(256,400),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(10,"Reset",vec2(256,474),1,1,64,vec(TextR,TextG,TextB))
+        
+            E:roundedBox(11,vec2(48,32),vec2(64,32),BtnMaterial,BtnAlpha)
+            E:egpTxt(12,"Back",vec2(48,32),1,1,24,vec(255,255,255))
+        
+            CMenu = 1
+        }
+    }
+    function void colorRMenu(){
+        if(!CRMenu){
+            E:egpClear()
+            E:roundedBox(1,vec2(96,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(2,vec2(206,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(3,vec2(316,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(4,vec2(426,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:egpTxt(5,"+",vec2(24,187.5),1,1,72,vec(100,100,100))
+            
+            E:roundedBox(6,vec2(96,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(7,vec2(206,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(8,vec2(316,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(9,vec2(426,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:egpTxt(10,"-",vec2(24,291.5),1,1,72,vec(100,100,100))
+            
+            E:egpTxt(11,"0.5",vec2(96,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(12,"1",vec2(206,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(13,"5",vec2(316,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(14,"10",vec2(426,196),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:egpTxt(15,"0.5",vec2(96,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(16,"1",vec2(206,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(17,"5",vec2(316,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(18,"10",vec2(426,300),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:egpTxt(19,"Red: "+ColorR[HoloNum,number],vec2(256,64),1,1,96,vec(100,100,100))
+            
+            E:roundedBox(22,vec2(256,400),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:roundedBox(23,vec2(256,475),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:egpTxt(24,"...",vec2(256,390),1,1,96,vec(TextR,TextG,TextB))
+            E:egpTxt(25,"Reset",vec2(256,475),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:roundedBox(20,vec2(48,32),vec2(64,32),BtnMaterial,BtnAlpha)
+            E:egpTxt(21,"Back",vec2(48,32),1,1,24,vec(255,255,255))
+            CRMenu = 1
+            }
+        }
+    function void colorGMenu(){
+        if(!CGMenu){
+            E:egpClear()
+            E:roundedBox(1,vec2(96,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(2,vec2(206,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(3,vec2(316,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(4,vec2(426,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:egpTxt(5,"+",vec2(24,187.5),1,1,72,vec(100,100,100))
+            
+            E:roundedBox(6,vec2(96,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(7,vec2(206,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(8,vec2(316,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(9,vec2(426,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:egpTxt(10,"-",vec2(24,291.5),1,1,72,vec(100,100,100))
+            
+            E:egpTxt(11,"0.5",vec2(96,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(12,"1",vec2(206,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(13,"5",vec2(316,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(14,"10",vec2(426,196),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:egpTxt(15,"0.5",vec2(96,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(16,"1",vec2(206,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(17,"5",vec2(316,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(18,"10",vec2(426,300),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:egpTxt(19,"Green: "+ColorG[HoloNum,number],vec2(256,64),1,1,96,vec(100,100,100))
+            
+            E:roundedBox(22,vec2(256,400),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:roundedBox(23,vec2(256,475),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:egpTxt(24,"...",vec2(256,390),1,1,96,vec(TextR,TextG,TextB))
+            E:egpTxt(25,"Reset",vec2(256,475),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:roundedBox(20,vec2(48,32),vec2(64,32),BtnMaterial,BtnAlpha)
+            E:egpTxt(21,"Back",vec2(48,32),1,1,24,vec(255,255,255))
+            CGMenu = 1
+        }
+    }
+    function void colorBMenu(){
+        if(!CBMenu){
+            E:egpClear()
+            E:roundedBox(1,vec2(96,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(2,vec2(206,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(3,vec2(316,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(4,vec2(426,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:egpTxt(5,"+",vec2(24,187.5),1,1,72,vec(100,100,100))
+            
+            E:roundedBox(6,vec2(96,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(7,vec2(206,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(8,vec2(316,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(9,vec2(426,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:egpTxt(10,"-",vec2(24,291.5),1,1,72,vec(100,100,100))
+            
+            E:egpTxt(11,"0.5",vec2(96,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(12,"1",vec2(206,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(13,"5",vec2(316,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(14,"10",vec2(426,196),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:egpTxt(15,"0.5",vec2(96,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(16,"1",vec2(206,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(17,"5",vec2(316,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(18,"10",vec2(426,300),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:egpTxt(19,"Blue: "+ColorB[HoloNum,number],vec2(256,64),1,1,96,vec(100,100,100))
+            
+            E:roundedBox(22,vec2(256,400),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:roundedBox(23,vec2(256,475),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:egpTxt(24,"...",vec2(256,390),1,1,96,vec(TextR,TextG,TextB))
+            E:egpTxt(25,"Reset",vec2(256,475),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:roundedBox(20,vec2(48,32),vec2(64,32),BtnMaterial,BtnAlpha)
+            E:egpTxt(21,"Back",vec2(48,32),1,1,24,vec(255,255,255))
+            CBMenu = 1
+        }
+    }
+    function void colorAMenu(){
+        if(!CAMenu){
+            E:egpClear()
+            E:roundedBox(1,vec2(96,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(2,vec2(206,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(3,vec2(316,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(4,vec2(426,196),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:egpTxt(5,"+",vec2(24,187.5),1,1,72,vec(100,100,100))
+            
+            E:roundedBox(6,vec2(96,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(7,vec2(206,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(8,vec2(316,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:roundedBox(9,vec2(426,300),vec2(96,75),BtnMaterial,BtnAlpha)
+            E:egpTxt(10,"-",vec2(24,291.5),1,1,72,vec(100,100,100))
+            
+            E:egpTxt(11,"0.5",vec2(96,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(12,"1",vec2(206,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(13,"5",vec2(316,196),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(14,"10",vec2(426,196),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:egpTxt(15,"0.5",vec2(96,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(16,"1",vec2(206,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(17,"5",vec2(316,300),1,1,64,vec(TextR,TextG,TextB))
+            E:egpTxt(18,"10",vec2(426,300),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:egpTxt(19,"Alpha: "+ColorA[HoloNum,number],vec2(256,64),1,1,96,vec(100,100,100))
+            
+            E:roundedBox(22,vec2(256,400),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:roundedBox(23,vec2(256,475),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:egpTxt(24,"...",vec2(256,390),1,1,96,vec(TextR,TextG,TextB))
+            E:egpTxt(25,"Reset",vec2(256,475),1,1,64,vec(TextR,TextG,TextB))
+            
+            E:roundedBox(20,vec2(48,32),vec2(64,32),BtnMaterial,BtnAlpha)
+            E:egpTxt(21,"Back",vec2(48,32),1,1,24,vec(255,255,255))
+            CAMenu = 1
+        }
+    }
+    
+    function void colorPresetMenu(){
+        if(!CPMenu){
+            E:egpClear()
+            for(I=1,16){
+                Count++
+                if(Count<=4){
+                    E:egpBoxOutline(Count,vec2(96,110*Count),vec2(96,96))
+                    E:egpBoxOutline(16+Count,vec2(96,110*Count),vec2(96,96))
+                    }
+                elseif(inrange(Count,4,8)){
+                    Count1++
+                    E:egpBoxOutline(Count,vec2(210,110*Count1),vec2(96,96))
+                    E:egpBoxOutline(16+Count,vec2(210,110*Count1),vec2(96,96))
+                    }
+                elseif(inrange(Count,8,12)){
+                    Count2++
+                    E:egpBoxOutline(Count,vec2(324,110*Count2),vec2(96,96))
+                    E:egpBoxOutline(16+Count,vec2(324,110*Count2),vec2(96,96))
+                    }
+                elseif(inrange(Count,12,16)){
+                    Count3++
+                    E:egpBoxOutline(Count,vec2(438,110*Count3),vec2(96,96))
+                    E:egpBoxOutline(16+Count,vec2(438,110*Count3),vec2(96,96))
+                    }
+                E:egpSize(Count,6)
+                E:egpColor(Count,vec(100,100,100))
+                }
+            Count = 0
+            Count1 = 0
+            Count2 = 0
+            Count3 = 0
+            
+            for(I=1,16){
+                Count++
+                if(Count<=4){
+                    E:egpBox(32+Count,vec2(96,110*Count),vec2(85,85))
+                    }
+                elseif(inrange(Count,4,8)){
+                    Count1++
+                    E:egpBox(32+Count,vec2(210,110*Count1),vec2(85,85))
+                    }
+                elseif(inrange(Count,8,12)){
+                    Count2++
+                    E:egpBox(32+Count,vec2(324,110*Count2),vec2(85,85))
+                    }
+                elseif(inrange(Count,12,16)){
+                    Count3++
+                    E:egpBox(32+Count,vec2(438,110*Count3),vec2(85,85))
+                    }
+                }
+                
+            Count = 0
+            Count1 = 0
+            Count2 = 0
+            Count3 = 0
+            
+            E:egpColor(33,vec(0,0,0))
+            E:egpColor(35,vec(255,0,0))
+            E:egpColor(36,vec(0,255,0))
+            E:egpColor(37,vec(0,0,255))
+            E:egpColor(38,vec(255,255,0))
+            E:egpColor(39,vec(0,255,255))
+            E:egpColor(40,vec(255,0,255))
+            E:egpColor(41,vec(192,192,192))
+            E:egpColor(42,vec(128,128,128))
+            E:egpColor(43,vec(128,0,0))
+            E:egpColor(44,vec(128,128,0))
+            E:egpColor(45,vec(0,128,0))
+            E:egpColor(46,vec(128,0,128))
+            E:egpColor(47,vec(0,128,128))
+            E:egpColor(48,vec(0,0,128))
+            
+            E:roundedBox(49,vec2(48,32),vec2(64,32),BtnMaterial,BtnAlpha)
+            E:egpTxt(BtnAlpha,"Back",vec2(48,32),1,1,24,vec(255,255,255))
+            E:egpTxt(51,"Colors",vec2(256,32),1,1,64,vec(100,100,100))
+            E:roundedBox(52,vec2(464,32),vec2(64,32),BtnMaterial,BtnAlpha)
+            E:egpTxt(53,"Next",vec2(464,32),1,1,24,vec(255,255,255))
+             
+            CPMenu = 1
+            }
+        }
+        
+    function void materialsMenu(){
+        if(!MatMenu){
+            E:egpClear()
+            E:egpTxt(1,"Materials",vec2(256,32),1,1,64,vec(100,100,100))
+            
+            E:roundedBox(2,vec2(48,32),vec2(64,32),BtnMaterial,BtnAlpha)
+            E:egpTxt(3,"Back",vec2(48,32),1,1,24,vec(255,255,255))
+            
+            E:roundedBox(4,vec2(200,192),vec2(96,64),BtnMaterial,BtnAlpha)
+            E:roundedBox(5,vec2(312,192),vec2(96,64),BtnMaterial,BtnAlpha)
+            
+            E:egpBox(6,vec2(220,192),vec2(32,16))
+            E:egpBox(7,vec2(292,192),vec2(32,16))
+            
+            E:egpTriangle(8,vec2(170,192),vec2(215,180),vec2(215,204))
+            E:egpTriangle(9,vec2(340,192),vec2(305,180),vec2(305,204))
+            
+            E:egpTxt(10,HoloMatNum:toString(),vec2(220,130),1,1,48,vec(TextR,TextG,TextB))
+            E:egpTxt(11,"/20",vec2(292,130),1,1,48,vec(TextR,TextG,TextB))
+            
+            E:roundedBox(12,vec2(256,325),vec2(256,64),BtnMaterial,BtnAlpha)
+            E:egpTxt(13,"...",vec2(256,325),1,1,64,vec(255,255,255))
+            MatMenu = 1
+            }
+        }
+    function void keyboardSmall(){
+        E:egpKeyboardSmall(User)
+        if(!KeyboardS){
+            E:roundedBox(140,vec2(48,32),vec2(64,32),BtnMaterial,BtnAlpha)
+            E:egpTxt(141,"Back",vec2(48,32),1,1,24,vec(255,255,255))
+            E:egpBox(142,vec2(425,312.5),vec2(32,32))
+            E:egpTxt(143,"Set",vec2(425,312.5),1,1,22,vec(TextR,TextG,TextB))
+            
+            KeyboardS = 1
+            }
+        }    
+        
+    function void infoMenu(){
+        if(!IMenu){
+            E:egpClear()
+				
+			         E:egpTxt(1,"Holo Editor "+Version,vec2(300,32),1,1,64,vec(100,100,100))
+			         E:egpLine(2,vec2(0,75),vec2(512,75))
+            E:egpAlpha(2,BtnAlpha)
+            E:egpSize(2,5)
+                
+			         E:egpTxt(3,"Pos: "+PosX[HoloNum,number]+","+PosY[HoloNum,number]+","+PosZ[HoloNum,number],vec2(32,100),0,0,48,vec(100,100,100))
+			         E:egpTxt(4,"Size: "+Size[HoloNum,vector]:x()+","+Size[HoloNum,vector]:y()+","+Size[HoloNum,vector]:z(),vec2(32,150),0,0,48,vec(100,100,100))
+			         E:egpTxt(5,"Model: ",vec2(32,200),0,0,48,vec(100,100,100))
+			         E:egpTxt(6,Model[HoloNum,string],vec2(170,200+(Model[HoloNum,string]:length()/2)),0,0,48-(Model[HoloNum,string]:length()/2),vec(100,100,100))
+			         E:egpTxt(7,"Color: "+Color[HoloNum,vector4]:x()+","+Color[HoloNum,vector4]:y()+","+Color[HoloNum,vector4]:z()+","+Color[HoloNum,vector4]:w(),vec2(32,250),0,0,48,vec(100,100,100))
+                
+            E:egpLine(8,vec2(0,325),vec2(512,325))
+            E:egpAlpha(8,BtnAlpha)
+            E:egpSize(8,5)
+                
+			         E:egpTxt(9,"Made by MemeCrab",vec2(32,350),0,0,48,vec(100,100,100))
+			         E:egpTxt(10,"STEAM_0:1:52366692",vec2(32,400),0,0,48,vec(100,100,100))
+                
+			         E:roundedBox(11,vec2(48,32),vec2(64,32),BtnMaterial,BtnAlpha)
+			         E:egpTxt(12,"Back",vec2(48,32),1,1,24,vec(255,255,255))
+            
+            E:roundedBox(13,vec2(446,100),vec2(64,32),BtnMaterial,100)
+            E:egpTxt(14,"Next",vec2(446,100),1,1,24,vec(255,255,255))
+            
+            IMenu = 1
+        }
+    }
+    
+    function void infoMenu2(){
+        if(!IMenu2){
+            E:egpClear()
+				
+			         E:egpTxt(1,"Holo Editor "+Version,vec2(300,32),1,1,64,vec(100,100,100))
+			         E:egpLine(2,vec2(0,75),vec2(512,75))
+            E:egpAlpha(2,BtnAlpha)
+            E:egpSize(2,5)
+                
+			         E:egpTxt(3,"Angle: "+AngleP[HoloNum,number]+","+AngleR[HoloNum,number]+","+AngleR[HoloNum,number],vec2(32,100),0,0,48,vec(100,100,100))
+			         E:egpTxt(5,"Material: ",vec2(32,150),0,0,48,vec(100,100,100))
+			         E:egpTxt(6,HoloMaterial[HoloNum,string],vec2(32,200+(HoloMaterial[HoloNum,string]:length()/2)),0,0,48-(HoloMaterial[HoloNum,string]:length()/1.5),vec(100,100,100))
+                
+            E:egpLine(8,vec2(0,325),vec2(512,325))
+            E:egpAlpha(8,BtnAlpha)
+            E:egpSize(8,5)
+                
+			         E:egpTxt(9,"Made by MemeCrab",vec2(32,350),0,0,48,vec(100,100,100))
+			         E:egpTxt(10,"STEAM_0:1:52366692",vec2(32,400),0,0,48,vec(100,100,100))
+                
+			         E:roundedBox(11,vec2(48,32),vec2(64,32),BtnMaterial,BtnAlpha)
+			         E:egpTxt(12,"Back",vec2(48,32),1,1,24,vec(255,255,255))
+                
+            IMenu2 = 1
+        }
+    }
+    function void saveMenu(){
+        E:egpKeyboard(User)
+        if(!SvMenu){
+			         E:roundedBox(130,vec2(48,32),vec2(64,32),BtnMaterial,BtnAlpha)
+            E:egpTxt(131,"Back",vec2(48,32),1,1,24,vec(255,255,255))
+			
+            E:egpBox(132,vec2(440,423),vec2(64,32))
+            E:egpTxt(133,"Save",vec2(440,423),1,1,24,vec(TextR,TextG,TextB))
+            E:egpBox(134,vec2(35,423),vec2(64,32))
+            E:egpTxt(135,"Save",vec2(35,415),1,1,18,vec(TextR,TextG,TextB))
+            E:egpTxt(136,"to Code",vec2(35,430),1,1,20,vec(TextR,TextG,TextB))
+			
+            SvMenu = 1
+        }
+    }
+            
+    function void loadMenu(){
+        E:egpKeyboard(User)
+        if(!LMenu){
+			E:roundedBox(130,vec2(48,32),vec2(64,32),BtnMaterial,BtnAlpha)
+            E:egpTxt(131,"Back",vec2(48,32),1,1,24,vec(255,255,255))
+                
+            E:egpBox(132,vec2(440,423),vec2(64,32))
+            E:egpTxt(133,"Load",vec2(440,423),1,1,24,vec(TextR,TextG,TextB))                
+            LMenu = 1
+        }
+    }
+        
+    function void modelsLQMenu(){
+        if(!MLQMenu){
+            E:egpClear()
+            for(I=1,21){
+                Count++
+                if(inrange(Count,0,9)){
+                    E:roundedBox(Count,vec2(125,48+(Count*48)),vec2(128,32),BtnMaterial,BtnAlpha)
+                    }
+                elseif(inrange(Count,10,19)){
+                    Count1++
+                    E:roundedBox(Count1+9,vec2(280,48+Count1*48),vec2(128,32),BtnMaterial,BtnAlpha)
+                    }
+                elseif(inrange(Count,19,20)){
+                    Count2++
+                    E:roundedBox(18+Count2,vec2(435,48+Count2*48),vec2(128,32),BtnMaterial,BtnAlpha)
+                    }
+                }
+            Count = 0
+            Count1 = 0
+            Count2 = 0
+                
+            E:roundedBox(21,vec2(446,480),vec2(100,32),BtnMaterial,100)
+            E:egpTxt(22,"Next",vec2(446,480),1,1,24,vec(255,255,255))
+            E:egpTxt(23,"Low Quality",vec2(256,32),1,1,64,vec(255,255,255))
+            E:egpAlpha(23,100)
+                
+            E:roundedBox(24,vec2(48,32),vec2(64,32),BtnMaterial,BtnAlpha)
+            E:egpTxt(25,"Back",vec2(48,32),1,1,24,vec(255,255,255))
+                
+            E:egpTxt(26,"Cone",vec2(125,96),1,1,32,vec(200,200,200))
+            E:egpTxt(27,"Cube",vec2(125,144),1,1,32,vec(200,200,200))
+            E:egpTxt(28,"Cylinder",vec2(125,187.5),1,1,32,vec(200,200,200))
+            E:egpTxt(29,"Hexagon",vec2(125,235.5),1,1,32,vec(200,200,200))
+            E:egpTxt(30,"Icosphere",vec2(125,286),1,1,28,vec(200,200,200))
+            E:egpTxt(31,"Icosphere2",vec2(125,336),1,1,24,vec(200,200,200))
+            E:egpTxt(32,"Icosphere3",vec2(125,384),1,1,24,vec(200,200,200))
+            E:egpTxt(33,"Octagon",vec2(125,427.5),1,1,32,vec(200,200,200))
+            E:egpTxt(34,"Plane",vec2(125,480),1,1,32,vec(200,200,200))
+                
+            E:egpTxt(35,"Prism",vec2(280,96),1,1,32,vec(200,200,200))
+            E:egpTxt(36,"Pyramid",vec2(280,139.5),1,1,32,vec(200,200,200))
+            E:egpTxt(37,"Right_Prism",vec2(280,190),1,1,23,vec(200,200,200))
+            E:egpTxt(38,"Sphere",vec2(280,235.5),1,1,32,vec(200,200,200))
+            E:egpTxt(39,"Sphere2",vec2(280,286),1,1,32,vec(200,200,200))
+            E:egpTxt(40,"Sphere3",vec2(280,336),1,1,32,vec(200,200,200))
+            E:egpTxt(41,"Tetra",vec2(280,384),1,1,32,vec(200,200,200))
+            E:egpTxt(42,"Torus",vec2(280,431),1,1,32,vec(200,200,200))
+            E:egpTxt(43,"Torus2",vec2(280,480),1,1,32,vec(200,200,200))
+                
+            E:egpTxt(44,"Torus3",vec2(435,96),1,1,32,vec(200,200,200))
+            MLQMenu = 1
+        }
+    }
+     function void modelsHQMenu(){
+        if(!MHQMenu){
+            E:egpClear()
+                
+            for(I=1,25){
+                Count++
+                if(inrange(Count,0,9)){
+                    E:roundedBox(Count,vec2(125,48+(Count*48)),vec2(128,32),BtnMaterial,BtnAlpha)
+                    }
+                elseif(inrange(Count,10,19)){
+                    Count1++
+                    E:roundedBox(Count1+9,vec2(280,48+Count1*48),vec2(128,32),BtnMaterial,BtnAlpha)
+                    }
+                elseif(inrange(Count,19,25)){
+                    Count2++
+                    E:roundedBox(18+Count2,vec2(435,48+Count2*48),vec2(128,32),BtnMaterial,BtnAlpha)
+                    }
+                }
+            Count = 0
+            Count1 = 0
+            Count2 = 0
+                
+                
+            E:roundedBox(26,vec2(446,480),vec2(100,32),BtnMaterial,100)
+            E:egpTxt(27,"Previous",vec2(446,480),1,1,24,vec(255,255,255))
+            E:egpTxt(28,"High Quality",vec2(256,32),1,1,64,vec(255,255,255))
+            E:egpAlpha(28,100)
+                
+            E:roundedBox(29,vec2(48,32),vec2(64,32),BtnMaterial,BtnAlpha)
+            E:egpTxt(30,"Back",vec2(48,32),1,1,24,vec(255,255,255))
+                
+            E:egpTxt(31,"Cone",vec2(125,96),1,1,32,vec(200,200,200))
+            E:egpTxt(32,"Cubinder",vec2(125,144),1,1,32,vec(200,200,200))
+            E:egpTxt(33,"Cylinder",vec2(125,187.5),1,1,32,vec(200,200,200))
+            E:egpTxt(34,"Dome",vec2(125,235.5),1,1,32,vec(200,200,200))
+            E:egpTxt(35,"HDome",vec2(125,286),1,1,28,vec(200,200,200))
+            E:egpTxt(36,"HDome_thick",vec2(125,336),1,1,22,vec(200,200,200))
+            E:egpTxt(37,"HDome_thin",vec2(125,384),1,1,22,vec(200,200,200))
+            E:egpTxt(38,"Icosphere",vec2(125,429),1,1,28,vec(200,200,200))
+            E:egpTxt(39,"RCube",vec2(125,480),1,1,32,vec(200,200,200))
+                
+            E:egpTxt(40,"RCube_thick",vec2(280,96),1,1,22,vec(200,200,200))
+            E:egpTxt(41,"RCube_thin",vec2(280,142.5),1,1,22,vec(200,200,200))
+            E:egpTxt(42,"RCylinder",vec2(280,190),1,1,23,vec(200,200,200))
+            E:egpTxt(43,"RCylinder_thick",vec2(280,237.5),1,1,18,vec(200,200,200))
+            E:egpTxt(44,"RCylinder_thin",vec2(280,286),1,1,20,vec(200,200,200))
+            E:egpTxt(45,"Sphere",vec2(280,336),1,1,32,vec(200,200,200))
+            E:egpTxt(46,"Stube",vec2(280,384),1,1,32,vec(200,200,200))
+            E:egpTxt(47,"Stube_thick",vec2(280,431),1,1,22,vec(200,200,200))
+            E:egpTxt(48,"Stube_thin",vec2(280,480),1,1,22,vec(200,200,200))
+                
+            E:egpTxt(49,"Torus",vec2(435,96),1,1,32,vec(200,200,200))
+            E:egpTxt(50,"Torus_thick",vec2(435,144),1,1,22,vec(200,200,200))
+            E:egpTxt(51,"Torus_thin",vec2(435,190),1,1,22,vec(200,200,200))
+            E:egpTxt(52,"Tube",vec2(435,235.5),1,1,32,vec(200,200,200))
+            E:egpTxt(53,"Tube_thick",vec2(435,286),1,1,22,vec(200,200,200))
+            E:egpTxt(54,"Tube_thin",vec2(435,336),1,1,22,vec(200,200,200))
+            
+            E:roundedBox(55,vec2(446,430),vec2(100,32),BtnMaterial,100)
+            E:egpTxt(56,"Next",vec2(446,430),1,1,24,vec(255,255,255))
+            
+            MHQMenu = 1
+            }
+        }
+    function void modelsPropsMenu(){
+        if(!MPMenu){
+            E:egpClear()
+            if(holoModelAny()){
+                KeyboardSmall = 1
+                }
+            else{
+                E:egpTxt(3,"holoModelAny is disabled",vec2(256,128),1,1,44,vec(200,0,0))
+                E:egpTxt(4,"Enable it to use this feature",vec2(256,200),1,1,32,vec(200,200,200))
+                E:egpTxt(5,"Set wire_holograms_modelany to 1", vec2(256,290),1,1,32,vec(200,200,200))
+                }
+            E:roundedBox(150,vec2(48,32),vec2(64,32),BtnMaterial,BtnAlpha)
+            E:egpTxt(151,"Back",vec2(48,32),1,1,24,vec(255,255,255))
+            MPMenu = 1
+            }
+        }
+    }
+
+if(User&~User){
+    if(MainMenu){
+        if(touchButton(1)){
+            PosMenu = 1
+            MainMenu = 0
+            MMenu = 0
+            }
+        elseif(touchButton(2)){
+            SizeMenu = 1
+            MainMenu = 0
+            MMenu = 0
+            }
+        elseif(touchButton(3)){
+            ColorMenu = 1
+            MainMenu = 0
+            MMenu = 0
+            }
+        elseif(touchButton(4)){
+            InfoMenu = 1
+            MainMenu = 0
+            MMenu = 0
+            }
+        elseif(touchButton(5)){
+            SaveMenu = 1
+            MainMenu = 0
+            MMenu = 0
+            }
+        elseif(touchButton(6)){
+            LoadMenu = 1
+            MainMenu = 0
+            MMenu = 0
+            }
+        elseif(touchButton(7)){
+            reset()
+        }
+        elseif(touchButton(15)){
+            SettingsMenu = 1
+            MainMenu = 0
+            MMenu = 0
+            }
+        elseif(touchButton(25)){
+            MainMenu = 0
+            HoloSelectMenu = 1
+            MMenu = 0
+            }
+    }
+    elseif(HoloSelectMenu){
+        if(touchButton(18)){
+            HoloSelectMenu = 0
+            MainMenu = 1
+            HSelect = 0
+            }
+        elseif(touchButton(1)&HoloNum!=0){
+            HoloNum--
+            }
+        elseif(touchButton(2)&HoloNum!=HoloCount){
+            HoloNum++
+            }
+        elseif(touchButton(10)&HoloList[HoloNum,number]!=1&HoloNum!=0){
+            HoloList[HoloNum,number] = 1
+            Color[HoloNum,vector4] = vec4(0,0,0,255)
+            PosX[HoloNum,number] = 0
+            PosY[HoloNum,number] = 0
+            PosZ[HoloNum,number] = 0
+            SizeX[HoloNum,number] = 1
+            SizeY[HoloNum,number] = 1
+            SizeZ[HoloNum,number] = 1
+            Size[HoloNum,vector] = vec(SizeX[HoloNum,number],SizeY[HoloNum,number],SizeZ[HoloNum,number])
+            ColorR[HoloNum,number] = 0
+            ColorG[HoloNum,number] = 0
+            ColorB[HoloNum,number] = 0
+            ColorA[HoloNum,number] = 255
+            Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+            Model[HoloNum,string] = "cube"
+            holoCreate(HoloNum, LocalPos+vec(0,0,50),Size[HoloNum,vector],LocalAngle,vec(0,0,0),Model[HoloNum,string])
+            holoColor(HoloNum,Color[HoloNum,vector4])
+            holoParent(HoloNum,entity())
+            }
+        elseif(touchButton(11)){
+            HoloList[HoloNum,number] = 0
+            holoDelete(HoloNum)
+            }
+        elseif(touchButton(12)){
+            timer("blink",1000)
+            UnHighlight = 0
+            }
+        elseif(touchButton(13)){
+            UnHighlight = 1
+            }
+        E:egpSetText(7,HoloNum:toString())
+        if(HoloNum==0){
+                E:egpColor(14,vec(50,50,50))
+                E:egpColor(15,vec(50,50,50))
+                E:egpColor(16,vec(50,50,50))
+                E:egpColor(17,vec(50,50,50))
+                
+                E:egpAlpha(10,25)
+                E:egpAlpha(11,25)
+                E:egpAlpha(12,25)
+                E:egpAlpha(13,25)
+                }
+            else{
+                E:egpColor(14,vec(TextR,TextG,TextB))
+                E:egpColor(15,vec(TextR,TextG,TextB))
+                E:egpColor(16,vec(TextR,TextG,TextB))
+                E:egpColor(17,vec(TextR,TextG,TextB))
+                
+                E:egpAlpha(10,BtnAlpha)
+                E:egpAlpha(11,BtnAlpha)
+                E:egpAlpha(12,BtnAlpha)
+                E:egpAlpha(13,BtnAlpha)
+                }
+        }
+    elseif(SettingsButtonMenu){
+        if(touchButton(1)){
+            SettingsButtonMenu = 0
+            SettingsMenu = 1
+            SBM = 0
+            }
+        elseif(touchButton(7)&BtnMatNum!=1){
+            BtnMatNum--
+            }
+        elseif(touchButton(9)&BtnMatNum!=5){
+            BtnMatNum++
+            }
+        elseif(touchButton(8)&BtnAlpha!=10){
+            BtnAlpha-=10
+            }
+        elseif(touchButton(10)&BtnAlpha!=250){
+            BtnAlpha+=10
+            }
+        if(BtnMatNum==1){
+            E:egpSetText(16,"Default")
+            BtnMaterial = "vgui/gradient_down"
+            }
+        elseif(BtnMatNum==2){
+            E:egpSetText(16,"Classic")
+            BtnMaterial = ""
+            }
+        elseif(BtnMatNum==3){
+            E:egpSetText(16,"Gradient Up")
+            E:egpSize(16,44)
+            BtnMaterial = "vgui/gradient_up"
+            }
+        elseif(BtnMatNum==4){
+            E:egpSetText(16,"Gradient Right")
+            E:egpSize(16,44)
+            BtnMaterial = "vgui/gradient-r"
+            }
+        elseif(BtnMatNum==5){
+            E:egpSetText(16,"Gradient Left")
+            E:egpSize(16,44)
+            BtnMaterial = "vgui/gradient-l"
+            }
+        E:egpMaterial(18,BtnMaterial)
+        E:egpAlpha(18,BtnAlpha)
+        E:egpSetText(20,BtnAlpha:toString())
+        }
+    elseif(PosMenu){
+        if(touchButton(9)){
+            PosMenu = 0
+            MainMenu = 1
+            PMenu = 0
+            }
+        elseif(touchButton(1)){
+            PosMenu = 0
+            PosXMenu = 1
+            PMenu = 0
+            }
+        elseif(touchButton(2)){
+            PosMenu = 0
+            PosYMenu = 1
+            PMenu = 0
+            }
+        elseif(touchButton(3)){
+            PosMenu = 0
+            PosZMenu = 1
+            PMenu = 0
+            }
+        elseif(touchButton(4)){
+            PosX[HoloNum,number] = 0
+            PosY[HoloNum,number] = 0
+            PosZ[HoloNum,number] = 0
+            holoPos(HoloNum, LocalPos+vec(0,0,50)+vec(PosX[HoloNum,number],PosZ[HoloNum,number],PosY[HoloNum,number]))
+            }
+        elseif(touchButton(11)){
+            PosMenu = 0
+            PMenu = 0
+            AnglesMenu = 1
+            }
+        }
+    elseif(SizeMenu){
+        if(touchButton(11)){
+            SizeMenu = 0
+            MainMenu = 1
+            SMenu = 0
+            }
+        elseif(touchButton(1)){
+            SizeMenu = 0
+            SizeXMenu = 1
+            SMenu = 0
+            }
+        elseif(touchButton(2)){
+            SizeMenu = 0
+            SizeYMenu = 1
+            SMenu = 0
+            }
+        elseif(touchButton(3)){
+            SizeMenu = 0
+            SizeZMenu = 1
+            SMenu = 0
+            }
+        elseif(touchButton(4)){
+            SizeMenu = 0
+            SMenu = 0
+            ModelsMenuLQ = 1
+            }
+        elseif(touchButton(5)){
+            SizeX[HoloNum,number] = 1
+            SizeY[HoloNum,number] = 1
+            SizeZ[HoloNum,number] = 1
+            Model[HoloNum,string] = "cube"
+            Size[HoloNum,vector] = vec(SizeX[HoloNum,number],SizeZ[HoloNum,number],SizeY[HoloNum,number])
+            holoScale(HoloNum,Size[HoloNum,vector])
+            holoModel(HoloNum,Model[HoloNum,string])
+            }
+        }
+    elseif(ColorMenu){
+        if(touchButton(11)){
+            ColorMenu = 0
+            MainMenu = 1
+            CMenu = 0
+            }
+        elseif(touchButton(1)){
+            ColorMenu = 0
+            CMenu = 0
+            ColorRMenu = 1
+            }
+        elseif(touchButton(2)){
+            ColorMenu = 0
+            CMenu = 0
+            ColorGMenu = 1
+            }
+        elseif(touchButton(3)){
+            ColorMenu = 0
+            CMenu = 0
+            ColorBMenu = 1
+            }
+        elseif(touchButton(4)){
+            ColorMenu = 0
+            CMenu = 0
+            ColorAMenu = 1
+            }
+        elseif(touchButton(5)){
+            ColorR[HoloNum,number] = 0
+            ColorG[HoloNum,number] = 0
+            ColorB[HoloNum,number] = 0
+            ColorA[HoloNum,number] = 255
+            Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+            holoColor(HoloNum,Color[HoloNum,vector4])
+            }
+        elseif(touchButton(13)){
+            CMenu = 0
+            ColorMenu = 0
+            ColorPMenu = 1
+            }
+        }
+    elseif(InfoMenu){
+        if(touchButton(11)){
+            InfoMenu = 0
+            MainMenu = 1
+            IMenu = 0
+            }
+        elseif(touchButton(13)){
+            InfoMenu = 0
+            InfoMenu2 = 1
+            IMenu = 0
+            }
+        }
+    elseif(InfoMenu2){
+        if(touchButton(11)){
+            InfoMenu2 = 0
+            InfoMenu = 1
+            IMenu2 = 0
+            }
+        }
+    elseif(SaveMenu){
+        if(touchButton(130)){
+            SaveMenu = 0
+            MainMenu = 1
+            SvMenu = 0
+            Keyboard = 0
+            Text:clear()
+            }
+    elseif(touchButton(132)){
+        for(I=1,HoloCount){   #Position, Angle, Size, Model, Color, Material
+            HoloSaveInfo:pushArray(array(vec(PosX[I,number],PosZ[I,number],PosY[I,number]),ang(AngleP[I,number],AngleY[I,number],AngleR[I,number]),vec(SizeX[I,number],SizeZ[I,number],SizeY[I,number]),
+            Model[I,string],Color[I,vector4],HoloMaterial[I,string],HoloList[I,number]))
+            }
+        fileWrite(Text[1,string]+Text[2,string]+Text[3,string]+Text[4,string]+Text[5,string]+Text[6,string]+Text[7,string]+Text[8,string]+Text[9,string]+Text[10,string]+Text[11,string]+Text[12,string]+Text[13,string]+Text[14,string]+Text[15,string]+".txt",
+        vonEncode(HoloSaveInfo))
+        hint("File saved",2.5)
+        SaveMenu = 0
+        SvMenu = 0
+        MainMenu = 1
+        Keyboard = 0
+        Text:clear()
+    }
+    elseif(touchButton(134)){
+        SaveCodeArray = "HoloSettings = table("
+        for(I=1,HoloCount){
+            if(HoloList[I,number]==1){
+                Count++
+                }
+            }
+        for(I=1,HoloCount){   #Position, Angle, Size, Model, Color, Material
+            if(HoloList[I,number]==1){
+                if(I!=Count){
+                    SaveCodeArray+="table("+I+",vec("+PosX[I,number]+","+PosY[I,number]+","+PosZ[I,number]+"),ang("+AngleP[I,number]+","+AngleY[I,number]+","+AngleR[I,number]+"),vec("+SizeX[I,number]+","+SizeZ[I,number]+","+SizeY[I,number]+"),"+toChar(34)+Model[I,string]+toChar(34)+",vec("+ColorR[I,number]+","+ColorG[I,number]+","+ColorB[I,number]+"),"+ColorA[I,number]+","+toChar(34)+HoloMaterial[I,string]+toChar(34)+"),"
+                    }
+                else{
+                    SaveCodeArray+="table("+I+",vec("+PosX[I,number]+","+PosY[I,number]+","+PosZ[I,number]+"),ang("+AngleP[I,number]+","+AngleY[I,number]+","+AngleR[I,number]+"),vec("+SizeX[I,number]+","+SizeZ[I,number]+","+SizeY[I,number]+"),"+toChar(34)+Model[I,string]+toChar(34)+",vec("+ColorR[I,number]+","+ColorG[I,number]+","+ColorB[I,number]+"),"+ColorA[I,number]+","+toChar(34)+HoloMaterial[I,string]+toChar(34)+"))"
+                    
+                    }
+                }
+                
+            }
+SaveCode = "@name "+Text[1,string]+Text[2,string]+Text[3,string]+Text[4,string]+Text[5,string]+Text[6,string]+Text[7,string]+Text[8,string]+Text[9,string]+Text[10,string]+Text[11,string]+Text[12,string]+Text[13,string]+Text[14,string]+Text[15,string]+
+"
+
+"+SaveCodeArray+"
+
+if(first()){
+    print("+toChar(34)+"Made With MemeCrab's STEAM_0:1:52366692 Holo Editor"+toChar(34)+")
+    "
+    SaveCode+="
+    for(I=1,"+HoloList:sum()+"){
+        holoCreate(HoloSettings[I,table][1,number], entity():pos()+HoloSettings[I,table][2,vector],HoloSettings[I,table][4,vector], HoloSettings[I,table][3,angle],HoloSettings[I,table][6,vector],HoloSettings[I,table][5,string])
+        holoMaterial(HoloSettings[I,table][1,number],HoloSettings[I,table][8,string])
+        holoAlpha(HoloSettings[I,table][1,number],HoloSettings[I,table][7,number])
+        holoParent(HoloSettings[I,table][1,number],entity())
+        }
+    }
+    "
+        fileWrite(SaveFolder+Text[1,string]+Text[2,string]+Text[3,string]+Text[4,string]+Text[5,string]+Text[6,string]+Text[7,string]+Text[8,string]+Text[9,string]+Text[10,string]+Text[11,string]+Text[12,string]+Text[13,string]+Text[14,string]+Text[15,string]+".txt",
+        SaveCode)
+        hint("File saved",2.5)
+        Text:clear()
+        SaveMenu = 0
+        SvMenu = 0
+        MainMenu = 1
+        Keyboard = 0
+        }
+    }
+    elseif(LoadMenu){
+        if(touchButton(130)){
+            LoadMenu = 0
+            MainMenu = 1
+            LMenu = 0
+            Keyboard = 0
+            }
+    elseif(touchButton(132)){
+            LoadMenu = 0
+            MainMenu = 1
+            LMenu = 0
+            Keyboard = 0
+            fileLoad(Text[1,string]+Text[2,string]+Text[3,string]+Text[4,string]+Text[5,string]+Text[6,string]+Text[7,string]+Text[8,string]+Text[9,string]+Text[10,string]+Text[11,string]+Text[12,string]+Text[13,string]+Text[14,string]+Text[15,string]+".txt")
+        }
+    }
+    elseif(PosXMenu){
+        X = 1
+        if(touchButton(20)){
+            PosXMenu = 0
+            PXMenu = 0
+            PosMenu = 1
+            X = 0
+            }
+        elseif(touchButton(1)){
+            PosX[HoloNum,number] = PosX[HoloNum,number]+0.5
+            Pos[HoloNum,vector] = vec(PosX[HoloNum,number],PosZ[HoloNum,number],PosY[HoloNum,number])
+            holoPos(HoloNum, LocalPos+vec(0,0,50)+Pos[HoloNum,vector])
+            }
+        elseif(touchButton(2)){
+            PosX[HoloNum,number] = PosX[HoloNum,number]+1
+            Pos[HoloNum,vector] = vec(PosX[HoloNum,number],PosZ[HoloNum,number],PosY[HoloNum,number])
+            holoPos(HoloNum, LocalPos+vec(0,0,50)+Pos[HoloNum,vector])
+            }
+        elseif(touchButton(3)){
+            PosX[HoloNum,number] = PosX[HoloNum,number]+5
+            Pos[HoloNum,vector] = vec(PosX[HoloNum,number],PosZ[HoloNum,number],PosY[HoloNum,number])
+            holoPos(HoloNum, LocalPos+vec(0,0,50)+Pos[HoloNum,vector])
+            }
+        elseif(touchButton(4)){
+            PosX[HoloNum,number] = PosX[HoloNum,number]+10
+            Pos[HoloNum,vector] = vec(PosX[HoloNum,number],PosZ[HoloNum,number],PosY[HoloNum,number])
+            holoPos(HoloNum, LocalPos+vec(0,0,50)+Pos[HoloNum,vector])
+            }
+        elseif(touchButton(6)){
+            PosX[HoloNum,number] = PosX[HoloNum,number]-0.5
+            Pos[HoloNum,vector] = vec(PosX[HoloNum,number],PosZ[HoloNum,number],PosY[HoloNum,number])
+            holoPos(HoloNum, LocalPos+vec(0,0,50)+Pos[HoloNum,vector])
+            }
+        elseif(touchButton(7)){
+            PosX[HoloNum,number] = PosX[HoloNum,number]-1
+            Pos[HoloNum,vector] = vec(PosX[HoloNum,number],PosZ[HoloNum,number],PosY[HoloNum,number])
+            holoPos(HoloNum, LocalPos+vec(0,0,50)+Pos[HoloNum,vector])
+            }
+        elseif(touchButton(8)){
+            PosX[HoloNum,number] = PosX[HoloNum,number]-5
+            Pos[HoloNum,vector] = vec(PosX[HoloNum,number],PosZ[HoloNum,number],PosY[HoloNum,number])
+            holoPos(HoloNum, LocalPos+vec(0,0,50)+Pos[HoloNum,vector])
+            }
+        elseif(touchButton(9)){
+            PosX[HoloNum,number] = PosX[HoloNum,number]-10
+            Pos[HoloNum,vector] = vec(PosX[HoloNum,number],PosZ[HoloNum,number],PosY[HoloNum,number])
+            holoPos(HoloNum, LocalPos+vec(0,0,50)+Pos[HoloNum,vector])
+            }
+        elseif(touchButton(22)){
+            PosXMenu = 0
+            PXMenu = 0
+            NumberKeyboard = 1
+            }
+        elseif(touchButton(23)){
+            PosX[HoloNum,number] = 0
+            Pos[HoloNum,vector] = vec(PosX[HoloNum,number],PosZ[HoloNum,number],PosY[HoloNum,number])
+            holoPos(HoloNum, LocalPos+vec(0,0,50)+Pos[HoloNum,vector])
+            }
+        E:egpSetText(19,"X: "+PosX[HoloNum,number])
+    }
+    elseif(PosYMenu){
+        Y = 1
+        if(touchButton(20)){
+            PosYMenu = 0
+            PYMenu = 0
+            PosMenu = 1
+            Y = 0
+            }
+        elseif(touchButton(1)){
+            PosY[HoloNum,number] = PosY[HoloNum,number]=0.5
+            Pos[HoloNum,vector] = vec(PosX[HoloNum,number],PosZ[HoloNum,number],PosY[HoloNum,number])
+            holoPos(HoloNum, LocalPos+vec(0,0,50)+Pos[HoloNum,vector])
+            }
+        elseif(touchButton(2)){
+            PosY[HoloNum,number] = PosY[HoloNum,number]+1
+            Pos[HoloNum,vector] = vec(PosX[HoloNum,number],PosZ[HoloNum,number],PosY[HoloNum,number])
+            holoPos(HoloNum, LocalPos+vec(0,0,50)+Pos[HoloNum,vector])
+            }
+        elseif(touchButton(3)){
+            PosY[HoloNum,number] = PosY[HoloNum,number]+5
+            Pos[HoloNum,vector] = vec(PosX[HoloNum,number],PosZ[HoloNum,number],PosY[HoloNum,number])
+            holoPos(HoloNum, LocalPos+vec(0,0,50)+Pos[HoloNum,vector])
+            }
+        elseif(touchButton(4)){
+            PosY[HoloNum,number] = PosY[HoloNum,number]+10
+            Pos[HoloNum,vector] = vec(PosX[HoloNum,number],PosZ[HoloNum,number],PosY[HoloNum,number])
+            holoPos(HoloNum, LocalPos+vec(0,0,50)+Pos[HoloNum,vector])
+            }
+        elseif(touchButton(6)){
+            PosY[HoloNum,number] = PosY[HoloNum,number]-0.5
+            Pos[HoloNum,vector] = vec(PosX[HoloNum,number],PosZ[HoloNum,number],PosY[HoloNum,number])
+            holoPos(HoloNum, LocalPos+vec(0,0,50)+Pos[HoloNum,vector])
+            }
+        elseif(touchButton(7)){
+            PosY[HoloNum,number] = PosY[HoloNum,number]-1
+            Pos[HoloNum,vector] = vec(PosX[HoloNum,number],PosZ[HoloNum,number],PosY[HoloNum,number])
+            holoPos(HoloNum, LocalPos+vec(0,0,50)+Pos[HoloNum,vector])
+            }
+        elseif(touchButton(8)){
+            PosY[HoloNum,number] = PosY[HoloNum,number]-5
+            Pos[HoloNum,vector] = vec(PosX[HoloNum,number],PosZ[HoloNum,number],PosY[HoloNum,number])
+            holoPos(HoloNum, LocalPos+vec(0,0,50)+Pos[HoloNum,vector])
+            }
+        elseif(touchButton(9)){
+            PosY[HoloNum,number] = PosY[HoloNum,number]-10
+            Pos[HoloNum,vector] = vec(PosX[HoloNum,number],PosZ[HoloNum,number],PosY[HoloNum,number])
+            holoPos(HoloNum, LocalPos+vec(0,0,50)+Pos[HoloNum,vector])
+            }
+        elseif(touchButton(22)){
+            PosYMenu = 0
+            PYMenu = 0
+            NumberKeyboard = 1
+            }
+        elseif(touchButton(23)){
+            PosY[HoloNum,number] = 0
+            Pos[HoloNum,vector] = vec(PosX[HoloNum,number],PosZ[HoloNum,number],PosY[HoloNum,number])
+            holoPos(HoloNum, LocalPos+vec(0,0,50)+Pos[HoloNum,vector])
+            }
+        E:egpSetText(19,"Y: "+PosY[HoloNum,number])
+        }
+    elseif(PosZMenu){
+        Z = 1
+        if(touchButton(20)){
+            PosZMenu = 0
+            PZMenu = 0
+            PosMenu = 1
+            Y = 0
+            }
+        elseif(touchButton(1)){
+            PosZ[HoloNum,number] = PosZ[HoloNum,number]+0.5
+            Pos[HoloNum,vector] = vec(PosX[HoloNum,number],PosZ[HoloNum,number], PosY[HoloNum,number])
+            holoPos(HoloNum, LocalPos+vec(0,0,50)+Pos[HoloNum,vector])
+            }
+        elseif(touchButton(2)){
+            PosZ[HoloNum,number] = PosZ[HoloNum,number]+1
+            Pos[HoloNum,vector] = vec(PosX[HoloNum,number],PosZ[HoloNum,number], PosY[HoloNum,number])
+            holoPos(HoloNum, LocalPos+vec(0,0,50)+Pos[HoloNum,vector])
+            }
+        elseif(touchButton(3)){
+            PosZ[HoloNum,number] = PosZ[HoloNum,number]+5
+            Pos[HoloNum,vector] = vec(PosX[HoloNum,number],PosZ[HoloNum,number], PosY[HoloNum,number])
+            holoPos(HoloNum, LocalPos+vec(0,0,50)+Pos[HoloNum,vector])
+            }
+        elseif(touchButton(4)){
+            PosZ[HoloNum,number] = PosZ[HoloNum,number]+10
+            Pos[HoloNum,vector] = vec(PosX[HoloNum,number],PosZ[HoloNum,number], PosY[HoloNum,number])
+            holoPos(HoloNum, LocalPos+vec(0,0,50)+Pos[HoloNum,vector])
+            }
+        elseif(touchButton(6)){
+            PosZ[HoloNum,number] = PosZ[HoloNum,number]-0.5
+            Pos[HoloNum,vector] = vec(PosX[HoloNum,number],PosZ[HoloNum,number], PosY[HoloNum,number])
+            holoPos(HoloNum, LocalPos+vec(0,0,50)+Pos[HoloNum,vector])
+            }
+        elseif(touchButton(7)){
+            PosZ[HoloNum,number] = PosZ[HoloNum,number]-1
+            Pos[HoloNum,vector] = vec(PosX[HoloNum,number],PosZ[HoloNum,number], PosY[HoloNum,number])
+            holoPos(HoloNum, LocalPos+vec(0,0,50)+Pos[HoloNum,vector])
+            }
+        elseif(touchButton(8)){
+            PosZ[HoloNum,number] = PosZ[HoloNum,number]-5
+            Pos[HoloNum,vector] = vec(PosX[HoloNum,number],PosZ[HoloNum,number], PosY[HoloNum,number])
+            holoPos(HoloNum, LocalPos+vec(0,0,50)+Pos[HoloNum,vector])
+            }
+        elseif(touchButton(9)){
+            PosZ[HoloNum,number] = PosZ[HoloNum,number]-10
+            Pos[HoloNum,vector] = vec(PosX[HoloNum,number],PosZ[HoloNum,number], PosY[HoloNum,number])
+            holoPos(HoloNum, LocalPos+vec(0,0,50)+Pos[HoloNum,vector])
+            }
+        elseif(touchButton(22)){
+            PosZMenu = 0
+            PZMenu = 0
+            NumberKeyboard = 1
+            }
+        elseif(touchButton(23)){
+            PosZ[HoloNum,number] = 0
+            Pos[HoloNum,vector] = vec(PosX[HoloNum,number],PosZ[HoloNum,number], PosY[HoloNum,number])
+            holoPos(HoloNum, LocalPos+vec(0,0,50)+Pos[HoloNum,vector])
+            }
+        E:egpSetText(19,"Z: "+PosZ[HoloNum,number])
+        }
+    elseif(NumberKeyboard){
+        if(touchButton(35)){
+            if(X){
+                NumberKeyboard = 0
+                NKeyboard = 0
+                PosXMenu = 1
+                Keyboard = 0
+            }
+            elseif(Y){
+                NumberKeyboard = 0
+                NKeyboard = 0
+                PosYMenu = 1
+                Keyboard = 0
+            }
+            elseif(Z){
+                NumberKeyboard = 0
+                NKeyboard = 0
+                PosZMenu = 1
+                Keyboard = 0
+            }
+            elseif(SX){
+                NumberKeyboard = 0
+                NKeyboard = 0
+                SizeXMenu = 1
+                Keyboard = 0
+            }
+            elseif(SY){
+                NumberKeyboard = 0
+                NKeyboard = 0
+                SizeYMenu = 1
+                Keyboard = 0
+            }
+            elseif(SZ){
+                NumberKeyboard = 0
+                NKeyboard = 0
+                SizeZMenu = 1
+                Keyboard = 0
+            }
+            elseif(CR){
+                NumberKeyboard = 0
+                NKeyboard = 0
+                ColorRMenu = 1
+                Keyboard = 0
+            }
+            elseif(CG){
+                NumberKeyboard = 0
+                NKeyboard = 0
+                ColorGMenu = 1
+                Keyboard = 0
+            }
+            elseif(CB){
+                NumberKeyboard = 0
+                NKeyboard = 0
+                ColorBMenu = 1
+                Keyboard = 0
+            }
+            elseif(CA){
+                NumberKeyboard = 0
+                NKeyboard = 0
+                ColorAMenu = 1
+                Keyboard = 0
+            }
+            elseif(AP){
+                NumberKeyboard = 0
+                NKeyboard = 0
+                AnglesPMenu = 1
+                Keyboard = 0
+            }
+            elseif(AY){
+                NumberKeyboard = 0
+                NKeyboard = 0
+                AnglesYMenu = 1
+                Keyboard = 0
+            }
+            elseif(AR){
+                NumberKeyboard = 0
+                NKeyboard = 0
+                AnglesRMenu = 1
+                Keyboard = 0
+            }
+            Text:clear()
+            Txt = 0
+            }
+        elseif(touchButton(37)){
+            NumberKeyboard = 0
+            NKeyboard = 0
+            if(X){
+                PosX[HoloNum,number] = (Text[1,string]+Text[2,string]+Text[3,string]+Text[4,string]+Text[5,string]):toNumber()
+                PosXMenu = 1
+            }
+            elseif(Y){
+                PosY[HoloNum,number] = (Text[1,string]+Text[2,string]+Text[3,string]+Text[4,string]+Text[5,string]):toNumber()
+                PosYMenu = 1
+                }
+            elseif(Z){
+                PosZ[HoloNum,number] = (Text[1,string]+Text[2,string]+Text[3,string]+Text[4,string]+Text[5,string]):toNumber()
+                PosZMenu = 1
+                }
+            if(SX){
+                SizeX[HoloNum,number] = (Text[1,string]+Text[2,string]+Text[3,string]+Text[4,string]+Text[5,string]):toNumber()
+                SizeXMenu = 1
+            }
+            elseif(SY){
+                SizeY[HoloNum,number] = (Text[1,string]+Text[2,string]+Text[3,string]+Text[4,string]+Text[5,string]):toNumber()
+                SizeYMenu = 1
+                }
+            elseif(SZ){
+                SizeZ[HoloNum,number] = (Text[1,string]+Text[2,string]+Text[3,string]+Text[4,string]+Text[5,string]):toNumber()
+                SizeZMenu = 1
+                }
+            elseif(CR){
+                ColorR[HoloNum,number] = (Text[1,string]+Text[2,string]+Text[3,string]+Text[4,string]+Text[5,string]):toNumber()
+                ColorRMenu = 1
+                }
+            elseif(CG){
+                ColorG[HoloNum,number] = (Text[1,string]+Text[2,string]+Text[3,string]+Text[4,string]+Text[5,string]):toNumber()
+                ColorGMenu = 1
+                }
+            elseif(CB){
+                ColorB[HoloNum,number] = (Text[1,string]+Text[2,string]+Text[3,string]+Text[4,string]+Text[5,string]):toNumber()
+                ColorBMenu = 1
+                }
+            elseif(CA){
+                ColorA[HoloNum,number] = (Text[1,string]+Text[2,string]+Text[3,string]+Text[4,string]+Text[5,string]):toNumber()
+                ColorAMenu = 1
+                }
+            elseif(AP){
+                AngleP[HoloNum,number] = (Text[1,string]+Text[2,string]+Text[3,string]+Text[4,string]+Text[5,string]):toNumber()
+                AnglesPMenu = 1
+                }
+            elseif(AY){
+                AngleY[HoloNum,number] = (Text[1,string]+Text[2,string]+Text[3,string]+Text[4,string]+Text[5,string]):toNumber()
+                AnglesYMenu = 1
+                }
+            elseif(AR){
+                AngleR[HoloNum,number] = (Text[1,string]+Text[2,string]+Text[3,string]+Text[4,string]+Text[5,string]):toNumber()
+                AnglesRMenu = 1
+                }
+            Text:clear()
+            Txt = 0
+            Size[HoloNum,vector] = vec(SizeX[HoloNum,number],SizeZ[HoloNum,number],SizeY[HoloNum,number])
+            Pos[HoloNum,vector] = vec(PosX[HoloNum,number],PosZ[HoloNum,number], PosY[HoloNum,number])
+            Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+            Angles[HoloNum,angle] = ang(AngleP[HoloNum,number],AngleY[HoloNum,number],AngleR[HoloNum,number])
+            holoPos(HoloNum, LocalPos+vec(0,0,50)+Pos[HoloNum,vector])
+            holoScale(HoloNum,Size[HoloNum,vector])
+            holoColor(HoloNum,Color[HoloNum,vector4])
+            holoAng(HoloNum, Angles[HoloNum,angle])
+            Keyboard = 0
+            }
+        }
+    elseif(SizeXMenu){
+        SX = 1
+        if(touchButton(20)){
+            SizeXMenu = 0
+            SXMenu = 0
+            SizeMenu = 1
+            SX = 0
+            }
+        elseif(touchButton(1)){
+            SizeX[HoloNum,number] = SizeX[HoloNum,number]+0.5
+            Size[HoloNum,vector] = vec(SizeX[HoloNum,number],SizeZ[HoloNum,number],SizeY[HoloNum,number])
+            holoScale(HoloNum,Size[HoloNum,vector])
+            }
+        elseif(touchButton(2)){
+            SizeX[HoloNum,number] = SizeX[HoloNum,number]+1
+            Size[HoloNum,vector] = vec(SizeX[HoloNum,number],SizeZ[HoloNum,number],SizeY[HoloNum,number])
+            holoScale(HoloNum,Size[HoloNum,vector])
+            }
+        elseif(touchButton(3)){
+            SizeX[HoloNum,number] = SizeX[HoloNum,number]+5
+            Size[HoloNum,vector] = vec(SizeX[HoloNum,number],SizeZ[HoloNum,number],SizeY[HoloNum,number])
+            holoScale(HoloNum,Size[HoloNum,vector])
+            }
+        elseif(touchButton(4)){
+            SizeX[HoloNum,number] = SizeX[HoloNum,number]+10
+            Size[HoloNum,vector] = vec(SizeX[HoloNum,number],SizeZ[HoloNum,number],SizeY[HoloNum,number])
+            holoScale(HoloNum,Size[HoloNum,vector])
+            }
+        elseif(touchButton(6)){
+            SizeX[HoloNum,number] = SizeX[HoloNum,number]-0.5
+            Size[HoloNum,vector] = vec(SizeX[HoloNum,number],SizeZ[HoloNum,number],SizeY[HoloNum,number])
+            holoScale(HoloNum,Size[HoloNum,vector])
+            }
+        elseif(touchButton(7)){
+            SizeX[HoloNum,number] = SizeX[HoloNum,number]-1
+            Size[HoloNum,vector] = vec(SizeX[HoloNum,number],SizeZ[HoloNum,number],SizeY[HoloNum,number])
+            holoScale(HoloNum,Size[HoloNum,vector])
+            }
+        elseif(touchButton(8)){
+            SizeX[HoloNum,number] = SizeX[HoloNum,number]-5
+            Size[HoloNum,vector] = vec(SizeX[HoloNum,number],SizeZ[HoloNum,number],SizeY[HoloNum,number])
+            holoScale(HoloNum,Size[HoloNum,vector])
+            }
+        elseif(touchButton(9)){
+            SizeX[HoloNum,number] = SizeX[HoloNum,number]-10
+            Size[HoloNum,vector] = vec(SizeX[HoloNum,number],SizeZ[HoloNum,number],SizeY[HoloNum,number])
+            holoScale(HoloNum,Size[HoloNum,vector])
+            }
+        elseif(touchButton(22)){
+            SizeXMenu = 0
+            SXMenu = 0
+            NumberKeyboard = 1
+            }
+        elseif(touchButton(23)){
+            SizeX[HoloNum,number] = 1
+            Size[HoloNum,vector] = vec(SizeX[HoloNum,number],SizeZ[HoloNum,number],SizeY[HoloNum,number])
+            holoScale(HoloNum,Size[HoloNum,vector])
+            }
+        E:egpSetText(19,"X: "+SizeX[HoloNum,number])
+        }
+    elseif(SizeYMenu){
+        SY = 1
+        if(touchButton(20)){
+            SizeYMenu = 0
+            SYMenu = 0
+            SizeMenu = 1
+            SY = 0
+            }
+        elseif(touchButton(1)){
+            SizeY[HoloNum,number] = SizeY[HoloNum,number]+0.5
+            Size[HoloNum,vector] = vec(SizeX[HoloNum,number],SizeZ[HoloNum,number],SizeY[HoloNum,number])
+            holoScale(HoloNum,Size[HoloNum,vector])
+            }
+        elseif(touchButton(2)){
+            SizeY[HoloNum,number] = SizeY[HoloNum,number]+1
+            Size[HoloNum,vector] = vec(SizeX[HoloNum,number],SizeZ[HoloNum,number],SizeY[HoloNum,number])
+            holoScale(HoloNum,Size[HoloNum,vector])
+            }
+        elseif(touchButton(3)){
+            SizeY[HoloNum,number] = SizeY[HoloNum,number]+5
+            Size[HoloNum,vector] = vec(SizeX[HoloNum,number],SizeZ[HoloNum,number],SizeY[HoloNum,number])
+            holoScale(HoloNum,Size[HoloNum,vector])
+            }
+        elseif(touchButton(4)){
+            SizeY[HoloNum,number] = SizeY[HoloNum,number]+10
+            Size[HoloNum,vector] = vec(SizeX[HoloNum,number],SizeZ[HoloNum,number],SizeY[HoloNum,number])
+            holoScale(HoloNum,Size[HoloNum,vector])
+            }
+        elseif(touchButton(6)){
+            SizeY[HoloNum,number] = SizeY[HoloNum,number]-0.5
+            Size[HoloNum,vector] = vec(SizeX[HoloNum,number],SizeZ[HoloNum,number],SizeY[HoloNum,number])
+            holoScale(HoloNum,Size[HoloNum,vector])
+            }
+        elseif(touchButton(7)){
+            SizeY[HoloNum,number] = SizeY[HoloNum,number]-1
+            Size[HoloNum,vector] = vec(SizeX[HoloNum,number],SizeZ[HoloNum,number],SizeY[HoloNum,number])
+            holoScale(HoloNum,Size[HoloNum,vector])
+            }
+        elseif(touchButton(8)){
+            SizeY[HoloNum,number] = SizeY[HoloNum,number]-5
+            Size[HoloNum,vector] = vec(SizeX[HoloNum,number],SizeZ[HoloNum,number],SizeY[HoloNum,number])
+            holoScale(HoloNum,Size[HoloNum,vector])
+            }
+        elseif(touchButton(9)){
+            SizeY[HoloNum,number] = SizeY[HoloNum,number]-10
+            Size[HoloNum,vector] = vec(SizeX[HoloNum,number],SizeZ[HoloNum,number],SizeY[HoloNum,number])
+            holoScale(HoloNum,Size[HoloNum,vector])
+            }
+        elseif(touchButton(22)){
+            SizeYMenu = 0
+            SYMenu = 0
+            NumberKeyboard = 1
+            }
+        elseif(touchButton(23)){
+            SizeY[HoloNum,number] = 1
+            Size[HoloNum,vector] = vec(SizeX[HoloNum,number],SizeZ[HoloNum,number],SizeY[HoloNum,number])
+            holoScale(HoloNum,Size[HoloNum,vector])
+            }
+        E:egpSetText(19,"Y: "+SizeY[HoloNum,number])
+        }
+    elseif(SizeZMenu){
+        SZ = 1
+        if(touchButton(20)){
+            SizeZMenu = 0
+            SZMenu = 0
+            SizeMenu = 1
+            SZ = 0
+            }
+        elseif(touchButton(1)){
+            SizeZ[HoloNum,number]= SizeZ[HoloNum,number]+0.5
+            Size[HoloNum,vector] = vec(SizeX[HoloNum,number],SizeZ[HoloNum,number],SizeY[HoloNum,number])
+            holoScale(HoloNum,Size[HoloNum,vector])
+            }
+        elseif(touchButton(2)){
+            SizeZ[HoloNum,number]= SizeZ[HoloNum,number]+1
+            Size[HoloNum,vector] = vec(SizeX[HoloNum,number],SizeZ[HoloNum,number],SizeY[HoloNum,number])
+            holoScale(HoloNum,Size[HoloNum,vector])
+            }
+        elseif(touchButton(3)){
+            SizeZ[HoloNum,number]= SizeZ[HoloNum,number]+5
+            Size[HoloNum,vector] = vec(SizeX[HoloNum,number],SizeZ[HoloNum,number],SizeY[HoloNum,number])
+            holoScale(HoloNum,Size[HoloNum,vector])
+            }
+        elseif(touchButton(4)){
+            SizeZ[HoloNum,number]= SizeZ[HoloNum,number]+10
+            Size[HoloNum,vector] = vec(SizeX[HoloNum,number],SizeZ[HoloNum,number],SizeY[HoloNum,number])
+            holoScale(HoloNum,Size[HoloNum,vector])
+            }
+        elseif(touchButton(6)){
+            SizeZ[HoloNum,number]= SizeZ[HoloNum,number]-0.5
+            Size[HoloNum,vector] = vec(SizeX[HoloNum,number],SizeZ[HoloNum,number],SizeY[HoloNum,number])
+            holoScale(HoloNum,Size[HoloNum,vector])
+            }
+        elseif(touchButton(7)){
+            SizeZ[HoloNum,number]= SizeZ[HoloNum,number]-1
+            Size[HoloNum,vector] = vec(SizeX[HoloNum,number],SizeZ[HoloNum,number],SizeY[HoloNum,number])
+            holoScale(HoloNum,Size[HoloNum,vector])
+            }
+        elseif(touchButton(8)){
+            SizeZ[HoloNum,number]= SizeZ[HoloNum,number]-5
+            Size[HoloNum,vector] = vec(SizeX[HoloNum,number],SizeZ[HoloNum,number],SizeY[HoloNum,number])
+            holoScale(HoloNum,Size[HoloNum,vector])
+            }
+        elseif(touchButton(9)){
+            SizeZ[HoloNum,number]= SizeZ[HoloNum,number]-10
+            Size[HoloNum,vector] = vec(SizeX[HoloNum,number],SizeZ[HoloNum,number],SizeY[HoloNum,number])
+            holoScale(HoloNum,Size[HoloNum,vector])
+            }
+        elseif(touchButton(22)){
+            SizeZMenu = 0
+            SZMenu = 0
+            NumberKeyboard = 1
+            }
+        elseif(touchButton(23)){
+            SizeZ[HoloNum,number] = 1
+            Size[HoloNum,vector] = vec(SizeX[HoloNum,number],SizeZ[HoloNum,number],SizeY[HoloNum,number])
+            holoScale(HoloNum,Size[HoloNum,vector])
+            }
+        E:egpSetText(19,"Z: "+SizeZ[HoloNum,number])
+        }
+    elseif(NumberKeyboard){
+        if(touchButton(35)){
+            NumberKeyboard = 0
+            NKeyboard = 0
+            SizeXMenu = 1
+            Keyboard = 0
+            Text:clear()
+            }
+        }
+    elseif(ModelsMenuLQ){
+        if(touchButton(24)){
+            ModelsMenuLQ = 0
+            MLQMenu = 0
+            SizeMenu = 1
+            }
+        elseif(touchButton(21)){
+            ModelsMenuLQ = 0
+            MLQMenu = 0
+            ModelsMenuHQ = 1
+            }
+       elseif(touchButton(1)){
+            Model[HoloNum,string] = "cone"
+            }
+        elseif(touchButton(2)){
+            Model[HoloNum,string] = "cube"
+            }
+        elseif(touchButton(3)){
+            Model[HoloNum,string] = "cylinder"
+            }
+        elseif(touchButton(4)){
+            Model[HoloNum,string] = "hexagon"
+            }
+        elseif(touchButton(5)){
+            Model[HoloNum,string] = "icosphere"
+            }
+        elseif(touchButton(6)){
+            Model[HoloNum,string] = "icosphere2"
+            }
+        elseif(touchButton(7)){
+            Model[HoloNum,string] = "icosphere3"
+            }
+        elseif(touchButton(8)){
+            Model[HoloNum,string] = "octagon"
+            }
+        elseif(touchButton(9)){
+            Model[HoloNum,string] = "plane"
+            }
+        elseif(touchButton(10)){
+            Model[HoloNum,string] = "prism"
+            }
+        elseif(touchButton(11)){
+            Model[HoloNum,string] = "pyramid"
+            }
+        elseif(touchButton(12)){
+            Model[HoloNum,string] = "right_prism"
+            }
+        elseif(touchButton(13)){
+            Model[HoloNum,string] = "sphere"
+            }
+        elseif(touchButton(14)){
+            Model[HoloNum,string] = "sphere2"
+            }
+        elseif(touchButton(15)){
+            Model[HoloNum,string] = "sphere3"
+            }
+        elseif(touchButton(16)){
+            Model[HoloNum,string] = "tetra"
+            }
+        elseif(touchButton(17)){
+            Model[HoloNum,string] = "torus"
+            }
+        elseif(touchButton(18)){
+            Model[HoloNum,string] = "torus2"
+            }
+        elseif(touchButton(19)){
+            Model[HoloNum,string] = "torus3"
+            }
+        holoModel(HoloNum,Model[HoloNum,string])
+        }
+    elseif(ModelsMenuHQ){
+        if(touchButton(29)){
+            ModelsMenuHQ = 0
+            MHQMenu = 0
+            SizeMenu = 1
+            }
+        elseif(touchButton(26)){
+            ModelsMenuHQ = 0
+            MHQMenu = 0
+            ModelsMenuLQ = 1
+            }
+        elseif(touchButton(1)){
+            Model[HoloNum,string] = "hq_cone"
+            }
+        elseif(touchButton(2)){
+            Model[HoloNum,string] = "hq_cubinder"
+            }
+        elseif(touchButton(3)){
+            Model[HoloNum,string] = "hq_cylinder"
+            }
+        elseif(touchButton(4)){
+            Model[HoloNum,string] = "hq_dome"
+            }
+        elseif(touchButton(5)){
+            Model[HoloNum,string] = "hq_hdome"
+            }
+        elseif(touchButton(6)){
+            Model[HoloNum,string] = "hq_hdome_thick"
+            }
+        elseif(touchButton(7)){
+            Model[HoloNum,string] = "hq_hdome_thin"
+            }
+        elseif(touchButton(8)){
+            Model[HoloNum,string] = "hq_icosphere"
+            }
+        elseif(touchButton(9)){
+            Model[HoloNum,string] = "hq_rcube"
+            }
+        elseif(touchButton(10)){
+            Model[HoloNum,string] = "hq_rcube_thick"
+            }
+        elseif(touchButton(11)){
+            Model[HoloNum,string] = "hq_rcube_thin"
+            }
+        elseif(touchButton(12)){
+            Model[HoloNum,string] = "hq_rcylinder"
+            }
+        elseif(touchButton(13)){
+            Model[HoloNum,string] = "hq_rcylinder_thick"
+            }
+        elseif(touchButton(14)){
+            Model[HoloNum,string] = "hq_rcylinder_thin"
+            }
+        elseif(touchButton(15)){
+            Model[HoloNum,string] = "hq_sphere"
+            }
+        elseif(touchButton(16)){
+            Model[HoloNum,string] = "hq_stube"
+            }
+        elseif(touchButton(17)){
+            Model[HoloNum,string] = "hq_stube_thick"
+            }
+        elseif(touchButton(18)){
+            Model[HoloNum,string] = "hq_stube_thin"
+            }
+        elseif(touchButton(19)){
+            Model[HoloNum,string] = "hq_torus"
+            }
+        elseif(touchButton(20)){
+            Model[HoloNum,string] = "hq_torus_thick"
+            }
+        elseif(touchButton(21)){
+            Model[HoloNum,string] = "hq_torus_thin"
+            }
+        elseif(touchButton(22)){
+            Model[HoloNum,string] = "hq_tube"
+            }
+        elseif(touchButton(23)){
+            Model[HoloNum,string] = "hq_tube_thick"
+            }
+        elseif(touchButton(24)){
+            Model[HoloNum,string] = "hq_tube_thin"
+            }
+        elseif(touchButton(55)){
+            ModelsMenuHQ = 0
+            MHQMenu = 0
+            ModelsPropsMenu = 1
+            }
+        holoModel(HoloNum,Model[HoloNum,string])
+        }
+        elseif(ColorRMenu){
+            CR = 1
+            if(touchButton(20)){
+                ColorRMenu = 0
+                CRMenu = 0
+                ColorMenu = 1
+                CR = 0
+            }
+            elseif(touchButton(1)){
+                if(!(ColorR[HoloNum,number]==255)){
+                    ColorR[HoloNum,number] = ColorR[HoloNum,number]+0.5
+                    Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+                    holoColor(HoloNum,Color[HoloNum,vector4])
+                }
+            }
+            elseif(touchButton(2)){
+                if(!(ColorR[HoloNum,number]==255)){
+                    ColorR[HoloNum,number] = ColorR[HoloNum,number]+1
+                    Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+                    holoColor(HoloNum,Color[HoloNum,vector4])
+                }
+            }
+            elseif(touchButton(3)){
+                if(!(ColorR[HoloNum,number]==255)){
+                    ColorR[HoloNum,number] = ColorR[HoloNum,number]+5
+                    Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+                    holoColor(HoloNum,Color[HoloNum,vector4])
+                }
+            }
+            elseif(touchButton(4)){
+                if(!(ColorR[HoloNum,number]==255)){
+                    ColorR[HoloNum,number] = ColorR[HoloNum,number]+10
+                    Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+                    holoColor(HoloNum,Color[HoloNum,vector4])
+                }
+            }
+            elseif(touchButton(6)){
+                if(ColorR[HoloNum,number]!=0&ColorR[HoloNum,number]>=0.5){
+                    ColorR[HoloNum,number] = ColorR[HoloNum,number]-0.5
+                    Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+                    holoColor(HoloNum,Color[HoloNum,vector4])
+                }
+            }
+            elseif(touchButton(7)){
+                if(ColorR[HoloNum,number]!=0&ColorR[HoloNum,number]>=1){
+                    ColorR[HoloNum,number] = ColorR[HoloNum,number]-1
+                    Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+                    holoColor(HoloNum,Color[HoloNum,vector4])
+                }
+            }
+            elseif(touchButton(8)){
+                if(ColorR[HoloNum,number]!=0&ColorR[HoloNum,number]>=5){
+                    ColorR[HoloNum,number] = ColorR[HoloNum,number]-5
+                    Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+                    holoColor(HoloNum,Color[HoloNum,vector4])
+                }
+            }
+            elseif(touchButton(9)){
+                if(ColorR[HoloNum,number]!=0&ColorR[HoloNum,number]>=10){
+                    ColorR[HoloNum,number] = ColorR[HoloNum,number]-10
+                    Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+                    holoColor(HoloNum,Color[HoloNum,vector4])
+                }
+            }
+            elseif(touchButton(22)){
+                ColorRMenu = 0
+                CRMenu = 0
+                NumberKeyboard = 1
+            }
+            elseif(touchButton(23)){
+                ColorR[HoloNum,number] = 0
+                Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+                holoColor(HoloNum,Color[HoloNum,vector4])
+            }
+        E:egpSetText(19,"Red: "+ColorR[HoloNum,number])
+        }
+    elseif(ColorBMenu){
+        CB = 1
+        if(touchButton(20)){
+            ColorBMenu = 0
+            CBMenu = 0
+            ColorMenu = 1
+            CB = 0
+            }
+        elseif(touchButton(1)){
+            if(!(ColorB[HoloNum,number]==255)){
+                ColorB[HoloNum,number] = ColorB[HoloNum,number]+0.5
+                Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+                holoColor(HoloNum,Color[HoloNum,vector4])
+                }
+            }
+        elseif(touchButton(2)){
+            if(!(ColorB[HoloNum,number]==255)){
+                ColorB[HoloNum,number] = ColorB[HoloNum,number]+1
+                Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+                holoColor(HoloNum,Color[HoloNum,vector4])
+                }
+            }
+        elseif(touchButton(3)){
+            if(!(ColorB[HoloNum,number]==255)){
+                ColorB[HoloNum,number] = ColorB[HoloNum,number]+5
+                Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+                holoColor(HoloNum,Color[HoloNum,vector4])
+                }
+            }
+        elseif(touchButton(4)){
+            if(!(ColorB[HoloNum,number]==255)){
+                ColorB[HoloNum,number] = ColorB[HoloNum,number]+10
+                Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+                holoColor(HoloNum,Color[HoloNum,vector4])
+                }
+            }
+        elseif(touchButton(6)){
+            if(ColorB[HoloNum,number]!=0&ColorB[HoloNum,number]>=0.5){
+                ColorB[HoloNum,number] = ColorB[HoloNum,number]-0.5
+                Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+                holoColor(HoloNum,Color[HoloNum,vector4])
+                }
+            }
+        elseif(touchButton(7)){
+            if(ColorB[HoloNum,number]!=0&ColorB[HoloNum,number]>=1){
+                ColorB[HoloNum,number] = ColorB[HoloNum,number]-1
+                Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+                holoColor(HoloNum,Color[HoloNum,vector4])
+                }
+            }
+        elseif(touchButton(8)){
+            if(ColorB[HoloNum,number]!=0&ColorB[HoloNum,number]>=5){
+                ColorB[HoloNum,number] = ColorB[HoloNum,number]-5
+                Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+                holoColor(HoloNum,Color[HoloNum,vector4])
+                }
+            }
+        elseif(touchButton(9)){
+            if(ColorB[HoloNum,number]!=0&ColorB[HoloNum,number]>=10){
+                ColorB[HoloNum,number] = ColorB[HoloNum,number]-10
+                Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+                holoColor(HoloNum,Color[HoloNum,vector4])
+                }
+            }
+        elseif(touchButton(22)){
+            ColorBMenu = 0
+            CBMenu = 0
+            NumberKeyboard = 1
+            }
+        elseif(touchButton(23)){
+            ColorB[HoloNum,number] = 0
+            Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+            holoColor(1,Color[HoloNum,vector4])
+            }
+        E:egpSetText(19,"Blue: "+ColorB[HoloNum,number])
+        }
+    elseif(ColorGMenu){
+        CG = 1
+        if(touchButton(20)){
+            ColorGMenu = 0
+            CGMenu = 0
+            ColorMenu = 1
+            CG = 0
+            }
+        elseif(touchButton(1)){
+            if(!(ColorG[HoloNum,number]==255)){
+                ColorG[HoloNum,number] = ColorG[HoloNum,number]+0.5
+                Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+                holoColor(HoloNum,Color[HoloNum,vector4])
+                }
+            }
+        elseif(touchButton(2)){
+            if(!(ColorG[HoloNum,number]==255)){
+                ColorG[HoloNum,number] = ColorG[HoloNum,number]+1
+                Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+                holoColor(HoloNum,Color[HoloNum,vector4])
+                }
+            }
+        elseif(touchButton(3)){
+            if(!(ColorG[HoloNum,number]==255)){
+                ColorG[HoloNum,number] = ColorG[HoloNum,number]+5
+                Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+                holoColor(HoloNum,Color[HoloNum,vector4])
+                }
+            }
+        elseif(touchButton(4)){
+            if(!(ColorG[HoloNum,number]==255)){
+                ColorG[HoloNum,number] = ColorG[HoloNum,number]+10
+                Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+                holoColor(HoloNum,Color[HoloNum,vector4])
+                }
+            }
+        elseif(touchButton(6)){
+            if(ColorG[HoloNum,number]!=0&ColorG[HoloNum,number]>=0.5){
+                ColorG[HoloNum,number] = ColorG[HoloNum,number]-0.5
+                Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+                holoColor(HoloNum,Color[HoloNum,vector4])
+                }
+            }
+        elseif(touchButton(7)){
+            if(ColorG[HoloNum,number]!=0&ColorG[HoloNum,number]>=1){
+                ColorG[HoloNum,number] = ColorG[HoloNum,number]-1
+                Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+                holoColor(HoloNum,Color[HoloNum,vector4])
+                }
+            }
+        elseif(touchButton(8)){
+            if(ColorG[HoloNum,number]!=0&ColorG[HoloNum,number]>=5){
+                ColorG[HoloNum,number] = ColorG[HoloNum,number]-5
+                Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+                holoColor(HoloNum,Color[HoloNum,vector4])
+                }
+            }
+        elseif(touchButton(9)){
+            if(ColorG[HoloNum,number]!=0&ColorG[HoloNum,number]>=10){
+                ColorG[HoloNum,number] = ColorG[HoloNum,number]-10
+                Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+                holoColor(HoloNum,Color[HoloNum,vector4])
+                }
+            }
+        elseif(touchButton(22)){
+            ColorGMenu = 0
+            CGMenu = 0
+            NumberKeyboard = 1
+            }
+        elseif(touchButton(23)){
+            ColorG[HoloNum,number] = 0
+            Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+            holoColor(1,Color[HoloNum,vector4])
+            }
+        E:egpSetText(19,"Green: "+ColorG[HoloNum,number])
+        }
+        elseif(ColorAMenu){
+        CA = 1
+        if(touchButton(20)){
+            ColorAMenu = 0
+            CAMenu = 0
+            ColorMenu = 1
+            CA = 0
+            }
+        elseif(touchButton(1)){
+            if(!(ColorA[HoloNum,number]==255)){
+                ColorA[HoloNum,number] = ColorA[HoloNum,number]+0.5
+                Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+                holoColor(HoloNum,Color[HoloNum,vector4])
+                }
+            }
+        elseif(touchButton(2)){
+            if(!(ColorA[HoloNum,number]==255)){
+                ColorA[HoloNum,number] = ColorA[HoloNum,number]+1
+                Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+                holoColor(HoloNum,Color[HoloNum,vector4])
+                }
+            }
+        elseif(touchButton(3)){
+            if(!(ColorA[HoloNum,number]==255)){
+                ColorA[HoloNum,number] = ColorA[HoloNum,number]+5
+                Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+                holoColor(HoloNum,Color[HoloNum,vector4])
+                }
+            }
+        elseif(touchButton(4)){
+            if(!(ColorA[HoloNum,number]==255)){
+                ColorA[HoloNum,number] = ColorA[HoloNum,number]+10
+                Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+                holoColor(HoloNum,Color[HoloNum,vector4])
+                }
+            }
+        elseif(touchButton(6)){
+            if(ColorA[HoloNum,number]!=0&ColorA[HoloNum,number]>=0.5){
+                ColorA[HoloNum,number] = ColorA[HoloNum,number]-0.5
+                Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+                holoColor(HoloNum,Color[HoloNum,vector4])
+                }
+            }
+        elseif(touchButton(7)){
+            if(ColorA[HoloNum,number]!=0&ColorA[HoloNum,number]>=1){
+                ColorA[HoloNum,number] = ColorA[HoloNum,number]-1
+                Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+                holoColor(HoloNum,Color[HoloNum,vector4])
+                }
+            }
+        elseif(touchButton(8)){
+            if(ColorA[HoloNum,number]!=0&ColorA[HoloNum,number]>=5){
+                ColorA[HoloNum,number] = ColorA[HoloNum,number]-5
+                Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+                holoColor(HoloNum,Color[HoloNum,vector4])
+                }
+            }
+        elseif(touchButton(9)){
+            if(ColorA[HoloNum,number]!=0&ColorA[HoloNum,number]>=10){
+                ColorA[HoloNum,number] = ColorA[HoloNum,number]-10
+                Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+                holoColor(HoloNum,Color[HoloNum,vector4])
+                }
+            }
+        elseif(touchButton(22)){
+            ColorAMenu = 0
+            CAMenu = 0
+            NumberKeyboard = 1
+            }
+        elseif(touchButton(23)){
+            ColorA[HoloNum,number] = 255
+            Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+            holoColor(HoloNum,Color[HoloNum,vector4])
+            }
+        E:egpSetText(19,"Alpha: "+ColorA[HoloNum,number])
+        }
+    elseif(ColorPMenu){
+        if(touchButton(49)){
+            ColorPMenu = 0
+            CPMenu = 0
+            ColorMenu = 1
+            }
+        elseif(touchButton(33)){
+            ColorR[HoloNum,number] = 0
+            ColorG[HoloNum,number] = 0
+            ColorB[HoloNum,number] = 0
+            }
+        elseif(touchButton(34)){
+            ColorR[HoloNum,number] = 255
+            ColorG[HoloNum,number] = 255
+            ColorB[HoloNum,number] = 255
+            }
+        elseif(touchButton(35)){
+            ColorR[HoloNum,number] = 255
+            ColorG[HoloNum,number] = 0
+            ColorB[HoloNum,number] = 0
+            }
+        elseif(touchButton(36)){
+            ColorR[HoloNum,number] = 0
+            ColorG[HoloNum,number] = 255
+            ColorB[HoloNum,number] = 0
+            }
+        elseif(touchButton(37)){
+            ColorR[HoloNum,number] = 0
+            ColorG[HoloNum,number] = 0
+            ColorB[HoloNum,number] = 255
+            }
+        elseif(touchButton(38)){
+            ColorR[HoloNum,number] = 255
+            ColorG[HoloNum,number] = 255
+            ColorB[HoloNum,number] = 0
+            }
+        elseif(touchButton(39)){
+            ColorR[HoloNum,number] = 0
+            ColorG[HoloNum,number] = 255
+            ColorB[HoloNum,number] = 255
+            }
+        elseif(touchButton(40)){
+            ColorR[HoloNum,number] = 255
+            ColorG[HoloNum,number] = 0
+            ColorB[HoloNum,number] = 255
+            }
+        elseif(touchButton(41)){
+            ColorR[HoloNum,number] = 192
+            ColorG[HoloNum,number] = 192
+            ColorB[HoloNum,number] = 192
+            }
+        elseif(touchButton(42)){
+            ColorR[HoloNum,number] = 128
+            ColorG[HoloNum,number] = 128
+            ColorB[HoloNum,number] = 128
+            }
+        elseif(touchButton(43)){
+            ColorR[HoloNum,number] = 128
+            ColorG[HoloNum,number] = 0
+            ColorB[HoloNum,number] = 0
+            }
+        elseif(touchButton(44)){
+            ColorR[HoloNum,number] = 128
+            ColorG[HoloNum,number] = 128
+            ColorB[HoloNum,number] = 0
+            }
+        elseif(touchButton(45)){
+            ColorR[HoloNum,number] = 0
+            ColorG[HoloNum,number] = 128
+            ColorB[HoloNum,number] = 0
+            }
+        elseif(touchButton(46)){
+            ColorR[HoloNum,number] = 128
+            ColorG[HoloNum,number] = 0
+            ColorB[HoloNum,number] = 128
+            }
+        elseif(touchButton(47)){
+            ColorR[HoloNum,number] = 0
+            ColorG[HoloNum,number] = 128
+            ColorB[HoloNum,number] = 128
+            }
+        elseif(touchButton(48)){
+            ColorR[HoloNum,number] = 0
+            ColorG[HoloNum,number] = 0
+            ColorB[HoloNum,number] = 128
+            }
+        elseif(touchButton(52)){
+            ColorPMenu = 0
+            CPMenu = 0
+            MaterialMenu = 1
+            }
+        Color[HoloNum,vector4] = vec4(ColorR[HoloNum,number],ColorG[HoloNum,number],ColorB[HoloNum,number],ColorA[HoloNum,number])
+        holoColor(HoloNum,Color[HoloNum,vector4])
+        }
+    elseif(MaterialMenu){
+        if(touchButton(2)){
+            MaterialMenu = 0
+            MatMenu = 0
+            ColorPMenu = 1
+            }
+        elseif(touchButton(4)&HoloMatNum!=1){
+            HoloMatNum--
+            }
+        elseif(touchButton(5)&HoloMatNum!=20){
+            HoloMatNum++
+            }
+        elseif(touchButton(12)){
+            MaterialMenu = 0
+            MatMenu = 0
+            KeyboardSmall = 1
+            }
+        if(HoloMatNum==1){
+            HoloMaterial[HoloNum,string] = ""
+            }
+        elseif(HoloMatNum==2){
+            HoloMaterial[HoloNum,string] = "phoenix_storms/Metalfloor_2-3"
+            }
+        elseif(HoloMatNum==3){
+            HoloMaterial[HoloNum,string] = "models/props_c17/metalladder001"
+            }
+        elseif(HoloMatNum==4){
+            HoloMaterial[HoloNum,string] = "models/props_canal/metalwall005b"
+            }
+        elseif(HoloMatNum==5){
+            HoloMaterial[HoloNum,string] = "models/props_combine/metal_combinebridge001"
+            }
+        elseif(HoloMatNum==6){
+            HoloMaterial[HoloNum,string] = "models/props_interiors/metalfence007a"
+            }
+        elseif(HoloMatNum==7){
+            HoloMaterial[HoloNum,string] = "models/props_pipes/pipeset_metal02"
+            }
+        elseif(HoloMatNum==8){
+            HoloMaterial[HoloNum,string] = "models/props_pipes/pipeset_metal"
+            }
+        elseif(HoloMatNum==9){
+            HoloMaterial[HoloNum,string] = "models/props_lab/warp_sheet"
+            }
+        elseif(HoloMatNum==10){
+            HoloMaterial[HoloNum,string] = "models/props_combine/combine_interface_disp"
+            }
+        elseif(HoloMatNum==11){
+            HoloMaterial[HoloNum,string] = "models/props_debris/concretewall019a"
+            }
+        elseif(HoloMatNum==12){
+            HoloMaterial[HoloNum,string] = "phoenix_storms/FuturisticTrackRamp_1-2"
+            }
+        elseif(HoloMatNum==13){
+            HoloMaterial[HoloNum,string] = "phoenix_storms/MetalSet_1-2"
+            }
+        elseif(HoloMatNum==14){
+            HoloMaterial[HoloNum,string] = "phoenix_storms/stripes"
+            }
+        elseif(HoloMatNum==15){
+            HoloMaterial[HoloNum,string] = "phoenix_storms/bluemetal"
+            }
+        elseif(HoloMatNum==16){
+            HoloMaterial[HoloNum,string] = "phoenix_storms/cube"
+            }
+        elseif(HoloMatNum==17){
+            HoloMaterial[HoloNum,string] = "phoenix_storms/dome"
+            }
+        elseif(HoloMatNum==18){
+            HoloMaterial[HoloNum,string] = "phoenix_storms/fender_wood"
+            }
+        elseif(HoloMatNum==19){
+            HoloMaterial[HoloNum,string] = "phoenix_storms/iron_rails"
+            }
+        elseif(HoloMatNum==20){
+            HoloMaterial[HoloNum,string] = "hunter/myplastic"
+            }
+        E:egpSetText(10,HoloMatNum:toString())
+        holoMaterial(HoloNum,HoloMaterial[HoloNum,string])
+        }
+    elseif(AnglesMenu){
+        if(touchButton(9)){
+            AnglesMenu = 0
+            AMenu = 0
+            PosMenu = 1
+            }
+        elseif(touchButton(1)){
+            AnglesMenu = 0
+            AMenu = 0
+            AnglesPMenu = 1
+            }
+        elseif(touchButton(2)){
+            AnglesMenu = 0
+            AMenu = 0
+            AnglesYMenu = 1
+            }
+        elseif(touchButton(3)){
+            AnglesMenu = 0
+            AMenu = 0
+            AnglesRMenu = 1
+            }
+        elseif(touchButton(4)){
+            AngleP[HoloNum,number] = 0
+            AngleY[HoloNum,number] = 0
+            AngleR[HoloNum,number] = 0
+            Angles[HoloNum,angle] = ang(AngleP[HoloNum,number],AngleY[HoloNum,number],AngleR[HoloNum,number])
+            holoAng(HoloNum,Angles[HoloNum,angle])
+            }
+        }
+    elseif(AnglesPMenu){
+        AP = 1
+        if(touchButton(20)){
+            AnglesPMenu = 0
+            APMenu = 0
+            AnglesMenu = 1
+            AP = 0
+            }
+        elseif(touchButton(1)){
+            AngleP[HoloNum,number] = AngleP[HoloNum,number]+0.5
+            Angles[HoloNum,angle] = ang(AngleP[HoloNum,number],AngleY[HoloNum,number],AngleR[HoloNum,number])
+            holoAng(HoloNum, Angles[HoloNum,angle])
+            }
+        elseif(touchButton(2)){
+            AngleP[HoloNum,number] = AngleP[HoloNum,number]+1
+            Angles[HoloNum,angle] = ang(AngleP[HoloNum,number],AngleY[HoloNum,number],AngleR[HoloNum,number])
+            holoAng(HoloNum, Angles[HoloNum,angle])
+            }
+        elseif(touchButton(3)){
+            AngleP[HoloNum,number] = AngleP[HoloNum,number]+5
+            Angles[HoloNum,angle] = ang(AngleP[HoloNum,number],AngleY[HoloNum,number],AngleR[HoloNum,number])
+            holoAng(HoloNum, Angles[HoloNum,angle])
+            }
+        elseif(touchButton(4)){
+            AngleP[HoloNum,number] = AngleP[HoloNum,number]+10
+            Angles[HoloNum,angle] = ang(AngleP[HoloNum,number],AngleY[HoloNum,number],AngleR[HoloNum,number])
+            holoAng(HoloNum, Angles[HoloNum,angle])
+            }
+        elseif(touchButton(6)){
+            AngleP[HoloNum,number] = AngleP[HoloNum,number]-0.5
+            Angles[HoloNum,angle] = ang(AngleP[HoloNum,number],AngleY[HoloNum,number],AngleR[HoloNum,number])
+            holoAng(HoloNum, Angles[HoloNum,angle])
+            }
+        elseif(touchButton(7)){
+            AngleP[HoloNum,number] = AngleP[HoloNum,number]-1
+            Angles[HoloNum,angle] = ang(AngleP[HoloNum,number],AngleY[HoloNum,number],AngleR[HoloNum,number])
+            holoAng(HoloNum, Angles[HoloNum,angle])
+            }
+        elseif(touchButton(8)){
+            AngleP[HoloNum,number] = AngleP[HoloNum,number]-5
+            Angles[HoloNum,angle] = ang(AngleP[HoloNum,number],AngleY[HoloNum,number],AngleR[HoloNum,number])
+            holoAng(HoloNum, Angles[HoloNum,angle])
+            }
+        elseif(touchButton(9)){
+            AngleP[HoloNum,number] = AngleP[HoloNum,number]-10
+            Angles[HoloNum,angle] = ang(AngleP[HoloNum,number],AngleY[HoloNum,number],AngleR[HoloNum,number])
+            holoAng(HoloNum, Angles[HoloNum,angle])
+            }
+        elseif(touchButton(22)){
+            AnglePMenu = 0
+            APMenu = 0
+            NumberKeyboard = 1
+            }
+        elseif(touchButton(23)){
+            AngleP[HoloNum,number] = 1
+            Angles[HoloNum,angle] = ang(AngleP[HoloNum,number],AngleY[HoloNum,number],AngleR[HoloNum,number])
+            holoAng(HoloNum, Angles[HoloNum,angle])
+            }
+        E:egpSetText(19,"Pitch: "+AngleP[HoloNum,number])
+        }
+    elseif(AnglesRMenu){
+        AR = 1
+        if(touchButton(20)){
+            AnglesRMenu = 0
+            ARMenu = 0
+            AnglesMenu = 1
+            AR = 0
+            }
+        elseif(touchButton(1)){
+            AngleR[HoloNum,number] = AngleR[HoloNum,number]+0.5
+            Angles[HoloNum,angle] = ang(AngleP[HoloNum,number],AngleY[HoloNum,number],AngleR[HoloNum,number])
+            holoAng(HoloNum, Angles[HoloNum,angle])
+            }
+        elseif(touchButton(2)){
+            AngleR[HoloNum,number] = AngleR[HoloNum,number]+1
+            Angles[HoloNum,angle] = ang(AngleP[HoloNum,number],AngleY[HoloNum,number],AngleR[HoloNum,number])
+            holoAng(HoloNum, Angles[HoloNum,angle])
+            }
+        elseif(touchButton(3)){
+            AngleR[HoloNum,number] = AngleR[HoloNum,number]+5
+            Angles[HoloNum,angle] = ang(AngleP[HoloNum,number],AngleY[HoloNum,number],AngleR[HoloNum,number])
+            holoAng(HoloNum, Angles[HoloNum,angle])
+            }
+        elseif(touchButton(4)){
+            AngleR[HoloNum,number] = AngleR[HoloNum,number]+10
+            Angles[HoloNum,angle] = ang(AngleP[HoloNum,number],AngleY[HoloNum,number],AngleR[HoloNum,number])
+            holoAng(HoloNum, Angles[HoloNum,angle])
+            }
+        elseif(touchButton(6)){
+            AngleR[HoloNum,number] = AngleR[HoloNum,number]-0.5
+            Angles[HoloNum,angle] = ang(AngleP[HoloNum,number],AngleY[HoloNum,number],AngleR[HoloNum,number])
+            holoAng(HoloNum, Angles[HoloNum,angle])
+            }
+        elseif(touchButton(7)){
+            AngleR[HoloNum,number] = AngleR[HoloNum,number]-1
+            Angles[HoloNum,angle] = ang(AngleP[HoloNum,number],AngleY[HoloNum,number],AngleR[HoloNum,number])
+            holoAng(HoloNum, Angles[HoloNum,angle])
+            }
+        elseif(touchButton(8)){
+            AngleR[HoloNum,number] = AngleR[HoloNum,number]-5
+            Angles[HoloNum,angle] = ang(AngleP[HoloNum,number],AngleY[HoloNum,number],AngleR[HoloNum,number])
+            holoAng(HoloNum, Angles[HoloNum,angle])
+            }
+        elseif(touchButton(9)){
+            AngleR[HoloNum,number] = AngleR[HoloNum,number]-10
+            Angles[HoloNum,angle] = ang(AngleP[HoloNum,number],AngleY[HoloNum,number],AngleR[HoloNum,number])
+            holoAng(HoloNum, Angles[HoloNum,angle])
+            }
+        elseif(touchButton(22)){
+            AngleRMenu = 0
+            ARMenu = 0
+            NumberKeyboard = 1
+            }
+        elseif(touchButton(23)){
+            AngleR[HoloNum,number] = 0
+            Angles[HoloNum,angle] = ang(AngleP[HoloNum,number],AngleY[HoloNum,number],AngleR[HoloNum,number])
+            holoAng(HoloNum, Angles[HoloNum,angle])
+            }
+        E:egpSetText(19,"Roll: "+AngleR[HoloNum,number])
+        }
+    elseif(AnglesYMenu){
+        AY = 1
+        if(touchButton(20)){
+            AnglesYMenu = 0
+            AYMenu = 0
+            AnglesMenu = 1
+            AY = 0
+            }
+        elseif(touchButton(1)){
+            AngleY[HoloNum,number] = AngleY[HoloNum,number]+0.5
+            Angles[HoloNum,angle] = ang(AngleP[HoloNum,number],AngleY[HoloNum,number],AngleR[HoloNum,number])
+            holoAng(HoloNum, Angles[HoloNum,angle])
+            }
+        elseif(touchButton(2)){
+            AngleY[HoloNum,number] = AngleY[HoloNum,number]+1
+            Angles[HoloNum,angle] = ang(AngleP[HoloNum,number],AngleY[HoloNum,number],AngleR[HoloNum,number])
+            holoAng(HoloNum, Angles[HoloNum,angle])
+            }
+        elseif(touchButton(3)){
+            AngleY[HoloNum,number] = AngleY[HoloNum,number]+5
+            Angles[HoloNum,angle] = ang(AngleP[HoloNum,number],AngleY[HoloNum,number],AngleR[HoloNum,number])
+            holoAng(HoloNum, Angles[HoloNum,angle])
+            }
+        elseif(touchButton(4)){
+            AngleY[HoloNum,number] = AngleY[HoloNum,number]+10
+            Angles[HoloNum,angle] = ang(AngleP[HoloNum,number],AngleY[HoloNum,number],AngleR[HoloNum,number])
+            holoAng(HoloNum, Angles[HoloNum,angle])
+            }
+        elseif(touchButton(6)){
+            AngleY[HoloNum,number] = AngleY[HoloNum,number]-0.5
+            Angles[HoloNum,angle] = ang(AngleP[HoloNum,number],AngleY[HoloNum,number],AngleR[HoloNum,number])
+            holoAng(HoloNum, Angles[HoloNum,angle])
+            }
+        elseif(touchButton(7)){
+            AngleY[HoloNum,number] = AngleY[HoloNum,number]-1
+            Angles[HoloNum,angle] = ang(AngleP[HoloNum,number],AngleY[HoloNum,number],AngleR[HoloNum,number])
+            holoAng(HoloNum, Angles[HoloNum,angle])
+            }
+        elseif(touchButton(8)){
+            AngleY[HoloNum,number] = AngleY[HoloNum,number]-5
+            Angles[HoloNum,angle] = ang(AngleP[HoloNum,number],AngleY[HoloNum,number],AngleR[HoloNum,number])
+            holoAng(HoloNum, Angles[HoloNum,angle])
+            }
+        elseif(touchButton(9)){
+            AngleY[HoloNum,number] = AngleY[HoloNum,number]-10
+            Angles[HoloNum,angle] = ang(AngleP[HoloNum,number],AngleY[HoloNum,number],AngleR[HoloNum,number])
+            holoAng(HoloNum, Angles[HoloNum,angle])
+            }
+        elseif(touchButton(22)){
+            AngleYMenu = 0
+            AYMenu = 0
+            NumberKeyboard = 1
+            }
+        elseif(touchButton(23)){
+            AngleY[HoloNum,number] = 0
+            Angles[HoloNum,angle] = ang(AngleP[HoloNum,number],AngleY[HoloNum,number],AngleR[HoloNum,number])
+            holoAng(HoloNum, Angles[HoloNum,angle])
+            }
+        E:egpSetText(19,"Yaw: "+AngleY[HoloNum,number])
+        }
+    elseif(KeyboardSmall){
+        if(touchButton(140)){
+            if(MPMenu){
+                KeyboardSmall = 0
+                KeyboardS = 0
+                SKeyboard = 0
+                MPMenu = 0
+                ModelsPropsMenu = 0
+                SizeMenu = 1
+                }
+            else{
+                KeyboardSmall = 0
+                KeyboardS = 0
+                SKeyboard = 0
+                MaterialMenu = 1
+            }
+            }
+        if(touchButton(142)){
+            if(MPMenu){
+                Model[HoloNum,string] = "models/"+Text[1,string]+Text[2,string]+Text[3,string]+Text[4,string]+Text[5,string]+Text[6,string]+Text[7,string]+Text[8,string]+Text[9,string]+Text[10,string]+Text[11,string]+
+                Text[12,string]+Text[13,string]+Text[14,string]+Text[15,string]+Text[16,string]+Text[17,string]+Text[18,string]+Text[19,string]+Text[20,string]+Text[21,string]+Text[22,string]+Text[23,string]+
+                Text[24,string]+Text[25,string]+Text[26,string]+Text[27,string]+Text[28,string]+Text[29,string]+Text[30,string]+Text[31,string]+Text[32,string]+Text[33,string]+Text[34,string]+Text[35,string]+
+                Text[36,string]+Text[37,string]+Text[38,string]+Text[39,string]+Text[40,string]+Text[41,string]+Text[42,string]+Text[43,string]+Text[44,string]+Text[45,string]+".mdl"
+                holoModel(HoloNum,Model[HoloNum,string])
+                KeyboardSmall = 0
+                KeyboardS = 0
+                SKeyboard = 0
+                MPMenu = 0
+                ModelsPropsMenu = 0
+                SizeMenu = 1
+                hint("Model set",1.5)
+                }
+            else{
+                HoloMaterial[HoloNum,string] = Text[1,string]+Text[2,string]+Text[3,string]+Text[4,string]+Text[5,string]+Text[6,string]+Text[7,string]+Text[8,string]+Text[9,string]+Text[10,string]+Text[11,string]+
+                Text[12,string]+Text[13,string]+Text[14,string]+Text[15,string]+Text[16,string]+Text[17,string]+Text[18,string]+Text[19,string]+Text[20,string]+Text[21,string]+Text[22,string]+Text[23,string]+
+                Text[24,string]+Text[25,string]+Text[26,string]+Text[27,string]+Text[28,string]+Text[29,string]+Text[30,string]+Text[31,string]+Text[32,string]+Text[33,string]+Text[34,string]+Text[35,string]+
+                Text[36,string]+Text[37,string]+Text[38,string]+Text[39,string]+Text[40,string]+Text[41,string]+Text[42,string]+Text[43,string]+Text[44,string]+Text[45,string]
+                KeyboardSmall = 0
+                KeyboardS = 0
+                SKeyboard = 0
+                MaterialMenu = 1
+                HoloMatNum = 21
+                holoMaterial(1,HoloMaterial[HoloNum,string])
+                hint("Material Set",1.5)
+                }
+            }
+        }
+    elseif(ModelsPropsMenu){
+        if(touchButton(150)){
+            KeyboardSmall = 0
+            KeyboardS = 0
+            SKeyboard = 0
+            MPMenu = 0
+            ModelsPropsMenu = 0
+            SizeMenu = 1
+            }
+        }
+    elseif(SettingsMenu){
+        if(touchButton(5)){
+            SettingsMenu = 0
+            SetMenu = 0
+            MainMenu = 1
+            }
+        elseif(touchButton(1)){
+            SettingsMenu = 0
+            SetMenu = 0
+            SettingsButtonMenu = 1
+            }
+        elseif(touchButton(8)){
+            SettingsMenu = 0
+            SetMenu = 0
+            SettingsFileMenu = 1
+            }
+        elseif(touchButton(2)){
+            SettingsMenu = 0
+            SetMenu = 0
+            SettingsTextMenu = 1
+            }
+        }
+    elseif(SettingsFileMenu){
+        if(touchButton(1)){
+            SettingsFileMenu = 0
+            SFM = 0
+            SettingsMenu = 1
+            }
+        elseif(touchButton(8)&FileOutput!=1){
+            FileOutput--
+            }
+        elseif(touchButton(9)&FileOutput!=5){
+            FileOutput++
+            }
+        if(FileOutput==1){
+            E:egpSetText(12,"E2Files")
+            SaveFolder = ""
+            }
+        elseif(FileOutput==2){
+            E:egpSetText(12,"E1Shared")
+            SaveFolder = ">e1shared/"
+            }
+        elseif(FileOutput==3){
+            E:egpSetText(12,"E2Shared")
+            E:egpSize(12,44)
+            SaveFolder = ">e2shared/"
+            }
+        elseif(FileOutput==4){
+            E:egpSetText(12,"CPUShared")
+            E:egpSize(12,44)
+            SaveFolder = ">cpushared/"
+            }
+        elseif(FileOutput==5){
+            E:egpSetText(12,"GPUShared")
+            E:egpSize(12,44)
+            SaveFolder = ">gpushared/"
+            }
+        }
+    elseif(SettingsTextMenu){
+        if(touchButton(1)){
+            SettingsTextMenu = 0
+            STM = 0
+            SettingsMenu = 1
+            }
+        elseif(touchButton(9)&TextR!=255){
+            TextR+=5
+            }
+        elseif(touchButton(7)&TextR!=10){
+            TextR-=5
+            }
+        elseif(touchButton(10)&TextG!=255){
+            TextG+=5
+            }
+        elseif(touchButton(8)&TextG!=10){
+            TextG-=5
+            }
+        elseif(touchButton(22)&TextB!=255){
+            TextB+=5
+            }
+        elseif(touchButton(23)&TextB!=10){
+            TextB-=5
+            }
+        E:egpColor(21,vec(TextR,TextG,TextB))
+        E:egpSetText(26,TextR:toString())
+        E:egpSetText(27,TextG:toString())
+        E:egpSetText(20,TextB:toString())
+        }
+    }
+
+if(MainMenu){
+        mainMenu()
+        }
+    elseif(PosMenu){
+        posMenu()
+        }
+    elseif(SizeMenu){
+        sizeMenu()
+        }
+    elseif(ColorMenu){
+        colorMenu()
+        }
+    elseif(InfoMenu){
+        infoMenu()
+        }
+    elseif(SaveMenu){
+        saveMenu()
+        }
+    elseif(LoadMenu){
+        loadMenu()
+        }
+    elseif(PosXMenu){
+        posXMenu()
+        }
+    elseif(PosYMenu){
+        posYMenu()
+        }
+    elseif(PosZMenu){
+        posZMenu()
+        }
+    elseif(NumberKeyboard){
+        numberKeyboard()
+        }
+    elseif(SizeXMenu){
+        sizeXMenu()
+        }
+    elseif(SizeYMenu){
+        sizeYMenu()
+        }
+    elseif(SizeZMenu){
+        sizeZMenu()
+        }
+    elseif(ModelsMenuLQ){
+        modelsLQMenu()
+        }
+    elseif(ModelsMenuHQ){
+        modelsHQMenu()
+        }
+    elseif(ColorRMenu){
+        colorRMenu()
+        }
+    elseif(ColorGMenu){
+        colorGMenu()
+        }
+    elseif(ColorBMenu){
+        colorBMenu()
+        }
+    elseif(ColorAMenu){
+        colorAMenu()
+        }
+    elseif(ColorPMenu){
+        colorPresetMenu()
+        }
+    elseif(AnglesMenu){
+        anglesMenu()
+        }
+    elseif(AnglesPMenu){
+        anglesPMenu()
+        }
+    elseif(AnglesYMenu){
+        anglesYMenu()
+        }
+    elseif(AnglesRMenu){
+        anglesRMenu()
+        }
+    elseif(MaterialMenu){
+        materialsMenu()
+        }
+    elseif(SettingsMenu){
+        settingsMenu()
+        }
+    elseif(SettingsButtonMenu){
+        settingsButtonMenu()
+        }
+    elseif(KeyboardSmall){
+        keyboardSmall()
+        }
+    elseif(HoloSelectMenu){
+        holoSelectMenu()
+        }
+    elseif(InfoMenu2){
+        infoMenu2()
+        }
+    elseif(ModelsPropsMenu){
+        modelsPropsMenu()
+        }
+    elseif(SettingsFileMenu){
+        settingsFileMenu()
+        }
+    elseif(SettingsTextMenu){
+        settingsTextMenu()
+        }
+        
+if(fileClk()&!Once){
+    fileLoad(Text[1,string]+Text[2,string]+Text[3,string]+Text[4,string]+Text[5,string]+Text[6,string]+Text[7,string]+Text[8,string]+Text[9,string]+Text[10,string]+Text[11,string]+Text[12,string]+Text[13,string]+Text[14,string]+Text[15,string]+".txt")
+    hint("File Loaded",2.5)
+    holoDeleteAll()
+    HoloSaveInfo = vonDecodeTable(fileRead())
+    for(I=1,HoloCount){
+        if(HoloSaveInfo[I,array][7,number]==1){
+            holoCreate(I,LocalPos+vec(0,0,50)+HoloSaveInfo[I,array][1,vector],HoloSaveInfo[I,array][3,vector], HoloSaveInfo[I,array][2,angle],
+            vec(HoloSaveInfo[I,array][5,vector4]),HoloSaveInfo[I,array][4,string])
+            holoAlpha(I,HoloSaveInfo[I,array][5,vector4]:w())   
+            holoMaterial(I,HoloSaveInfo[I,array][6,string])
+            holoParent(I,entity())
+            PosX[I,number] = HoloSaveInfo[I,array][1,vector]:x()
+            PosY[I,number] = HoloSaveInfo[I,array][1,vector]:y()
+            PosZ[I,number] = HoloSaveInfo[I,array][1,vector]:z()
+            Pos[I,vector] = vec(PosX[I,number],PosZ[I,number],PosY[I,number])
+            SizeX[I,number] = HoloSaveInfo[I,array][3,vector]:x()
+            SizeY[I,number] = HoloSaveInfo[I,array][3,vector]:y()
+            SizeZ[I,number] = HoloSaveInfo[I,array][3,vector]:z()
+            Size[I,vector] = vec(SizeX[I,number],SizeZ[I,number],SizeY[I,number])
+            AngleP[I,number] = HoloSaveInfo[I,array][2,angle]:pitch()
+            AngleY[I,number] = HoloSaveInfo[I,array][2,angle]:yaw()
+            AngleR[I,number] = HoloSaveInfo[I,array][2,angle]:roll()
+            Angles[I,angle] = ang(AngleP[I,number],AngleY[I,number],AngleR[I,number])
+            Model[I,string] = HoloSaveInfo[I,array][4,string]
+            HoloMaterial[I,string] = HoloSaveInfo[I,array][6,string]
+            ColorR[I,number] = HoloSaveInfo[I,array][5,vector4]:x()
+            ColorG[I,number] = HoloSaveInfo[I,array][5,vector4]:y()
+            ColorB[I,number] = HoloSaveInfo[I,array][5,vector4]:z()
+            ColorA[I,number] = HoloSaveInfo[I,array][5,vector4]:w()
+            Color[I,vector4] = vec4(ColorR[I,number],ColorG[I,number],ColorB[I,number],ColorA[I,number])
+            HoloList[I,number] = 1
+            }
+        }
+    
+    HoloSaveInfo:clear()
+    
+    Once = 1
+    Text:clear()
+    }
+if(Once){
+    timer("Load",250)
+    if(clk("Load")){
+        stoptimer("Load")
+        Once = 0
+        }
+    }
+if(clk("blink")){
+    timer("blink",1000)
+    Blink++
+    if(Blink == 4){
+        holoColor(HoloNum,Color[HoloNum,vector4])
+        Blink = 0
+        }
+    elseif(Blink==1){
+        holoColor(HoloNum,vec4(255,0,0,255))
+        }
+    elseif(Blink==2){
+        holoColor(HoloNum,vec4(0,255,0,255))
+        }
+    elseif(Blink==3){
+        holoColor(HoloNum,vec4(0,0,255,255))
+        }
+    if(UnHighlight){
+        Blink = 0
+        stoptimer("blink")
+        holoColor(HoloNum,Color[HoloNum,vector4])
+        }
+    if(~HoloNum){
+        stoptimer("blink")
+        Blink = 0
+        holoColor(HoloNum,Color[HoloNum,vector4])
+        }
+    }
