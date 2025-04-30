@@ -1,0 +1,100 @@
+@name Realistic Generator by Megamezzomixer
+@inputs Active ManualStart GotHit
+@outputs Light:vector PowerPlug:normal Smoke ConstantOn HitReset
+@persist SoundLock Rand State:string
+@trigger 
+
+#############################################################################
+# You need Left 4 Dead 2 (or the contents of it) to hear the engine sounds! #
+#############################################################################
+
+
+#Source: https://youtu.be/zlWNpreELF4?si=fg8CV2feyKYQHD7W
+
+
+if(first())
+{
+    HitReset = 0
+    ConstantOn = 1
+    Smoke = 0
+    PowerPlug = 0
+    State = "Inactive"
+    Light = vec(0, 0, 0)
+    print("Realistic Generator is spawned!")
+    print("Made by Megamezzomixer")
+}
+
+if(Active)
+{
+    if(!SoundLock)
+    {
+        SoundLock = 1
+        entity():isWeldedTo():soundPlay(1, 1, "buttons/lever7.wav")
+    }
+    if(!ManualStart && State != "Active")
+    {
+        if (State == "Starting")
+        {
+            Light = vec(121, 93, 0)
+        }
+        else
+        {
+            Light = vec(109, 0, 0)
+        }
+    }
+    else
+    {
+        Rand = random(0, 2)
+        if (Rand > 1 && State != "Active" && State != "Starting")
+        {
+            HitReset = 1
+            Smoke = 1
+            State = "Starting"
+            Light = vec(121, 93, 0)
+            entity():isWeldedTo():soundPlay(1, 0, "ambient/generator/generator_start_run_loop.wav")
+            soundVolume(1, 0.5)
+            timer("startup", 5500)
+        }
+        elseif ( State != "Active")
+        {
+            entity():isWeldedTo():soundPlay(1, 1.2, "ambient/generator/generator_nostart_loop.wav")
+        }
+    }
+    
+}
+else
+{
+    if(State == "Active" | State == "Starting")
+    {
+        PowerPlug = 0
+        entity():isWeldedTo():soundPlay(1, 0, "ambient/generator/generator_stop.wav")
+        Smoke = 0
+        State = "Inactive"
+    }
+    SoundLock = 0
+    Light = vec(0, 0, 0)
+}
+
+if(clk("startup") && State == "Starting")
+{
+    HitReset = 0
+    State = "Active"
+    Light = vec(0, 102, 0)
+    PowerPlug = 1
+}
+
+if(GotHit)
+{
+    
+    if(State == "Active")
+    {
+        PowerPlug = 0
+        entity():isWeldedTo():soundPlay(1, 0, "ambient/explosions/explode_1.wav")
+        Smoke = 0
+        State = "Inactive"
+        HitReset = 1
+        timer("explosionSound", 1500)
+    }
+    
+}
+if(clk("explosionSound")){reset()}

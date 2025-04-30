@@ -1,0 +1,340 @@
+@name Washing Machine V2
+@persist [E, O, Ent, Save_Ent, Prop]:entity [TraceHullSize]:vector [Save_Model_]:string
+@persist I T X M Lock Clean Save_Mass_ Ents Wash Value Scan
+@model models/props_wasteland/laundry_dryer002.mdl
+# ----------------------------------------------------
+# By Alex5511 - do not claim as yours
+# ----------------------------------------------------
+# ----------------------------------------------------
+# strings/bootup code
+# ----------------------------------------------------
+
+#Source: https://youtu.be/qji_bydqqXA?si=uIVqwLsUNU8-Bmuv
+
+    interval(50)
+    
+    if(first()|duped())
+    {
+     
+    #[ boot up stuff ]#
+    
+    E = entity()
+    
+    O = owner()
+    
+    Value = 1
+    
+    E:setMaterial("models/shiny")#("phoenix_storms/chrome")
+    E:setColor(50,50,50)
+    
+    #[ door parent base ]#
+    
+    holoCreate(0,E:pos() + E:up() * 6 + E:forward() * 23 + E:right() * 18)
+    holoScale(0,vec(0.5,0.5,1))
+    holoMaterial(0,E:getMaterial())
+    holoColor(0,E:getColor())
+    holoParent(0,E)
+    
+    #[ washing machine window ]#
+
+    holoCreate(1,E:pos() + E:up() * 6 + E:forward() * 23)
+    holoModel(1,"models/props_phx/construct/glass/glass_angle360.mdl")
+    holoAng(1,E:toWorld(ang(0,90,90)))
+    holoScale(1,vec(0.4,0.4,0.4))
+    holoParent(1,holoEntity(0))
+                    
+    #[ washing machine wheel inside spinning ]#
+    
+    holoCreate(2,E:pos() + E:up() * 6 - E:forward() * 10)
+        holoModel(2,"models/mechanics/wheels/wheel_smooth_24.mdl")
+            holoAng(2,E:toWorld(ang(0,90,90)))
+                holoScale(2,vec(1.5,1.5,0.5))
+                    holoParent(2,E)
+                    
+    #[ washing machine water effect ]#
+    
+    holoCreate(3,E:pos() + E:up() * 6 + E:forward() * 22)
+    holoModel(3,"models/props_phx/construct/metal_angle360.mdl")
+    holoAng(3,E:toWorld(ang(0,90,90)))
+    holoScale(3,vec(0.4,0.4,0.4))
+    holoMaterial(3,"models/shadertest/predator")
+    holoParent(3,holoEntity(1))
+    
+    holoCreate(4,E:pos() + E:up() * 6 + E:forward() * 20)
+    holoModel(4,"models/props_phx/construct/metal_angle360.mdl")
+    holoAng(4,E:toWorld(ang(0,90,90)))
+    holoScale(4,vec(0.4,0.4,0.4))
+    holoMaterial(4,"models/debug/debugwhite")
+    holoColor(4,vec(0,160,255))
+    holoParent(4,holoEntity(1))
+    
+    TraceHullSize = vec(15,20,0.5)    
+
+    holoCreate(100)
+    holoParent(100,E)
+    holoScale(100,TraceHullSize/12)
+    holoAlpha(100,0)
+       
+    }
+ 
+# ----------------------------------------------------
+# ranger code
+# ----------------------------------------------------
+
+    rangerFilter( players() )
+    rangerFilter( E )
+    rangerHitWater(0)
+    R = rangerOffsetHull( 28, E:pos() - E:up() * 10 + E:forward() * 35, E:up(), TraceHullSize )
+    holoPos(100,R:pos())
+    
+    Ent = R:entity()
+
+# ----------------------------------------------------
+# detection code
+# ----------------------------------------------------
+
+    if(changed(R:hit()) & R:hit() & Ent:type()=="prop_physics" & Ent:owner() == O & Ent:mass() < 200 & !Scan & !(Ent:getMaterial() == "models/shiny") & Value)
+    {
+
+    
+    E:soundPlay(1,2,"buttons/button14.wav")
+    
+    Save_Ent = Ent
+    Save_Model_ = Ent:model()
+    Save_Mass_ = Ent:mass()
+    
+    Ents = Ents + 1
+    
+    timer("remove_entity_and_add",100)
+       
+    }
+    
+    if(changed(R:hit()) & R:hit() & Ent:type()=="prop_physics" & Ent:owner() == O & Ent:mass() > 200 & Value & Ent:getMaterial() == "models/shiny")
+    {
+     
+    E:soundPlay(2,2,"buttons/button2.wav")
+    
+    }
+    
+    if(changed(O:keyUse()) & O:keyUse() & O:aimEntity() == E & O:pos():distance(E:pos()) < 100 & Ents > 0 & !Lock)
+    {
+     
+    Lock = 1
+    
+    Value = 0
+    
+    timer("start_wash",3000)
+       
+    }
+    
+    if(changed(O:keyUse()) & O:keyUse() & O:aimEntity() == E & O:pos():distance(E:pos()) < 100 & Ents == 0 & !Lock)
+    {
+     
+    Lock = 1
+    
+    E:soundPlay(5,2,"buttons/button2.wav")
+       
+    }
+
+# ----------------------------------------------------
+# timers
+# ----------------------------------------------------
+    
+    if(clk("start_wash"))
+    {
+     
+    Wash = 1
+    
+    E:soundPlay(3,0,"ambient/machines/air_conditioner_loop_1.wav")
+    
+    timer("splash_sounds",1800)
+    
+    timer("finish_wash",18000 + Ents * 500 )
+       
+    }
+    
+    if(clk("splash_sounds") & Wash == 1)
+    {
+     
+    E:soundPlay(6,0,"ambient/water/leak_1.wav")
+    soundVolume(6,50)
+       
+    }
+    
+    if(clk("finish_wash"))
+    {
+     
+    
+    
+    for(I=1,Ents)
+    {
+    
+    holoMaterial(12 + I,"models/shiny")
+    
+    }
+    
+    
+    Wash = 0
+    
+    E:soundPlay(4,1,"buttons/blip1.wav")
+    
+    timer("blip",1000)
+    
+    soundStop(6,0.5)
+    
+    timer("open_door",3000)
+       
+    }
+    
+    if(clk("blip"))
+    {
+     
+    E:soundPlay(7,1,"buttons/blip1.wav")
+       
+    }
+    
+    if(clk("open_door"))
+    {
+
+     
+    Value = 1
+     
+    Scan = 1
+      
+    timer("respawn_ents",1000)
+    
+    }
+    
+    if(clk("respawn_ents") & !Ents == 0)
+    {
+     
+    E:soundPlay(5,1.3,"garrysmod/balloon_pop_cute.wav")
+    
+    local Ents_Model = holoEntity(12 + Ents):model()
+    
+    Prop = propSpawn(Ents_Model,E:pos() - E:up() * 10 + E:forward() * 40,ang(0,0,0), 0)
+    Prop:setMaterial("models/shiny")
+    
+    holoDelete(12 + Ents)
+    
+    Ents = Ents - 1
+      
+    timer("respawn_ents",1200)
+     
+    }
+    
+    if(clk("remove_entity_and_add"))
+    {
+     
+    holoCreate(12 + Ents,E:toWorld(vec(random(6,15),random(-10,10),6 + random(-10,10))))#E:pos() + E:up() * 6 + E:forward() * 6)
+    holoModel(12 + Ents,Save_Model_)
+    holoScale(12 + Ents,vec(0.2,0.2,0.2))
+    holoAng(12 + Ents,E:toWorld(ang(0,0,random(-180,180))))
+    holoParent(12 + Ents,holoEntity(2))
+    
+       
+    
+    
+    Save_Ent:propDelete()
+    
+    }
+    
+    if(clk("end_loop"))
+    {
+     
+    Scan = 0
+    
+    Lock = 0
+       
+    }
+    
+
+# ----------------------------------------------------
+# animations/values
+# ----------------------------------------------------
+    
+    if(Value)
+    {
+     
+    T = T - 5
+       
+    }    
+    else
+    {
+     
+    T = T + 5
+       
+    }
+    
+    if(T < -90)
+    {
+     
+    T = -90
+       
+    }
+    
+    if(T > 0)
+    {
+     
+    T = 0
+       
+    }
+    
+    if(Wash)
+    {
+     
+    X = X + 1
+       
+    }
+    else
+    {
+     
+    X = X - 1
+       
+    }
+    
+    if(X > 50)
+    {
+    
+    X = 50 
+       
+    }
+    
+    if(X < 0)
+    {
+     
+    X = 0
+       
+    }
+    
+    M = M + X
+    
+    
+    holoAng(0,E:toWorld(ang(0,T,0)))
+    
+    holoAng(2,E:toWorld(ang(M,90,90)))
+    
+    soundPitch(3,X * 3)
+    
+    holoAlpha(3,X * 3)
+    holoAlpha(4,X * 3)
+    
+# ----------------------------------------------------
+# other
+# ----------------------------------------------------    
+    
+    
+    if(Ents == 0)
+    {
+     
+    timer("end_loop",2000)
+       
+    }
+    
+    if(duped())
+    {
+
+    selfDestruct()
+    
+    
+    }

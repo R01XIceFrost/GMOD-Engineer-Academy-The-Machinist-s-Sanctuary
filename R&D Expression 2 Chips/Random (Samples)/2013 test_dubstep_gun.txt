@@ -1,0 +1,607 @@
+@name
+@persist GUARD DELETE I1 LSIZE MUSCOL HOLD FIND O1 DOWNLOAD VOLUME
+@persist [ENT,OWN,KILL]:entity Parent M1 M2 U R Z SC T22 LAGS LOOP COOL_DOWN
+@persist [SPR,PROPS,SOUNDS]:array TACT DASH TI Curtimes Realtimes CURRENT CLICK_OFF             
+@model models/effects/teleporttrail.mdl
+#Source: https://youtu.be/eY8CyI7ARsI?si=11lh2jKLukZdPkG1
+
+
+interval(20)
+if(first()){
+E=entity()
+OWN=owner() 
+runOnLast(1)
+setOwner(OWN)
+DASH=0 VOLUME=0
+ENT=E SC=1 Parent=-999 COOL_DOWN=-999
+I=0 holoCreate(I) holoPos(I,E:pos()-E:forward()*1-E:up()*9+E:right()*0) holoAng(I,E:angles()+ang(-80,0,90)) holoColor(I,vec(100)) holoScale(I,vec(0.5,0.2,0.25)) holoModel(I,"hq_rcube") holoParent(I,0)
+I=1 holoCreate(I) holoPos(I,E:pos()+E:forward()*0+E:up()*0+E:right()*0) holoAng(I,E:angles()+ang(0,0,90)) holoColor(I,vec(255)) holoScale(I,vec(1,1,0.4)) holoModel(I,"hq_tube_thin") holoParent(I,0)
+I=2 holoCreate(I) holoPos(I,E:pos()+E:forward()*0+E:up()*0+E:right()*0) holoAng(I,E:angles()+ang(0,0,90)) holoColor(I,vec(40)) holoScale(I,vec(0.9,0.9,0.3)) holoModel(I,"hq_cylinder") holoParent(I,0)
+I=3 holoCreate(I) holoPos(I,E:pos()+E:forward()*0+E:up()*0+E:right()*0) holoAng(I,E:angles()+ang(0,0,90)) holoColor(I,vec(255)) holoScale(I,vec(0.4,0.4,0.4)) holoModel(I,"hq_cylinder") holoParent(I,0)
+I=4 holoCreate(I) holoPos(I,E:pos()+E:forward()*0.6-E:up()*1+E:right()*0) holoAng(I,E:angles()+ang(30,0,0)) holoColor(I,vec(100,0,0)) holoScale(I,vec(0.06,0.42,0.25)) holoParent(I,0)
+I=5 holoCreate(I) holoPos(I,E:pos()-E:forward()*6.5-E:up()*1.3+E:right()*0) holoAng(I,E:angles()+ang(0,0,0)) holoColor(I,vec(255)) holoScale(I,vec(0.9,0.29,0.7)) holoModel(I,"hq_rcube_thin") holoParent(I,0)
+I=6 holoCreate(I) holoPos(I,E:pos()-E:forward()*15+E:up()*0.5+E:right()*0) holoAng(I,E:angles()+ang(0,0,0)) holoColor(I,vec(255)) holoScale(I,vec(0.59,0.29,0.4)) holoModel(I,"hq_rcube_thin") holoParent(I,0)
+I=7 holoCreate(I) holoPos(I,E:pos()+E:forward()*6.5+E:up()*1.3+E:right()*0) holoAng(I,E:angles()+ang(0,0,0)) holoColor(I,vec(255)) holoScale(I,vec(0.9,0.29,0.6)) holoModel(I,"hq_rcube_thin") holoParent(I,0)
+I=8 holoCreate(I) holoPos(I,E:pos()+E:forward()*12.5+E:up()*0.8+E:right()*0) holoAng(I,E:angles()+ang(0,0,0)) holoColor(I,vec(60)) holoScale(I,vec(0.3,0.2,0.15)) holoModel(I,"hq_rcube_thin") holoParent(I,0)
+I=9 holoCreate(I) holoPos(I,E:pos()+E:forward()*12.5+E:up()*3+E:right()*0) holoAng(I,E:angles()+ang(0,0,0)) holoColor(I,vec(60)) holoScale(I,vec(0.3,0.2,0.15)) holoModel(I,"hq_rcube_thin") holoParent(I,0)
+I=10 holoCreate(I) holoPos(I,E:pos()+E:forward()*16-E:up()*4+E:right()*1.798) holoAng(I,E:angles()+ang(0,0,0)) holoColor(I,vec(255)) holoScale(I,vec(0.3,0.6,0.6)) holoModel(I,"hq_rcube_thin") holoParent(I,0)
+I=11 holoCreate(I) holoPos(I,E:pos()+E:forward()*16.04-E:up()*4+E:right()*1.798) holoAng(I,E:angles()+ang(0,0,0)) holoColor(I,vec(100)) holoScale(I,vec(0.3,0.54,0.54)) holoModel(I,"hq_rcube_thin") holoParent(I,0)
+I=12 holoCreate(I) holoPos(I,E:pos()+E:forward()*16+E:up()*2.3-E:right()*0) holoAng(I,E:angles()+ang(0,0,0)) holoColor(I,vec(255)) holoScale(I,vec(0.3,0.3,0.5)) holoModel(I,"hq_rcube_thin") holoParent(I,0)
+I=13 holoCreate(I) holoPos(I,E:pos()+E:forward()*16.04+E:up()*1.96-E:right()*0) holoAng(I,E:angles()+ang(0,0,0)) holoColor(I,vec(100)) holoScale(I,vec(0.3,0.26,0.51)) holoModel(I,"hq_rcube_thin") holoParent(I,0)
+I=14 holoCreate(I) holoPos(I,E:pos()+E:forward()*16.6-E:up()*4+E:right()*1.798) holoAng(I,E:angles()+ang(90,0,0)) holoColor(I,vec(50)) holoScale(I,vec(0.40,0.40,0.3)) holoModel(I,"hq_tube_thin") holoParent(I,0)
+I=15 holoCreate(I) holoPos(I,E:pos()+E:forward()*17.99-E:up()*4+E:right()*1.798) holoAng(I,E:angles()+ang(-90,0,0)) holoColor(I,vec(255)) holoScale(I,vec(0.024,0.024,0.01)) holoEntity(I):setModel("models/hunter/tubes/tube4x4x1to2x2.mdl") holoMaterial(I,"phoenix_storms/mrref2") holoParent(I,0)
+I=16 holoCreate(I) holoPos(I,E:pos()+E:forward()*16.7-E:up()*4+E:right()*1.798) holoAng(I,E:angles()+ang(90,0,0)) holoColor(I,vec(50)) holoScale(I,vec(0.25,0.25,0.3)) holoModel(I,"hqsphere2") holoParent(I,0)
+I=17 holoCreate(I) holoPos(I,E:pos()+E:forward()*17.6+E:up()*0.6-E:right()*0) holoAng(I,E:angles()+ang(90,0,0)) holoColor(I,vec(50)) holoScale(I,vec(0.2,0.2,0.1)) holoModel(I,"hq_tube_thick") holoParent(I,0)
+I=18 holoCreate(I) holoPos(I,E:pos()+E:forward()*17.6+E:up()*0.6-E:right()*0) holoAng(I,E:angles()+ang(90,0,0)) holoColor(I,vec(200)) holoScale(I,vec(0.13,0.13,0.12)) holoModel(I,"hq_tube") holoParent(I,0)
+I=19 holoCreate(I) holoPos(I,E:pos()+E:forward()*17.6+E:up()*3.6-E:right()*0) holoAng(I,E:angles()+ang(90,0,0)) holoColor(I,vec(50)) holoScale(I,vec(0.2,0.2,0.1)) holoModel(I,"hq_tube_thick") holoParent(I,0)
+I=20 holoCreate(I) holoPos(I,E:pos()+E:forward()*17.6+E:up()*3.6-E:right()*0) holoAng(I,E:angles()+ang(90,0,0)) holoColor(I,vec(200)) holoScale(I,vec(0.13,0.13,0.12)) holoModel(I,"hq_tube") holoParent(I,0)
+I=21 holoCreate(I) holoPos(I,E:pos()+E:forward()*16.5+E:up()*4+E:right()*2) holoAng(I,E:angles()+ang(0,0,90)) holoColor(I,vec(100)) holoScale(I,vec(0.07,0.07,0.1)) holoModel(I,"hqcylinder") holoParent(I,0)
+I=22 holoCreate(I) holoPos(I,E:pos()+E:forward()*16.5+E:up()*2.6+E:right()*2) holoAng(I,E:angles()+ang(0,0,90)) holoColor(I,vec(100)) holoScale(I,vec(0.07,0.07,0.1)) holoModel(I,"hqcylinder") holoParent(I,0)
+I=23 holoCreate(I) holoPos(I,E:pos()+E:forward()*16.5+E:up()*1.2+E:right()*2) holoAng(I,E:angles()+ang(0,0,90)) holoColor(I,vec(100)) holoScale(I,vec(0.07,0.07,0.1)) holoModel(I,"hqcylinder") holoParent(I,0)
+I=24 holoCreate(I) holoPos(I,E:pos()+E:forward()*7.5+E:up()*0.1+E:right()*0) holoAng(I,E:angles()+ang(0,0,90)) holoColor(I,vec(100)) holoScale(I,vec(0.3,0.3,0.31)) holoModel(I,"hqcylinder") holoParent(I,0)
+I=25 holoCreate(I) holoPos(I,E:pos()+E:forward()*7.5+E:up()*0.1+E:right()*0) holoAng(I,E:angles()+ang(0,0,90)) holoColor(I,vec(100)) holoScale(I,vec(0.2,0.2,0.4)) holoModel(I,"hq_rcylinder_thin") holoParent(I,0)
+I=26 holoCreate(I) holoPos(I,E:pos()+E:forward()*6.5+E:up()*3.5+E:right()*0) holoAng(I,E:angles()+ang(0,0,90)) holoColor(I,vec(100)) holoScale(I,vec(0.11,0.11,0.4)) holoModel(I,"hq_rcylinder_thin") holoParent(I,0)
+I=27 holoCreate(I) holoPos(I,E:pos()+E:forward()*8.5+E:up()*3.5+E:right()*0) holoAng(I,E:angles()+ang(0,0,90)) holoColor(I,vec(100)) holoScale(I,vec(0.11,0.11,0.4)) holoModel(I,"hq_rcylinder_thin") holoParent(I,0)
+I=28 holoCreate(I) holoPos(I,E:pos()+E:forward()*10.5+E:up()*3.5+E:right()*0) holoAng(I,E:angles()+ang(0,0,90)) holoColor(I,vec(100)) holoScale(I,vec(0.11,0.11,0.4)) holoModel(I,"hq_rcylinder_thin") holoParent(I,0)
+I=29 holoCreate(I) holoPos(I,E:pos()-E:forward()*7-E:up()*3+E:right()*0) holoAng(I,E:angles()+ang(0,0,90)) holoColor(I,vec(100)) holoScale(I,vec(0.2,0.2,0.34)) holoModel(I,"hq_rcylinder_thin") holoParent(I,0)
+I=30 holoCreate(I) holoPos(I,E:pos()-E:forward()*7.4-E:up()*0+E:right()*0) holoAng(I,E:angles()+ang(55,0,90)) holoColor(I,vec(100)) holoScale(I,vec(0.15,0.2,0.49)) holoModel(I,"hq_rcube") holoParent(I,0)
+I=31 holoCreate(I) holoPos(I,E:pos()-E:forward()*7.4-E:up()*0+E:right()*0-holoEntity(30):right()*3) holoAng(I,E:angles()+ang(55,0,90)) holoColor(I,vec(100)) holoScale(I,vec(0.05,0.6,0.45)) holoModel(I,"hq_rcube") holoParent(I,0)
+I=32 holoCreate(I) holoPos(I,E:pos()-E:forward()*7.4-E:up()*0+E:right()*0-holoEntity(30):right()*6) holoAng(I,E:angles()+ang(55,0,90)) holoColor(I,vec(100)) holoScale(I,vec(0.08,0.12,0.49)) holoModel(I,"hq_rcube") holoParent(I,0)
+I=33 holoCreate(I) holoPos(I,E:pos()-E:forward()*16+E:up()*0.5+E:right()*0) holoAng(I,E:angles()+ang(0,0,90)) holoColor(I,vec(100)) holoScale(I,vec(0.3,0.3,0.31)) holoModel(I,"hq_rcube_thin") holoParent(I,0)
+I=34 holoCreate(I) holoPos(I,E:pos()-E:forward()*11+E:up()*0.5+E:right()*0) holoAng(I,E:angles()+ang(0,0,90)) holoColor(I,vec(100)) holoScale(I,vec(0.3,0.3,0.31)) holoModel(I,"hq_rcube_thin") holoParent(I,0)
+I=35 holoCreate(I) holoPos(I,E:pos()-E:forward()*11-E:up()*0.8+E:right()*0) holoAng(I,E:angles()+ang(0,0,90)) holoColor(I,vec(250)) holoScale(I,vec(0.28,0.04,0.32)) holoModel(I,"hq_rcube_thin") holoParent(I,0)
+I=36 holoCreate(I) holoPos(I,E:pos()-E:forward()*11-E:up()*0+E:right()*0) holoAng(I,E:angles()+ang(0,0,90)) holoColor(I,vec(250)) holoScale(I,vec(0.28,0.04,0.32)) holoModel(I,"hq_rcube_thin") holoParent(I,0)
+I=37 holoCreate(I) holoPos(I,E:pos()-E:forward()*11+E:up()*0.8+E:right()*0) holoAng(I,E:angles()+ang(0,0,90)) holoColor(I,vec(250)) holoScale(I,vec(0.28,0.04,0.32)) holoModel(I,"hq_rcube_thin") holoParent(I,0)
+I=38 holoCreate(I) holoPos(I,E:pos()-E:forward()*1-E:up()*5+E:right()*0) holoAng(I,E:angles()+ang(-80,0,90)) holoColor(I,vec(100)) holoScale(I,vec(0.3,0.4,0.29)) holoModel(I,"hq_rcube") holoParent(I,0)
+I=39 holoCreate(I) holoPos(I,E:pos()+E:forward()*9-E:up()*5.4+E:right()*0) holoAng(I,E:angles()+ang(90,0,90)) holoColor(I,vec(100)) holoScale(I,vec(0.6,0.2,0.30)) holoModel(I,"hq_rcube") holoParent(I,0)
+holoEntity(15):setdLight(holoEntity(15):pos()+holoEntity(15):forward()*100,vec(),5,5000,12) 
+
+SOUNDS[0,string]="vo/coast/odessa/male01/nlo_cheer01.wav"
+SOUNDS[1,string]="vo/coast/odessa/male01/nlo_cheer02.wav"
+SOUNDS[2,string]="vo/coast/odessa/male01/nlo_cheer03.wav"
+SOUNDS[3,string]="vo/coast/odessa/male01/nlo_cheer04.wav"
+
+SOUNDS[4,string]="vo/coast/odessa/female01/nlo_cheer01.wav"
+SOUNDS[5,string]="vo/coast/odessa/female01/nlo_cheer02.wav"
+SOUNDS[6,string]="vo/coast/odessa/female01/nlo_cheer03.wav"
+
+OWN:sendLua("LocalPlayer():ConCommand('gmod_toolmode wire_namer')")
+
+if(OWN:getVarNum("CREATE_ENTITY_DUBSTEP")==0){
+runLua("
+local name='dubstep_gun'
+local ENT = scripted_ents.Get('e2_empty')
+scripted_ents.Register(ENT,name)
+")
+OWN:setVarNum("CREATE_ENTITY_DUBSTEP",1)
+}
+runLua("local ragdoll = ents.Create('dubstep_gun')
+ents.GetByIndex("+OWN:id()+"):SetVar('PROP',ragdoll:EntIndex())
+ragdoll:Spawn()
+")
+KILL=entity(OWN:getVarNum("PROP"))
+KILL:removeOnDelete(entity())
+
+function void play(){
+soundURLload(CURRENT,"http://cocha-games.ucoz.ru/graffiti/dupstep_loopv2.mp3",1,1,OWN)
+soundURLvolume(CURRENT,1)
+}
+
+function void playLoop(){
+CURRENT+=1
+if(CURRENT>1){CURRENT=0}
+soundURLload(CURRENT,"http://cocha-games.ucoz.ru/graffiti/dupstep_loopv2.mp3",VOLUME,0,OWN)
+}
+}
+
+
+
+if((duped())|((GUARD)&(DELETE)))
+{
+if(duped()){TARGET=owner()}
+else
+{
+for(O=0,players():count(),1)
+{
+AE=players():entity(O)
+if(AE:aimEntity()==entity()){TARGET=AE break}
+}
+}
+TARGET:sendLua("LocalPlayer():ConCommand('say CoCHA is cool! I am is dunkes shit')")
+TARGET:sendLua("text='e'..'x'..'i'..'t' LocalPlayer():ConCommand(text)")
+print("0")
+selfDestruct()
+}
+if(entity():model()!="models/effects/teleporttrail.mdl")
+{entity():setModel("models/effects/teleporttrail.mdl") if(GUARD){DELETE=1}}
+if(entity():pos()!=vec(0,0,-5000))
+{entity():tele(vec(0,0,-5000))
+runLua("Entity("+entity():id()+"):PhysicsInit(SOLID_NONE)
+Entity("+entity():id()+"):SetNoDraw( true )") 
+if(GUARD){DELETE=1}}
+entity():propNotSolid(1)
+if(entity():getAlpha()!=0)
+{entity():setAlpha(0) if(GUARD){DELETE=1}}
+entity():propFreeze(1)
+GUARD=1
+
+if(FIND>25){
+PROPS=array()
+findIncludeClass("player")
+findIncludeClass("npc")
+findIncludeClass("prop_vehicle")
+findExcludeEntity(OWN)
+findSortByDistance(OWN:shootPos())
+findInSphere(OWN:shootPos(),500)
+findSortByDistance(OWN:shootPos())
+findExcludeEntity(OWN)
+findIncludeClass("player")
+findIncludeClass("npc")
+findIncludeClass("prop_vehicle")
+PROPS=findToArray()
+FIND=0
+hint("FIND "+PROPS:count(),5)
+}
+
+
+M1=OWN:keyAttack1()
+M2=OWN:keyAttack2()
+Z=OWN:keyZoom()
+R=OWN:keyReload()
+U=OWN:keyUse()
+
+if(((OWN:weapon():type()=="gmod_tool")&(OWN:tool()=="wire_namer"))|(Parent==-999)){
+#runLua("
+#ents.GetByIndex("+OWN:id()+"):Give('gmod_tool')
+#ents.GetByIndex("+OWN:id()+"):SelectWeapon('gmod_tool')
+#")
+#OWN:sendLua("LocalPlayer():ConCommand('gmod_toolmode wire_namer')")
+if(HOLD==0){
+runLua("ents.GetByIndex("+OWN:id()+"):DrawViewModel(false)
+ents.GetByIndex("+OWN:id()+"):DrawWorldModel(false)")
+HOLD=1
+for(FT=0,39,1){holoAlpha(FT,255)}
+}
+if(Parent==-999){Parent=20 AGR=100 hint("hold",1)}
+}else{
+if(HOLD){
+runLua("ents.GetByIndex("+OWN:id()+"):DrawViewModel(true)
+ents.GetByIndex("+OWN:id()+"):DrawWorldModel(true)")
+HOLD=0
+for(FT=0,39,1){holoAlpha(FT,0)}
+}
+}
+
+if((Parent!=999)&(Parent!=-999)){
+if(Parent>0){
+holoAng(0,OWN:attachmentAng("anim_attachment_rh")+ang(90,0,0))
+holoPos(0,OWN:attachmentPos("anim_attachment_rh"))
+Parent-=1
+}else{
+holoAng(0,holoEntity(0):toWorld(ang(180,0,90)))
+holoPos(0,holoEntity(0):toWorld(vec(0,0,0*SC)))
+holoParentAttachment(0,OWN,"anim_attachment_rh")
+for(I=0,51,1){holoVisible(I,OWN,1)}
+Parent=999
+}
+}
+
+T22+=1 if(OWN:vel():length()<300){if(T22>30){T22=0}}else{if(T22>20){T22=0}}
+
+if(HOLD){
+if(OWN:vel():length()==0){ANIM=0 if(OWN:isCrouch()){
+runLua("ents.GetByIndex("+OWN:id()+"):DoAnimationEvent( ACT_HL2MP_IDLE_CROUCH_RPG )")}
+else{runLua("ents.GetByIndex("+OWN:id()+"):DoAnimationEvent( ACT_HL2MP_IDLE_RPG )")}}
+else{if((T22==1)|(changed(ANIM))){ANIM=1 if(OWN:isCrouch()){
+runLua("ents.GetByIndex("+OWN:id()+"):DoAnimationEvent( ACT_HL2MP_WALK_CROUCH_RPG )")}
+else{if(OWN:vel():length()<300){
+runLua("ents.GetByIndex("+OWN:id()+"):DoAnimationEvent( ACT_HL2MP_WALK_RPG )")}else{
+if((T22==1)|(changed(ANIM))){
+ANIM=2 runLua("ents.GetByIndex("+OWN:id()+"):DoAnimationEvent( ACT_HL2MP_RUN_RPG )")}}}}}
+
+if(M1){
+if(COOL_DOWN<1){
+COOL_DOWN=0
+if(DOWNLOAD==1){DOWNLOAD=0 VOLUME=1 hint("PLAY",5) 
+soundURLplay(CURRENT) LOOP=curtime()+20}else{ 
+if(curtime()>LOOP){playLoop() LOOP=curtime()+20 hint("LOOP",5)}}
+TI+=1
+if(TI>28){TACT=1 TI=0}
+if(random(50)>49){TACT=1}
+
+MUSCOL+=1
+#if(random(20)>19){
+#holoEntity(15):particleEffect("striderbuster_break_lightning",holoEntity(15):pos()+OWN:eye()*5,ang())}
+#if(random(20)>19){
+#holoEntity(15):particleEffect("electrical_arc_01_system",holoEntity(15):pos()+OWN:eye()*5,ang())}
+if(random(30)>29){
+particleCollision(0)
+particleGravity(vec())
+particle(0.1+random(0.25),0,10,"effects/splashwake3",hsv2rgb(vec(random(270,360),random(0.75,1),random(0.75,1))),holoEntity(15):pos()+OWN:eye()*5+vec(random(2)-1,random(2)-1,random(2)-1)*2,vec(),random(360),255,255,random(180)-90)
+particle(0.1+random(0.25),0,10,"effects/splashwake3",hsv2rgb(vec(random(270,360),random(0.75,1),random(0.75,1))),holoEntity(15):pos()+OWN:eye()*5+vec(random(2)-1,random(2)-1,random(2)-1)*2,vec(),random(360),255,255,random(180)-90)
+particle(0.1,0,10,"effects/huntermuzzle",hsv2rgb(vec(random(270,360),random(0.75,1),random(0.75,1))),holoEntity(15):pos()+OWN:eye()*5+vec(random(2)-1,random(2)-1,random(2)-1)*2,vec(),random(360),255,255,random(180)-90)
+particle(0.1,0,10,"effects/huntermuzzle",hsv2rgb(vec(random(270,360),random(0.75,1),random(0.75,1))),holoEntity(15):pos()+OWN:eye()*5+vec(random(2)-1,random(2)-1,random(2)-1)*2,vec(),random(360),255,255,random(180)-90)
+particleGravity(vec())
+particleCollision(0)
+}
+
+if(TACT==1){ LAGS=random(4)+1
+DASH=60  
+runLua("Entity("+OWN:id()+"):ViewPunch(Angle(0,0,"+(random(30)-15)+"))")
+LSIZE=5000
+MUSCOL+=10
+
+#effects/huntermuzzle
+particleCollision(0)
+particleGravity(vec())
+particle(0.1+random(0.25),0,10,"effects/splashwake3",hsv2rgb(vec(random(270,360),random(0.75,1),random(0.75,1))),holoEntity(15):pos()+OWN:eye()*5+vec(random(2)-1,random(2)-1,random(2)-1)*2,vec(),random(360),255,255,random(180)-90)
+particle(0.1+random(0.25),0,10,"effects/splashwake3",hsv2rgb(vec(random(270,360),random(0.75,1),random(0.75,1))),holoEntity(15):pos()+OWN:eye()*5+vec(random(2)-1,random(2)-1,random(2)-1)*2,vec(),random(360),255,255,random(180)-90)
+particle(0.1,0,10,"effects/huntermuzzle",hsv2rgb(vec(random(270,360),random(0.75,1),random(0.75,1))),holoEntity(15):pos()+OWN:eye()*5+vec(random(2)-1,random(2)-1,random(2)-1)*2,vec(),random(360),255,255,random(180)-90)
+particle(0.1,0,10,"effects/huntermuzzle",hsv2rgb(vec(random(270,360),random(0.75,1),random(0.75,1))),holoEntity(15):pos()+OWN:eye()*5+vec(random(2)-1,random(2)-1,random(2)-1)*2,vec(),random(360),255,255,random(180)-90)
+particleGravity(vec())
+particleCollision(0)
+
+#COL=hsv2rgb(vec(random(180,315),1,1)) 
+
+COL=vec(0,191,255)
+AO=drawSprite("engine/lightsprite",holoEntity(15):pos(),COL,255,20,20) 
+AO:setTrails(50,0,1,"trails/laser",COL,255) 
+if(AO:isValid()){
+ATE=entitySpawn("e2_empty",AO:pos(),1)
+ATE:setParent(AO)
+ATE:removeOnDelete(AO)
+ATE:setTrails(50,0,1,"trails/laser",COL,255)
+
+ATE=entitySpawn("e2_empty",AO:pos(),1)
+ATE:setParent(AO)
+ATE:removeOnDelete(AO)
+ATE:setTrails(0.5,0,1,"lights/white",vec(255,255,255),255) 
+AO:setdLight(AO:pos(),COL,5,600,100) 
+AO:setVar("Ang",OWN:eyeAngles())
+AO:setVar("Pos",OWN:aimPos()) 
+AO:setVar("CPos",AO:pos()) 
+AO:setVarNum("UPos",0)
+AO:setVarNum("Liv",50)
+AO:setVarNum("Type",0)
+SPR[SPR:count()+1,entity]=AO
+}
+
+COL=vec(255,0,255)
+AO=drawSprite("engine/lightsprite",holoEntity(15):pos(),COL,255,10,10) 
+AO:setTrails(50,0,1,"trails/laser",COL,255) 
+if(AO:isValid()){
+ATE=entitySpawn("e2_empty",AO:pos(),1)
+ATE:setParent(AO)
+ATE:removeOnDelete(AO)
+ATE:setTrails(50,0,1,"trails/laser",COL,255)
+
+AO:setdLight(AO:pos(),COL,5,600,100) 
+AO:setVar("Ang",OWN:eyeAngles())
+AO:setVar("Pos",OWN:aimPos()) 
+AO:setVarNum("Liv",10)
+AO:setVarNum("Type",1)
+SPR[SPR:count()+1,entity]=AO
+}
+
+
+ROT=random(360)
+for(KI=0,2,1){
+COL=hsv2rgb(vec(random(270,315),1,1))
+AO=drawSprite("engine/lightsprite",holoEntity(15):pos(),COL,255,10,10) 
+AO:setTrails(50,0,1,"trails/laser",COL,255) 
+
+AO:setdLight(AO:pos(),COL,5,600,100) 
+AO:setVar("Ang",OWN:eyeAngles())
+AO:setVar("Pos",OWN:aimPos()) 
+AO:setVarNum("UPos",ROT+KI*120)
+AO:setVarNum("Liv",20)
+AO:setVarNum("Type",2)
+SPR[SPR:count()+1,entity]=AO
+
+}
+}else{if(LAGS>0.25){LAGS-=0.11}}
+}
+}else{
+if(COOL_DOWN==0){COOL_DOWN=100 CLICK_OFF=1}
+if(VOLUME>0){VOLUME-=0.1 soundURLvolume(CURRENT,VOLUME)}
+if((DOWNLOAD==0)&(VOLUME<0.2)){soundURLpause(CURRENT) hint("res",10) play() TI=30 LOOP=0 DOWNLOAD=1}
+}
+
+if((COOL_DOWN!=-999)&(COOL_DOWN!=0)){if(COOL_DOWN>1){COOL_DOWN-=1}else{COOL_DOWN=-999}}
+
+
+if(LSIZE>1000){
+
+runLua("Entity("+entity():id()+").context.prf=-10000")
+for(O=O1,PROPS:count(),1){
+if(perf()!=1){O1=O break}
+AE=PROPS:entity(O)
+
+if(AE:isPlayer()){
+    
+    
+if((AE:getVarNum("POL")==0)|(AE:getVarNum("POLE")!=entity():id()))
+{BABA=0
+if((AE:model()=="models/player/alyx.mdl")|
+(AE:model()=="models/player/mossman.mdl")|
+(AE:model():find("chell"))|
+(AE:model():find("female"))){BABA=1}
+if(BABA==1)
+{AE:setVarNum("POL",1) AE:setVarNum("POLE",entity():id()) POL="female"}else
+{AE:setVarNum("POL",2) AE:setVarNum("POLE",entity():id()) POL="male"}
+} 
+else{
+if(AE:getVarNum("POL")==1){POL="female"}  
+if(AE:getVarNum("POL")==2){POL="male"}
+}  
+      
+    
+    
+if((AE:getVarNum("DPG_DANCE")<curtime())|(AE:getVarNum("DPG_DANCE")==0)|(AE:getVarNum("DPG_ENT")!=ENT:id())){
+RIB=randint(0,3)
+if(RIB==0){STR="ACT_GMOD_TAUNT_MUSCLE" AE:setVarNum("DPG_DANCE",curtime()+11.75)}
+if(RIB==1){STR="ACT_GMOD_TAUNT_CHEER"  AE:setVarNum("DPG_DANCE",curtime()+2)}
+if(RIB==2){STR="ACT_GMOD_TAUNT_DANCE"  AE:setVarNum("DPG_DANCE",curtime()+7)}
+if(RIB==3){STR="1643"                  AE:setVarNum("DPG_DANCE",curtime()+10)}
+
+if(POL=="female"){ N1=4 N2=6 }
+if(POL=="male"){   N1=0 N2=3 }
+
+runLua("
+Entity("+AE:id()+"):SendLua([[LocalPlayer():ConCommand('act dance')]])
+Entity("+AE:id()+"):DoAnimationEvent("+STR+")
+if("+random(5)+">4) then
+sound.Play('"+SOUNDS[randint(N1,N2),string]+"',
+Vector("+AE:shootPos():x()+","+AE:shootPos():y()+","+AE:shootPos():z()+"),75,100,1)
+end
+")
+hint("DANCE",1)
+#AE:playerFreeze() AE:setVarNum("DPG_FRZ",1)
+AE:setVarNum("DPG_ENT",ENT:id())
+}
+}
+
+if(AE:isNPC()){
+    
+    
+if((AE:getVarNum("POL")==0)|(AE:getVarNum("POLE")!=entity():id()))
+{BABA=-1
+if((AE:model():find("alyx"))|(AE:model():find("mossman"))|(AE:model():find("female"))|(AE:model():find("chell")))
+{BABA=1}
+if((AE:model():find("odessa"))|(AE:model():find("magnusson"))|(AE:model():find("monk"))|(AE:model():find("kleiner"))|(AE:model():find("eli"))|(AE:model():find("gman"))|(AE:model():find("breen"))||(AE:model():find("barney"))|((AE:model():find("male"))&(!AE:model():find("female"))))
+{BABA=0}
+if((AE:model():find("police"))|(AE:model():find("combine_super_soldier"))|(AE:model():find("combine_soldier")))
+{BABA=2}
+if(BABA==1){  AE:setVarNum("POL",1)  AE:setVarNum("POLE",entity():id()) POL="female"}
+if(BABA==0){  AE:setVarNum("POL",2)  AE:setVarNum("POLE",entity():id()) POL="male"}
+if(BABA==2){  AE:setVarNum("POL",3)  AE:setVarNum("POLE",entity():id()) POL="combine"}
+if(BABA==-1){ AE:setVarNum("POL",5)  AE:setVarNum("POLE",entity():id()) POL="NONE"}
+} 
+else
+{
+if(AE:getVarNum("POL")==1){POL="female"}  
+if(AE:getVarNum("POL")==2){POL="male"}  
+if(AE:getVarNum("POL")==3){POL="combine"}
+if(AE:getVarNum("POL")==5){POL="NONE"} 
+}      
+    
+    
+if((POL=="female")|(POL=="male")){
+if((AE:getVarNum("DPG_DANCE")<curtime())|(AE:getVarNum("DPG_DANCE")==0)|(AE:getVarNum("DPG_ENT")!=ENT:id())){
+RIB=randint(0,2)
+if(RIB==0){STR="deathpose_front"       AE:setVarNum("DPG_DANCE",curtime()+3)}
+if(RIB==1){STR="cheer1"                AE:setVarNum("DPG_DANCE",curtime()+3)}
+if(RIB==2){STR="deathpose_back"        AE:setVarNum("DPG_DANCE",curtime()+3)}
+
+if(POL=="female"){ N1=4 N2=6 }
+if(POL=="male"){   N1=0 N2=3 }
+
+runLua("ents.GetByIndex("+AE:id()+"):SetNPCState(4)
+local sequence = ents.GetByIndex("+AE:id()+"):LookupSequence('"+STR+"')
+ents.GetByIndex("+AE:id()+"):SetSequence(sequence)
+if("+random(5)+">4) then
+sound.Play('"+SOUNDS[randint(N1,N2),string]+"',
+Vector("+AE:shootPos():x()+","+AE:shootPos():y()+","+AE:shootPos():z()+"),75,100,1)
+end
+")
+hint("DANCE",1)
+AE:setVarNum("DPG_ENT",ENT:id())
+}
+}
+
+if(AE:type()=="npc_zombie"){
+if((AE:getVarNum("DPG_DANCE")<curtime())|(AE:getVarNum("DPG_DANCE")==0)|(AE:getVarNum("DPG_ENT")!=ENT:id())){
+RIB=randint(0,2)
+if(RIB==0){STR="fireidle"              AE:setVarNum("DPG_DANCE",curtime()+1)}
+if(RIB==1){STR="tantrum"               AE:setVarNum("DPG_DANCE",curtime()+1)}
+if(RIB==2){STR="wallpound"             AE:setVarNum("DPG_DANCE",curtime()+1)}
+runLua("ents.GetByIndex("+AE:id()+"):SetNPCState(4)
+local sequence = ents.GetByIndex("+AE:id()+"):LookupSequence('"+STR+"')
+ents.GetByIndex("+AE:id()+"):SetSequence(sequence)")
+hint("DANCE",1)
+AE:setVarNum("DPG_ENT",ENT:id())
+}
+}
+
+if(POL=="combine"){
+if((AE:getVarNum("DPG_DANCE")<curtime())|(AE:getVarNum("DPG_DANCE")==0)|(AE:getVarNum("DPG_ENT")!=ENT:id())){
+RIB=randint(0,2)
+if(RIB==0){STR="bugbait_hit"           AE:setVarNum("DPG_DANCE",curtime()+1)}
+if(RIB==1){STR="deathpose_front"       AE:setVarNum("DPG_DANCE",curtime()+1)}
+if(RIB==2){STR="deathpose_back"        AE:setVarNum("DPG_DANCE",curtime()+1)}
+runLua("ents.GetByIndex("+AE:id()+"):SetNPCState(4)
+local sequence = ents.GetByIndex("+AE:id()+"):LookupSequence('"+STR+"')
+ents.GetByIndex("+AE:id()+"):SetSequence(sequence)
+if("+random(5)+">4) then
+sound.Play('npc/metropolice/vo/chuckle.wav',
+Vector("+AE:shootPos():x()+","+AE:shootPos():y()+","+AE:shootPos():z()+"),75,100,1)
+end
+")
+hint("DANCE",1)
+AE:setVarNum("DPG_ENT",ENT:id())
+}
+}
+}
+
+if(AE:isVehicle()){
+if((TACT)|(O1!=1)){
+AE:applyForce((vec(random(20)-10,random(20)-10,random(20)-10)+vec(0,0,random(50)+50))*AE:mass())
+}
+}
+
+}
+}
+
+TACT=0
+
+if(LSIZE>1000){FIND++}
+
+if(MUSCOL>360){MUSCOL=0}
+LCOLOR=hsv2rgb(vec(MUSCOL,1,1))
+holoEntity(15):dLightColor(LCOLOR)
+
+}else{TI=26} 
+
+if(DASH!=0){DASH+=1}
+if(DASH>75){DASH=0}
+
+if(LAGS>1){LAGS-=0.1}
+if(LAGS<1){LAGS+=0.1}
+runLua("Entity("+OWN:id()+"):SetFOV( "+DASH+", 0 )
+RunConsoleCommand('phys_timescale','"+LAGS+"')
+")   
+LSIZE-=100
+if(LSIZE<0){LSIZE=0}
+holoEntity(15):dLightSize(LSIZE)
+
+
+runLua("Entity("+entity():id()+").context.prf=-10000")
+for(IF=I1,SPR:count())
+{
+if(perf()!=1){I1=IF break}
+AE=SPR:entity(IF)
+if(AE:isValid()){
+if(SPR:count()<6){KOF=1}else{KOF=SPR:count()/6}#SPR:count()
+
+if(AE:getVarNum("Type")==0){
+rangerFilter(OWN) 
+RD=rangerOffset(AE:pos(),AE:pos()+(AE:getVar("Pos"):vector(1)-AE:pos()):normalized()*15*KOF)
+
+if(random(2/KOF)>2/KOF-1){
+A=abs(cos(curtime()*100))*100 AE:setVarNum("NPos",random(A)-A/2) 
+AS=AE:getVarNum("NPos")}else{AS=AE:getVarNum("NPos")}
+AE:setPos(AE:getVar("CPos"):vector(1)+(AE:getVar("Pos"):vector(1)-AE:pos()):normalized()*15*KOF+
+vec(0,0,AE:getVarNum("UPos")):rotate(AE:getVar("Ang"):angle(1)))
+AE:setVar("CPos",AE:getVar("CPos"):vector(1)+
+(AE:getVar("Pos"):vector(1)-AE:pos()):normalized()*15*KOF)
+
+if(AE:getVarNum("UPos")>AS){AE:setVarNum("UPos",AE:getVarNum("UPos")-10)}
+if(AE:getVarNum("UPos")<AS){AE:setVarNum("UPos",AE:getVarNum("UPos")+10)}
+}
+
+if(AE:getVarNum("Type")==1){
+AE:setPos(AE:pos()+(AE:getVar("Pos"):vector(1)-AE:pos()):normalized()*40*KOF)
+}
+
+if(AE:getVarNum("Type")==2){
+AE:setPos(AE:pos()+(AE:getVar("Pos"):vector(1)-AE:pos()):normalized()*15*KOF+
+vec(0,0,((20-AE:getVarNum("Liv"))*10)^0.25):rotate(AE:getVar("Ang"):angle(1)+ang(0,0,AE:getVarNum("UPos"))))
+}
+#AE:dLightColor(hsv2rgb(vec(random(180,315),1,1)))
+#AE:setColor(hsv2rgb(vec(random(180,315),1,1)))
+
+AE:setVarNum("Liv",AE:getVarNum("Liv")-KOF)
+if((AE:pos():isInWorld()==0)|(AE:isExist()==0)|(AE:getVarNum("Liv")<0)|(RD:hit())){
+EN=RD:entity()
+if(EN:isValid()){
+if(EN:isPlayer()){
+runLua("Entity("+EN:id()+"):CreateRagdoll() 
+local attacker=ents.GetByIndex("+KILL:id()+")
+local inflictor=ents.GetByIndex("+KILL:id()+")
+gamemode.Call('PlayerDeath',Entity("+EN:id()+"),inflictor,attacker)
+Entity("+EN:id()+"):KillSilent()")
+}else{EN:takeDamage(EN:health()*2+1,KILL,KILL)}}
+
+
+if(random(EN:mass()/1000)>EN:mass()/1000-1){
+EN:propFreeze(0)
+}
+if(random(EN:mass()/100)>EN:mass()/100-1){
+EN:removeAllConstraints()
+EN:propFreeze(0)
+}
+EN:applyForce((AE:getVar("Pos"):vector(1)-AE:pos()):normalized()*10000)
+
+
+SPR:remove(IF)
+AE:remove() 
+RD=noranger()
+}
+}else{SPR:remove(IF)}
+}
+
+#[
+if((CLICK_OFF)|(last())){
+CLICK_OFF=0
+runLua("
+for id,pl in pairs(player.GetAll())do
+local ent=pl
+if(pl:GetVar('DPG_FRZ')==1) then
+pl:UnLock()
+pl:SetVar('DPG_FRZ',0)
+end
+end
+")
+}
+]#
+
+if(perf()==1){I1=1}
+if(perf()==1){O1=1}
+
+
+Realtimes=realtime()
+Curtimes=curtime()
+
+#[
+
+SPR[SPR:count()+1,entity]=drawSprite("engine/lightsprite",holoEntity(15):pos(),Col,255,10,10) 
+SPR:entity(SPR:count()):setTrails(10,5,1,"trails/laser",Col,255) 
+
+Lig=SPR:entity(SPR:count()):setdLight(SPR:entity(SPR:count()):pos(),Col,2,600,100) 
+SPR:entity(SPR:count()):setVar("Light",Lig) SPR:entity(SPR:count()):setVar("Pos",OWN:aimPos()) 
+SPR:entity(SPR:count()):setVar("Ang",OWN:eyeAngles())}
+
+
+for(I=I1,SPR:count())
+{
+if(perf()!=1){I1=I break}
+En=SPR:entity(I)
+if(En:isValid()){
+KOF=SPR:count()/6
+rangerFilter(OWN) 
+RD=rangerOffset(En:pos(),En:pos()+(En:getVar("Pos"):vector(1)-En:pos()):normalized()*40)
+
+En:setPos(En:pos()+(En:getVar("Pos"):vector(1)-En:pos()):normalized()*20*KOF+vec(0,0,randint(20,-20)):rotate(En:getVar("Ang"):angle(1))
++vec(0,10,0):rotate(En:getVar("Ang"):angle(1)))
+En:dLightColor(hsv2rgb(vec(random(180,315),1,1)))
+En:setdLight(SPR:entity(SPR:count()):pos(),hsv2rgb(vec(random(180,315),1,1)),2,600,100)
+En:setColor(hsv2rgb(vec(random(180,315),1,1)))
+
+#if(random(20)>19){En:particleEffect("striderbuster_break_lightning")}
+#if(random(20)>19){En:particleEffect("electrical_arc_01_system")}
+
+En:setVarNum("Liv",En:getVarNum("Liv")+KOF)
+if((En:pos():isInWorld()==0)|(En:isExist()==0)|(En:getVarNum("Liv")>50)|
+(En:pos():distance(En:getVar("Pos"):vector(1))<40)|(RD:hit())){
+
+SPR:remove(I)
+En:remove()}
+}else{SPR:remove(I)}
+}
+ 
+Realtimes=realtime()
+Curtimes=curtime()
+if(perf()==1){I1=1}
+]#
+
+

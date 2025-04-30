@@ -1,0 +1,199 @@
+@name Fireball
+@persist [Vec Color]:vector [Material TrailMaterial]:string [Targ]:array
+@persist Value For Sound Function Z Normal DMass AttackRadius K1 Rdy Next Tutorial Back RotateRadius TrailSize
+@model models/hunter/misc/sphere025x025.mdl
+interval(10)
+
+#Source: https://youtu.be/MaO3V3qL-1E?si=9kAqvfYQKl-Wrh2W
+
+#///// COMANDS:
+#//kill (player name)
+#//attack (radius)
+#//fly
+#//rotate (radius)
+#//normal
+#//color (red green blue pink purple black white default)
+
+if(first())
+{
+    Color = vec(255,255,255)
+    Material = "models/alyx/emptool_glow"
+    TrailMaterial = "trails/electric"
+    TrailSize = 1
+}
+
+runOnChat(1)
+
+E = entity()
+O = owner()
+K1 = O:keyAttack1()
+
+if(duped()){selfDestruct()}
+
+if(first())
+{
+    hint("Made By: CrishNate",15)
+    DMass = E:mass()
+    Z = 10000
+    E:soundPlay(2,0,"ambient/energy/zap" + randint(7,9) + ".wav")
+    I = 1 holoCreate(I,E:pos() + vec(0,0,Z)) holoParent(I,E) holoModel(I,"hqsphere") holoMaterial(I,Material) holoColor(I,Color) holoEntity(I):setTrails(10,0,0.25,"lights/white",Color,255)
+    I = 2 holoCreate(I,E:pos() + vec(0,0,Z)) holoParent(I,1) holoModel(I,"hqsphere") holoMaterial(I,Material) holoColor(I,Color) holoEntity(I):setTrails(30,0,0.25,TrailMaterial,Color,255)
+    I = 3 holoCreate(I,E:pos() + vec(0,0,Z)) holoParent(I,1) holoModel(I,"hqsphere") holoMaterial(I,Material) holoColor(I,Color) holoEntity(I):setTrails(30,0,0.25,TrailMaterial,Color,255)
+    I = 4 holoCreate(I,E:pos() + vec(0,0,Z)) holoParent(I,1) holoModel(I,"hqsphere") holoMaterial(I,Material) holoColor(I,Color) holoEntity(I):setTrails(30,0,0.25,TrailMaterial,Color,255)
+    I = 5 holoCreate(I,E:pos() + vec(0,0,Z)) holoScale(I,vec()) holoAlpha(I,0) holoParent(I,E) holoEntity(I):setTrails(30,0,0.25,TrailMaterial,Color,255)
+    I = 6 holoCreate(I,E:pos() + vec(0,0,Z)) holoScale(I,vec()) holoAlpha(I,0) holoParent(I,E) holoEntity(I):setTrails(30,0,0.25,TrailMaterial,Color,255)
+    E:setAlpha(0)
+    For = 1
+}
+
+holoScale(1,vec(0.65) + random(0.2))
+holoScale(2,vec(0.7) + random(0.2))
+holoScale(3,vec(0.75) + random(0.2))
+holoScale(4,vec(1) + random(0.1))
+holoAng(1,ang(randvec(0,360)))
+holoAng(2,ang(randvec(0,360)))
+holoAng(3,ang(randvec(0,360)))
+holoAng(4,ang(randvec(0,360)))
+Size = E:aabbSize() / 2
+Z -= 1000
+if(Z > 2000)
+{
+    LR = vec(random((1000 - Z / 100),-(1000 - Z / 100)),random((1000 - Z / 100),-(1000 - Z / 100)),Z)
+    holoPos(5,E:boxCenterW() + randvec(Size,-Size) + LR)
+    holoPos(6,E:boxCenterW() + randvec(Size,-Size) + LR)
+    holoPos(1,E:boxCenterW() + LR)
+}
+else
+{
+    holoPos(5,E:boxCenterW() + randvec(Size,-Size))
+    holoPos(6,E:boxCenterW() + randvec(Size,-Size))
+    holoPos(1,E:boxCenterW())
+}
+if(Z == -10000){holoEntity(1):setTrails(30,0,0.25,"trails/electric",Color,255)}
+
+Value += (5 + (Function == 5) * 15) if(Value > 360){Value = 0}
+if(Function == 2){Vec = O:shootPos() + vec(0,0,60)}else{Vec = O:shootPos() + vec(cos(Value) * (20 + (Function == 5) * RotateRadius),sin(Value) * (20 + (Function == 5) * RotateRadius),cos(Value * 2) * 5 + (60 - (Function == 5) * 100))}
+
+if(Function == 0)
+{
+    findClearBlackList()
+    findClearWhiteList()
+    findExcludePlayerProps(O)
+    findInSphere(O:boxCenterW(),750)
+    Ar = findToArray()
+    
+    for(I = For,Ar:count())
+    {
+        if(perf() != 1){break}
+        For = I
+        if(For >= Ar:count()){For = 1}
+        En = Ar:entity(I)
+        if(En:mass() | En:type() == "rpg_missile" | En:type() == "crossbow_bolt" | En:type()=="grenade_spit" | En:type() == "grenade_ar2")
+        {
+            rangerFilter(E) rangerFilter(En) R = rangerOffset(En:boxCenterW(),En:boxCenterW()+En:vel():normalized()*((O:boxCenterW()):distance(En:boxCenterW())))
+            rangerFilter(E) rangerFilter(En) RH = rangerOffset(E:boxCenterW(),En:boxCenterW())
+            if(R:position():distance(O:boxCenterW() + vec(0,0,O:height())) < 300 & RH:position():distance(En:boxCenterW()) < 10){if(En:type() != "prop_physics"|En:type() == "prop_physics" & En:vel():length() > 50){if(En:type() != "crossbow_bolt"){Vec = En:pos()+En:vel():normalized()*15}else{Vec = En:pos() + En:vel():normalized()*60} Mass = 1 if(Sound == 0){E:soundPlay(1,0,"ambient/energy/ion_cannon_shot"+randint(1,3)+".wav") Sound = 1}}}
+        }
+        else
+        {
+            findExcludeEntity(En)
+        }
+    }
+}
+if(Mass == 1){E:setMass(max(DMass,En:mass()))}else{E:setMass(DMass)}
+
+if(Ar:count() == 0){Sound = 0}
+
+LastSaid = O:lastSaid()
+
+if(chatClk(O))
+{
+    if(LastSaid:left(6) == "//kill"){if(!Function | Function != 1){Name = LastSaid:sub(8,LastSaid:length()) for(I = 1,players():count()){En = players():entity(I) if(En:name():find(Name)){Targ[Targ:count() + 1,entity] = En Function = 1 printColor(vec(255,0,0),"Target: Player "+En:name())}} For = 1} hideChat(1)}
+    if(LastSaid:left(8) == "//attack"){if(!Function | Function != 3){if(!Function & LastSaid:sub(10,LastSaid:length()):toNumber() != 0 | LastSaid:sub(10,LastSaid:length()):toNumber() != AttackRadius & LastSaid:sub(10,LastSaid:length()):toNumber() != 0){Function = 3 printColor(vec(0,255,0),"Attack")}else{Function = 0 printColor(vec(255,0,0),"Attack")} AttackRadius = LastSaid:sub(10,LastSaid:length()):toNumber() For = 1} hideChat(1)}
+    if(LastSaid:left(5) == "//fly"){if(!Function | Function != 4){if(!Function){Function = 4 printColor(vec(0,255,0),"Fly")}else{Function = 0 printColor(vec(255,0,0),"Fly")} Back = 1 For = 1} hideChat(1)}
+    if(LastSaid:left(8) == "//rotate"){if(!Function | Function != 5){if(Function & LastSaid:sub(10,LastSaid:length()):toNumber() != 0 | LastSaid:sub(10,LastSaid:length()):toNumber() != RotateRadius & LastSaid:sub(10,LastSaid:length()):toNumber() != 0){Function = 5 RotateRadius = min(300,LastSaid:sub(10,LastSaid:length()):toNumber()) printColor(vec(0,255,0),"Rotate")}else{Function = 0 printColor(vec(255,0,0),"Rotate")} For = 1} hideChat(1)}
+    if(LastSaid:left(9) == "//normal"){if(Function){Function = 0 printColor(vec(0,255,0),"Normal") For = 1} hideChat(1)}
+    if(LastSaid:left(7) == "//color")
+    {
+        Col = LastSaid:sub(9,LastSaid:length())
+        if(Col == "red"){Color = vec(255,0,0) Material = "models/alyx/emptool_glow" TrailMaterial = "trails/electric" Vd = 1 TrailSize = 1}
+        if(Col == "green"){Color = vec(0,255,0) Material = "models/alyx/emptool_glow" TrailMaterial = "trails/electric" Vd = 1 TrailSize = 1}
+        if(Col == "blue"){Color = vec(0,0,255) Material = "models/alyx/emptool_glow" TrailMaterial = "trails/electric" Vd = 1 TrailSize = 1}
+        if(Col == "pink"){Color = vec(255,127,223) Material = "models/alyx/emptool_glow" TrailMaterial = "trails/electric" Vd = 1 TrailSize = 1}
+        if(Col == "purple"){Color = vec(255,0,255) Material = "models/alyx/emptool_glow" TrailMaterial = "trails/electric" Vd = 1 TrailSize = 1}
+        if(Col == "orange"){Color = vec(255,100,0) Material = "models/alyx/emptool_glow" TrailMaterial = "trails/electric" Vd = 1 TrailSize = 1}
+        if(Col == "default"){Color = vec(255) Material = "models/alyx/emptool_glow" TrailMaterial = "trails/electric" Vd = 1 TrailSize = 1}
+        if(Col == "hide"){Color = vec() Material = "models/alyx/emptool_glow" TrailMaterial = "trails/electric" Alpha = 1 Vd = 1 TrailSize = 1}
+        if(Col == "black"){Color = vec() Material = "lights/white" TrailMaterial = "effects/beam_generic01" Alpha = 1 Vd = 1 TrailSize = 0.25}
+        if(Col == "white"){Color = vec(255) Material = "lights/white" TrailMaterial = "effects/beam_generic01" Alpha = 1 Vd = 1 TrailSize = 0.25}
+        if(Vd)
+        {
+            I = 1 holoColor(I,Color) holoMaterial(I,Material) holoEntity(I):setTrails(10 * TrailSize,0,0.25,"lights/white",Color,255) if(Alpha){holoAlpha(I,255)}else{holoAlpha(I,255)}
+            I = 2 holoColor(I,Color) holoMaterial(I,Material) holoEntity(I):setTrails(30 * TrailSize,0,0.25,TrailMaterial,Color,255) if(Alpha){holoAlpha(I,200)}else{holoAlpha(I,255)}
+            I = 3 holoColor(I,Color) holoMaterial(I,Material) holoEntity(I):setTrails(30 * TrailSize,0,0.25,TrailMaterial,Color,255) if(Alpha){holoAlpha(I,150)}else{holoAlpha(I,255)}
+            I = 4 holoColor(I,Color) holoMaterial(I,Material) holoEntity(I):setTrails(30 * TrailSize,0,0.25,TrailMaterial,Color,255) if(Alpha){holoAlpha(I,100)}else{holoAlpha(I,255)}
+            I = 5 holoEntity(I):setTrails(30 * TrailSize,0,0.25,TrailMaterial,Color,255)
+            I = 6 holoEntity(I):setTrails(30 * TrailSize,0,0.25,TrailMaterial,Color,255)
+            printColor(Color,"Color")
+        }
+        hideChat(1)
+    }
+}
+
+if(Function == 1)
+{
+    Vec = Targ:entity(1):boxCenterW()
+    E:setMass(100)
+    if(E:pos():distance(Targ:entity(1):boxCenterW()) < 200 & Targ:entity(1):isAlive() == 0){Targ:remove(1)}
+    if(Targ:count() == 0){Function = 0}
+}
+
+if(Function == 3)
+{
+    findClearBlackList()
+    findClearWhiteList()
+    findInSphere(O:aimPos(),AttackRadius)
+    Ar = findToArray()
+    I = 7 holoCreate(I) holoPos(I,O:aimPos()) holoScaleUnits(I,vec(AttackRadius)) holoModel(I,"hqsphere2") holoAlpha(I,100) holoColor(I,vec(255,0,0)) holoVisible(I,players(),0) holoVisible(I,O,1) holoDisableShading(I,1)
+    if(K1 & !Rdy)
+    {
+        for(I = For,Ar:count())
+        {
+            if(perf() != 1){break}
+            For = I
+            if(For >= Ar:count()){For = 1}
+            En = Ar[I,entity]
+            if(En:mass() | En:isNPC() | En:isPlayer())
+            {
+                Targ[Targ:count() + 1,entity] = En
+            }
+            if(I == Ar:count()){Rdy = 1}
+        }
+    }
+    
+    if(Targ:count() > 0)
+    {
+        Vec = Targ[1,entity]:boxCenterW()
+        E:setMass(100)
+        if(E:pos():distance(Targ:entity(1):boxCenterW()) < 200 | Vec == vec()){Next += 1 if(Next > 40 | Vec == vec()){Next = 0 Targ:remove(1)} if(Targ:entity(1):isAlive() == 0 & Targ:entity(1):isPlayer() | Targ:entity(1):isAlive() == 0 & Targ:entity(1):isNPC() | Targ:entity(1) == noentity()){Targ:remove(1)}}
+    }
+    if(!Targ:count()){Rdy = 0}
+}
+else{holoScale(7,vec())}
+
+if(Function == 4)
+{
+    Vec = O:pos() + vec(O:vel():x() / 15,O:vel():y() / 15,-(3 - (O:keyPressed("Space") / 2) + (O:isCrouch() * 2)))
+    if(E:pos():distance(Vec) > 10){E:setMass(1)}else{E:setMass(DMass)}
+}
+if(Function == 5)
+{
+    E:setMass(100)
+}
+if(Back > 0)
+{
+    Vec = O:pos() - O:eyeAngles():right() * 100
+    Back -= 0.1
+}
+if(E:pos():distance(O:boxCenterW()) < O:height() * 2){E:applyForce((E:pos() - O:boxCenterW()):normalized() * 10000 - E:vel() * E:mass())}
+E:applyForce(400 * max(1,((E:mass() + 1) - DMass)) * (Vec - E:pos()) - E:vel() * E:mass())

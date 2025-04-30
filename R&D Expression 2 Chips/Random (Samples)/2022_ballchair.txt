@@ -1,0 +1,103 @@
+@name ballchair
+@inputs [Cam]:wirelink
+@outputs 
+@persist [E,Seat]:entity [Speed,SpeedRamp,Accel,Height,SpeedYaw]:number [BallAngle]:angle [Velocity]:vector
+@trigger none
+@model models/sprops/cuboids/height12/size_1/cube_12x12x12.mdl
+ 
+#Source: https://youtu.be/slRZzEvLL34?si=lB0S1Iqzo3-i0Jfl
+
+if (first()|dupefinished()|changed(Cam))
+{
+    
+    E = entity(), E:setMass(3500), E:setAlpha(0)  
+    
+    # Customize
+    Speed  = 300  # Max speed
+    Accel  = 0.1 # How fast it accelerates
+    Height = 30   # How tall it is (ball size scales)
+    
+    Cam["Parent",entity]   = E
+    Cam["Position",vector] = E:toWorld(vec(45,0,50))
+    Cam["Distance",number] = 35
+    
+    function void createHolo(Index,Vector:vector,Scale:vector,Angle:angle,Color:vector,Model:string,Parent:entity,Material:string,Shading,Alpha){
+        
+        # All positions and angles are local, not global
+        holoCreate(Index,Parent:toWorld(Vector),Scale,Parent:toWorld(Angle),Color,Model)
+        holoMaterial(Index,Material),holoDisableShading(Index,Shading),holoAlpha(Index,Alpha)
+        holoParent(Index,Parent)    
+        
+    }
+    
+    function angle getSurfaceAngle(Base:entity, Ranger:ranger)
+    {
+        
+        # Shoutout shadowscion
+        local Ground = angnorm(Ranger:hitNormal():toAngle() + ang(90, 0, 0))
+        return ang((cos(Ground:yaw() - Base:angles():yaw()) * Ground:pitch()), Base:angles():yaw(), (-sin(Ground:yaw() - Base:angles():yaw()) * Ground:pitch()))    
+        
+    }
+    
+    function number lerpN(A,B,C)
+    {
+        return A + (B - A) * C   
+    }
+    
+    createHolo(2,vec(0),vec(1),ang(0),vec(255),"models/sprops/geometry/sphere_72.mdl",E,"",0,255)
+    holoScaleUnits(2,vec(Height*2))
+    
+    createHolo(3,vec(0),vec(0.2,1,1),ang(0),vec(255),"models/props_vehicles/tire001c_car.mdl",noentity(),"models/debug/debugwhite",1,255)
+    
+    # Spawns the seat automatically
+    Seat = seatSpawn("models/nova/airboat_seat.mdl", E:toWorld(vec(0,0,Height+(Height/4))), E:toWorld(ang(0,-90,0)), 0), Seat:parentTo(E), Seat:setMaterial("sprops/sprops_grid_12x12")
+  
+    
+    rangerHitEntities(0)
+    rangerFilter(E),rangerFilter(Seat)
+    rangerHitWater(1)
+    rangerPersist(1)
+    runOnLast(1)
+    
+}
+ 
+    interval(40)
+    
+    local Ranger       = rangerOffset(Height*2, E:pos(), vec(0,0,-1))
+    local BallRanger   = rangerOffset(Height*2, E:toWorld(vec(0,0,0)), -E:up())
+    local Distance     = Ranger:distance()
+    local Hit          = Ranger:hit()
+    local SurfaceAngle = Ranger:hit() ? getSurfaceAngle(E, Ranger) : ang(0, E:angles():yaw(), 0)
+    
+    # The yaw doesn't work as good as I want it too but it's better than insta turning
+    SpeedYaw   = lerpN(SpeedYaw, E:vel():setZ(0):toAngle():yaw(), 0.2)
+    BallAngle  = (BallAngle + ang(E:vel():length() / (Height*0.15), 0, 0)):setYaw(SpeedYaw)
+    Velocity   = E:velL(), local DeltaV = $Velocity 
+    
+    local Jerk      = ang(clamp(-E:velL():x() / 35, -20, 20), 0, clamp(E:velL():y() / 35, -20, 20))
+    
+    # DRIVER CONTROLS
+    local W      = Seat:driver():keyForward()
+    local A      = Seat:driver():keyLeft()
+    local S      = Seat:driver():keyBack()
+    local D      = Seat:driver():keyRight()
+    
+    Cam["Activated",number] = Seat:driver():isValid()
+    
+    if(W|S|A|D) { SpeedRamp = lerpN(SpeedRamp, Speed, Accel) }
+    else { SpeedRamp = lerpN(SpeedRamp, 0, 0.33) }
+ 
+    local Eye = rangerOffset(16834, Seat:pos(), Seat:toLocal(Seat:driver():eyeAngles()):forward())
+    local B   = -E:bearing(Eye:pos()), holoPos(3, Eye:pos()), holoAng(3, Eye:hitNormal():toAngle())
+    
+    # Ball position
+    holoPos(2, BallRanger:pos() + (E:up() * Height))
+    holoAng(2, BallAngle)
+    
+    # Force
+    E:applyAngForce(((E:toLocal(SurfaceAngle+Jerk)+ang(0,B,0)) * 40 - E:angVel() * 6) * shiftL(ang(E:inertia())))  
+    E:applyForce(((((E:toWorldAxis(vec((-E:velL():x() / 6) + (SpeedRamp*(W-S)), (-E:velL():y() / 3) + (SpeedRamp*(A-D)), 0))+vec(0, 0, ((Height-(E:vel():length()/100)) - Distance) * (75) - (E:velL():z() * 2))) * E:mass()) / 3))) 
+    
+    E:propGravity(1 - Ranger:hit())
+    
+    if (last()) { Seat:propDelete() }

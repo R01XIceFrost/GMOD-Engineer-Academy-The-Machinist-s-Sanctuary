@@ -1,0 +1,57 @@
+@name Rainbow Trail Tut by Shawnie 
+@persist [O]:entity [X,Y,M,D]:number
+#255,0,0 red
+#255,125,0 orange
+#255,255,0 yellow
+#0,255,0 green
+#0,125,255 blue
+#125,0,255 purple
+
+#Source: https://youtu.be/7H0eRPLQt80?si=b_A94v0frkkjR_oj
+
+if (first()) {
+    runOnTick(1)
+    holoCreate(0)    
+    holoCreate(1)    
+    holoCreate(2)    
+    holoCreate(3)    
+    holoCreate(4)    
+    holoCreate(5)    
+    holoAlpha(0,0)
+    holoAlpha(1,0)
+    holoAlpha(2,0)
+    holoAlpha(3,0)
+    holoAlpha(4,0)
+    holoAlpha(5,0)
+    holoEntity(0):setTrails(5,0,3,"trails/smoke",vec(255,0,0),255)
+    holoEntity(1):setTrails(5,0,3,"trails/smoke",vec(255,125,0),255)
+    holoEntity(2):setTrails(5,0,3,"trails/smoke",vec(255,255,0),255)
+    holoEntity(3):setTrails(5,0,3,"trails/smoke",vec(0,255,0),255)
+    holoEntity(4):setTrails(5,0,3,"trails/smoke",vec(0,125,255),255)
+    holoEntity(5):setTrails(5,0,3,"trails/smoke",vec(125,0,255),255)
+    O = owner()
+    X = 0
+    Y = 0
+    M = 3
+    D = 50
+}
+
+if (!changed(O:pos())) {
+    holoPos(0,O:pos()+vec(cos(X)*D,sin(Y)*D,60))
+    holoPos(1,O:pos()+vec(cos(X)*D,sin(Y)*D,50))
+    holoPos(2,O:pos()+vec(cos(X)*D,sin(Y)*D,40))
+    holoPos(3,O:pos()+vec(cos(X)*D,sin(Y)*D,30))
+    holoPos(4,O:pos()+vec(cos(X)*D,sin(Y)*D,20))
+    holoPos(5,O:pos()+vec(cos(X)*D,sin(Y)*D,10))
+}
+else {
+    holoPos(0,O:pos()+vec(0,0,60))
+    holoPos(1,O:pos()+vec(0,0,50))
+    holoPos(2,O:pos()+vec(0,0,40))
+    holoPos(3,O:pos()+vec(0,0,30))
+    holoPos(4,O:pos()+vec(0,0,20))
+    holoPos(5,O:pos()+vec(0,0,10))
+}
+
+X+=M
+Y+=M

@@ -1,0 +1,129 @@
+@name Combine Sniper
+@persist [E O L S]:entity [Ang EyE]:angle Pos:vector KU KA KR KRE KREL W Shot GRAB KA2 KA2P TDS
+
+#Source: https://youtu.be/4qCiN2RPDSI?si=3iJw88xThMNVNyRx
+
+interval(10)
+entity():propNotSolid(1)
+entity():setAlpha(0)
+propSpawnEffect(0)
+ 
+if(first())
+{
+GRAB=1 O=owner() entitySpawn("weapon_stunstick",O:pos(),1)
+entity():setAng(ang(0,floor(owner():eyeAngles():yaw()/45)*45+180,0))
+holoCreate(1) holoPos(1,entity():pos()-entity():right()*5+entity():up()*3) holoAng(1,entity():angles()+ang(0,0,45)) holoScale(1,vec(0.1,0.1,0.8)) holoModel(1,"hqcylinder") holoParent(1,entity()) holoMaterial(1,"models/props_c17/metalladder001") holoColor(1,vec(100))
+holoCreate(2) holoPos(2,entity():pos()+entity():right()*5+entity():up()*3) holoAng(2,entity():angles()-ang(0,0,45)) holoScale(2,vec(0.1,0.1,0.8)) holoModel(2,"hqcylinder") holoParent(2,entity()) holoMaterial(2,"models/props_c17/metalladder001") holoColor(2,vec(100))
+holoCreate(3) holoPos(3,entity():pos()+entity():up()*6.2) holoAng(3,entity():angles()-ang(0,0,90)) holoScale(3,vec(0.1,0.1,0.34)) holoModel(3,"hqcylinder") holoParent(3,entity()) holoMaterial(3,"models/props_c17/metalladder001") holoColor(3,vec(100))
+ 
+holoCreate(4) holoPos(4,entity():pos()+entity():right()*8.2) holoAng(4,entity():angles()-ang(90,0,0)) holoScale(4,vec(0.1,0.1,0.34)) holoParent(4,entity()) holoMaterial(4,"models/props_c17/metalladder001") holoColor(4,vec(100))
+holoCreate(5) holoPos(5,entity():pos()-entity():right()*8.2) holoAng(5,entity():angles()-ang(90,0,0)) holoScale(5,vec(0.1,0.1,0.34)) holoParent(5,entity()) holoMaterial(5,"models/props_c17/metalladder001") holoColor(5,vec(100))
+ 
+holoCreate(6) holoPos(6,entity():pos()+entity():up()*7.5-entity():forward()*4) holoAng(6,entity():angles()-ang(90,0,0)) holoScale(6,vec(0.1,0.2,0.8)) holoMaterial(6,"models/props_c17/metalladder001") holoColor(6,vec(100))
+holoCreate(7) holoPos(7,entity():pos()+entity():up()*7.2) holoAng(7,entity():angles()) holoScale(7,vec(0.1,0.1,0.2)) holoModel(7,"hqcylinder") holoParent(6,7) holoParent(7,entity()) holoMaterial(7,"models/props_c17/metalladder001") holoColor(7,vec(100))
+holoCreate(8) holoPos(8,entity():pos()+entity():up()*9-entity():forward()*8) holoAng(8,entity():angles()) holoScale(8,vec(0.1,0.1,0.2)) holoModel(8,"hqcylinder") holoParent(8,7) holoMaterial(8,"models/props_c17/metalladder001") holoColor(8,vec(100))
+E=propSpawn("models/hunter/blocks/cube025x125x025.mdl",1) E:setModel("models/weapons/w_combine_sniper.mdl")
+ 
+L=E:drawBeam("effects/bluelaser1",entity():pos(),O:aimPos(),vec(255,255,255),255,1,10,10) 
+S=drawSprite("sprites/light_glow03",entity():pos(),vec(0,150,255),255,5,5)
+}
+if(GRAB==0){
+rangerFilter(E)
+R=rangerOffset(E:pos()-E:forward()*2+E:up()*3,E:pos()-E:forward()*100000000000+E:up()*1)
+holoAng(7,E:angles())
+}
+else
+{
+rangerFilter(E)
+R=rangerOffset(E:pos()-E:forward()*2+E:up()*3,O:aimPos())    
+}
+if(O:vel():length()==0&O:weapon():type()==""&GRAB==1|GRAB==0)
+{
+L:setPos(E:pos()-E:forward()*2+E:up()*3)
+L:setBeamEndEnt(S)
+S:setPos(R:position())
+ 
+L:setAlpha(255)
+S:setAlpha(255)
+}else{L:setAlpha(0) S:setAlpha(0)}
+E:propFreeze(1)
+if(GRAB==0){E:setPos(holoEntity(6):pos()+holoEntity(6):forward()*6+holoEntity(6):up()*0.6) for(H=1,8){holoAlpha(H,255)} E:propNotSolid(0) E:unParent()}else
+{E:propNotSolid(1)
+for(H=1,8){holoAlpha(H,0)}
+if(O:weapon():type()!=""&W==1){S=entitySpawn("weapon_stunstick",O:pos(),1) W=0}
+if(O:weapon():type()=="weapon_stunstick"){O:weapon():remove() W=1}
+E:unParent()
+if(O:vel():length()==0&O:weapon():type()==""){if(owner():isCrouch()){runLua("ents.GetByIndex("+owner():id()+"):DoAnimationEvent( ACT_HL2MP_IDLE_CROUCH_RPG )")}else{runLua("ents.GetByIndex("+owner():id()+"):DoAnimationEvent( ACT_HL2MP_IDLE_RPG )")}
+holoCreate(9) holoPos(9,O:attachmentPos("anim_attachment_rh")) holoAng(9,O:attachmentAng("anim_attachment_rh")) holoAlpha(9,0) holoParentAttachment(9,O,"anim_attachment_rh")
+E:unParent()
+ 
+E:setAng(O:attachmentAng("anim_attachment_rh")+ang(168,0,180))
+E:setPos(O:attachmentPos("anim_attachment_rh")+holoEntity(9):forward()*18+holoEntity(9):up()*8)
+if(E:pos():distance(O:attachmentPos("anim_attachment_rh")+holoEntity(9):forward()*18+holoEntity(9):up()*8)<10|E:angles()==O:attachmentAng("anim_attachment_rh")+ang(168,0,180)){E:parentTo(holoEntity(9))}
+#E:parentTo(holoEntity(9))
+}
+else
+{
+holoCreate(9) holoPos(9,O:attachmentPos("chest")) holoAng(9,O:attachmentAng("chest")) holoAlpha(9,0) holoParentAttachment(9,O,"chest")
+E:unParent()
+ 
+E:setAng(O:attachmentAng("anim_attachment_rh")+ang(90,0,90))
+E:setPos(O:attachmentPos("chest")-holoEntity(9):forward()*10+holoEntity(9):up()*0)
+if(E:pos():distance(O:attachmentPos("chest")-holoEntity(9):forward()*10+holoEntity(9):up()*0)<10|E:angles()==O:attachmentAng("anim_attachment_rh")+ang(90,0,90)){E:parentTo(holoEntity(9))}
+#E:parentTo(holoEntity(9))
+ 
+}
+}
+if(GRAB==0)
+{
+if((entity():pos()+vec(100,0,0):rotate(O:eyeAngles())):distance(entity():pos()-entity():forward()*100)<80|O:isAlive()==0){E:setAng(Ang)}
+}
+for(I=1,players():count())
+{
+Pl=players():entity(I)
+if(Pl:shootPos():distance(E:pos())<100&Pl:keyReload()&O:isAlive()==0&KREL==0&KU==0&GRAB==0){KRE=1 GRAB=1 O=Pl setOwner(Pl) E:soundPlay(1,2,"/items/ammo_pickup.wav") entitySpawn("weapon_stunstick",O:pos(),1) effectSpawn("cball_explode",entity():pos(),1)}
+if(Pl:shootPos():distance(E:pos())<100&Pl:keyUse()&O:isAlive()==0&KRE==0){KU=1 O=Pl setOwner(Pl) E:soundPlay(1,2,"/items/ammo_pickup.wav") stripWeapons()}
+}
+if(O:keyReload()==0){if(KREL==1){KREL=0} if(KRE==1){KRE=0} if(KREL==1){O=noentity() KREL=0}}
+if(O:keyReload()&KRE==0&GRAB==1&KREL==0&O:aimPos():distance(O:shootPos())<150){KREL=1 GRAB=0 entity():setPos(O:aimPos()) entity():setAng(ang(0,floor(O:eyeAngles():yaw()/45)*45+180,0))}
+ 
+KA=O:keyAttack1()
+if(O:keyUse()==0){KU=0}
+KA2=O:keyAttack2()
+KA2P=O:keyAttack2()==0
+if(KA2&$KA2){O:soundPlay(1,0,"/weapons/sniper/sniper_zoomin.wav")
+Col=vec(0,0,200)
+hudDrawLine(1,0,50,100,50,Col,255)
+hudDrawLine(2,50,0,50,100,Col,255)
+hudDrawLine(3,10,55,90,55,Col,255)
+hudDrawLine(4,41,58,59,58,Col,255)
+hudDrawLine(5,42,61,58,61,Col,255)
+hudDrawLine(6,43,64,57,64,Col,255)
+hudDrawLine(7,44,67,56,67,Col,255)
+hudDrawLine(8,45,70,55,70,Col,255)
+hudDrawLine(9,0,73,100,73,Col,255)
+hudDrawLine(10,39,55,41,58,Col,255)
+hudDrawLine(11,41,58,46,73,Col,255)
+hudDrawLine(12,61,55,59,58,Col,255)
+hudDrawLine(13,59,58,54,73,Col,255)}
+if(KA2P&$KA2P){O:soundPlay(1,0,"/weapons/sniper/sniper_zoomout.wav")
+hudClear()}
+ 
+if(O:keyAttack2()){setFOV(5)}else{setFOV(75)}
+if(O:isAlive()==0&GRAB==0|O:shootPos():distance(E:pos())>100&GRAB==0){if(O:isAlive()){spawn() O:tele(Pos) setEyeAngles(EyE)} O=noentity()}else{Pos=O:pos() EyE=O:eyeAngles()}
+if(KA&Shot==0){
+if(GRAB==0|GRAB==1&O:vel():length()==0&O:weapon():type()==""){Shot=2 E:soundPlay(2,2,"/npc/sniper/echo1.wav") 
+if(GRAB==0){E:shootTo(E:pos()-E:forward()*2+E:up(),-E:forward(),0,100,100,"AirboatGunHeavyTracer")}else{E:shootTo(E:pos()-E:forward()*50+E:up(),-(E:pos()-E:forward()*50+E:up()-O:aimPos()):normalized(),0,100,100,"AirboatGunHeavyTracer")} E:effectSpawn("MuzzleEffect",E:pos()-E:forward()*35+E:up(),E:pos()-E:forward()*35+E:up(),E:angles()+ang(180,0,0),1) runLua("ents.GetByIndex("+O:id()+"):ViewPunch( Angle( -10, 0, 0 ) )")}}
+ 
+if(Shot==1&O:keyReload()&KR==0){KR=1 Shot=2} if(O:keyReload()==0){KR=0}
+if(Shot>1){Shot+=1 if(Shot==50){E:soundPlay(3,2,"/npc/sniper/reload1.wav") E:effectSpawn("RifleShellEject",E:pos(),E:pos()-E:right()*10,E:angles()+ang(0,90,0),1)} if(Shot>80){Shot=0}}
+if(O:isAlive())
+{
+rangerFilter(O) rangerFilter(E) RH=rangerOffset(O:shootPos(),O:shootPos()+O:eye()*100000000000)
+ 
+Ang=(RH:position()-E:pos()):toAngle()+ang(180,0,180)
+}
+else
+{
+Ang=entity():angles()
+}
