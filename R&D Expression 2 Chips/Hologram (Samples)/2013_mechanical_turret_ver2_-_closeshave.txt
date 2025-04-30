@@ -1,0 +1,170 @@
+@name Mechanical Turret VER2 - CloseShave
+@inputs BaseYaw:entity TurretPitch:entity Turret:entity
+@outputs Fire
+@persist BaseYawAng:angle TurretPitchAng:angle Player:entity Active Time Time2 Manual
+@trigger 
+
+#Source: https://youtu.be/oaU-LvdwD-o?si=3M-Pk6YhBe5atCLD
+ 
+runOnTick(1)
+ 
+Time2 = Time2 + 1
+ 
+O = owner()
+ 
+#--- Finds and defines the player as a variable ---#
+ 
+findByModel( "models/props_c17/FurnitureDrawer001a.mdl" )
+findSortByDistance( entity():pos() )
+findExcludePlayer( O )
+Player = find()
+ 
+#--- Misc ---#
+ 
+Pitch = TurretPitch:vel():length()*50
+ 
+if( first() | dupefinished() )
+{
+    hint( "Mechanical Turret by CloseShave", 3)
+    entity():soundPlay( 1,0,"acf_engines/electric_small.wav" )
+}
+soundVolume( 1, 10 )
+soundPitch(1, 25 + Pitch)
+ 
+#--- Ranger creation ---#
+ 
+         rangerFilter( entity() )
+         rangerFilter( TurretPitch )
+         rangerFilter( Turret )
+Ranger = rangerOffset( 10000, TurretPitch:pos(), TurretPitch:forward() )
+ 
+if( first() | dupefinished() )
+{
+    holoCreate( 1 )
+    holoModel( 1, "hqsphere" )
+    holoScale( 1, vec( 0.25,0.25,0.25 ) )
+    holoColor( 1, vec( 255,0,0 ) )
+ 
+    lightCreate( 1 )
+}
+ 
+lightPos( 1, TurretPitch:pos() + vec( -4,0,0 ) )
+holoPos( 1, Ranger:position() )
+ 
+Distance = Ranger:distance()
+ 
+#--- Chat commands toggling Active ---#
+ 
+if( O:lastSaid() == "/on" )
+{
+    Active = 1
+}
+if( O:lastSaid() == "/off" )
+{
+    Active = 0
+}
+if( O:lastSaid() == "/manual" )
+{
+    Manual = 1
+}
+if( O:lastSaid() == "/manualoff" )
+{
+    Manual = 0
+}
+#--- Turret targets player ---#
+ 
+if( Active == 1 )
+{
+ 
+    P1 = TurretPitch:elevation( Player:pos() + Player:boxCenter() )
+    Y1 = 0
+    R1 = 0
+ 
+    P2 = BaseYaw:elevation( Player:pos() + Player:boxCenter() )
+    Y2 = 0
+    R2 = 0
+ 
+#--- Ranger Target ---#
+ 
+    if( Ranger:entity() == Player )
+    {
+        Fire = 1
+ 
+#--- Gunshots ---#
+ 
+        soundVolume( 2, 0.75 )
+        soundPlay( 2, 5, "acf_extra/miscfx/m60_fire2.wav" )
+    }
+    else
+    {
+        Fire = 0
+    } 
+ 
+    if( Time2 == 50 )
+    {
+    lightColor( 1, vec( 255,0,0 ) )
+    }
+    if( Time2 == 100)
+    {
+    lightColor( 1, vec( 0,0,0 ) )
+    Time2 = 0
+    }
+}
+ 
+#--- Idle sequence ---#
+ 
+if( Active == 0 )
+{
+ 
+    Time = Time + 1/3
+ 
+    for(I = 1,10)
+    {
+        if(Time == 10)
+        {
+            P2 = 9
+        }
+        if(Time == 100)
+        {
+            P2 = -4.5
+            Time = 0
+        }
+    }
+ 
+    if( Time2 == 50 )
+    {
+        lightColor( 1, vec( 0,255,0 ) )
+    }
+    if( Time2 == 100)
+    {
+        lightColor( 1, vec( 0,0,0 ) )
+        Time2 = 0
+    }
+ 
+#--- 0,0,0 for turret plate (Straight & Flat) ---#
+ 
+    P1 = TurretPitch:angles():pitch()
+    Y1 = TurretPitch:angles():pitch()
+    R1 = TurretPitch:angles():pitch()
+}
+ 
+if( Manual == 1 )
+{
+    P1 = TurretPitch:elevation( O:aimPos() )
+    Y1 = 0
+    R1 = 0
+ 
+    P2 = BaseYaw:elevation( O:aimPos() )
+    Y2
+    R2
+}
+ 
+lightCreate
+
+#--- ApplyForce, Angle defines ---#
+ 
+BaseYawAng = -ang( P2,Y2,R2 )
+TurretPitchAng = -ang( P1,Y1,R1 )
+ 
+TurretPitch:applyAngForce( ( TurretPitchAng + $TurretPitchAng*5 )*TurretPitch:mass() )
+BaseYaw:applyAngForce( ( BaseYawAng + $BaseYawAng*5 )*BaseYaw:mass() )
