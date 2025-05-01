@@ -1,0 +1,314 @@
+##Created and pasted here by MrStump
+ 
+@name Hoverking mk9
+@inputs Pod:wirelink
+@persist Mass Height HoverForceMult Tilt HeightShutoff MomentumStopMult Active HoverForceMult2 EngineOn
+@persist RotationStopMult ThrustForwardMult TForward TRight Yaw ThrustTurnMult MaxTurnSharpness Space
+@persist Craft:entity Ang:angle Corner:array
+@persist [Forward V1 V2 V3 V4]:vector
+@model models/hunter/plates/plate1x2.mdl
+ 
+#Source: https://youtu.be/2sMkDkQHsrk?si=riKpWsBfyoNgpusw
+
+interval(10)
+ 
+if(first()|dupefinished()){
+        #Variables that can be altered to change performance
+    Height            = 50   #Change hover height
+    HoverForceMult    = 2    #Change if ship is wobbly or for tiny tweeks
+    HoverForceMult2   = 3.6  #Change to alter amount of upward force, Less = MORE FORCE, 1.6 is strong, 3.6 is loose
+    HeightShutoff     = 0    #More is higher before velocity slowdown shuts off
+    MomentumStopMult  = 8    #Less is more auto-stop power
+    RotationStopMult  = 0.9  #Less is more auto-stop power
+    ThrustForwardMult = 45   #More is more thrust (More = higher speed)
+    ThrustTurnMult    = 10   #More is more turn
+    MaxTurnSharpness  = 11   #More is a sharper turn, don't go much higher than 15 or so
+    
+        #A bunch of settings which should not be tampered with
+    Craft=entity()
+    Craft:setMass(3000)
+    Craft:setAlpha(255)
+    Craft:setMaterial("Models/effects/vol_light001")
+    Mass=0
+    Props=Craft:getConstraints()
+    for(A=1, Props:count()) {Props[A,entity]:setMass(2) Mass=Mass+2}
+    Mass=Mass+Craft:mass()
+    TForward=0
+    TRight=0
+    Tilt=0
+    rangerPersist(1)
+    rangerHitWater(1) 
+    rangerFilter(Props)
+    rangerFilter(Craft)
+    rangerFilter(players())
+    findExcludePlayer(owner())
+    
+        #C1-Front Left, C2-Front Right, C3-Back Left, C4-Back Right
+        #Are listed again below for updates
+    C1=Craft:toWorld(vec( 24,-47, 0))
+    C2=Craft:toWorld(vec(-24,-47, 0))
+    C3=Craft:toWorld(vec( 24, 47, 0))
+    C4=Craft:toWorld(vec(-24, 47, 0))
+    
+        #Holo creation for all of the ship parts
+    holoCreate(1,Craft:toWorld(vec( 17,-40, 0)), vec(0.6,0.6,0.6), Craft:toWorld(ang()))
+    holoCreate(2,Craft:toWorld(vec(-17,-40, 0)), vec(0.6,0.6,0.6), Craft:toWorld(ang()))
+    holoCreate(3,C3, vec(0.6,0.6,0.6), Craft:toWorld(ang()))
+    holoCreate(4,C4, vec(0.6,0.6,0.6), Craft:toWorld(ang()))
+    
+    holoCreate(5,Craft:toWorld(vec( 17,-40,-8)), vec(1.4,1.4,0.5), Craft:toWorld(ang(180,0,0)))
+    holoCreate(6,Craft:toWorld(vec(-17,-40,-8)), vec(1.4,1.4,0.5), Craft:toWorld(ang(180,0,0)))
+    holoCreate(7,Craft:toWorld(vec( 24, 47,-8)), vec(1.4,1.4,0.5), Craft:toWorld(ang(180,0,0)))
+    holoCreate(8,Craft:toWorld(vec(-24, 47,-8)), vec(1.4,1.4,0.5), Craft:toWorld(ang(180,0,0)))
+    
+    holoCreate(9, Craft:toWorld(vec( 17,-40,3)), vec(0.4,0.4,0.3), Craft:toWorld(ang(0, 45,0)))
+    holoCreate(10,Craft:toWorld(vec(-17,-40,3)), vec(0.4,0.4,0.3), Craft:toWorld(ang(0,-45,0)))
+    holoCreate(11,Craft:toWorld(vec( 24, 47,3)), vec(0.4,0.4,0.3), Craft:toWorld(ang(0, 45,0)))
+    holoCreate(12,Craft:toWorld(vec(-24, 47,3)), vec(0.4,0.4,0.3), Craft:toWorld(ang(0,-45,0)))
+ 
+ 
+    holoCreate(13,Craft:toWorld(vec(-4,-36,2)), vec(1,1,1.4), Craft:toWorld(ang(90,90,0)))
+    holoModel(13, "models/props_combine/combine_intmonitor001.mdl")
+    holoSkin(13,1)
+    holoShadow(13,1)
+    holoCreate(14,Craft:toWorld(vec(0,25,10)), vec(1,1,1), Craft:toWorld(ang(0,90,0)))
+    holoModel(14, "models/gibs/airboat_broken_engine.mdl")
+    holoCreate(15,Craft:toWorld(vec(0,13,19)), vec(0.6,0.6,0.6), Craft:toWorld(ang(0,180,90)))
+    holoModel(15, "models/props_c17/substation_transformer01c.mdl")
+    holoCreate(16,Craft:toWorld(vec(-19,-24,11)), vec(1,1,1.4), Craft:toWorld(ang(90,90,0)))
+    holoModel(16, "models/props_combine/combine_light002a.mdl")
+    holoCreate(17,Craft:toWorld(vec(0,-38,8)), vec(0.5,0.5,0.26), Craft:toWorld(ang(-45,-90,0)))
+    holoModel(17,"models/props_combine/combine_interface002.mdl")
+    holoCreate(18,Craft:toWorld(vec(24,0,15)), vec(1,1,1), Craft:toWorld(ang(0,0,90)))
+    holoModel(18, "models/props_combine/combine_lock01.mdl")
+    holoCreate(19,Craft:toWorld(vec(0,-20,16)),vec(0.15,0.1,0.1),Craft:toWorld(ang(-50,90,0)))
+    holoModel(19,"models/props_combine/headcrabcannister01a.mdl")
+    holoCreate(20,Craft:toWorld(vec(3,-16,23)),vec(1,1,1),Craft:toWorld(ang(0,87,0)))
+    holoModel(20,"models/Items/combine_rifle_cartridge01.mdl")
+    holoCreate(21,Craft:toWorld(vec(-3,-16,23)),vec(1,1,1),Craft:toWorld(ang(0,93,0)))
+    holoModel(21,"models/Items/combine_rifle_cartridge01.mdl")
+    holoParent(20,holoEntity(19))
+    holoParent(21,holoEntity(20))
+    holoCreate(22,Craft:toWorld(vec(5.2,-30, 16.0)), vec(0.1,0.06,0.16), Craft:toWorld(ang(0,0,70)),vec(255,0,0))
+    holoModel(22,"prism")
+    holoParent(22,Craft)
+ 
+    
+        ####Steering column thing - models/Items/combine_rifle_cartridge01.mdl
+    for(B= 1, 4){
+        holoParent(B,Craft)
+        holoModel(B, "models/mechanics/wheels/wheel_extruded_48.mdl")
+        holoMaterial(B,"models/props_canal/canal_bridge_railing_01b")
+        holoShadow(B,1)
+    }
+    for(C= 5, 8){
+        holoParent(C,  C-4) 
+        holoModel(C, "models/xqm/afterburner1.mdl")
+        holoMaterial(C,"models/props_combine/portalball001_sheet")
+        holoEntity(C):setTrails(35,0,0.2,"trails/plasma",vec(255,255,255),150)
+    }
+    for(D= 9,12){
+        holoParent(D,Craft)
+        holoModel(D, "models/hunter/misc/shell2x2a.mdl")
+        holoMaterial(D,"models/props_wasteland/lighthouse_stairs")
+        holoColor(D,vec(190,190,240))
+        holoShadow(D,1)
+    } 
+    for(E=13,19){holoParent(E,Craft) holoShadow(E,1)}
+    
+        #Start sound and toggle engine variable to on
+    soundPlay(1,0,"vehicles/apc/apc_start_loop3.wav")
+    soundVolume(1,0.5)
+    EngineOn=1
+    
+    timer("RangerUpdate",30000)
+}
+ 
+C1=Craft:toWorld(vec( 24,-47, 0))
+C2=Craft:toWorld(vec(-24,-47, 0))
+C3=Craft:toWorld(vec( 24, 47, 0))
+C4=Craft:toWorld(vec(-24, 47, 0))
+Forward  = Craft:right()
+CraftPos = Craft:pos()
+CraftAng = Craft:angles()
+ 
+if(inrange(CraftAng,ang(-90,-180,-90),ang(90,180,90))){
+        #Ranger bundle
+    R1=rangerOffset(20000,C1,vec(0,0,-1))
+    D1=R1:distance()
+    R2=rangerOffset(20000,C2,vec(0,0,-1))
+    D2=R2:distance()
+    R3=rangerOffset(20000,C3,vec(0,0,-1))
+    D3=R3:distance() 
+    R4=rangerOffset(20000,C4,vec(0,0,-1))
+    D4=R4:distance() 
+    AverageHeight=(D1+D2+D3+D4)/4
+    
+        ###Hover Code
+    if(D1<Height){
+        V1=(vec(0,0,Height-D1+Tilt))*Mass/HoverForceMult2
+        Craft:applyOffsetForce(V1+$V1*HoverForceMult,C1)
+    }
+    if(D2<Height){
+        V2=(vec(0,0,Height-D2-Tilt))*Mass/HoverForceMult2
+        Craft:applyOffsetForce(V2+$V2*HoverForceMult,C2)
+    }
+    if(D3<Height){
+        V3=(vec(0,0,Height-D3+Tilt))*Mass/HoverForceMult2
+        Craft:applyOffsetForce(V3+$V3*HoverForceMult,C3)
+    }
+    if(D4<Height){
+        V4=(vec(0,0,Height-D4-Tilt))*Mass/HoverForceMult2
+        Craft:applyOffsetForce(V4+$V4*HoverForceMult,C4)
+    }
+    if(Craft:isUnderWater()){
+        V100 = vec(0,0,40) * Mass
+        Craft:applyForce(V100)
+    }
+    
+        ##Slowdown code
+    if(AverageHeight<Height+HeightShutoff){
+        V5 = (( CraftPos - Craft:vel()/2 ) - CraftPos) * Mass/MomentumStopMult
+        Craft:applyForce(V5)
+    }
+    
+        ##Stop Spin code
+    A1 = (( CraftAng - Craft:angVel()/RotationStopMult) - CraftAng) * Mass
+    Craft:applyAngForce(A1)
+ 
+        #engines pointing code and steering wheel turn
+    if(inrange(CraftAng,ang(-42,-180,-42),ang(42,180,42))){
+        holoAng(1,ang(0-Tilt*7,CraftAng:yaw(),0+TForward))
+        holoAng(2,ang(0-Tilt*7,CraftAng:yaw(),0+TForward))
+        holoAng(3,ang(0+Tilt*7,CraftAng:yaw(),0+TForward))
+        holoAng(4,ang(0+Tilt*7,CraftAng:yaw(),0+TForward))
+    }
+    holoAng(19,Craft:toWorld(ang(-50,90,0-Tilt*5)))
+ 
+        #Speedomiter control
+    Speed = clamp( (Craft:vel():length()-20),0,1415)
+    Needle = (Speed/1415) * 12.6
+    holoPos(22, Craft:toWorld(vec(5.2-Needle,-30, 16.0)))
+    
+        #Engine pitch control and reactivation of sound
+    if(EngineOn==0){
+        soundPurge()
+        soundPlay(1,0,"vehicles/apc/apc_start_loop3.wav")
+        soundVolume(1,0.5)
+        EngineOn=1
+    }
+    soundPitch(1,50+abs(TForward))
+    
+        ##Begin pod controller shit
+    Active = Pod["Active",number]
+    if(Active) {
+        W          = Pod["W",number]
+        A          = Pod["A",number]
+        S          = Pod["S",number]
+        D          = Pod["D",number]
+        #R          = Pod["R",number]
+        #Light      = Pod["Light",number]
+        Space      = Pod["Space",number]
+        Shift      = Pod["Shift",number]
+        #Alt        = Pod["Alt",number]
+        #Mouse1     = Pod["Mouse1",number]
+        #Mouse2     = Pod["Mouse2",number]
+        #PrevWeapon = Pod["PrevWeapon",number]
+        #NextWeapon = Pod["NextWeapon",number]
+        
+        if(AverageHeight<Height+HeightShutoff){
+            if(Shift){
+                if(W){
+                    V6 = ((CraftPos + Forward*1000) - CraftPos) * Mass/1000 * ThrustForwardMult * 2
+                    Craft:applyForce(V6)
+                    if(TForward<45){TForward=TForward+2} else{}
+                    
+                }
+                elseif(S){
+                    V6 = ((CraftPos - Forward*1000) - CraftPos) * Mass/1000 * ThrustForwardMult * 2
+                    Craft:applyForce(V6)
+                    if (TForward>-45) {TForward=TForward-2} else{}
+                }
+                else{
+                    if(TForward>0){TForward = TForward - 2}
+                    if(TForward<0){TForward = TForward + 2}
+                }
+            }
+            else{
+                if(W){
+                    V6 = ((CraftPos + Forward*1000) - CraftPos) * Mass/1000 * ThrustForwardMult
+                    Craft:applyForce(V6)
+                    if(TForward<30){TForward=TForward+2}
+                    elseif(TForward>31) {TForward=TForward-2}
+                    else{}
+                }
+                elseif(S){
+                    V6 = ((CraftPos - Forward*1000) - CraftPos) * Mass/1000 * ThrustForwardMult
+                    Craft:applyForce(V6)
+                    if (TForward>-30) {TForward=TForward-2}
+                    elseif(TForward<-31) {TForward=TForward+2}
+                    else{}
+                }
+                else{
+                    if(TForward>0){TForward = TForward - 2}
+                    if(TForward<0){TForward = TForward + 2}
+                }
+            }
+            
+                #Rampless Jump Code
+            if(Space & $Space){
+                V200 = vec(0,0,400) * Mass
+                Craft:applyForce(V200)
+                soundPlay(2,2,"weapons/airboat/airboat_gun_energy1.wav")
+                soundVolume(2,0.5)
+            }
+        }
+ 
+            #Turning code, which includes turningtilt
+        if(A & S){
+            if(Yaw >-MaxTurnSharpness){Yaw--}
+            if(Tilt>-4){Tilt=Tilt - 0.2}
+        }
+        elseif(D & S){
+            if(Yaw < MaxTurnSharpness){Yaw++}
+            if(Tilt<4) {Tilt=Tilt + 0.2}
+        }
+        elseif(A){
+            if(Yaw < MaxTurnSharpness){Yaw++}
+            if(Tilt>-4){Tilt=Tilt - 0.2}
+        }
+        elseif(D){
+            if(Yaw >-MaxTurnSharpness){Yaw--}
+            if(Tilt<4) {Tilt=Tilt + 0.2}
+        }
+        else{
+            if(Yaw  > 0) {Yaw--}
+            if(Yaw  < 0) {Yaw++}
+            if(Tilt > 0) {Tilt=Tilt-0.2}
+            if(Tilt < 0) {Tilt=Tilt+0.2}
+            if(inrange(Tilt, -0.5, 0.5)){Tilt=0}
+        }
+        
+        if(Yaw!=0){
+            Ang = (CraftAng:setYaw(CraftAng:yaw() + Yaw) - CraftAng) * Mass * ThrustTurnMult
+            Craft:applyAngForce(Ang + $Ang * 5)
+        }        
+    }
+    elseif($Active){Yaw=0 Tilt=0 TForward=0}
+}
+else{
+    TForward=0
+    soundPitch(1,50)
+    if(EngineOn){
+        soundPurge()
+        soundPlay(2,0,"vehicles/apc/apc_shutdown.wav")
+        soundVolume(2,0.5)
+        soundPitch(2,50)
+        EngineOn=0
+    }
+}
+ 
+if(clk("RangerUpdate")){
+    rangerFilter(players())
+    timer("RangerUpdate",30000)
+}
