@@ -1,0 +1,24 @@
+@name Hologram Ammo Capacity (Basic)
+@inputs Ammo:wirelink 
+@persist T
+@strict
+
+#April 29 - 30 2025
+
+event tick () { #Replacement function deprecated interval() 
+
+
+#Rotating & changing color hologram logic is here (mathz)
+T = T+1
+X = cos(T)
+Y = tan(T) 
+
+#Wirelink logic
+B = Ammo["Munitions", number] *1 #Reads current munitions box value,(optional) add @outputs B and wired it to screend to test it for youself
+
+
+#Hologram logic
+holoCreate(0,entity():pos() + vec(0,0,0), vec(1,1,B*0.0009), ang(entity():pos()) + ang((T)*0.1,T*0.1,T*1), vec(T*1,T*10,T*90),"models/holograms/rcylinder_thin.mdl") #Creates the size hologram based on ammo munitions (mutliply munition value by 0.009 reasonable size otherwise it's too big e.g 20 scale and make adjustments for youself if necessary)
+holoParent(0,entity()) #Holo parented to E2 chip (Holo position will match to E2's current position)
+
+}
