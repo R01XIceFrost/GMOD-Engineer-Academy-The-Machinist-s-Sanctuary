@@ -1,0 +1,224 @@
+@name Color CD Player
+@inputs E:entity Eject Reset ResetClk On
+@inputs [Skr1 Skr2 Skr3 Skr4 Skr5 Skr6]:entity
+@outputs Txt:string TxtColor:vector
+@persist [Pos1 Pos2]:vector Mode CD:entity Color:vector Sound:table Dist Next Fade SpeakerAnim
+@trigger 
+if (first()|duped()) {
+    ####
+    # Color CD Player
+    # Made by Divran
+    # http://www.wiremod.com/forum/custom-gates/16081-divrans-e2-contraptions-thread.html
+    ####
+
+    concmd("say Color CD Player - Made by Divran")
+    
+    Pos1 = E:toWorld(vec(75,0,5):rotate(ang(0,-135,0)))
+    Pos2 = E:toWorld(vec(25,0,5):rotate(ang(0,-135,0)))
+    findIncludePlayerProps(owner())
+    holoCreate(10)
+    holoMaterial(10,"models/debug/debugwhite")
+    holoColor(10,vec(75,75,75))
+    holoScaleUnits(10,vec(35,-35,2))
+    holoCreate(11)
+    holoMaterial(11,"models/debug/debugwhite")
+    holoColor(11,vec())
+    holoModel(11,"dome")
+    holoScaleUnits(11,vec(30,30,8))
+    holoPos(11,E:toWorld(vec(25,0,11):rotate(ang(0,-135,0))))
+    holoAng(11,ang())
+    holoParent(11,E)
+    
+    Temp = array( Skr1, Skr2, Skr3, Skr4, Skr5, Skr6 )
+    for(I=1,6) {
+        CurE = Temp[I,entity]
+        if (!CurE) {continue}
+        holoCreate(I)
+        holoPos(I,CurE:toWorld(CurE:boxCenter())-CurE:up()*6.5)
+        holoParent(I,CurE)
+        holoAng(I,CurE:angles())#+ang(90,0,0))
+        holoModel(I,"dome2")
+        holoScaleUnits(I,vec(47,47,3.5)*1.04+vec(0,0,4))
+        holoColor(I,vec(75,75,75))
+    }
+    
+    for(I=21,26) {
+        holoCreate(I)
+        if (!holoEntity(I-20)) {continue}
+        holoPos(I,holoEntity(I-20):pos()+holoEntity(I-20):up()*3.5)
+        holoAng(I,holoEntity(I-20):angles()+ang(180,0,0))
+        holoModel(I,"dome")
+        holoScaleUnits(I,vec(20,20,10))
+        holoMaterial(I,"models/debug/debugwhite")
+        holoColor(I,vec())
+        holoParent(I,I-20)
+    }
+        
+    
+    #SOUND LIST
+    Sound[vec(255,0,0):toString(),string]       = "ravebreak.mp3"                           #RED
+    Sound[vec(0,255,0):toString(),string]       = "music/HL2_song12_long.mp3"               #GREEN
+    Sound[vec(0,0,255):toString(),string]       = "music/HL1_song25_remix3.mp3"             #BLUE
+    Sound[vec():toString(),string]              = "music/HL2_song20_submix0.mp3"            #BLACK
+    Sound[vec(255,255,0):toString(),string]     = "music/HL2_song3.mp3"                     #YELLOW
+    Sound[vec(255,0,255):toString(),string]     = "music/HL2_song16.mp3"                    #PINK
+    Sound[vec(0,255,255):toString(),string]     = "music/HL2_song31.mp3"                    #TEAL
+    Sound[vec(255,255,255):toString(),string]   = "music/HL2_song4.mp3"                     #WHITE
+    Sound[vec(150,75,0):toString(),string]      = "music/HL2_song23_SuitSong3.mp3"          #BROWN
+    #You can add more sounds simply by coping the above, changing the color and file path.
+}
+
+    # ON/OFF  
+if (~On | (first() & On)) {                          
+    if (On) {
+        Mode = 0
+        Txt = "-[ On ]-"
+        Fade = 255
+        runOnTick(1)
+    } elseif (!On) {
+        Txt = "-[ Off ]-"
+        Fade = 255
+        soundPurge()
+        SpeakerAnim = 0
+        Mode = 5
+        if (!CD) {runOnTick(0)}
+    }
+}
+
+    # EJECT
+if (Eject & ~Eject & Mode == 4) {
+    Txt = "-[ Ejecting.. ]-"
+    Fade = 255
+    soundPurge()
+    SpeakerAnim = 0
+    Mode = 5
+}
+
+    # RESET
+if (Reset & ResetClk) {
+    if (entity(ResetClk) == owner()) {
+        soundPurge()
+        reset()
+    } else {
+        Txt = "-[ Only the owner can reset ]-"
+        Fade = 255
+    }
+}
+
+    # TEXT SCREEN FADING
+if (Fade>1) {
+    if (!On) {interval(10)}
+    Fade-=1
+    TxtColor = vec(Fade,0,0)
+}
+
+    # SPEAKER ANIMATION
+if (SpeakerAnim) {
+    timer("Scale",250)
+    if (clk("Scale")) {
+        RandZ = randint(-4,4)
+        for(I=1,6) {
+            holoScaleUnits(I,vec(47,47,3.5+RandZ)*1.04)
+            holoScaleUnits(I+20,vec(20,20,10-RandZ)*1.04)
+        }
+    }
+}
+
+    # SCAN
+if (Mode == 0) {
+    holoAlpha(10,0)
+    interval(250*On)
+    if (clk() & On & findCanQuery()) {
+        findInSphere(Pos1,50)
+        findClipToModel("models/props_junk/sawblade001a.mdl")
+        findSortByDistance(Pos1)
+        CurEnt = find()
+        if (CurEnt & !CurEnt:isPlayerHolding()) {
+            Txt = "-[ CD Found ]-"
+            Fade = 255
+            E:soundPlay(1,1,"buttons/button14.wav")
+            CD = CurEnt
+            Mode = 1
+        }
+    }
+    # MOVE STEP 1
+} elseif (Mode == 1) {
+    holoAlpha(10,255)
+    Cnt = CD:toWorld(CD:boxCenter())
+    CD:applyForce(((Pos1-Cnt)*10-CD:vel()*1.2)*CD:mass())
+    Torque = CD:toLocal(rotationVector(quat(-CD:angles():setYaw(0))/quat(CD))+CD:pos())
+    CD:applyTorque((Torque*75-CD:angVelVector()*10)*CD:inertia())
+    if (Pos1:distance(Cnt) < 4 & inrange(Torque,vec(-0.1,-0.1,-0.1),vec(0.1,0.1,0.1))) {
+        Mode = 2
+    }
+    holoPos(10,E:toWorld(vec(1*Pos2:distance(Cnt)+12.5,0,5):rotate(ang(0,-135,0))))
+    holoScaleUnits(10,vec(Pos2:distance(Cnt)+12.5,-35,2))
+    holoAng(10,(E:pos()-Cnt):toAngle():setPitch(0))
+    # MOVE STEP 2
+} elseif (Mode == 2) {
+    Cnt = CD:toWorld(CD:boxCenter())
+    CD:applyForce(((Pos2-Cnt)*10-CD:vel()*1.2)*CD:mass())
+    Torque = CD:toLocal(rotationVector(quat(-CD:angles():setYaw(0))/quat(CD))+CD:pos())
+    CD:applyTorque((Torque*75-CD:angVelVector()*5)*CD:inertia())
+    if (Pos2:distance(Cnt) < 4 & inrange(Torque,vec(-0.1,-0.1,-0.1),vec(0.1,0.1,0.1))) {
+        Mode = 3
+    }
+    holoPos(10,E:toWorld(vec(1*Pos2:distance(Cnt)+12.5,0,5):rotate(ang(0,-135,0))))
+    holoScaleUnits(10,vec(Pos2:distance(Cnt)+12.5,-35,2))
+    holoAng(10,(E:pos()-Cnt):toAngle():setPitch(0))
+    # GET COLOR AND START SOUND
+} elseif (Mode == 3) {
+    holoAlpha(10,0)
+    Cnt = CD:toWorld(CD:boxCenter())
+    CD:applyForce(((Pos2-Cnt)*10-CD:vel()*1.2)*CD:mass())
+    Color = CD:getColor()
+    holoColor(11,Color)
+    String = Sound[Color:toString(),string]
+    if (!String) {
+        soundPurge()
+        SpeakerAnim = 0
+        Mode = 5
+        E:soundPlay(1,0,"buttons/button10.wav")
+        Txt = "-[ Invalid Color ]-"
+        Fade = 255
+    } else {
+        Mode = 4
+        for(I=1,6) {holoEntity(I):soundPlay(I,0,String)}
+        SpeakerAnim = 1
+        Txt = "-[ Now Playing ]-\n \""+String+"\""
+        Fade = 255
+    }
+    # IDLE - PLAYING
+} elseif (Mode == 4) {
+    Cnt = CD:toWorld(CD:boxCenter())
+    CD:applyForce(((Pos2-Cnt)*10-CD:vel()*1.2)*CD:mass())
+    CD:applyAngForce(ang(0,45,0)*100)
+    Col2 = Color * (0.7+cos(curtime()*100)*0.3)
+    holoColor(11,Col2)
+    # EJECTING
+} elseif (Mode == 5) {
+    holoAlpha(10,255)
+    Cnt = CD:toWorld(CD:boxCenter())
+    CD:applyForce(((Pos1-Cnt)*10-CD:vel()*1.2)*CD:mass())
+    Torque = CD:toLocal(rotationVector(quat(-CD:angles():setYaw(0))/quat(CD))+CD:pos())
+    CD:applyTorque((Torque*50-CD:angVelVector()*10)*CD:inertia())
+    if (Pos1:distance(Cnt) < 4 & inrange(Torque,vec(-0.1,-0.1,-0.1),vec(0.1,0.1,0.1))) {
+        Mode = 6
+        Dist = Pos2:distance(Cnt)
+        Next = 0
+    }
+    holoPos(10,E:toWorld(vec(1*Pos2:distance(Cnt)+12.5,0,5):rotate(ang(0,-135,0))))
+    holoScaleUnits(10,vec(Pos2:distance(Cnt)+12.5,-35,2))
+    holoAng(10,(E:pos()-Cnt):toAngle():setPitch(0))
+    if (CD:isPlayerHolding()) {Mode = 0}
+    # EJECTING STEP 2
+} elseif (Mode == 6) {
+    timer("Mode",2500)
+    if (clk("Mode")) {Next = 1}
+    Dist-=Dist*0.1
+    holoPos(10,E:toWorld(vec(1*Dist+12.5,0,5):rotate(ang(0,-135,0))))
+    holoScaleUnits(10,vec(Dist+12.5,-35,2))
+    if (!On) {runOnTick(0)}
+    if (round(Dist)<=0 & Next) {Mode = 0, CD = noentity()}
+    if (CD:isPlayerHolding()) {Mode = 0, CD = noentity()}
+}

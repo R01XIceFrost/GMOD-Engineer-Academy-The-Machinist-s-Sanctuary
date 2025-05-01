@@ -1,0 +1,89 @@
+@name TOASTERS!!!!
+@inputs Base:entity Btn
+@persist [Slots Toasts Stage]:array Toasting Toast
+@trigger 
+
+if (first()|duped()) {    
+    ####
+    # Toaster
+    # Made by Divran
+    # http://www.wiremod.com/forum/custom-gates/16081-divrans-e2-contraptions-thread.html
+    ####
+
+    if (duped()) { #Only makes you say it when duped.. because of the "reset()" command in this code.
+        concmd("say Toaster - Made by Divran")
+    }
+    
+    Slots[1,vector] = vec(-3,-15,19.5)
+    Slots[2,vector] = vec(-3,0,19.5)
+    Slots[3,vector] = vec(-3,15,19.5)
+    Slots[4,vector] = vec(3,-15,19.5)
+    Slots[5,vector] = vec(3,0,19.5)
+    Slots[6,vector] = vec(3,15,19.5)
+    runOnTick(1)
+    findIncludePlayerProps(owner())
+}
+
+if (Toasting == 0) {
+    Cnt = Base:toWorld(Base:boxCenter())
+    timer("Find",250)
+    if (clk("Find") & findCanQuery()) {
+        findExcludeEntities(Toasts)
+        findInSphere(Cnt+vec(0,0,30),50)
+        findClipToClass("prop_physics")
+        findClipToModel("models/squad/sf_plates/sf_plate1x1")
+        findSortByDistance(Cnt+vec(0,0,30))
+        Temp = findToArray()
+        for(I=1,Temp:count()) {
+            if (Toasts:count()<6 & !Temp[I,entity]:isPlayerHolding()) {
+                Temp[I,entity]:setMass(50)
+                Temp[I,entity]:setMaterial("models/debug/debugwhite")
+                Temp[I,entity]:setColor(250,200,0)
+                Toasts:pushEntity(Temp[I,entity])
+                Stage:pushNumber(0)
+            } else {
+                break
+            }
+        }
+    }
+    if (Toasts:count()>0) {
+        for(I=1,Toasts:count()) {
+            E = Toasts[I,entity]
+            if (!E) {Toasts:remove(I), Stage:remove(I), continue}
+            #applyForce
+            Cnt = E:toWorld(E:boxCenter())
+            TargetPos = Base:toWorld(Slots[I,vector] + vec(0,0,20 * !Stage[I,number]))
+            E:applyForce(((TargetPos-Cnt)*10-E:vel())*E:mass())
+            #applyTorque
+            Torque = E:toLocal(rotationVector(quat(Base:angles():setPitch(90))/quat(E))+E:pos())
+            E:applyTorque((Torque*100-E:angVelVector()*5)*E:inertia())
+            #Stage
+            if (TargetPos:distance(Cnt) < 2 & positive(Torque):length() < 1) {Stage[I,number] = 1}
+        }
+        
+        if (~Btn & Btn & Stage:min() != 0) {Toasting = 1, Toast = 250}
+    }
+    
+} elseif (Toasting == 1) {
+    timer("Toast",500)
+    if (clk("Toast")) {Toast-=10}
+    for(I=1,Toasts:count()) {
+        E = Toasts[I,entity]
+        if (!E) {Toasts:remove(I), Stage:remove(I), continue}
+        #applyForce
+        Cnt = E:toWorld(E:boxCenter())
+        TargetPos = Base:toWorld(Slots[I,vector])
+        E:applyForce(((TargetPos-Cnt)*10-E:vel())*E:mass())
+        E:setColor(Toast,Toast-100,0)
+    }
+    if (Toast<=100 | (~Btn & Btn)) {
+        for(I=1,Toasts:count()) {
+            E = Toasts[I,entity]
+            if (!E) {Toasts:remove(I), Stage:remove(I), continue}
+            E:applyForce(vec(random(-5000,5000),random(-5000,5000),random(16000,19000)))
+        }
+        Toasting = 2
+        timer("Reset",5000)
+    }
+}
+if (clk("Reset")) {reset()} #I tried Toasts = array(), but it didn't want to find the toasts again. So I used reset()

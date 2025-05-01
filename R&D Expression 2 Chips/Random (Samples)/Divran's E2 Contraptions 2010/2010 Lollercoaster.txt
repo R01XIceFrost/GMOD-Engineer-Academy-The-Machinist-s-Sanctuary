@@ -1,0 +1,126 @@
+@name Lollercoaster
+@inputs Pod:wirelink Active
+@persist [Pos Ang Cars]:array CurPos:vector Quat:quaternion N N2 Count
+@trigger
+if (first()|duped()) {
+    ####
+    # Lollercoaster
+    # Made by Divran
+    # http://www.wiremod.com/forum/custom-gates/16081-divrans-e2-contraptions-thread.html
+    ####
+
+    concmd("say Lollercoaster - Made by Divran")
+    
+    for(I=1,2) {
+        holoCreate(I)
+        holoModel(I,"hqicosphere2")
+        holoMaterial(I,"models/debug/debugwhite")
+        holoColor(I,vec(75,75,75))
+        holoScale(I,vec(5,5,5)/12)
+        holoEntity(I):removeTrails()
+        holoEntity(I):setTrails(4,2,6,"cable/cable2",vec(),255)
+        holoAlpha(I,0)
+    }
+    for(I=3,30) {
+        holoCreate(I)
+        holoMaterial(I,"models/debug/debugwhite")
+        holoColor(I,vec(100,30,0))
+        holoScale(I,vec(5,45,2)/12)
+        holoAlpha(I,0)
+    }
+    
+    findIncludePlayerProps(owner())
+    findByModel("models/XQM/coastertrain2seat.mdl")
+    findSortByDistance(entity():pos())
+    Cars = findToArray()
+    for(I=1,Cars:count()) {
+        if (Cars[I,entity]:mass() != 50000) {Cars[I,entity]:setMass(50000)}
+    }
+} 
+runOnTick(Active)
+if (~Active) {
+    if (Active) {
+        Quat = quat(Cars[1,entity])
+        Pos[1,vector] = Cars[1,entity]:pos() + vec(0,0,20)
+        for(I=1,30) {holoAlpha(I,255), holoPos(I,vec())}
+        for(I=1,Cars:count()) {
+            Cars[I,entity]:soundPlay(I,0,"vehicles/fast_windloop1.wav")
+        }
+    } else {
+        Pos = array()
+        Ang = array()
+        soundPurge()
+        for(I=1,Cars:count()) {
+            Cars[I,entity]:applyForce(-Cars[I,entity]:vel()*Cars[I,entity]:mass())
+        }
+        Pod["Eject",number] = 0
+        for(I=1,30) {holoAlpha(I,0)}
+    }
+}
+if (Active) {
+    #Get controls
+    W = Pod["W",number]
+    A = Pod["A",number]
+    S = Pod["S",number]
+    D = Pod["D",number]
+    M1 = Pod["Mouse1",number]
+    M2 = Pod["Mouse2",number]
+    Shift = Pod["Shift",number]
+    R = Pod["R",number]
+    
+    #WASD Controls
+    P2 = qRotation(Quat:right(),(S-W)*(1+Shift))
+    Y2 = qRotation(Quat:up(),(A-D)*(1+Shift))
+    R2 = qRotation(Quat:forward(),(M2-M1)*(2+Shift*2))
+    Quat = (Y2*P2*R2) * Quat
+    
+    #Arrays
+    Pos:unshiftVector(Pos[1,vector]+Quat:forward()*(8+Shift*20))
+    Ang:unshiftAngle(Quat:toAngle())
+    
+    #Holograms
+    holoPos(1,Pos[1,vector]+Quat:right()*25)
+    holoPos(2,Pos[1,vector]-Quat:right()*25)
+    Dist = CurPos:distance(Pos[1,vector])
+    if (Dist > 50) {
+        CurPos = Pos[1,vector]
+        N++
+        if (N > 30) {N = 3}
+        holoPos(N,Pos[1,vector])
+        holoAng(N,Ang[1,angle])
+    }
+    
+    
+    #Align to ang(0,X,0)
+    if (R) {Quat = slerp(Quat,quat(ang(0,Quat:toAngle():yaw(),0)),0.06)}
+    
+    if (Pos:count()>=50) {
+        #Ranger Check   
+        rangerFilter(array(Cars[1,entity], Pod["Entity",entity]))
+        Rng = rangerOffset(100,Pos[50,vector],quat(Ang[50,angle]):forward())
+        if (Rng:hit()) {Pod["Eject",number] = 1}
+    }
+    
+    for(I=1,min(5,Cars:count())) {
+        #Count
+        Count++
+        if (Count>Cars:count()) {Count = 1}
+        #Get E
+        E = Cars[Count,entity]
+        if (!E) {continue, Cars:remove(I)}
+        #Array Num
+        Num = 50+(Count-1)*30
+        if (Pos:count()<Num) {continue}
+        
+        #Apply Torque
+        V = E:toLocal(rotationVector(quat(Ang[Num,angle])/quat(E))+E:pos())
+        E:applyTorque((V*800-E:angVelVector()*15)*E:inertia())
+        
+        #Apply Force
+        E:applyForce(((Pos[Num,vector]-E:toWorld(E:boxCenter()-vec(0,0,20)))*10-E:vel())*E:mass())
+        
+        #Clear Array
+        if (Count == Cars:count()) {Pos:remove(Num), Ang:remove(Num)}
+        soundPitch(Count,clamp(E:vel():length()/20,50,300))        
+    }
+}

@@ -1,0 +1,120 @@
+@name LS Info
+@inputs [EGP Storage]:wirelink Active Gradient
+@persist [Nrs Amount Z ResNames]:array Clr:table
+@trigger 
+if (first()|~Storage) {
+    EGP:egpClear()
+    Nrs = array()
+    Amount = array()
+    Z = array()
+    ResNames = array()
+    
+    #Background
+    Nr=1
+    EGP:egpBox(Nr,vec2(0,0),vec2(512,512),vec4(255,255,255,255))
+    EGP:egpMaterial(1,"gui/center_gradient")
+    Nr++
+    EGP:egpBox(Nr,vec2(512/2-200,25),vec2(400,20),vec4(vec(),255))
+    Nr++
+    EGP:egpText(Nr," Life Support Information Screen             By Divran",vec2(512/2-200,25),vec4(0,100,0,255))
+    EGP:egpSetFont(Nr,"Arial",20)
+    Nr++
+    EGP:egpBoxoutline(Nr,vec2(512/2-200,50),vec2(512-112,512-100),vec4(vec(),255))
+    
+    #Colors
+    Clr["Energy",vector] =          vec(255,0,0)
+    Clr["Oxygen",vector] =          vec(0,255,0)
+    Clr["Water",vector] =           vec(0,0,255)
+    Clr["Co2",vector] =             vec(255,165,0)
+    Clr["Hydrogen",vector] =        vec(255,255,0)
+    Clr["Nitrogen",vector] =        vec(255,0,255)
+    Clr["Liquid Nit",vector] =      vec(100,0,100)
+    Clr["Liquid Nitrogen",vector] = vec(100,0,100)
+    Clr["Hvy Water",vector] =       vec(0,0,100)
+    Clr["Heavy Water",vector] =     vec(0,0,100)
+    Clr["Steam",vector] =           vec(0,255,255)
+    Clr["Storage",vector] =         vec(0,0,0)
+    
+    #Set up
+    Temp = array("Energy","Oxygen","Co2","Hydrogen","Nitrogen","Liquid Nit","Liquid Nitrogen","Water","Hvy Water", "Heavy Water","Steam","Storage")
+    ResNames = array()
+    N=0
+    for(I=1,Temp:count()) {
+        Nm = Temp[I,string]
+        Val = Storage["Max " + Nm,number]
+        if (Val != 0) {
+            ResNames:pushString(Nm)
+            Z:pushNumber(60 + N * 49)
+            Amount:pushNumber(-1)
+            N++
+        }
+    }
+    
+    #Draw
+    Nrs[0,number] = Nr
+    for(I=1,ResNames:count()) {
+        Nm = ResNames[I,string]
+        CurZ = Z[I,number]
+        CurClr = Clr[Nm,vector]
+            Nr++
+            Nrs:pushNumber(Nr)
+            EnergyNr = Nr
+            EGP:egpText(Nr,Nm + " - 0/0 - 0%",vec2(512/2-190,CurZ),vec4(vec(),255))
+            EGP:egpSetFont(Nr,"Arial",17)
+            Nr++
+            EGP:egpBoxoutline(Nr,vec2(512/2-190,CurZ+20),vec2(370,25),vec4(vec(),255))
+            Nr++
+            EGP:egpBox(Nr,vec2(512/2-5,CurZ+33),vec2(23,368),vec4(CurClr,255))
+            if (Gradient) {EGP:egpMaterial(Nr,"gui/gradient_up")}
+            EGP:egpAngle(Nr,90)
+    }
+    
+    EGP:egpDraw()
+}
+
+#Active?
+if (Active) {interval(500)}
+
+#Gradient toggling
+if (~Gradient) {
+    if (Gradient) {
+        for(I=1,Nrs:count()) {
+            Nr = Nrs[I,number]
+            EGP:egpMaterial(Nr+2,"gui/gradient_up")
+        }
+    } else {
+        for(I=1,Nrs:count()) {
+            Nr = Nrs[I,number]
+            EGP:egpMaterial(Nr+2,"")
+        }
+    }
+}
+
+#Calculate
+Draw = 0
+Nr = Nrs[0,number]
+for(I=1,ResNames:count()) {
+    Nm = ResNames[I,string]
+    CurZ = Z[I,number]
+    Nr = Nrs[I,number]
+    Val = Storage[Nm,number]
+    if (Amount[I,number] != Val) {
+        ValM = Storage["Max " + Nm,number]
+        Percent = round(Val/ValM*100) + "%"
+        Part = round(Val) + "/" + round(ValM)
+        EGP:egpSetText(Nr,Nm + " - " + Part + " - " + Percent)
+        Pos = 512/2-190+370*(Val/ValM)/2
+        EGP:egpPos(Nr+2,vec2(Pos,CurZ+33))
+        Size = 368*(Val/ValM)
+        EGP:egpSize(Nr+2,vec2(23,Size))
+        
+        Amount[I,number] = Val
+        
+        Draw = 1
+    }
+}
+
+#Draw?
+if (Draw & EGP:egpCanDraw()) {
+    EGP:egpDraw()
+}

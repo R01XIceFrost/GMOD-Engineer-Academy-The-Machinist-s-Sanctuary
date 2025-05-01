@@ -1,0 +1,31 @@
+@name Crowbar Hax for Everone
+@persist Ply:array PlyUse:array
+if (first()) {
+
+    ####
+    # Crowbar Hax
+    # Made by Divran
+    # http://www.wiremod.com/forum/custom-gates/16081-divrans-e2-contraptions-thread.html
+    ####
+
+    concmd("say Crowbar Hax - Made by Divran")
+
+    findByClass("player")
+    Ply = findToArray()
+    for(I=1,Ply:count()) {PlyUse[Ply:entity(I):id(),number] = 45, holoCreate(I),holoPos(I,Ply:entity(I):shootPos()),holoParent(I,Ply:entity(I)),holoAlpha(I,0)}
+}
+interval(10)
+for(I=1,Ply:count()) {
+    En = Ply:entity(I)
+    Atk = En:keyAttack1()
+    Wpn = En:weapon():type()
+    if (Atk & Wpn == "weapon_crowbar") {
+        Nr = PlyUse[En:id(),number]
+        PlyUse[En:id(),number] = Nr + 1
+        if (Nr>50) {
+            PlyUse[En:id(),number] = 0
+            holoEntity(I):soundPlay(I,0.7,"vo/npc/male01/hacks0"+randint(1,2)+".wav")
+            soundPitch(I,165)
+        }
+    } else {soundStop(I), PlyUse[En:id(),number] = 45}
+}

@@ -1,0 +1,1 @@
+FOR INSTURCTIONS HOW TO USE THESE E2 CHIPS, GO TO MY FOLDER CALLED Relic Wiremod Forum Tutorials > Divran's E2_Contraptions Thread.pdf (click the file, for better resolution download the PDF)

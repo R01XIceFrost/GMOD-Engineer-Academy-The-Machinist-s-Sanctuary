@@ -1,0 +1,55 @@
+@name E2 Derma Text Box
+@inputs Chair:entity Active 
+@outputs SendWord Word:string Eject Driver:entity
+@persist Get
+@trigger 
+if (Chair & !Get) {
+    ####
+    # E2 Derma Text Box
+    # Made by Divran
+    # http://www.wiremod.com/forum/custom-gates/16081-divrans-e2-contraptions-thread.html
+    ####
+    
+    Get = 1
+    dPod(Chair)
+    dPanel("Base",vec2(scrW()/2-100,scrH()/2-50),vec2(200,100))
+    dLabel("Title","Base",vec2(5,4))
+    dText("Title","Enter Word:")
+    dColor("Title",0,0,0,255)
+    dColor("Base",255,255,255,100)
+    dShow("Base",0)
+    dTextBox("Text","Base",vec2(10,30),180)
+    dButton("Ok","Base",vec2(10,60),vec2(30,25))
+    dButton("Exit Pod","Base",vec2(140,60),vec2(50,25))
+}
+
+if (~Active & Active) {
+    dShow("Base",1)
+    enableMouse(1)
+} elseif (~Active & !Active) {
+    dShow("Base",0)
+    enableMouse(0)
+}
+
+CurB = dClk()
+if (CurB) {
+    if (CurB == "Ok") {
+        CurWord = dSval("Text")
+        if (CurWord) {
+            if (CurWord:length() <= 30) {
+                Word = CurWord
+                Driver = Chair:driver()
+                SendWord = 1
+            } else {
+                Chair:printDriver("[ERROR] The word is too long.")
+            }
+        } else {
+            Chair:printDriver("[ERROR] You must enter a word.")
+        }
+    } elseif (CurB == "Exit Pod") {
+        dShow("Base",0)
+        dSetSval("Text","")
+        enableMouse(0)
+        Eject = 1
+    }
+} else {SendWord = Eject = 0}

@@ -1,0 +1,488 @@
+@name Hangman
+@inputs [Sc Fls HSc]:wirelink RecieveWord InputWord:string Driver:entity
+@persist On Fails MaxFails ScorePly StartPly:entity [FailGuess Ply STotal SWin SFail]:array Lookup:table [GuessWord Word Msg]:string
+@trigger 
+
+if (first()|duped()) {
+    ####
+    # Hangman
+    # Made by Divran
+    # http://www.wiremod.com/forum/custom-gates/16081-divrans-e2-contraptions-thread.html
+    ####
+    
+    concmd("say Hangman - Made by Divran")
+    
+        #Starting Stuff
+    #Variables
+    On = Fails = 0
+    runOnChat(1)
+    E = entity()
+    Ply[1,entity] = owner()
+    #Console Screen
+    Sc:writeCell(2041,1)
+    W = "Made by "
+    Sc:writeString(W,0,0)
+    W1 = "Divran"
+    Sc:writeString(W1,W:length(),0,611)
+    W = "- Hangman -"
+    Sc:writeString(W,15-round(W:length()/2),1,262)
+    W = "Type \".g\" or \".guess\" followedby a letter or a word to guess"
+    Sc:writeString(W,0,16)
+    Sc:writeCell(2042,333)
+    
+    #Other console screen
+    Fls:writeCell(2041,1)
+    W = "Failed Guesses:"
+    Fls:writeString(W,15-round(W:length()/2),0)
+    W = "- None -"
+    Fls:writeString(W,15-round(W:length()/2),1)
+    Fls:writeCell(2042,333)
+    
+    #High Score Console Screen
+    HSc:writeCell(2041,1)
+    HSc:writeCell(2042,333)
+    W = "Scoreboard"
+    HSc:writeString(W,15-round(W:length()/2),0,60)
+    ScorePly = owner():id()
+    timer("UpdateScore",0)
+    
+        #Holograms
+    #Positions
+    Pos = array()
+    Pos[1,vector] = vec(100,0,0) #Base
+    Pos:pushVector(vec(100,45,100)) #Pole
+    Pos:pushVector(vec(100,20,201.5)) #Top pole
+    Pos:pushVector(vec(100,23,180)) #Diagonal pole
+    Pos:pushVector(vec(100,-5,160)) #Rope
+    Pos:pushVector(vec(100,-5,115)) #Head
+    Pos:pushVector(vec(100,-5,82)) #Stomach
+    Pos:pushVector(vec(100,6.5,80)) #Arm 1
+    Pos:pushVector(vec(100,-16.5,80)) #Arm 2
+    Pos:pushVector(vec(100,6.5,45)) #Leg 1
+    Pos:pushVector(vec(100,-16.5,45)) #Leg 2
+    MaxFails = Pos:count()
+    
+    #Scales
+    Scale = array()
+    Scale[1,vector] = vec(100,100,25)
+    Scale:pushVector(vec(5,5,200))
+    Scale:pushVector(vec(5,5,50))
+    Scale:pushVector(vec(5,5,60))
+    Scale:pushVector(vec(2,2,75))
+    Scale:pushVector(vec(20,20,20))
+    for(I=1,5) {Scale:pushVector(vec(5,5,45))}
+    
+    #Angles
+    Ang = array()
+    Ang[1,angle] = ang(0,0,0)
+    Ang:pushAngle(ang(0,0,0))
+    Ang:pushAngle(ang(90,90,0))
+    Ang:pushAngle(ang(-45,90,0))
+    for(I=1,3) {Ang:pushAngle(ang(0,0,0))}
+    Ang:pushAngle(ang(-30,90,0))
+    Ang:pushAngle(ang(30,90,0))
+    Ang:pushAngle(ang(-30,90,0))
+    Ang:pushAngle(ang(30,90,0))
+    
+    #Materials
+    Mat = array()
+    for(I=1,5) {Mat[I,string] = "phoenix_storms/wood"}
+    for(I=6,Pos:count()) {Mat[I,string] = "models/debug/debugwhite"}
+    
+    #Color
+    Col = array()
+    for(I=1,4) {Col[I,vector] = vec(180,180,180)}
+    Col[5,vector] = vec(255,255,255)
+    for(I=6,Pos:count()) {Col[I,vector] = vec(0,0,0)}
+    
+    #Models
+    Model = array()
+    for(I=1,4) {Model[I,string] = "cube"}
+    Model:pushString("hqcylinder2")
+    Model:pushString("hqicosphere2")
+    for(I=7,Pos:count()) {Model[I,string] = "hqcylinder2"}
+    
+    #Create Holograms
+    for(I=1,Pos:count()) {
+        holoCreate(I)
+        holoPos(I,E:toWorld(Pos[I,vector]:rotate(ang(90,90,-90))))
+        holoScale(I,(Scale[I,vector]/12)*1.04)
+        holoAng(I,E:angles()+ang(90,0,0)+Ang[I,angle])
+        holoMaterial(I,Mat[I,string])
+        holoModel(I,Model[I,string])
+        holoColor(I,Col[I,vector])
+        holoAlpha(I,0)
+        holoParent(I,E)
+    }
+}
+
+#Chat commands
+if (chatClk()) {
+    M = lastSaid():upper():explode(" ")
+    M1 = M[1,string]
+    #Owner only commands
+    if (lastSpoke() == owner()) {
+        if (M1 == ".ADD") {                             #ADD
+            if (M[2,string]) {
+                if (M[2,string] == "AIM") {
+                    Ent = owner():aimEntity()
+                } elseif (M[2,string] == "SELF") {
+                    Ent = owner()
+                } elseif (M[2,string] == "*") {
+                    findByClass("player")
+                    Ply = findToArray()
+                    print("Added everyone.")
+                    exit()
+                } else {
+                    Ent = findPlayerByName(M[2,string])
+                }
+                if (Ent & Ent:isPlayer()) {
+                    print("Added " + Ent:name())
+                    Ply:pushEntity(Ent)
+                } else {
+                    print("[ERROR] Player not found.")
+                }
+            } else {
+                print("[ERROR] Second parameter must be either 'aim', 'self', or a player's name.")
+            }
+        } elseif (M1 == ".REMOVE") {                    #REMOVE
+            CurN = M[2,string]
+            if (CurN) {
+                CurFind = findPlayerByName(CurN)
+                if (CurFind) {
+                    Lookup = invert(Ply)
+                    CurNr = Lookup[toString(CurFind),number]
+                    if (CurNr) {
+                        print("Player removed.")
+                        Ply:remove(CurNr)
+                    } else {
+                        print("[ERROR] Player not in player list.")
+                    }
+                } else {
+                    print("[ERROR] Player not found.")
+                }
+            } else {
+                print("[ERROR] Second parameter must be a string.")
+            }
+        } elseif (M1 == ".STOP") {                      #STOP
+            On = 0                    
+            Sc:writeCell(2039,8)
+            Sc:writeCell(2039,9)
+            print("Game stopped.")
+        } elseif (M1 == ".NEW" | M1 == ".START") {      #START
+            M:remove(1)
+            CurWord = M:concat(" ")
+            if (CurWord) {
+                hideChat(1)
+                if (CurWord:length() <= 30) {
+                    Word = CurWord
+                    
+                    #Main Console Screen
+                    CurWordR = Word:explode("")
+                    GuessWordR = array()
+                    for(I=1,CurWordR:count()) {
+                        if (CurWordR[I,string] == " ") {
+                            GuessWordR[I,string] = " "
+                        } else {
+                            GuessWordR[I,string] = "_"
+                        }
+                    }
+                    GuessWord = GuessWordR:concat()
+                    for(I=2,15) {Sc:writeCell(2039,I)}
+                    Sc:writeString(GuessWord,15-round(GuessWord:length()/2),8)
+                    
+                    #Stuff
+                    On = 1, Fails = 0
+                    for(I=1,MaxFails) {holoAlpha(I,0)}
+                    
+                    #Failed Guesses Console Screen
+                    FailGuess = array()
+                    for(I=1,17) {Fls:writeCell(2039,I)}
+                    W = "- None -"
+                    Fls:writeString(W,15-round(W:length()/2),1)
+                    W = "("+Fails+"/"+MaxFails+")"
+                    Fls:writeString(W,30-W:length(),0)
+                    
+                    StartPly = owner()
+                    W = "This round was started by:"
+                    Sc:writeString(W,15-round(W:length()/2),13,777)
+                    W = StartPly:name()
+                    Sc:writeString(W,15-round(W:length()/2),14,777)
+                        
+                    #Message
+                    print("Started a new game with the word: \""+Word+"\".")
+                } else {
+                    print("[ERROR] The word is too long.")
+                }
+            } else {
+                print("[ERROR] Second parameter must be a string.")
+            }
+        } elseif (M1 == ".LIST") {
+            for(I=1,Ply:count()) {
+                print(I+": "+Ply[I,entity]:name())
+            }
+        }
+    }
+    #Guessing
+    if (On) {
+        if (M1 == ".GUESS" | M1 == ".G") {
+            CurPly = lastSpoke()
+            Allowed = 0
+            for(I=1,Ply:count()) {if (Ply[I,entity] == CurPly) {Allowed = 1, break}}
+            if (!Allowed) {exit()}
+            M:remove(1)
+            if (M[1,string]:length() == 0) {exit()}
+            if (M:count() == 1 & M[1,string]:length() == 1) { #ONE LETTER
+                CurLetter = M[1,string]:left(1)
+                WordR = Word:explode("")
+                GuessWordR = GuessWord:explode("")
+                #Check for success
+                Correct = 0
+                for(I=1,WordR:count()) {
+                    if (CurLetter == WordR[I,string]) {
+                        GuessWordR[I,string] = CurLetter
+                        Correct = 1
+                    }
+                }
+                if (Correct) {
+                    #Scores
+                    if (StartPly != CurPly) {
+                        SWin[CurPly:id(),number] = SWin[CurPly:id(),number] + 1
+                        STotal[CurPly:id(),number] = SWin[CurPly:id(),number] - SFail[CurPly:id(),number]
+                        if (entity(ScorePly) == CurPly) {timer("UpdateScore",0)}
+                    }
+                    
+                    GuessWord = GuessWordR:concat()
+                    Sc:writeCell(2039,8)
+                    Sc:writeString(GuessWord,15-round(Word:length()/2),8,999)
+                    #Check for win
+                    if (GuessWord == Word) {timer("Win",0)}
+                } else {
+                    FailGuess[FailGuess:count()+1,string] = CurLetter
+                    timer("Fail",0)
+                }
+            } elseif (M:count() == 1 & Word:explode(" "):count() != 1) { #ONE WORD
+                    GuessWordB = GuessWord
+                    WordR = Word:explode(" ")
+                    Correct = 0
+                    for(I=1,WordR:count()) {
+                        if (M[1,string] == WordR[I,string]) {
+                            GuessWordR = GuessWord:explode(" ")
+                            GuessWordR[I,string] = WordR[I,string]
+                            GuessWord = GuessWordR:concat(" ")
+                            Correct = 1
+                        }
+                    }
+                if (Correct) {
+                    if (StartPly != CurPly) {
+                        Scr = 0
+                        for(I=1,GuessWordB:length()) {
+                            if (GuessWordB:index(I) == "_") {Scr+=1}
+                        }
+                        #Scores
+                        SWin[CurPly:id(),number] = SWin[CurPly:id(),number] + Scr + 1
+                        STotal[CurPly:id(),number] = SWin[CurPly:id(),number] - SFail[CurPly:id(),number]
+                        if (entity(ScorePly) == CurPly) {timer("UpdateScore",0)}
+                    }
+                    
+                    Sc:writeCell(2039,8)
+                    Sc:writeString(GuessWord,15-round(Word:length()/2),8,999)
+                    #Check for win
+                    if (GuessWord == Word) {timer("Win",0)}
+                } else {                
+                    FailGuess[FailGuess:count()+1,string] = "\""+M[1,string]+"\""
+                    timer("Fail",0)
+                }
+            } elseif (M:count() > 0) { #WHOLE WORD
+                GuessWordB = GuessWord
+                CurPly = lastSpoke()
+                CurWord = M:concat(" ")
+                if (CurWord == Word) { #SUCCESFUL GUESS
+                    if (StartPly != CurPly) {
+                        #Scores
+                        Scr = 0
+                        for(I=1,GuessWordB:length()) {
+                            if (GuessWordB:index(I) == "_") {Scr+=1}
+                        }
+                        SWin[CurPly:id(),number] = SWin[CurPly:id(),number] + Scr + 3
+                        STotal[CurPly:id(),number] = SWin[CurPly:id(),number] - SFail[CurPly:id(),number]
+                        if (entity(ScorePly) == CurPly) {timer("UpdateScore",0)}
+                    }
+                    
+                    
+                    soundPlay(1,5,"vo/coast/odessa/male01/nlo_cheer0"+randint(4)+".wav")
+                    Sc:writeCell(2039,8)
+                    Sc:writeString(Word,15-round(Word:length()/2),8,999)
+                    On = Fails = 0
+                    Msg = "[Hangman] You escaped the gallows! The winner is: " + lastSpoke():name()
+                    timer("Msg",(CurPly == owner() ? 1000 : 0))
+                } else { #FAILED GUESS
+                    FailGuess[FailGuess:count()+1,string] = "\""+CurWord+"\""
+                    timer("Fail",0)
+                }
+            }
+        }
+    }
+    if (M1 == ".SCORE") {
+        M2 = M[2,string]
+        if (M2) {
+            CurPly = findPlayerByName(M2)
+            if (CurPly) {
+                ScorePly = CurPly:id()
+                timer("UpdateScore",0)
+            } else {
+                HSc:writeCell(2041,1)
+                HSc:writeCell(2042,333)
+                HSc:writeString("No player named '" + M2 + "' found.",0,5)
+            }
+        } else {
+            HSc:writeCell(2041,1)
+            HSc:writeCell(2042,333)
+            HSc:writeString("You must enter a name.",0,5)
+            
+        }
+    }
+} elseif (~RecieveWord & RecieveWord & !On) {
+    CurWord = InputWord:upper()
+    if (CurWord) {
+        hideChat(1)
+        if (CurWord:length() <= 30) {
+            Word = CurWord
+            
+            #Main Console Screen
+            CurWordR = Word:explode("")
+            GuessWordR = array()
+            for(I=1,CurWordR:count()) {
+                if (CurWordR[I,string] == " ") {
+                    GuessWordR[I,string] = " "
+                } else {
+                    GuessWordR[I,string] = "_"
+                }
+            }
+            GuessWord = GuessWordR:concat()
+            for(I=2,15) {Sc:writeCell(2039,I)}
+            Sc:writeString(GuessWord,15-round(Word:length()/2),8)
+            
+            #Stuff
+            On = 1, Fails = 0
+            for(I=1,MaxFails) {holoAlpha(I,0)}
+            
+            #Failed Guesses Console Screen
+            FailGuess = array()
+            for(I=1,17) {Fls:writeCell(2039,I)}
+            W = "- None -"
+            Fls:writeString(W,15-round(W:length()/2),1)
+            W = " ("+Fails+"/"+MaxFails+")"
+            Fls:writeString(W,30-W:length(),0)
+            
+            StartPly = Driver
+            W = "This round was started by:"
+            Sc:writeString(W,15-round(W:length()/2),13,777)
+            W = StartPly:name()
+            Sc:writeString(W,15-round(W:length()/2),14,777)
+            
+            #Message
+            #print("Started a new game with the word: \""+Word+"\".")
+            Msg = "[Hangman] " + StartPly:name() + " started a new game!"
+            timer("Msg",0)
+        } else {
+            print("[ERROR] The word is too long.")
+        }
+    } else {
+        print("[ERROR] Second parameter must be a string.")
+    }
+} elseif (clk("Msg")) {concmd("say " + Msg)}
+
+#--------- FAIL AND WIN CODE
+if (clk("Fail")) {
+    #Scores
+    if (StartPly != lastSpoke()) {
+        SFail[lastSpoke():id(),number] = SFail[lastSpoke():id(),number] + 1
+        STotal[lastSpoke():id(),number] = SWin[lastSpoke():id(),number] - SFail[lastSpoke():id(),number]
+        if (entity(ScorePly) == lastSpoke()) {timer("UpdateScore",0)}
+    }
+    
+    soundPlay(1,2,"vo/npc/male01/pain0"+randint(9)+".wav")
+    Fails++
+    for(I=1,17) {Fls:writeCell(2039,I)}
+    Fls:writeString(FailGuess:concat(" "),0,1)
+    W = " ("+Fails+"/"+MaxFails+")"
+    Fls:writeString(W,30-W:length(),0)
+    for(I=1,MaxFails) {
+        if (I<=Fails) {holoAlpha(I,255)} else {holoAlpha(I,0)}
+    }
+    if (Fails>=MaxFails) {
+        #Scores
+        if (StartPly != lastSpoke()) {
+            Scr = 0
+            for(I=1,GuessWord:length()) {
+                if (GuessWord:index(I) == "_") {Scr+=0.5}
+            }
+            SWin[StartPly:id(),number] = SWin[StartPly:id(),number] + round(Scr) + 5
+            STotal[StartPly:id(),number] = SWin[StartPly:id(),number] - SFail[StartPly:id(),number]
+            if (entity(ScorePly) == StartPly) {timer("UpdateScore",0)}
+        }
+        soundPlay(1,5,"vo/npc/male01/goodgod.wav")
+        On = Fails = 0
+        Msg = "[Hangman] Game over. You were hanged!"
+        timer("Msg",(lastSpoke() == owner() ? 1000 : 0))
+        W = "The word was: " + Word
+        Sc:writeString(W,15-round(W:length()/2),9)
+    }
+} elseif (clk("Win")) {
+    #Scores
+    if (StartPly != lastSpoke()) {
+        SWin[lastSpoke():id(),number] = SWin[lastSpoke():id(),number] + 3
+        STotal[lastSpoke():id(),number] = SWin[lastSpoke():id(),number] - SFail[lastSpoke():id(),number]
+        if (entity(ScorePly) == lastSpoke()) {timer("UpdateScore",0)}
+    }
+    soundPlay(1,5,"vo/coast/odessa/male01/nlo_cheer0"+randint(4)+".wav")
+    On = Fails = 0
+    Msg = "[Hangman] You escaped the gallows! The winner is: " + lastSpoke():name()
+    timer("Msg",(CurPly == owner() ? 1000 : 0))
+} elseif (clk("UpdateScore")) {
+    HSc:writeCell(2041,1)
+    HSc:writeCell(2042,333)
+    CurPly = entity(ScorePly)
+    W = "Scoreboard"
+    HSc:writeString(W,15-round(W:length()/2),0,60)
+    W = "Name: "
+    W2 = CurPly:name()
+    if ((W+W2):length()>30) {W2 = W2:left(30-W:length()-2) + ".."}
+    HSc:writeString(W,0,1,60)
+    HSc:writeString(W2,W:length(),1)
+    W = "Correct Guesses:   "
+    W2 = SWin[CurPly:id(),number]:toString()
+    if ((W+W2):length()>30) {W2 = W2:left(30-W:length()-2) + ".."}
+    HSc:writeString(W,0,2,60)
+    HSc:writeString(W2,W:length(),2)
+    W = "Failed Guesses:    "
+    W2 = SFail[CurPly:id(),number]:toString()
+    if ((W+W2):length()>30) {W2 = W2:left(30-W:length()-2) + ".."}
+    HSc:writeString(W,0,3,60)
+    HSc:writeString(W2,W:length(),3)
+    W = "Total Score:       "
+    W2 = STotal[CurPly:id(),number]:toString()
+    if ((W+W2):length()>30) {W2 = W2:left(30-W:length()-2) + ".."}
+    HSc:writeString(W,0,4,60)
+    HSc:writeString(W2,W:length(),4)
+    
+    Leader = noentity()
+    LeaderPoints = 0
+    findByClass("player")
+    Temp = findToArray()
+    for(I=1,Temp:count()) {
+        CurNumber = STotal[Temp[I,entity]:id(),number]
+        if (CurNumber > LeaderPoints) {
+            Leader = Temp[I,entity]
+            LeaderPoints = CurNumber
+        }
+    }
+    if (Leader) {
+        W = "Leader - (" + LeaderPoints + ")"
+        HSc:writeString(W,0,16,60)
+        W2 = Leader:name()
+        if (W2:length()>30) {W2 = W2:left(28) + ".."}
+        HSc:writeString(W2,0,17)
+    }
+}

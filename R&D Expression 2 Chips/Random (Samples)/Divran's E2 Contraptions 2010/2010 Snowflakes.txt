@@ -1,0 +1,71 @@
+@name Snowflakes
+@inputs On Wind:vector
+@persist [Pos Dir DirTime]:array Ready Nr Wind:vector Time
+@trigger 
+if (first()|duped()) {
+    ####
+    # Snowflakes
+    # Made by Divran
+    # http://www.wiremod.com/forum/custom-gates/16081-divrans-e2-contraptions-thread.html
+    ####
+
+    concmd("say Snowflakes - Made by Divran")
+    Ready = Nr = 0
+    if (!Wind) {Wind = vec(0.2,0,0)}
+}
+if (On & Ready) {
+    if (~On) {
+        runOnTick(1)
+        Dir = array()
+        Pos = array()
+        DirTime = array()
+        Nr = Time = 0
+        holoAlpha(0,255)
+        for(I=1,50) {
+            holoAlpha(I,255)
+            DirTime[I,number] = randint(100,500)
+        }
+    }
+    interval(500)
+    if (clk()) {
+        Nr++
+        if (Nr>50) {Nr=1}
+        Rnd = randvec(vec(-300,-300,300),vec(300,300,500))
+        Pos[Nr,vector] = entity():pos() + Rnd - Wind * Rnd:z()*3
+        Time=clamp(Time+0.05,1,2000)
+        holoScale(0,vec(4000,4000,Time)/12)
+    } elseif (tickClk()) {
+        for(I=1,50) {
+            if (Pos[I,vector]) {
+                CurDir = Dir[I,vector]
+                Pos[I,vector] = Pos[I,vector] + CurDir
+                holoPos(I,Pos[I,vector])
+            }
+            DirTime[I,number] = DirTime[I,number] - 1
+            if (DirTime[I,number] <= 0) {
+                DirTime[I,number] = randint(100,500)
+                Dir[I,vector] = Wind + vec(random(-0.1,0.1),random(-0.1,0.1),random(-0.4,-0.1))
+            }
+        }
+    }
+            
+} elseif (!On & Ready) {
+    for(I=0,50) {holoAlpha(I,0)}
+    runOnTick(0)
+} elseif (!Ready) {
+    interval(150)
+    if (holoCanCreate()) {
+        Nr++
+        if (Nr==50) {
+            holoCreate(0)
+            holoMaterial(0,"models/debug/debugwhite")
+            Ready = 1
+            print("Ready!")
+        } else {
+            holoCreate(Nr)
+            holoScale(Nr,vec(4,4,4)/12)
+            holoModel(Nr,"hqicosphere2")
+            holoMaterial(Nr,"models/debug/debugwhite")
+        }
+    }
+}
