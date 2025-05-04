@@ -1,0 +1,25 @@
+@name Setang Steering Optimized
+@inputs Active A D Chassis:entity
+@persist SetAng:entity [T_RATE T_ANGLE T]
+@model models/sprops/rectangles/size_2_5/rect_18x18x3.mdl
+ 
+#Source: https://youtu.be/d3c3wQIPpMg?si=-qtR27U-mGxlQQnV
+
+if (dupefinished()) {reset()}
+ 
+if(Active) {interval(20)} else {interval(150)}
+ 
+if (first())    {
+ 
+    T_ANGLE = 32
+    T_RATE = 3 
+ 
+    SetAng = entity()
+ 
+}
+ 
+if (!SetAng:isPlayerHolding())    {
+	T += clamp((A-D)*T_ANGLE - T, -T_RATE, T_RATE)
+	SetAng:setAng( Chassis:toWorld(ang(0, T, 0)) )
+    SetAng:propFreeze(1)
+}

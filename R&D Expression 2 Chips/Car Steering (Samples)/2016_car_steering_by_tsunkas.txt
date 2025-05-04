@@ -1,0 +1,31 @@
+@name EZTankMovement
+@inputs Pod:wirelink CVT:wirelink GunReady
+@outputs Throttle Speed WL
+@persist 
+@trigger 
+
+#Source: https://youtu.be/FYZuXsCVfZw?si=beM21ZF24yOAkIiP 
+
+interval(50)
+
+W=Pod["W",normal]
+S=Pod["S",normal]
+A=Pod["A",normal]
+D=Pod["D",normal]
+
+CVT["Left Clutch",normal]=Pod["Alt",normal]+D
+CVT["Right Clutch",normal]=Pod["Alt",normal]+A
+
+CVT["Left Brake",normal]=D*8
+CVT["Right Brake",normal]=A*8
+
+Throttle=clamp((W+S+A+D)*100,0,100)
+
+CVT["Gear",normal]=1+S
+
+Speed=abs(entity():velL():x())
+CVT["CVT Ratio",normal]=Speed/6000+0.03
+
+WL=Pod["Space",normal]+!Pod["Active",normal]
+
+if(~GunReady&GunReady<1){soundPlay(0,0,"acf_extra/tankfx/gnomefather/reload11.wav")}
