@@ -1,0 +1,27 @@
+@name Prop Spawner Rockets
+@inputs PropSpawner:wirelink
+
+runOnTick(1)
+
+Force = 5000          #Sets the speed of the rockets
+Weight = 15
+            #Sets the weight of the rockets
+
+##################CODE##################
+
+Props = PropSpawner["Props",array]
+Last = PropSpawner["LastSpawned",entity]
+
+for(I=1,Props:count())
+{
+    Rocket = Props[I,entity]
+    Rocket:setMass(Weight)
+    Rocket:applyForce(Rocket:eye()*Weight*Force)
+}
+if(changed(Last)&Last)
+{
+    Last:soundPlay(0,0,"weapons/rpg/rocket1.wav")
+    Last:setTrails(20,0,1,"trails/smoke",vec(255,255,255),255)
+}
+
+#Made by stefan750

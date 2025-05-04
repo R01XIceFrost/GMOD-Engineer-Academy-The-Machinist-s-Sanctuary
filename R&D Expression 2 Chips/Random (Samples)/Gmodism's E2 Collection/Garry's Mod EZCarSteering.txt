@@ -1,0 +1,36 @@
+@name EZCarSteering
+@inputs [Chassis Chair]:entity Pod:wirelink 
+@outputs Ang MPH AngLimit
+@persist E:entity TurnLimit TurnSpeedMul TopSpeedTurnLimit SpeedInterval
+@trigger none
+@model models/sprops/rectangles_thin/size_2/rect_12x12x1_5.mdl
+if(first() | dupefinished()){
+    TurnLimit=50 #Max degrees in both directions your car can steer at low speeds.
+    TopSpeedTurnLimit=30 #MaxDegrees in both directions your car can steer at speeds higher than SpeedInterval in MPH.
+    TurnSpeedMul=2 #Multiplier for your Speed.
+    SpeedInterval=40 #The Speed at which TopSpeedTurnLimit takes full effect. This change is gradual.
+    
+    E=entity()
+    Ang=0
+}
+runOnTick(1)
+
+A = Pod["A",number]
+D = Pod["D",number]
+
+MPH=round(toUnit("mph",Chassis:vel():length()))
+AngLimit=round(clamp((TurnLimit-MPH*(TurnLimit-TopSpeedTurnLimit)/SpeedInterval)/TurnSpeedMul,
+                            TopSpeedTurnLimit/TurnSpeedMul,TurnLimit/TurnSpeedMul))
+
+if (A|D){
+    Ang=clamp(Ang+(A-D),-AngLimit,AngLimit)
+}
+elseif (!A&!D&abs(Ang)>0){
+    Ang-=abs(Ang)/Ang
+}
+
+E:setAng(Chassis:toWorld(ang(0,Ang*TurnSpeedMul,0)))
+if (Chair){
+    E:setPos(Chair:pos())
+}
+if(!E:isPlayerHolding()){E:propFreeze(1)}else{E:propFreeze(0)}

@@ -1,0 +1,71 @@
+@name PodHud
+@inputs [Pod Lock]:entity Active Reset [AimPos AimVec]:vector Red
+@outputs 
+@persist [Offset Scale]:vector Posed
+@trigger Active Reset
+
+
+if (dupefinished() | ~Reset & Reset)
+{
+    reset()
+}
+
+if (first())
+{
+    Offset = vec(0,0,0)
+    Scale  = vec(0.65,0.05,0.05)
+    
+    #Crawshare
+    holoCreate(5345, Pod:pos(), -Scale)
+    holoShadow(5345, 0)
+    holoModel(5345, "icosphere2")
+    holoColor(5345, vec(0,255,0), 255)
+    holoMaterial(5345,"models/wireframe")
+    holoParent(5345,Pod)
+    
+    #Lawkhare
+    holoCreate(5346, Pod:pos(), -Scale)
+    holoShadow(5346, 0)
+    holoModel(5346, "icosphere2")
+    holoColor(5346, vec(0,255,0), 0)
+    holoMaterial(5346,"models/wireframe")
+    holoParent(5346,Pod)
+}
+
+if (Active)
+{
+    interval(50)
+    
+    if (!Posed)
+    {
+        holoPos(5345, Pod:driver():shootPos())
+        holoPos(5346, Pod:driver():shootPos())
+        Posed = 1
+    }
+    
+    ShootPos = Pod:driver():shootPos()
+    Ang = Pod:driver():eye():toAngle()
+    holoAng(5345, Ang)
+    if (Red)
+    {
+        holoColor(5345, vec(255,0,0))
+    }
+    else
+    {
+        holoColor(5345, vec(0,255,0))
+    }
+    
+    if (Lock)
+    {
+        holoAlpha(5346, 255)
+        holoColor(5346, vec(255,0,0))
+        ShootPos = Pod:driver():shootPos()
+        Ang = (Lock:pos() - Pod:driver():shootPos()):toAngle()
+        holoAng(5346, Ang)
+    }
+    else
+    {
+        holoAlpha(5346, 0)
+    }
+    
+}

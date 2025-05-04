@@ -1,0 +1,159 @@
+@name Turret HUD Combo V2
+@inputs  Active NextWeapon PrevWeapon [Pod Cam EGP ]:wirelink [Gun Base Chair]:entity
+@persist Elevation Depression Yaw RotateSpeed FOV
+@persist Rangefinder:ranger [ScreenRes Res]:vector2 CamOffset:vector 
+@persist [Inertia Hold]:angle CamL:entity User:entity 
+
+# EGP, Cam, and Pod Controller required
+
+    #The way Zoom is setup you have a max FOV (zoomed out), a minimum FOV (zoomed in)
+    #and a change amount per scroll. The default for these are Max - 90, Min - 20, Change - 35.
+    #Minimum and maximum is recommended to be between 0 and 90, minimum being zoomed in and max being zoomed out.
+    
+    #You want to all mesh together, in the default example the max is 90 and one scroll click will
+    #subract 35 making the FOV 55, then another click will subract 35 again bringing us to the 
+    #minimum of 20. If it was 90 / 20 / 10 you would reach the minimum FOV in 9 clicks.
+    #Whatever the case, your Max minus Change a certain number of times should land you on your Minimum.
+    
+    #Do not forget to change the fov reset value on line 26 as well.
+
+    #FOV Control                  These values below are what you change
+if (~PrevWeapon|~NextWeapon) {
+    FOV = clamp(FOV + (NextWeapon - PrevWeapon) * 35,20,90)
+}                                            #Change,Min,Max
+    #FOV reset when entering / exiting
+if (~Active&Active|~Active&!Active) {
+    FOV=90
+}   #   ^^This should be same as Max
+    
+#############################################################################################################################
+
+    #Do not touch this
+    
+if(first()||dupefinished())
+{
+    holoCreate(1)
+    holoAlpha(1,0)
+}
+
+elseif ( ~Active & Active ) {
+
+#############################################################################################################################
+ 
+    #Stuff you can adjust
+    
+    #Hud Stuff
+
+    #HUD Color    (Red,Green,Blue)
+    local Color = vec(25,100,225)
+    #Aimer Color  (Red,Green,Blue)
+    local Color2 = vec(0,0,200)
+
+    #Gun Stuff
+    
+    #Elevation (How high the gun aims in degrees)
+    Elevation = 10
+    #Depression (How low the gun aims in degrees)
+    Depression = 7.5
+    #How far around the gun can left and right in degrees (180 is all the way around, 90 is flush to each side)
+    Yaw = 180
+    #How fast the gun turns, this is an arbitrary number and must be adjusted to your liking, Higher is faster
+    RotateSpeed = 15
+          
+    #Camera Stuff
+    
+    #How far out the camera is from the pivot point
+    Cam["Distance",number]  = 200 #Forwards/Backwards|Left/Right|Up/Down forwards may be a negative number, experiment and see
+    #Offset of camera from base center |F/B|L/R|U/D|
+    CamOffset               =       vec(19.5, 0 ,100)
+   
+    #Turret Sound     Just replace the sound path with whatever sound you like
+    Gun:soundPlay(1,0,"vehicles/tank_turret_loop1.wav")
+    soundPitch(1,0)
+    
+#############################################################################################################################    
+    
+    #Stuff you probably should not touch below
+    
+    #Camera Activation
+    Cam["Activated",number] = 1
+    #Entity the camera originates from
+    Cam["Position",vector]  = Base:toWorld(CamOffset)
+    #Entity the camera parents to
+    Cam["Parent",entity]    = Base
+       
+    #EGP Stuff
+    User = Chair:driver()
+    ScreenRes=egpScrSize(Chair:driver())
+    Res=ScreenRes/2
+    
+    #Forward Gun Tracker    
+    EGP:egp3DTracker(2,vec(0,0,0))
+    EGP:egpParent(2,holoEntity(1))
+    
+    EGP:egpCircle(3,vec2(0,0),vec2(4,4))
+    EGP:egpColor(3,Color2)
+    EGP:egpParent(3,2)  
+    
+    #Chevron
+    EGP:egpPoly(4, Res, Res + vec2(24,17), Res + vec2(20,17), Res + vec2(0,4), Res + vec2(-20, 17), Res + vec2(-24, 17))
+    EGP:egpColor(4,Color)
+    
+    #Marks below Chevron
+    EGP:egpCircle(5,Res+vec2(0,30),vec2(5,1))
+    EGP:egpColor(5,Color)
+    
+    EGP:egpCircle(6,Res+vec2(0,50),vec2(5,1))
+    EGP:egpColor(6,Color)
+    
+    EGP:egpCircle(7,Res+vec2(0,70),vec2(5,1))
+    EGP:egpColor(7,Color)
+
+    rangerFilter(Gun)
+    rangerFilter(entity():getConstraints())
+    rangerPersist(1)
+    
+    #Gun Stuff
+    Elevation*=-1
+    Inertia = shiftL(ang(Gun:inertia()))
+    Hold = entity():toLocal(Gun:angles())
+    
+    interval( 35 )
+    timer("tracker",100)
+    stoptimer("stop-gun-spinning")
+} elseif ( ~Active & !Active ) {
+    stoptimer("interval")
+    stoptimer("tracker")
+    soundPitch(1,0)
+    timer("stop-gun-spinning",100)
+}   elseif (clk("tracker")) {
+
+    #EGP Stuff
+    holoPos(1,rangerOffset(9999999999,Gun:pos()+Gun:forward()*100,Gun:forward()):position())
+    
+    timer("tracker",100)
+} elseif( clk() ) {
+
+    #Sound Stuff
+    local Position = Base:toWorld(CamOffset)
+    local Angle = Chair:toLocal(User:eyeAngles())
+    local Ranger = rangerOffset(9999999999,Position,Angle:forward())
+    soundPitch(1,clamp(Gun:angVelVector():length()*10*(Gun:angVelVector():length()>10),0,80))
+
+    #Ang Force Stuff
+    local GunAng = (Ranger:pos() - Gun:pos()):toAngle()
+    local Force = Gun:toWorld(clamp(Gun:toLocal(GunAng),ang(-RotateSpeed),ang(RotateSpeed)))
+    local Clamped = clamp(entity():toLocal(Force),ang(Elevation,-Yaw,-1),ang(Depression,Yaw,1))
+    local LocalToGun = Gun:toLocal(entity():toWorld(Clamped))
+    Gun:applyAngForce((LocalToGun * 250 - Gun:angVel() * 47) * Inertia) #250, 47
+    
+    interval( 35 )
+} elseif (clk("stop-gun-spinning")) {
+    Gun:applyAngForce(-Gun:angVel() * 30 * Inertia)
+    
+    if (Gun:angVelVector():length() > 0.1) {
+        timer("stop-gun-spinning",100)
+    }
+}
+    #Camera field of view link
+    Cam["FOV",number]       = FOV

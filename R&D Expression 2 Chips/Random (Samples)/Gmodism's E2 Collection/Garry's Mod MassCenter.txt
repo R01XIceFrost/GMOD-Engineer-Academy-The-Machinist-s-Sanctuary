@@ -1,0 +1,50 @@
+@name MassCenter
+@persist Ent:entity Props:array
+
+interval(500)
+
+if(first())
+{
+    function vector array:massCenter()
+    {
+        TotalMass = 0
+        TotalMassVec = vec()
+        for(A = 1, This:count())
+        {
+            E = This[A, entity]
+            if(E:type() != entity():type())
+            {
+                TotalMass += E:mass()
+                TotalMassVec += E:massCenter() * E:mass()
+            }
+        }
+        
+        return TotalMassVec / TotalMass
+    }
+    
+    holoCreate(1)
+    holoModel(1, "sphere")
+    holoColor(1, vec(255, 255, 0))
+    
+    holoCreate(2)
+    holoScale(2, vec(0.1, 0.1, 10))
+    holoColor(2, vec(0, 0, 255))
+    holoParent(2, entity())
+    
+    holoCreate(3)
+    holoScale(3, vec(0.1, 10, 0.1))
+    holoColor(3, vec(0, 255, 0))
+    
+    holoCreate(4)
+    holoScale(4, vec(10, 0.1, 0.1))
+    holoColor(4, vec(255, 0, 0))
+}
+
+if(entity():isWeldedTo():isValid()){ Ent = entity() }
+if(owner():keyReload() && owner():aimEntity():isValid()){ Ent = owner():aimEntity() }
+
+#MassCenter = Ent:getConstraints():massCenter()
+MassCenter = Ent:getConstraints():massCenter()
+#if(findCanQuery()){ findIncludePlayerProps(owner()), findByClass("prop_physics"), Props = findToArray() }
+#MassCenter = Props:massCenter()
+for(A = 1, 4){ holoAng(A, ang()), holoPos(A, MassCenter) }

@@ -1,0 +1,30 @@
+@name Bike Lean
+@inputs [Pod Chassis]:wirelink MPH
+@outputs Ang
+@persist Ang Max Speed
+@trigger 
+@model models/sprops/rectangles_thin/size_2/rect_12x12x1_5.mdl
+if(dupefinished()){reset()}
+A = Pod["A",number]
+D = Pod["D",number]
+C=Chassis:entity()
+E=entity()
+Max=MPH
+if(first()){
+Ang=0
+Max=50
+Speed=1
+runOnTick(1)
+}
+Speed=(Max/50)+0.1
+if(D|A){
+if(D&Ang<Max){Ang=Ang+Speed}
+if(A&Ang>-Max){Ang=Ang-Speed}
+}else{
+if(Ang>0){Ang=Ang-Speed}
+if(Ang<0){Ang=Ang+Speed}
+}
+E:setAng(ang(C:angles():pitch(),C:angles():yaw(),Ang))
+if(!E:isPlayerHolding()){E:propFreeze(1)}else{E:propFreeze(0)} 
+
+#made by Benislol37

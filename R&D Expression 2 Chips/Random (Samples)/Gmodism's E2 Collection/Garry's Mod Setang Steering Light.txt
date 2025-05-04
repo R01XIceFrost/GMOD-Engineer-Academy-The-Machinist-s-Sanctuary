@@ -1,0 +1,27 @@
+@name Setang steering v1
+@inputs A D CHASSIS:entity
+@persist SLAVE:entity [TURN_RATE TURN_ANGLE TURN] B C
+@model models/sprops/rectangles/size_2_5/rect_18x18x3.mdl
+
+if (dupefinished()) {reset()}
+
+B = round(toUnit("km/h",CHASSIS:vel():length()))
+
+TURN_ANGLE = 20
+
+if (first())    {
+    interval(20)
+    
+    TURN_RATE = 2.5
+
+    
+    SLAVE = entity()
+} elseif (clk())    {
+    interval(20)
+
+    if (!SLAVE:isPlayerHolding())    {
+        TURN += clamp((A-D)*TURN_ANGLE - TURN, -TURN_RATE, TURN_RATE)
+        SLAVE:setAng( CHASSIS:toWorld(ang(-TURN, 0, 0)) )
+        SLAVE:propFreeze(1)
+    }
+}

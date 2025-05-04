@@ -1,0 +1,141 @@
+@name Recursive Total Armor 3
+@inputs [Console]:wirelink
+@outputs [Total_Effective,Total_Armor,Total_Constraint_Mass,Total_Impact_Mass,Count,CCount,]:number [Ar]:array
+
+if ( first() ) {
+
+    holoCreate(1)
+    holoColor(1,vec(0,255,255))
+    holoScaleUnits(1,vec())
+    holoCreate(2)
+    holoScaleUnits(2,vec(6,2,1))
+    holoModel(2,"plane")
+    holoCreate(3)
+    holoColor(3,vec(0,255,255))
+    holoScaleUnits(3,vec(0.5,0.5,20))
+    for( I = 1 , 3 ) { holoDisableShading(I,1) , holoParent(I,entity()) }
+
+}
+    
+rangerFilter(players())
+#rangerFilter(entity():getConstraints())
+R = rangerOffset(450,entity():pos(),entity():up())
+
+if ( !R:hit() ) { Console:writeCell(2041,1) , Console:writeString("No target",10,9,vec(255,0,0)) }
+elseif( changed(R:pos()) ) {
+    
+    Ar = players()    
+    Count = 1
+    HitNorm = R:hitNormal()
+    Up = entity():up()
+    BounceVect = Up - 2 * (HitNorm:dot(Up) * HitNorm)
+    InitHitAngle = acos(HitNorm:dot(-Up))
+    Initial = R:pos()
+    
+    if ( !R:hitWorld() ) {
+        Ent = R:entity()
+        
+        EntBox = Ent:boxSize()
+        Total_Impact_Mass = Mass = Ent:mass()
+        Armor  = Mass * 1000 / (((EntBox:x() * EntBox:y()) + (EntBox:x() * EntBox:z()) + (EntBox:y() * EntBox:z())) * 6.45) / 0.78
+        Angle = abs(HitNorm:dot(-Up))
+        
+        Effective_Armor = Angle < 361 ? Armor/Angle : Armor
+        
+        if ( changed(Ent) ) {
+            Constraints = Ent:getConstraints()
+            CCount = Constraints:count()+1
+            Total_Constraint_Mass = Mass
+            for ( I = 1 , CCount ) { Total_Constraint_Mass+=Constraints[I,entity]:mass() }
+        }
+        
+        Ar:pushEntity(Ent)
+    }
+    else{
+        Total_Impact_Mass = Total_Constraint_Mass = 0
+        Gra = rangerOffset(5000,Initial+Up,Up)
+        Pos = Gra:position()
+        Effective_Armor = Armor = Initial:distance(Pos)*1.27
+        Initial = Gra:position()
+    }
+
+    holoPos(2,Initial+R:hitNormal()/3)
+    holoAng(2,HitNorm:toAngle()+ang(90,0,0)) 
+    Total_Armor = Armor
+    
+    for ( I = 1 , 40 ) {
+        rangerFilter(Ar)
+        Recurse = rangerOffset(30,Initial,Up)
+        
+        if ( !Recurse:hit() ) { break , holoPos(4,Recurse:pos()) }
+        
+        Ent = Recurse:entity()
+        Initial = Recurse:pos()
+        Count += 1
+        
+        if ( !Recurse:hitWorld() ) {
+            if ( Ent:type() != "prop_physics" ) { 
+                switch ( Ent:type() ) {
+                    case "acf_ammo", Crit = "Ammunition", break
+                    case "acf_engine", Crit = "Engine", break
+                    case "acf_gearbox", Crit = "Tranny", break
+                    case "acf_gun", Crit = "Weapon", break
+                    case "prop_vehicle_prisoner_pod", Crit = "Pod", break
+                    case "gmod_wire_expression2", Crit = "Expression2", break
+                    case "gmod_wire_egp_*", Crit = "EGP", break
+                    case "gmod_wire_adv_pod", Crit = "Pod Controller", break
+                    case "gmod_wire_cameracontroller", Crit = "Camera", break
+                    case "gmod_wire_adv_hudindicator", Crit = "HUD", break
+                    case "gmod_wire_emarker", Crit = "Ent Marker", break
+                    case "gmod_wire_latch", Crit = "Weld/Latch", break
+                    case "gmod_cameraprop", Crit = "Camera", break
+                }
+                break 
+            }
+        
+            Ar:pushEntity(Ent)
+
+            EntBox = Ent:boxSize()
+            Armor  = Ent:mass() * 1000 / (((EntBox:x() * EntBox:y()) + (EntBox:x() * EntBox:z()) + (EntBox:y() * EntBox:z())) * 6.45) / 0.78
+            Angle = abs(Recurse:hitNormal():dot(-Up))
+            
+            Total_Armor += Armor
+            Total_Impact_Mass+= Ent:mass()
+            Effective_Armor += Angle < 361 ? Armor/Angle : Armor
+        }
+        else{
+            Gra = rangerOffset(5000,Initial+Up,Up)
+            Pos = Gra:position()
+            Armor = Initial:distance(Pos)*1.27
+            Total_Armor+= Armor
+            Effective_Armor+= Armor
+            Initial = Pos 
+        }
+    }
+    
+    Dist = holoEntity(2):pos():distance(entity():pos())
+    holoPos(1,entity():toWorld(vec(0,0,Dist/2)))
+    holoScaleUnits(1,vec(0.5,0.5,Dist))
+    holoColor(2,mix(vec(255,0,0),vec(0,255,0),0.0034722222222222*clamp(Effective_Armor,1,288)))
+    holoPos(3,R:pos()+(BounceVect*10))
+    holoAng(3,BounceVect:toAngle()+ang(90,0,0))    
+    #holoPos(4,Recurse:pos())
+    
+    Console:writeCell(2041,1)
+    Console:writeString("Total Constraint Mass",2,1,vec(255))
+    Console:writeString(round(Total_Constraint_Mass,1)+" kg ("+CCount+")",4,2,vec(0,255,0))
+    Console:writeString("Total Impact Ent Mass",2,3,vec(255))
+    Console:writeString(round(Total_Impact_Mass,1)+" kg ("+Count+")",4,4,vec(0,255,0))
+    Console:writeString("Impact Angle",2,5,vec(255) )
+    Console:writeString(round(InitHitAngle,3):toString()+" deg",4,6,vec(0,255,0))
+    Console:writeString("Total Nominal Armor",2,7, vec(255))
+    Console:writeString(round(Total_Armor,3)+" mm",4,8,vec(0,255,0))
+    Console:writeString("Total Effective Armor",2,9,vec(255))
+    Console:writeString(round(Effective_Armor,3)+" mm",4,10,vec(0,255,0))
+    Console:writeString("Increased Effectiveness",2,11,vec(255))
+    Console:writeString(round(((Effective_Armor/Total_Armor)*100)-100,3):toString()+" %",4,12,vec(0,255,0))
+    Console:writeString("Critical Entity Hit",2,13,vec(255))
+    Console:writeString(Crit ?: "None",4,14,vec(0,255,0))
+}
+
+interval(250)

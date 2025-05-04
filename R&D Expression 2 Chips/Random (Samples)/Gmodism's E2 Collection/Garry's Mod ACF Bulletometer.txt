@@ -1,0 +1,216 @@
+####
+## ACF Bulletometer - An RK4 trajectory predictor for ACF guns.
+## By Bubbus (with thanks to Frankess, Tolyzor, RedReaper and Frohman @ wiremod.com, and doswa.com for RK4 details)
+## Problems?  PM me at wiremod.com (username Splambob)
+#### Description:
+## This chip will calculate the trajectory of an ACF projectile.
+## It can calculate most trajectories with reasonable accuracy if the inputs are accurate.
+## Use the EndPos output with any kind of hologram or HUD chip to see where the shot will land.
+## Use the Correction input with a wire Adv. Input chip to easily find a number for any inaccuracy.
+## This chip will calculate continuously (every Interval seconds) while Solve is not 0 and the gun is moving.
+## Use the DoHolos input to visualize predicted trajectory and velocity (relative to muzzle velocity).
+## Use the Precision input to control the coarseness of the predictor.
+#### Inputs:
+## Solve        boolean   Trigger trajectory calculation.
+## Gun          entity    The ACF weapon to calculate from.
+## Correction   m/s       Additive fine-tuning of the MuzzleVel
+## DoHolos      boolean   Spawn holograms along the predicted trajectory.
+##                        This will slow down calculation to accelerated-time, do not use for combat.
+## Interval     s         Seconds between calculation completion and next calculation (default 0.334)
+## Tolerance    number    The gun movement tolerance.  Larger values allow the gun to move more before a recalculation.
+##                        Useful for vehicles or wobbly/jittery turrets. (default 1)
+## Precision    number    Coarseness of the prediction algorithm.  Bigger numbers mean better precision but more ops.
+##                        Big values will "time out" the calculation. (default 0.75)
+#### Outputs:
+## Run          boolean   1 if chip is calculating a trajectory, else 0
+## Hit          boolean   1 if the virtual projectile has hit a surface, else 0
+## Time         s         The amount of time the virtual projectile has currently spent flying.
+## EndPos       vector    The ending position of the predicted projectile (first collision).
+##
+## The following outputs describe end-conditions of the projectile EXCEPT during DoHolos or a very long calculation!
+## Pos          vector    The current position of the virtual projectile.
+## Vel          vector    The current velocity of the virtual projectile.
+####
+
+
+@name ACF Bulletometer
+@inputs Solve Gun:entity Correction DoHolos Interval Tolerance Precision
+@outputs Run Hit Time [EndPos Pos Vel]:vector
+@persist Mass MuzzleVel Caliber CaliberS:string
+@persist StateRK4:array Grav:vector DragCoef SpeedLimit 
+@persist DragDiv PBase MVScale 
+@persist LastIters OptimalIters MaxIters DT MSMVel HoloBurst
+@persist [LastGunPos LastGunDir]:vector 
+@trigger Solve Gun Correction DoHolos
+
+
+if (dupefinished())
+    {reset()}
+
+if (first())
+{
+    CaliberS = Gun:acfNameShort():matchFirst("^%d+")
+    Caliber = CaliberS:toNumber()
+    print("Caliber:" + Caliber)
+    
+    Grav = propGravity()
+    SpeedLimit = speedLimit()
+    HoloBurst = 10 # conservative holos per second
+    
+    ## ACF constants
+    DragDiv = 39.97 # thanks RedReaper!
+    PBase = 1050    # 1 KG of propellant produces this much kinetic energy at the muzzle, in KJ
+    MVScale = 0.5   # Propellant to muzzle vel conversion exponential
+    
+    OptimalIters = 5 # initial optimal iteration count per calculation
+    MaxIters = 30    # iteration limit in case someone pokes the gun outside the map
+    LastIters = OptimalIters
+    DT = 1 # Initial timestep of 1 second
+    
+    function vector accel(X:vector, V:vector, DT) # thanks Tolyzor!
+    {
+        return Grav - (DragCoef * V * V:length() / DragDiv)
+    }
+
+    function array rk4(State:array, DT)   # thanks Tolyzor and doswa.com!
+    {
+        X1 = State[1, vector]
+        V1 = State[2, vector]
+        A1 = accel(X1, V1, 0)
+
+        X2 = X1 + 0.5*V1*DT
+        V2 = V1 + 0.5*A1*DT
+        A2 = accel(X2, V2, DT/2)
+
+        X3 = X1 + 0.5*V2*DT
+        V3 = V1 + 0.5*A2*DT
+        A3 = accel(X3, V3, DT/2)
+
+        X4 = X1 + V3*DT
+        V4 = V1 + A3*DT
+        A4 = accel(X4, V4, DT)
+
+        Xf = X1 + (DT/6.0)*(V1 + 2*V2 + 2*V3 + V4)
+        Vf = V1 + (DT/6.0)*(A1 + 2*A2 + 2*A3 + A4)
+
+        return array(Xf, Vf)
+    }
+    
+    
+    function void runBody()
+    {
+        LastIters++
+        
+        PosBefore = StateRK4[1, vector]
+        StateRK4 = rk4(StateRK4, DT)
+        Pos = StateRK4[1, vector]
+        Vel = StateRK4[2, vector]
+
+        Time += DT
+        
+        local Trace = rangerOffset(PosBefore, Pos)
+        if (Trace:hit())
+        {
+            Pos = Trace:pos()
+            EndPos = Pos
+            Hit = 1
+        }
+        
+        if (DoHolos)
+        {
+            local Colour = hsv2rgb(120 * (Pos - PosBefore):length() / (MSMVel * DT), 1, 1)
+            holoCreate(LastIters, Pos, vec(2), ang(), Colour)
+            holoModel(LastIters, "sphere")
+            holoMaterial(LastIters, "lights/white001")
+        }
+        if (LastIters >= (DoHolos ? 128 : MaxIters))
+        {
+            Hit = 1
+            EndPos = StateRK4[1, vector]
+            return
+        }
+    }
+    
+    rangerPersist(1)
+}
+
+if (~Solve & !Solve)
+    {LastGunPos = randvec()*133337} # force recalculation
+if (~DoHolos)
+    {LastGunPos = randvec()*133337, holoDeleteAll(), DT = 1}
+
+if (Solve & Gun & (!Run | ~Correction | ~Gun)) {
+    
+    local GunPos = Gun:attachmentPos("muzzle")  # thanks Frankess!
+    local GunDir = Gun:forward()
+    
+    Tolerance = Tolerance ?: 1
+    if (((GunPos - LastGunPos):length() > 5*Tolerance | (GunDir - LastGunDir):length() > 0.005*Tolerance | ~Correction & !Run) & Gun:acfAmmoType() != "Empty")
+    {
+        rangerFilter(Gun)
+        # Assign physics environmment constants
+        CaliberS = Gun:acfNameShort():matchFirst("^%d+")
+        Caliber = CaliberS:toNumber()
+        
+        Mass = Gun:acfProjectileMass()
+        
+        FrontalArea = (3.1416 * (Caliber/20) ^ 2)
+        DragCoef = FrontalArea/10000/Mass # linear coefficient of drag
+        
+        MuzzleVel = Correction + Gun:acfMuzzleVel()#(PBase * Propellant * 2000/Mass) ^ MVScale
+        
+        #print("Info " + Caliber + " " + Mass + " " + MuzzleVel)
+        
+        MSMVel = MuzzleVel * 39.37
+        
+        Time = Time ?: 5
+        OptimalIters = ceil(Time * (Precision ?: 2)) # ~7 iterations at max map range
+        
+        if (DoHolos)
+            {DT = 0.25}
+        elseif (LastIters != OptimalIters)
+        {
+            Ratio = LastIters / OptimalIters
+            DT *= Ratio
+        }
+        
+        holoDeleteAll()
+        
+        Time = DT
+        
+        local GunVel = Gun:vel()
+        Pos = GunPos #+ Gun:forward() * 50 #helps with movement
+        Vel = GunDir * MuzzleVel * 39.37 + GunVel
+        
+        StateRK4 = array(Pos, Vel)
+        
+        Hit = 0
+        Run = 1
+        
+        LastIters = 0
+        LastGunPos = GunPos
+        LastGunDir = GunDir
+    }
+    else
+        {interval((Interval ?: 0.334) * 1000)}
+    
+}
+
+if (Run)
+{
+    if (DoHolos & !Hit)
+        {runBody()}
+    else
+    {
+        while (perf() & !Hit)
+            {runBody()}
+    }
+    
+    if (Hit)
+    {
+        Run = 0
+        interval((Interval ?: 0.334) * 1000)
+    }
+    else
+        {interval(DoHolos ? 1000/HoloBurst : 15)}
+}

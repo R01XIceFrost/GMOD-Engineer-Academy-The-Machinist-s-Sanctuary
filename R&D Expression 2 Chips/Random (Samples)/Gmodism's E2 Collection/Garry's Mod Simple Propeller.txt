@@ -1,0 +1,15 @@
+@name Propeller
+@inputs 
+@outputs Velocity
+@persist 
+@trigger 
+@model models/sprops/trans/air/prop_3b_l.mdl
+runOnTick(1)
+if(first() | dupefinished())
+{
+   
+}
+setMass(50)
+
+Velocity = abs(entity():angVel():roll())
+entity():applyForce(entity():forward()*Velocity*5)

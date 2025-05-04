@@ -1,0 +1,65 @@
+@name Aiming Hologram by MythicGhost
+@inputs Seat:entity
+@outputs 
+@persist 
+@trigger R:ranger
+interval(1)
+timer("Aim",100)
+
+if(dupefinished()){reset()}
+if(first())
+{
+
+    holoCreate(1)
+    holoAlpha(1, 192)
+    holoColor(1, vec(255,0,0))
+    holoDisableShading(1,1)
+    holoVisible(1, players(), 0)
+    holoVisible(1, owner(), 1)
+    holoParent(1,Seat)
+    holoAng(1,Seat:toWorld(ang(0,0,0)))
+    holoModel(1, "models/sprops/geometry/fring_12.mdl")
+    holoMaterial(1,"models/debug/debugwhite")
+    
+    holoCreate(2)
+    holoAlpha(2,192)
+    holoColor(2,vec(255,0,0))
+    holoDisableShading(2,1)
+    holoVisible(2, players(), 0)
+    holoVisible(2, owner(), 1)
+    holoAng(2,Seat:toWorld(ang(0,0,0)))
+    holoScale(2,vec(1.5,0.05,0.05))
+    holoParent(2,1)
+    holoModel(2,"models/sprops/cuboids/height06/size_1/cube_6x24x6.mdl")
+    holoMaterial(2,"models/debug/debugwhite")
+    
+    holoCreate(3)
+    holoAlpha(3,192)
+    holoColor(3,vec(255,0,0))
+    holoDisableShading(3,1)
+    holoVisible(3, players(), 0)
+    holoVisible(3, owner(), 1)
+    holoScale(3,vec(1.5,0.05,0.05))
+    holoAng(3,Seat:toWorld(ang(90,0,0)))
+    holoParent(3,1)
+    holoModel(3,"models/sprops/cuboids/height06/size_1/cube_6x24x6.mdl")
+    holoMaterial(3,"models/debug/debugwhite")
+    
+    holoCreate(4)
+    holoAlpha(4, 192)
+    holoColor(4, vec(255,255,0))
+    holoDisableShading(4,1)
+    holoVisible(4, players(), 0)
+    holoVisible(4, owner(), 1)
+    holoScale(4,vec(0.5,0.5,0.5))
+    holoAng(4,Seat:toWorld(ang(0,0,0)))
+    holoParent(4,1)
+    holoModel(4, "models/sprops/geometry/fring_12.mdl")
+    holoMaterial(4,"models/debug/debugwhite")
+}
+
+if(clk("Aim"))
+{
+    R = rangerHull(10000,vec(0,0,0))
+    holoPos(1,R:pos())
+}
