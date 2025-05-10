@@ -1,0 +1,165 @@
+@name FailCake Crash Nitro
+@persist [E]:entity HOLO_INDEX EXPLODING
+@trigger all
+@model models/items/item_item_crate.mdl
+
+if(first() || duped()){
+    
+    propSpawnEffect(0)
+    
+    function void sendBoom(Rad:number){
+        
+        findClearBlackList()
+        findClearWhiteList()
+        
+        findInSphere(E:pos(),Rad) 
+
+        local FD = findToArray()
+        
+        if(FD:count() > 0){
+                
+            for(I = 0, FD:count()){
+                if(FD[I,entity]:isValid()){
+                    if(FD[I,entity]:type() == E:type() && FD[I,entity]:owner() == E:owner() ){
+                       dsSendDirect("explode_NITRO",FD[I,entity],E:pos())
+                    }
+                }
+            }
+                
+        }
+        
+    }
+    
+     function void createHolo(Model:string,Scl:vector,Pos:vector,Ang:angle,Parent:entity, Color:vector){
+        
+        holoCreate(HOLO_INDEX)
+        holoModel(HOLO_INDEX,Model)
+        holoPos(HOLO_INDEX,Parent:toWorld(Pos))
+        holoAng(HOLO_INDEX,Parent:toWorld(Ang))
+        holoScaleUnits(HOLO_INDEX,Scl)
+        holoColor(HOLO_INDEX,Color)
+        holoParent(HOLO_INDEX,Parent)
+        
+        HOLO_INDEX+=1
+    }
+    
+    function void createWordNitro(){
+        
+        # N
+        createHolo("cube",vec(1,1,7),vec(17,-12,13),ang(0,90,0),E,vec(255,200,0))
+        createHolo("cube",vec(7,1,1),vec(17,-10.5,13),ang(65,90,0),E,vec(255,200,0))
+        createHolo("cube",vec(1,1,7),vec(17,-9,13),ang(0,90,0),E,vec(255,200,0))
+        
+        # I
+        createHolo("cube",vec(1,1,5),vec(17,-6,13),ang(0,90,0),E,vec(255,200,0))
+        createHolo("cube",vec(4,1,1),vec(17,-6,15.5),ang(0,90,0),E,vec(255,200,0))
+        createHolo("cube",vec(4,1,1),vec(17,-6,10.5),ang(0,90,0),E,vec(255,200,0))
+        
+        # T
+        createHolo("cube",vec(1,1,7),vec(17,-1.5,13),ang(0,90,0),E,vec(255,200,0))
+        createHolo("cube",vec(4,1,1),vec(17,-1.5,15.5),ang(0,90,0),E,vec(255,200,0))
+
+        # R
+        createHolo("cube",vec(1,1,7),vec(17,1.5,13),ang(0,90,0),E,vec(255,200,0))
+        createHolo("cube",vec(3,1,1),vec(17,2.5,15),ang(45,90,0),E,vec(255,200,0))
+        createHolo("cube",vec(3,1,1),vec(17,2.5,13.5),ang(-45,90,0),E,vec(255,200,0))
+        createHolo("cube",vec(3,1,1),vec(17,2.5,11),ang(45,90,0),E,vec(255,200,0))
+        
+        # O
+        createHolo("cube",vec(1,1,6),vec(17,5.5,13),ang(0,90,0),E,vec(255,200,0))
+        createHolo("cube",vec(4,1,1),vec(17,7,15.5),ang(0,90,0),E,vec(255,200,0))
+        createHolo("cube",vec(4,1,1),vec(17,7,10),ang(0,90,0),E,vec(255,200,0))
+        createHolo("cube",vec(1,1,6.5),vec(17,9,12.7),ang(0,90,0),E,vec(255,200,0))
+    }
+    
+    function void createStripes(){
+        
+        # STRIPES BOT #
+        createHolo("cube",vec(32,1,2),vec(1,15,5),ang(0,0,0),E,vec(255,200,0))
+        createHolo("cube",vec(32,1,2),vec(1,-17,5),ang(0,0,0),E,vec(255,200,0))
+        createHolo("cube",vec(33,1,2),vec(-15,-1,5),ang(0,90,0),E,vec(255,200,0))
+        createHolo("cube",vec(33,1,2),vec(17,-1,5),ang(0,90,0),E,vec(255,200,0))
+        
+        # STRIPES UP #
+        createHolo("cube",vec(32,1,2),vec(1,15,20),ang(0,0,0),E,vec(255,200,0))
+        createHolo("cube",vec(32,1,2),vec(1,-17,20),ang(0,0,0),E,vec(255,200,0))
+        createHolo("cube",vec(33,1,2),vec(-15,-1,20),ang(0,90,0),E,vec(255,200,0))
+        createHolo("cube",vec(33,1,2),vec(17,-1,20),ang(0,90,0),E,vec(255,200,0))
+
+    }
+           
+}
+
+if(first() || duped()){
+    
+    dsJoinGroup("bombCrashBand_FailCake")
+    
+    runOnTick(1)
+    E = entity()
+    
+    E:setMaterial("models/debug/debugwhite")
+    E:setColor(0,200,0)
+    
+    createStripes()
+    createWordNitro()
+    
+    timer("Bobble",500)
+}
+
+if(EXPLODING == 0){
+
+    findIncludeEntities(players())
+    local Pie = findInBox(E:toWorld(vec(20,-20,-2)),E:toWorld(vec(-18,18,27.5)))
+    
+    if(Pie){ 
+        EXPLODING = -1  
+        E:soundPlay(3,0,"ambient/explosions/explode_"+randint(3,4)+".wav") 
+        timer("BOOM",100)
+    }
+    
+    if(dsClk("explodeNEAR") || dsClk("explode_NITRO")){
+        local Dist = dsGetVector()
+
+        if(E:pos():distance(Dist) < 200){
+            EXPLODING = -1
+            E:soundPlay(3,0,"ambient/explosions/explode_"+randint(3,4)+".wav")   
+            timer("BOOM",100)
+            
+        }
+        
+    }
+
+}
+
+
+if(clk("BOOM")){
+    
+ local Sp = propSpawn("models/props_c17/oildrum001_explosive.mdl",E:pos(),ang(0,0,0),1)
+ Sp:setAlpha(0)
+ Sp:propBreak()
+
+ sendBoom(300)
+ timer("delete",100)
+}
+
+if(clk("delete")){
+ selfDestructAll()   
+}
+
+if(clk("Bobble")){
+
+ soundPurge()
+
+ E:soundPlay(1,0,"ambient/water/drip"+randint(2,3)+".wav")
+ soundPitch(1,randint(30,50))
+ E:propFreeze(0)
+ E:applyForce(E:up()*10^3)
+ timer("Bobble",randint(1400,2400))
+
+}
+
+
+
+
+
+

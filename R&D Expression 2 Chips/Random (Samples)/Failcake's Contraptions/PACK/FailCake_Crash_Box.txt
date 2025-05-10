@@ -1,0 +1,73 @@
+@name FailCake Crash Box
+@persist BREAK [E]:entity
+@trigger all
+@model models/items/item_item_crate.mdl
+
+if(first() || duped()){
+    
+    dsJoinGroup("bombCrashBand_FailCake")
+    
+    propSpawnEffect(0)
+    
+    runOnTick(1)
+    E = entity()
+    
+    holoCreate(1)
+    holoModel(1,"models/props_junk/watermelon01.mdl")
+    holoParent(1,E)
+    holoPos(1,E:toWorld(vec(0,0,12)))
+    holoScale(1,vec(1/2,1/2,1/2))
+    
+}
+
+if(dsClk("explodeNEAR") || dsClk("explode_NITRO")){
+    local Dist = dsGetVector()
+
+    if(E:pos():distance(Dist) < 200){
+         BREAK = 1 
+        
+         E:propNotSolid(1)
+         E:setAlpha(0)
+        
+         local Pro = propSpawn("models/items/item_item_crate.mdl",E:pos(),E:angles(),1)
+         Pro:setAlpha(0)
+         Pro:propBreak()
+        
+         timer("remove",10000)
+    }
+        
+}
+
+if(BREAK == 1){
+    
+    
+    holoAng(1,E:toWorld(ang(sin(curtime()*100)*100,cos(curtime()*100)*100,0)))
+    
+    findIncludeEntities(players())
+    local Pie = findInSphere(E:pos(),20)
+    
+    if(Pie){
+        
+        BREAK = -1
+        E:soundPlay(1,4,"garrysmod/content_downloaded.wav")
+        soundPitch(1,randint(70,100))
+        holoDelete(1)
+        
+        stoptimer("remove")
+        timer("remove",300)
+        
+    }
+    
+}
+
+
+if(clk("remove")){
+ selfDestructAll()   
+}
+
+
+
+
+
+
+

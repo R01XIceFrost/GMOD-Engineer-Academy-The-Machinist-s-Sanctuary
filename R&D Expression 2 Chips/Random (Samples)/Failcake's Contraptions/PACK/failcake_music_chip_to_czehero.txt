@@ -1,0 +1,395 @@
+@name FailCake Music Chip To CzeHero
+@inputs EGP:wirelink
+@outputs Tempo I Note:string Ras BackWards Ranss RandomMusic MaxRAND Sound:string User:entity PV Loop Timeout On Effects P MaxHolo X Y V H UseExample
+@persist I [Music]:string P [Pos Alpha Tons Icons Examples Rass Ply FF]:array F MusicName:string Strings:string
+@trigger all
+@model models/props_lab/citizenradio.mdl
+runOnTick(1)
+
+## Made by Failcake For CzeHero
+
+### Musics : " jquz.zuqos.1" - Minecraft - 
+### "pkhpkhpknkfnkfnkmifmifmi" - ColdPlay - synth/square.wav
+### "_1-uuzt opnjjljih  5  opq--q--q--13451355_3  1  opq--q--q--13451355_3 1" -
+E = entity()
+
+# Made by FailCake
+Examples[1,string] = "_1-uuzt opnjjljih  5  opq--q--q--13451355_3  1  opq--q--q--13451355_3 1"
+Examples[2,string] = "pkhpkhpknkfnkfnkmifmifmi"
+Examples[3,string] = " jquz.zuqos.1"
+Examples[4,string] = "pkhpkhpknkfnkfnkmilkakask hello my name is failcake"
+
+
+Tons[1,string] = "synth/triangle_440.wav"
+Tons[2,string] = "synth/tri.wav"
+Tons[3,string] = "synth/square.wav"
+Tons[4,string] = "buttons/bell1.wav"
+Tons[5,string] = "buttons/blip1.wav"
+Tons[6,string] = "buttons/weapon_cant_buy.wav"
+Tons[7,string] = "buttons/button3.wav"
+Tons[8,string] = "buttons/button17.wav"
+Tons[9,string] = "vo/scout_beingshotinvincible26.wav"
+Tons[10,string] = "items/japan_fundraiser/tf_zen_prayer_bowl_03.wav"
+Tons[11,string] = "achievements/achievement_earned.mp3"
+
+
+Icons[1,string] = "gui/silkicons/heart"
+Icons[2,string] = "gui/silkicons/key"
+Icons[3,string] = "gui/silkicons/disk"
+Icons[4,string] = "gui/silkicons/computer"
+Icons[5,string] = "gui/silkicons/shield"
+Icons[6,string] = "gui/silkicons/comment"
+Icons[7,string] = "gui/silkicons/error"
+
+
+if(first() | duped()){
+I = 0
+P = 0
+Timeout = 0
+Strings = ""
+EGP:egpClear() 
+
+VV = randint(1,Icons:count())
+
+# Made by FailCake
+
+### SETTINGS ###
+
+MaxRAND = 100
+RandomMusic = 0 # Make a random Music? 1 to enable , 0 to disable.
+Tempo = 200 # Music Speed (1000 -> 1 sec)
+Effects = 1 # Effects = 1 or 0
+MusicName = "sda"
+Sound = Tons[1,string] # The sound 
+UseExample = 1 # Change to 1,2,3,4 or 0 to disable
+Music = "afasfas  afs asf a fa f afs asfagssafdasd" # The music
+Loop = 1 # Loop = 1 or 0
+Icon = Icons[VV,string] # The music Icon (See Icon Examples)
+BackWards = 0
+
+### SETTINGS ###
+
+
+Rass[1,string]= " "
+Rass[2,string]= "a"
+Rass[3,string]= "b"
+Rass[4,string]= "c"
+Rass[5,string]= "d"
+Rass[6,string]= "e"
+Rass[7,string]= "f"
+Rass[8,string]= "g"
+Rass[9,string]= "h"
+Rass[10,string]= "i"
+Rass[11,string]= "j"
+Rass[12,string]= "k"
+Rass[13,string]= "l"
+Rass[14,string]= "m"
+Rass[15,string]= "n"
+Rass[16,string]= "o"
+Rass[17,string]= "p"
+Rass[18,string]= "q"
+Rass[19,string]= "r"
+Rass[20,string]= "s"
+Rass[21,string]= "t"
+Rass[22,string]= "v"
+Rass[23,string]= "u"
+Rass[24,string]= "x"
+Rass[25,string]= "z"
+Rass[26,string]= "-"
+Rass[27,string]= "."
+Rass[28,string]= "_"
+Rass[29,string]= ","
+Rass[30,string]= "1"
+Rass[31,string]= "2"
+Rass[32,string]= "4"
+Rass[33,string]= "5"
+Rass[34,string]= "6"
+Rass[35,string]= "7"
+Rass[36,string]= "8"
+Rass[37,string]= "9"
+Rass[38,string]= "0"
+Rass[39,string]= "?"
+
+
+# Made by FailCake
+MaxHolo = 10
+M = 11
+Timeout = 1
+On = 1
+soundPlay(0,0,Sound)
+H = 2
+setName("FailCake Music Chip [ ] [To CzeHero]") 
+
+if(UseExample != 0){
+Music = Examples[UseExample,string]    
+}
+
+if(RandomMusic){
+UseExample = 0
+Music = ""
+MusicName = "Random"
+Tempo = randint(100,1000)
+Tt = randint(1,Tons:count())
+Sound = Tons[Tt,string]
+
+for(G=0,MaxRAND){
+Ras = randint(1,Rass:count())
+Music += Ras 
+}
+}
+
+### EGP ###
+
+EGP:egpRoundedBoxOutline(1,vec2(255,250),vec2(487,470))
+EGP:egpText(2,"-------------- Made By Failcake ---------------",vec2(100,490))
+EGP:egpRoundedBox(3,vec2(255,76),vec2(484,120)) 
+EGP:egpText(4,"Music = " + MusicName,vec2(26,30))
+EGP:egpText(5,"Length = " + Music:length(),vec2(26,50))
+EGP:egpText(6,"Sound = " + Sound,vec2(26,70))
+EGP:egpText(7,"Tempo = " + Tempo,vec2(26,90))
+EGP:egpText(8,"Loop = " + Loop,vec2(26,110))
+
+EGP:egpRoundedBoxOutline(9,vec2(435,75),vec2(110,110))
+EGP:egpRoundedBox(10,vec2(435,75),vec2(80,80))
+EGP:egpMaterial(10,Icon)
+
+
+# Made by FailCake
+## Button Play/Stop ##
+EGP:egpRoundedBoxOutline(11,vec2(80,200),vec2(110,110))
+EGP:egpRoundedBox(12,vec2(80,200),vec2(108,108))
+EGP:egpText(13,"Play",vec2(65,190))
+
+EGP:egpRoundedBoxOutline(14,vec2(80,320),vec2(110,110))
+EGP:egpRoundedBox(15,vec2(80,320),vec2(108,108))
+EGP:egpText(16,"Stop",vec2(65,310))
+
+EGP:egpRoundedBoxOutline(17,vec2(255,430),vec2(450,100))
+
+EGP:egpColor(3,vec4(200,40,0,255))
+EGP:egpColor(12,vec4(1,1,1,255))
+EGP:egpColor(15,vec4(1,1,1,255))
+
+V = 18
+
+if(BackWards){
+I = Music:length()  
+}
+}
+
+X=EGP:egpCursor(User):x()
+Y=EGP:egpCursor(User):y()
+
+if(X >= 27 & X <= 135 & Y >=265 & Y <=375){
+
+EGP:egpColor(15,vec4(90,90,90,255)) 
+
+if(User:keyUse() & User:pos():distance(E:pos()) <= 200 & On == 1 & Timeout == 0){
+Timeout = 1
+On = 0 
+soundPurge()
+I = 0
+
+}
+  
+}else{
+EGP:egpColor(15,vec4(1,1,1,255))
+}
+
+if(Timeout){
+timer("hols",500)
+if(clk("hols")){
+Timeout = 0
+stoptimer("hols")    
+}    
+}
+
+# Made by FailCake
+if(User:pos():distance(E:pos()) <= 200){
+EGP:egpCircle(0,EGP:egpCursor(User),vec2(3,3)) 
+EGP:egpColor(0,vec4(255,255,255,255)) 
+}else{
+EGP:egpColor(0,vec4(1,1,1,255))
+}
+
+if(X >= 27 & X <= 135 & Y >=146 & Y <=254){
+EGP:egpColor(12,vec4(90,90,90,255)) 
+if(User:keyUse() & User:pos():distance(E:pos()) <= 200 & On == 0 & Timeout == 0){
+
+Timeout = 1
+On = 1  
+soundPlay(0,0,Sound)
+    
+}  
+}else{
+EGP:egpColor(12,vec4(1,1,1,255))
+}
+
+findExcludePlayer("mantas")
+
+if(findByClass("player")){
+User=findClosest(entity():pos())
+}
+
+
+if(On&~On) {soundPlay(0,0,Sound) }
+if(!On&~On) {soundPurge() I = 0}
+
+
+# Made by FailCake
+if(I >= Music:length() & BackWards == 0){
+if(Loop){
+I = 0    
+}else{
+I = 0
+On = 0  
+soundPurge()
+} 
+}
+if(I <= 0 & BackWards == 1){
+if(Loop){
+I = Music:length()       
+}else{
+I = Music:length()  
+On = 0  
+soundPurge()
+} 
+}
+
+if(On){
+
+if(Effects){
+   
+for(I2 = 1,F){
+Pos[I2,number] = Pos[I2,number] + 0.3
+
+if(Alpha[I2,number] >= 0){
+Alpha[I2,number] = Alpha[I2,number] - 2  
+}else{
+holoDelete(I2)
+Pos[I2,number] = 0
+Alpha[I2,number] = 255
+}
+
+# Made by FailCake
+R = randint(1,255)
+R2 = randint(1,255)
+R3 = randint(1,255)
+
+holoPos(I2,E:pos()+vec(FF[I2,number],0,Pos[I2,number]*2))
+holoAlpha(I2,Alpha[I2,number])
+
+}
+}
+
+timer("tim",Tempo)
+if(clk("tim")){
+
+
+if(V <= 27){
+V+=1
+H+=1
+
+EGP:egpCircle(V,vec2(H*35,400+PV/2),vec2(13,13))
+EGP:egpColor(V,vec4(R,R2,R3,255))
+}else{
+V = 19
+H = 2
+}
+
+if(Effects == 1){
+if(P <= MaxHolo){
+P++
+
+if(F <= MaxHolo){
+F++
+}
+
+# Made by FailCake
+holoCreate(P)
+holoModel(P,"hq_rcube_thick")
+holoScaleUnits(P,vec(3,3,3))
+holoMaterial(P,"models/debug/debugwhite")
+holoParent(P,E)
+
+FF[P,number] = randint(-10,10)
+
+
+R = randint(1,255)
+R2 = randint(1,255)
+R3 = randint(1,255)
+holoColor(P,vec(R,R2,R3))
+
+Pos[P,number] = 0
+Alpha[P,number] = 255
+
+}else{
+P = 0
+}
+}
+
+if(BackWards == 0){
+I+=1
+}else{
+I-=1
+}
+
+Note = Music:index(I)
+setName("FailCake Music Chip ["+Note+"] [To CzeHero]")   
+    
+}
+}else{
+if(Effects){
+for(L=0,F){
+holoDelete(L)    
+}
+}
+P = 0
+T = 0
+}
+
+# Made by FailCake
+if(Note == " ") {PV = 0}
+if(Note == "a") {PV = 59} # C
+if(Note == "b") {PV = 60} # C#
+if(Note == "c") {PV = 61} # D
+if(Note == "d") {PV = 62} # D#
+if(Note == "e") {PV = 63} # E
+if(Note == "f") {PV = 64} # F
+if(Note == "g") {PV = 65} # F#
+if(Note == "h") {PV = 66} # G
+if(Note == "i") {PV = 67} # G#
+if(Note == "j") {PV = 68} # A
+if(Note == "k") {PV = 69} # A#
+if(Note == "l") {PV = 70} # B
+if(Note == "m") {PV = 71} # C
+if(Note == "n") {PV = 72} # C#
+if(Note == "o") {PV = 73} # D
+if(Note == "p") {PV = 74} # D#
+if(Note == "q") {PV = 75} # E
+if(Note == "r") {PV = 76} # F
+if(Note == "s") {PV = 77} # F#
+if(Note == "t") {PV = 78} # G
+if(Note == "v") {PV = 79} # G#
+if(Note == "u") {PV = 80} # A
+if(Note == "x") {PV = 81} # A#
+if(Note == "z") {PV = 82} # B
+if(Note == "-") {PV = 83} # C - Home
+if(Note == ".") {PV = 84} # C#
+if(Note == "_") {PV = 85} # D
+if(Note == ",") {PV = 86} # D#
+if(Note == "1") {PV = 87} # E
+if(Note == "3") {PV = 88} # F
+if(Note == "4") {PV = 89} # F#
+if(Note == "5") {PV = 90} # G
+if(Note == "6") {PV = 91} # G#
+if(Note == "7") {PV = 92} # A
+if(Note == "8") {PV = 93} # A#
+if(Note == "9") {PV = 94} # B
+if(Note == "0") {PV = 95} # C
+if(Note == "?") {PV = 96} # C#
+
+soundPitch(0,2^(PV/12))
+
+
+# Made by FailCake

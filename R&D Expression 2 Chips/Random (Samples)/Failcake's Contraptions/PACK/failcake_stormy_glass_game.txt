@@ -1,0 +1,301 @@
+@name FailCake Stormy Glass Game
+@persist Once T On RR LVL R2 R3 Add Of R P Go Winner:string Onxx CleanTime  DD GlassOnly L Delete Angs
+@persist [Rand Props ToProp Lols Time Plys In]:array D
+@trigger all
+@model models/hunter/blocks/cube025x025x025.mdl
+runOnChat(1)
+runOnTick(1)
+
+
+E = entity()
+O = owner()
+
+
+
+if(first() || duped()){
+propSpawnEffect(0)
+hint("Made By FailCake",7)
+On = 0 
+LVL = 1
+P = 0
+DD = 0
+Wait = 1000  
+CleanTime = 500
+Winner = ""
+Add= 0 
+
+setName("FailCake Stormy Glass Game[Normal][Level 0]") 
+
+
+E:soundPlay(34,34,"music/hl2_song28.mp3") 
+
+holoCreate(21)
+holoModel(21,"hq_torus_thin")
+holoAng(21,ang(0,0,0))
+holoScale(21,vec(80,80,70))
+holoParent(21,E)
+holoColor(21,vec(255,155,0))
+holoPos(21,E:toWorld(vec(-10,0,0)))
+holoAlpha(21,150)
+holoMaterial(21,"models/debug/debugwhite")
+
+holoCreate(22)
+holoModel(22,"hq_torus_thin")
+holoScale(22,vec(80,80,80))
+holoParent(22,E)
+holoPos(22,E:toWorld(vec(0,0,0)))
+holoAlpha(22,255)
+holoMaterial(22,"models/shadertest/predator")
+
+
+for(I=1,20){ 
+holoCreate(I)
+holoModel(I,"hqicosphere")
+holoPos(I,E:toWorld(vec(0,0,70)))
+holoScaleUnits(I,vec(2,2,2))
+holoColor(I,vec(1,1,1))
+holoMaterial(I,"")
+holoParent(I,E)  
+holoAlpha(I,0)
+}
+
+Lols[1,string] = "What a Noob :D"
+Lols[2,string] = "He died Smached on a Glass"
+Lols[3,string] = "What a nice day to Smach you!"
+Lols[4,string] = "Idk what to say here =P"
+Lols[5,string] = "You are Dead, not Big Suprise!"
+Lols[6,string] = "You Fail!"
+Lols[7,string] = "Next time, leave it to the Pros!"
+Lols[8,string] = "RIP 2010-2011"
+  
+Rand[1,string] = "ambient/atmosphere/thunder1.wav"
+Rand[2,string] = "ambient/atmosphere/thunder2.wav"
+Rand[3,string] = "ambient/atmosphere/thunder3.wav"
+Rand[4,string] = "ambient/atmosphere/thunder4.wav"
+ 
+Props[1,string] = "models/props_c17/FurnitureCouch001a.mdl"
+Props[2,string] = "models/props_combine/breendesk.mdl"
+Props[3,string] = "models/props_interiors/VendingMachineSoda01a.mdl"
+Props[4,string] = "models/props_wasteland/laundry_dryer002.mdl"
+Props[5,string] = "models/props_c17/furnitureStove001a.mdl"
+Props[6,string] = "models/props_lab/servers.mdl"
+Props[7,string] = "models/props_lab/securitybank.mdl"
+Props[8,string] = "models/props/CS_militia/skylight_glass.mdl"
+Props[9,string] = "models/Combine_Helicopter/helicopter_bomb01.mdl"
+Props[10,string] = "models/props_lab/blastdoor001b.mdl"
+Props[11,string] = "models/props_lab/blastdoor001c.mdl"
+Props[12,string] = "models/props_trainstation/trainstation_clock001.mdl"
+Props[13,string] = "models/props_wasteland/kitchen_counter001c.mdl"
+Props[14,string] = "models/props_wasteland/kitchen_counter001d.mdl"
+Props[15,string] = "models/props_c17/shelfunit01a.mdl"
+
+Props[16,string] = "models/props_junk/wood_crate002a.mdl"
+Props[17,string] = "models/props_junk/wood_pallet001a.mdl"
+Props[18,string] = "models/props_wasteland/wheel02b.mdl"
+Props[19,string] = "models/props_wasteland/cargo_container01.mdl"
+Props[20,string] = "models/props_interiors/Furniture_Couch01a.mdl"
+}
+
+
+if(Add){
+
+findByClass("player")
+Plys = findToArray()
+
+
+for(L=1,Plys:count()){ 
+    
+if(Plys[L,entity]:pos():distance(E:pos()) <= 400){
+    
+if(Plys:count() > 1){
+DD+=1
+In[DD,entity] = Plys[L,entity]
+}
+
+}
+    
+if(L >= Plys:count() && In:count() > 1){
+hint("Players Added = "+In:count(),7)
+Add = 0
+On = 1
+}
+
+}
+
+}
+
+
+
+if(chatClk(owner())){ 
+
+Goto = owner():lastSaid():explode(" ")
+                
+if(Goto[1,string]=="-start" & On == 0)
+{ 
+Add = 1       
+}
+
+}
+
+
+if(On){
+setName("FailCake Stormy Glass Game[Normal][Level "+LVL+"]") 
+soundStop(34)
+
+T+=1
+
+Cos = cos(T*7)*40
+Sin = sin(T*7)*40
+
+for(I=0,15){ 
+holoPos(I,E:toWorld(vec(Cos*I,Sin*I,800)))
+holoPos(I,E:toWorld(vec(Cos*I,Sin*I,800)))
+}
+
+if(Once == 0){
+Once = 1
+timer("ho",Wait)
+timer("add",CleanTime)
+timer("LVLUP",10000)
+timer("sound",5000)
+
+E:soundPlay(64,343,"music/hl1_song25_remix3.mp3") 
+
+for(I=0,20){ 
+holoEntity(I):setTrails(50,50,15,"trails/smoke",vec(1,1,1),255)       
+}
+
+}
+if(Onxx){
+Onxx = 0
+Of = 1
+E:soundPlay(64,343,"music/hl2_song20_submix0.mp3")     
+}
+
+if(LVL == 1){
+Wait = 1000  
+GlassOnly = 0
+CleanTime = 500
+}elseif(LVL == 2){
+Wait = 800  
+}elseif(LVL == 3){
+Wait = 600  
+}elseif(LVL == 4){
+Wait = 500  
+}elseif(LVL == 5){
+Wait = 300  
+CleanTime = 300
+GlassOnly = 1
+if(Of == 0){
+Onxx = 1
+Once = 1
+}
+}elseif(LVL == 6){
+Wait = 200 
+CleanTime = 100 
+}elseif(LVL == 7){
+LVL = 1
+Of = 0
+}
+
+
+if(clk("ho")){
+Go = 1
+R2 = randint(-350,350)
+R3 = randint(-350,350)
+
+if(GlassOnly){
+R4 = 8
+Angs = 0
+}else{
+Angs = 90
+R4 = randint(1,Props:count())
+}
+
+Prop = propSpawn(Props[R4,string],E:pos() + vec(R2,R3,800),ang(Angs,0,0),0)    
+ToProp:pushEntity(Prop)
+Prop:setMass(1000)
+timer("ho",Wait)
+}
+
+
+
+if(clk("add")){
+    
+for(P2 = 0,ToProp:count()){
+Time[P2,number] = Time[P2,number] + 1   
+
+if(Time[P2,number] >= 30){
+ToProp[P2,entity]:propDelete()  
+}
+
+}
+timer("add",CleanTime)
+}
+
+
+if(clk("LVLUP")){
+LVL+=1
+E:soundPlay(13400,14300,"garrysmod/content_downloaded.wav")    
+timer("LVLUP",10000)
+}
+
+
+
+if(clk("sound")){
+    
+RR = randint(1,Rand:count())
+E:soundPlay(1000,1000,Rand[RR,string])
+timer("sound",5000)
+
+}
+}
+
+
+
+if(On == 1){
+    
+for(D=1,In:count()){
+ 
+if(In[D,entity]:health() <= 0){
+
+if(In:count() > 1){
+Rx = randint(1,Lols:count())
+concmd("say [FailCake StormyG] "+In[D,entity]:name() + " is Out! ["+Lols[Rx,string]+"]")
+In:remove(D)
+}
+ 
+}
+
+}
+
+if(In:count() == 1){
+E:setColor(0,255,0)
+On = 0    
+concmd("say [FailCake StormyG] "+In[D,entity]:name() + " Wins!")
+Winner = "Winner is : "+In[D,entity]:name()
+E:soundPlay(100,100,"music/portal_still_alive.mp3")
+soundStop(64)
+Delete = 1
+timer("hold",17000)
+}
+
+}
+
+if(Delete){
+
+if(clk("hold")){
+    
+for(FF = 0,ToProp:count()){
+ToProp[FF,entity]:propDelete()
+}
+
+Delete = 0
+concmd("say [FailCake StormyG] New Game!")
+reset()   
+}
+}
+
+if(duped()){
+selfDestructAll()    
+}

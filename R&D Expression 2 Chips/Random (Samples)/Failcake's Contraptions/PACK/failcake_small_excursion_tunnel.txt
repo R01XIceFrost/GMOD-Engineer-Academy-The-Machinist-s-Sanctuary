@@ -1,0 +1,183 @@
+@name FailCake Small Excursion Tunnel
+@persist On SpinSlo Up Onc Rever Ds MaxDist P6 MaxHolo Oki Sin
+@persist Spin T [Props Inside]:array Hit:ranger
+@trigger all
+@model models/props_lab/powerbox02a.mdl
+runOnTick(1)
+runOnChat(1)
+
+E = entity()
+
+if(first() | duped()){ 
+
+holoCreate(0)
+holoModel(0,"hqcylinder")
+holoScaleUnits(0,vec(2,2,20))  
+holoPos(0,E:toWorld(vec(0,15,-11)))
+holoAng(0,ang(90,90,0))
+holoMaterial(0,"phoenix_storms/MetalSet_1-2")
+holoColor(0,vec(255,255,255))
+holoParent(0,E) 
+
+hint("Made By FailCake",7)
+
+holoCreate(1)
+holoModel(1,"models/props_combine/combine_mine01.mdl") 
+holoAng(1,ang(0,30,0))
+holoPos(1,E:toWorld(vec(0,36,-12)))
+holoParent(1,E) 
+
+holoCreate(2)
+holoModel(2,"models/props_junk/sawblade001a.mdl") 
+holoAng(2,ang(0,30,0))
+holoPos(2,E:toWorld(vec(0,36,-6)))
+holoParent(2,E) 
+
+## Lever
+
+Don = 0
+Oki = 0
+
+holoCreate(3)
+holoModel(3,"models/props_c17/TrapPropeller_Lever.mdl") 
+holoAng(3,ang(0,180,0))
+holoPos(3,E:toWorld(vec(0,-10,4)))
+holoParent(3,E) 
+
+holoCreate(4)
+holoModel(4,"cube") 
+holoAng(4,ang(0,0,0))
+holoColor(4,vec(1,1,1))
+holoScaleUnits(4,vec(2,2,10))
+holoPos(4,E:toWorld(vec(0,-5,0)))
+holoParent(4,E) 
+
+holoCreate(5)
+holoModel(5,"hq_tube_thin") 
+holoMaterial(5,"models/props_combine/portalball001_sheet")
+holoParent(5,E) 
+holoAng(5,ang(180,0,0))
+holoScaleUnits(5,vec(30,30,200))
+holoPos(5,E:toWorld(vec(0,36,95)))
+
+On = 0
+Up = 0
+MaxDist = 18
+MaxHolo = 10
+P6 = 5
+
+for(P3=1,MaxHolo){
+holoCreate(P3+5)
+holoModel(P3+5,"cube") 
+holoParent(P3+5,E) 
+holoColor(P3+5,vec(1,1,1))
+holoScaleUnits(P3+5,vec(1,1,1))
+holoAlpha(P3+5,0)
+holoPos(P3+5,E:toWorld(vec(0,36,P3*MaxDist)))    
+}
+}
+
+Chat = owner():lastSaid():explode(" ")
+
+if (chatClk(owner())){
+if(Chat[1,string] == "-on"& On == 0){
+On = 1
+hideChat(1)
+E:soundPlay(12,12,"buttons/lever1.wav")
+}
+
+if(Chat[1,string] == "-off" & On == 1){
+On = 0
+hideChat(1)
+E:soundPlay(142,142,"ambient/machines/thumper_shutdown1.wav")
+E:soundPlay(12,12,"buttons/lever8.wav")
+}
+
+if(Chat[1,string] == "-rev" & On == 1){
+Rever = Chat[2,string]:toNumber()
+hideChat(1)
+E:soundPlay(12,12,"buttons/button14.wav")
+}
+
+}
+
+if(On){
+
+findExcludeEntity(E)
+findByClass("prop_physics")
+#findByClass("prop_vehicle_prisoner_pod")
+findIncludePlayerProps(entity(5))
+findIncludePlayerProps(owner())
+
+Props = findToArray()
+
+if(Oki == 0){
+timer("hold",400)
+if(clk("hold")){
+Oki = 1 
+stoptimer("hold")   
+}
+}
+
+if(Oki){
+for(I=1,Props:count()){
+if(Props[I,entity]:pos():distance(holoEntity(6):pos()) <= MaxDist | Props[I,entity]:pos():distance(holoEntity(7):pos()) <= MaxDist | Props[I,entity]:pos():distance(holoEntity(8):pos()) <= MaxDist | Props[I,entity]:pos():distance(holoEntity(9):pos()) <= MaxDist| Props[I,entity]:pos():distance(holoEntity(10):pos()) <= MaxDist| Props[I,entity]:pos():distance(holoEntity(11):pos()) <= MaxDist|Props[I,entity]:pos():distance(holoEntity(12):pos()) <= MaxDist |Props[I,entity]:pos():distance(holoEntity(13):pos()) <= MaxDist |Props[I,entity]:pos():distance(holoEntity(14):pos()) <= MaxDist |Props[I,entity]:pos():distance(holoEntity(15):pos()) <= MaxDist ){
+Inside[I,entity] = Props[I,entity]   
+}else{
+Inside:remove(I)
+}   
+}
+}
+
+
+
+for(I2=1,Inside:count()){
+    
+if(Rever == 0){
+Inside[I2,entity]:setPos(Inside[I2,entity]:pos()-holoEntity(5):up()/2)  
+}
+if(Rever == 1){
+Inside[I2,entity]:setPos(Inside[I2,entity]:pos()+holoEntity(5):up()/2)  
+}
+}
+
+
+### EFFECT ###
+holoAlpha(5,255)  
+ 
+if(Rever == 0){ 
+Spin=1
+}else{
+Spin=-1
+}
+
+if(Rever){
+holoColor(5,vec(255,0,0))    
+}else{
+holoColor(5,vec(1,212,255))
+}
+
+holoAng(1,holoEntity(1):toWorld(ang(0,Spin,0)))
+holoAng(2,holoEntity(2):toWorld(ang(0,-Spin,0)))
+
+holoPos(3,E:toWorld(vec(0,-10,-4)))
+
+if(Onc == 1){
+timer("music",46600)  
+if(clk("music")){
+Onc = 0    
+}  
+}
+
+if(Onc == 0){
+Onc = 1
+holoEntity(5):soundPlay(100,1000,"music/portal_subject_name_here.mp3") 
+}
+  
+}else{
+holoAlpha(5,0)
+Onc = 0
+Oki = 0
+soundStop(100)
+}
+

@@ -1,0 +1,55 @@
+@name FailCake ApertureLaser
+@persist [E]:entity GTABLE:gtable
+@trigger all
+@model models/hunter/blocks/cube025x025x025.mdl
+
+interval(100)
+
+if(first() | duped()){
+    
+E = entity()   
+E:setSkin(1)
+
+GTABLE = gTable("ApertureLaser",2)
+
+ 
+GTABLE:clear()
+
+
+
+holoCreate(1)
+holoModel(1,"hqcylinder")
+holoPos(1,E:toWorld(vec(0,0,10)))
+holoColor(1,vec(200,0,0))
+holoScaleUnits(1,vec(-1,-1,-10))
+holoParent(1,E)
+holoMaterial(1,"models/debug/debugwhite")
+ 
+holoCreate(2)
+holoModel(2,"hqcylinder")
+holoPos(2,E:toWorld(vec(0,0,10)))
+holoColor(2,vec(150,0,0))
+holoScaleUnits(2,vec(1,1,10))
+holoParent(2,E)
+holoMaterial(2,"models/debug/debugwhite")
+
+}
+
+
+Ranger = rangerOffset(400,E:pos(),E:up())
+D=round(Ranger:distance())
+holoPos(1, E:toWorld(vec(0,0,8))+E:up()*D/2)
+holoScaleUnits(1, vec(-1,-1,-D))
+holoPos(2, E:toWorld(vec(0,0,8))+E:up()*D/2)
+holoScaleUnits(2, vec(0.5,0.5,-D))
+
+if(Ranger:hit() && Ranger:entity():type() == "gmod_wire_expression2" && Ranger:entity():model()=="models/hunter/blocks/cube025x025x025.mdl"){
+GTABLE["On_"+Ranger:entity():id(),number] = 1  
+}
+
+
+
+
+
+
+

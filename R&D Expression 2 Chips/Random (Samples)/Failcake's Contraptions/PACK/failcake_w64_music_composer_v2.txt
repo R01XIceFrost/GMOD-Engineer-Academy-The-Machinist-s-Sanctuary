@@ -1,0 +1,729 @@
+@name FailCake W64 Music Composer V2 Beta
+@inputs Keys User:entity InUse EGP:wirelink
+@persist [O E]:entity [Music Sound Gta]:string [Ksy Pitchs]:table [Say]:array
+@persist Record [Rec File]:string F Encode Loads TEMPC:array Dr:entity Decode PV Tempo Splo:array Loop TEMP:string DTEMP:string NewTempo [Saves Saves2]:array Load Save K Spam Play
+@persist [Sc Info Pos]:array Act Ma Reset SS DD D Nos Name:string Creator:string
+@persist Clear MaxIndex Lengs MaxPage Decods Page Content:array Str:string RecTemp:string
+@persist LastPage FinalPage
+@trigger all  
+interval(100) # Lower Ops
+
+if(first()){
+runOnChat(1)
+runOnFile(1)
+# Made By FailCake 
+O = owner()
+E = entity() 
+Sound = "synth/triangle_440.wav"
+Tempo = 500 ## default tempo
+Play = 0
+Spam = 0
+K = 1
+Lengs = 0
+LasSec = 0
+Nos = 0
+Ma = 1 
+D = 0
+DD = 0
+SS = 0
+Page = 1
+Reset = 0
+MaxPage = 1
+EGP:egpClear()
+Name = "No Title"
+Creator = "Nobody"
+
+EGP:egpRoundedBox(1,vec2(230,35),vec2(450,50))
+EGP:egpRoundedBoxOutline(2,vec2(230,35),vec2(450,50))
+EGP:egpColor(1,vec4(0,26,71,255))
+
+EGP:egpText(3,"Title : "+Name,vec2(10,20))
+EGP:egpFont(3,"Verdana",30)
+
+EGP:egpBox(4,vec2(230,75),vec2(400,30))
+EGP:egpBoxOutline(5,vec2(230,75),vec2(400,30))
+EGP:egpColor(4,vec4(0,26,71,255))
+
+EGP:egpText(6,"Creator : " + Creator,vec2(40,65))
+EGP:egpFont(6,"Verdana",20)
+
+EGP:egpRoundedBox(7,vec2(485,35),vec2(45,45))
+EGP:egpRoundedBoxOutline(8,vec2(485,35),vec2(45,45))
+EGP:egpColor(7,vec4(0,26,71,255))
+
+EGP:egpCircle(9,vec2(485,35),vec2(10,10)) #REC
+EGP:egpCircleOutline(10,vec2(485,35),vec2(10,10)) #REC
+EGP:egpColor(9,vec4(255,0,0,255))
+EGP:egpColor(10,vec4(1,1,1,255))
+EGP:egpAlpha(9,0)
+EGP:egpAlpha(10,0)
+# Made By FailCake 
+EGP:egpRoundedBox(17,vec2(255,275),vec2(490,350))
+EGP:egpColor(17,vec4(20,20,20,255))
+
+EGP:egpRoundedBoxOutline(11,vec2(255,275),vec2(490,350))
+EGP:egpColor(11,vec4(255,255,255,255))
+
+EGP:egpBox(12,vec2(255,480),vec2(100,30))
+EGP:egpBoxOutline(13,vec2(255,480),vec2(100,30))
+EGP:egpColor(12,vec4(0,26,71,255))
+
+EGP:egpText(14,Tempo:toString()+"ms",vec2(230,470))
+EGP:egpFont(14,"Verdana",20)
+
+EGP:egpTriangle(15,vec2(475,20),vec2(475,50),vec2(500,35))
+EGP:egpTriangleOutline(16,vec2(475,20),vec2(475,50),vec2(500,35))
+EGP:egpColor(15,vec4(0,255,0,255))
+
+EGP:egpBox(18,vec2(370,480),vec2(120,30))
+EGP:egpBoxOutline(19,vec2(370,480),vec2(120,30))
+EGP:egpColor(18,vec4(0,26,71,255))
+
+EGP:egpText(20,Lengs:toString() + " Length",vec2(320,470))
+EGP:egpFont(20,"Verdana",20)
+
+EGP:egpText(14,Tempo:toString()+"ms",vec2(230,470))
+EGP:egpFont(14,"Verdana",20)
+
+EGP:egpText(21,"* Loading File! *",vec2(80,250))
+EGP:egpFont(21,"Verdana",50)
+
+EGP:egpAlpha(21,0)
+EGP:egpAlpha(15,0)
+EGP:egpAlpha(16,0)
+
+EGP:egpBox(22,vec2(100,480),vec2(120,30))
+EGP:egpBoxOutline(23,vec2(100,480),vec2(120,30))
+EGP:egpColor(22,vec4(0,26,71,255))
+
+EGP:egpText(24,"Page "+Page+"/"+MaxPage,vec2(50,470))
+EGP:egpFont(24,"Verdana",20)
+
+MaxIndex = 24
+
+Ksy["32",string] = " "
+Ksy["97",string] = "a"
+Ksy["98",string] = "b"
+Ksy["99",string] = "c"
+Ksy["100",string] = "d"
+Ksy["101",string] = "e"
+Ksy["102",string] = "f"
+Ksy["103",string] = "g"
+Ksy["104",string] = "h"
+Ksy["105",string] = "i"
+Ksy["106",string] = "j"
+Ksy["107",string] = "k"
+Ksy["108",string] = "l"
+Ksy["109",string] = "m"
+Ksy["110",string] = "n"
+Ksy["111",string] = "o"
+Ksy["112",string] = "p"
+Ksy["113",string] = "q"
+Ksy["114",string] = "r"
+Ksy["115",string] = "s"
+Ksy["116",string] = "t"
+Ksy["118",string] = "v"
+Ksy["117",string] = "u"
+Ksy["120",string] = "x"
+Ksy["122",string] = "z"
+Ksy["45",string] = "-"
+Ksy["46",string] = "."
+Ksy["95",string] = "_"
+Ksy["44",string] = ","
+Ksy["49",string] = "1"
+Ksy["51",string] = "3"
+Ksy["52",string] = "4"
+Ksy["53",string] = "5"
+Ksy["54",string] = "6"
+Ksy["55",string] = "7"
+Ksy["56",string] = "8"
+Ksy["57",string] = "9"
+Ksy["48",string] = "0"
+Ksy["123",string] = "?"
+Ksy["47",string] = "~"
+Ksy["36",string] = "$"
+# Made By FailCake 
+### PITCH
+FinalPage = 1
+
+Pitchs[" ",number] = 0
+Pitchs["a",number] = 59
+Pitchs["b",number] = 60
+Pitchs["c",number] = 61
+Pitchs["d",number] = 62
+Pitchs["e",number] = 63
+Pitchs["f",number] = 64
+Pitchs["g",number] = 65
+Pitchs["h",number] = 66
+Pitchs["i",number] = 67
+Pitchs["j",number] = 68
+Pitchs["k",number] = 69
+Pitchs["l",number] = 70
+Pitchs["m",number] = 71
+Pitchs["n",number] = 72
+Pitchs["o",number] = 73
+Pitchs["p",number] = 74
+Pitchs["q",number] = 75
+Pitchs["r",number] = 76
+Pitchs["s",number] = 77
+Pitchs["t",number] = 78
+Pitchs["v",number] = 79
+Pitchs["u",number] = 80
+Pitchs["x",number] = 81
+Pitchs["z",number] = 82
+Pitchs["-",number] = 83
+Pitchs[".",number] = 84
+Pitchs["_",number] = 85
+Pitchs[",",number] = 86
+Pitchs["1",number] = 87
+Pitchs["3",number] = 88
+Pitchs["4",number] = 89
+Pitchs["5",number] = 90
+Pitchs["6",number] = 91
+Pitchs["7",number] = 92
+Pitchs["8",number] = 93
+Pitchs["9",number] = 94
+Pitchs["0",number] = 95
+Pitchs["?",number] = 96
+Pitchs["~",number] = 0
+Pitchs["$",number] = 0
+## INFO FOR CONSOLE
+# Made By FailCake 
+Info[Info:count() + 1,string] = "Space = Nothing"
+Info[Info:count() + 1,string] = "A = C"
+Info[Info:count() + 1,string] = "B = C#"
+Info[Info:count() + 1,string] = "C = D"
+Info[Info:count() + 1,string] = "D = D#"
+Info[Info:count() + 1,string] = "E = E"
+Info[Info:count() + 1,string] = "F = F"
+Info[Info:count() + 1,string] = "G = F#"
+Info[Info:count() + 1,string] = "H = G"
+Info[Info:count() + 1,string] = "I = G#"
+Info[Info:count() + 1,string] = "J = A"
+Info[Info:count() + 1,string] = "K = A#"
+Info[Info:count() + 1,string] = "L = B"
+Info[Info:count() + 1,string] = "M = C"
+Info[Info:count() + 1,string] = "N = C#"
+Info[Info:count() + 1,string] = "O = D"
+Info[Info:count() + 1,string] = "P = D#"
+Info[Info:count() + 1,string] = "Q = E"
+Info[Info:count() + 1,string] = "R = F"
+Info[Info:count() + 1,string] = "S = F#"
+Info[Info:count() + 1,string] = "T = G"
+Info[Info:count() + 1,string] = "U = G#"
+Info[Info:count() + 1,string] = "V = A"
+Info[Info:count() + 1,string] = "X = A#"
+Info[Info:count() + 1,string] = "Z = B"
+Info[Info:count() + 1,string] = "- = C HOME"
+Info[Info:count() + 1,string] = ". = C#"
+Info[Info:count() + 1,string] = "_ = D"
+Info[Info:count() + 1,string] = ", = D#"
+Info[Info:count() + 1,string] = "1 = E"
+Info[Info:count() + 1,string] = "3 = F"
+Info[Info:count() + 1,string] = "4 = F#"
+Info[Info:count() + 1,string] = "5 = G"
+Info[Info:count() + 1,string] = "6 = G#"
+Info[Info:count() + 1,string] = "7 = A"
+Info[Info:count() + 1,string] = "8 = A#"
+Info[Info:count() + 1,string] = "9 = B"
+Info[Info:count() + 1,string] = "0 = C"
+Info[Info:count() + 1,string] = "? = C#"
+Info[Info:count() + 1,string] = "~ = Quater note"
+Info[Info:count() + 1,string] = "$ = Half note"
+
+}
+
+# Made By FailCake 
+if(changed(InUse) & InUse){
+Dr = User:driver()
+Dr:printColorDriver(vec(255,255,255),"Notes Printed to your Console!")
+Dr:printColorDriver(vec(255,0,0),"If you can't see them, enable concmd!")
+for(FG = 1,Info:count()){
+concmd("echo "+Info[FG,string])    
+}    
+}
+
+
+
+
+if(chatClk(O)){
+Say = O:lastSaid():explode(" ") 
+
+if(Say[1,string] == "-save" & Save == 0 & Load == 0){
+hideChat(1)
+File = Say[2,string] 
+
+if(File:length() > 0){  
+Save = 1 
+}
+
+} 
+
+if(Say[1,string] == "-play" & DD == 0 & Save == 0 & Load == 0 & Rec != ""){
+soundPurge()
+Sc:clear()
+Clear = 1
+Page = 1
+Pos:clear()
+hint("* Playing Music! *",7)
+E:soundPlay(0,0,Sound)
+Play = 1 
+hideChat(1)  
+K = 1  
+Nos = 0
+EGP:egpText(24,"Page "+Page+"/"+MaxPage,vec2(50,470))
+EGP:egpFont(24,"Verdana",20)
+}# Made By FailCake 
+
+if(Say[1,string] == "-loop"){
+Loop = Say[2,string]:toNumber() 
+hideChat(1)
+hint("* Loop : "+Loop+" *",7)   
+}
+
+if(Say[1,string] == "-title"){
+hideChat(1)   
+Name = ""
+
+for(KGG = 1,Say:count()){ 
+Name = Name + " " +Say[KGG+1,string]
+
+if(KGG >= Say:count()){
+hint("* Title Set To : "+Name+" *",7)  
+EGP:egpText(3,"Title :"+Name,vec2(10,20))
+EGP:egpFont(3,"Verdana",30)  
+break   
+}
+}
+
+}
+
+if(Say[1,string] == "-clean" & Rec != ""){
+Rec = ""
+Content:clear()
+Clear = 1
+hideChat(1)
+hint("* Cleaned Record *",7)   
+}
+
+if(Say[1,string] == "-load" & Save == 0 & Load == 0 & Play == 0 ){
+File = Say[2,string] 
+K = 1  
+hideChat(1)
+if(File:length() > 0){
+Load = 1
+}
+}
+
+if(Say[1,string] == "-tempo" & Save == 0 & Load == 0 & Play == 0 ){
+if(Say[2,string]:toNumber() >= 175 & Say[2,string]:toNumber() <= 999){
+Tempo = Say[2,string]:toNumber() 
+hint("* Tempo : "+Tempo+" *",7)  
+hideChat(1)
+EGP:egpText(14,Tempo:toString()+"ms",vec2(230,470))
+EGP:egpFont(14,"Verdana",20)
+}
+}  
+# Made By FailCake 
+if(Say[1,string] == "-record" & Record == 0 & Save == 0 & Load == 0){
+Record = 1  
+hideChat(1)
+E:soundPlay(34,0,"buttons/combine_button7.wav")
+Creator = User:name()
+Name = "No Title"
+if(Creator == ""){
+Creator = O:name()    
+}
+
+EGP:egpText(6,"Creator : " + Creator,vec2(40,65))
+EGP:egpFont(6,"Verdana",20)
+hint("* Recording! *",7)
+} 
+
+if(Say[1,string] == "-stoprec" & Record == 1 & Save == 0 & Load == 0 & Encode == 0){
+Clear = 1
+Record = 0 
+Content:clear()
+print(Rec)
+hideChat(1)
+soundPurge()
+EGP:egpAlpha(9,0)
+EGP:egpAlpha(10,0)
+E:soundPlay(34,0,"buttons/combine_button_locked.wav")
+hint("* Stoped Recording! *",7)
+}
+ 
+if(Say[1,string] == "-stop" & Play == 1 & Save == 0 & Load == 0){
+Loop = 0
+Clear = 1
+Play = 0
+DD = 0
+Reset = 1
+hideChat(1)
+soundPurge()
+hint("* Stoped Playing! *",7)
+}
+ # Made By FailCake 
+}
+if(Play == 0){
+if(changed(Keys) & Keys){
+if(Ksy[Keys:toString(),string] | Keys == 127 | Keys == 19 | Keys == 20){
+Note = Ksy[Keys:toString(),string]  
+
+if(Note == "~") {NewTempo = Tempo / 4} # Quater note
+if(Note == "$") {NewTempo = Tempo / 2} # Half note
+  
+ 
+if(Record == 1){ 
+Lengs = Rec:length()
+EGP:egpText(20,Lengs:toString() + " Length",vec2(320,470))
+EGP:egpFont(20,"Verdana",20)    
+
+if(Keys == 19){ # Arrow 
+if(Page > 1 & Decods == 0){
+    
+if(Page == MaxPage){
+LastPage = Page   
+if(Page == LastPage){
+FinalPage = Page
+Content[Page,string] = RecTemp
+}
+
+Page -= 1  
+Decods = 1   
+Clear = 1 
+}else{
+Page -= 1  
+Decods = 1 
+Clear = 1 
+}
+ 
+}   
+}
+
+if(Keys == 20){
+
+if(Page < MaxPage & Decods == 0){
+Page+=1
+Decods = 1
+Clear = 1
+}
+     
+}    
+
+  # Made By FailCake 
+EGP:egpText(24,"Page "+Page+"/"+MaxPage,vec2(50,470))
+EGP:egpFont(24,"Verdana",20)
+
+
+if(Keys != 127 & Keys != 19 & Keys != 20 ){  
+Rec = Rec + Ksy[Keys:toString(),string]
+RecTemp = RecTemp + Ksy[Keys:toString(),string]
+
+EGP:egpText(20,Rec:length():toString() + " Length",vec2(320,470))
+EGP:egpFont(20,"Verdana",20)  
+
+if(SS < 47 ){ 
+SS += 1
+Content[Page,string] = RecTemp
+}else{
+Content[Page,string] = RecTemp
+SS = 1
+RecTemp = ""
+Page +=1
+MaxPage +=1
+Clear = 1
+FinalPage = Page
+}
+
+
+EGP:egpText(SS+MaxIndex,Ksy[Keys:toString(),string],vec2(SS*10+10,Pitchs[Ksy[Keys:toString(),string],number]*7-270))  
+EGP:egpFont(SS+MaxIndex,"Verdana",20) 
+EGP:egpColor(SS+MaxIndex,hsv2rgb(Pitchs[Ksy[Keys:toString(),string],number]*7,1,1))
+
+
+}elseif(Keys == 127){
+
+if(SS > 0){
+    
+if(Page != FinalPage){
+    
+if(MaxPage == 1){
+FinalPage = 1  
+}else{
+Clear = 1
+Decods = 1 
+}
+
+Page = FinalPage
+
+}else{
+
+Rec = Rec:left(Rec:length() - 1)
+RecTemp = RecTemp:left(RecTemp:length() - 1)
+Content[Page,string] = RecTemp
+RecTemp = ""
+SS-=1
+EGP:egpRemove(SS+MaxIndex + 1)
+EGP:egpText(20,Rec:length():toString() + " Length",vec2(320,470))
+EGP:egpFont(20,"Verdana",20)  
+
+}
+
+EGP:egpText(24,"Page "+Page+"/"+MaxPage,vec2(50,470))
+EGP:egpFont(24,"Verdana",20)  
+}
+
+if(SS <= 0 & MaxPage > 1){
+SS = 48
+Page-=1
+MaxPage-=1
+FinalPage = Page
+
+Clear = 1
+Decods = 1  
+}
+
+}
+# Made By FailCake 
+}           
+if(Keys != 127 & Keys != 20 & Keys != 19){
+E:soundPlay(0,0,Sound)
+
+soundPitch(0,2^(Pitchs[Note,number]/12))
+timer("stop",300)
+}
+}
+}
+setName("W64 Music Composer ["+Note+"]")
+}
+if(clk("stop")){
+soundStop(0)    
+}
+if(Play == 1 & Rec:length() > 1 & Nos == 0){
+timer("Tesd",Tempo)
+Nos = 1
+Act = Rec:length() - 1
+}
+
+if(clk("Tesd")){
+  
+if(K <= Rec:length()){    
+K+=1  
+Sc:pushString(Rec[K])
+Pos:pushNumber(500)
+}else{
+if(Loop == 0){ 
+Play = 0
+soundPurge()
+hint("* Playback Done! *",7)
+stoptimer("Tesd")
+}
+}
+Note = Rec[K]
+if(Note == "~") {NewTempo = Tempo / 4} # Quater note
+if(Note == "$") {NewTempo = Tempo / 2} # Half note 
+soundPitch(0,2^(Pitchs[Note,number]/12))
+if(Play == 1){   
+if(Note == "~" | Note == "$"){    
+timer("Tesd",NewTempo)
+}else{
+timer("Tesd",Tempo)
+}
+} 
+setName("FailCake W64 Music Composer ["+Note+"]")
+} 
+if(Save == 1){
+Gta = Rec + "\n" + Tempo:toString() + "\n" + Name + "\n" + Creator
+fileWrite(">e2shared/" + File + ".txt",Gta)
+hint("File : "+ File + ".txt Saved!",7)
+Save = 0  
+reset()  
+}
+
+if(Load == 1){
+EGP:egpAlpha(21,255)        
+if(fileCanLoad()){
+fileLoad(">e2shared/" +File+".txt")
+Load = 3  
+}
+# Made By FailCake 
+}
+if(fileClk() & Load == 3){
+    
+if(fileStatus() == _FILE_OK){
+hint("* File Found! *",7)
+Load = 2   
+}elseif(fileStatus() == _FILE_UNKNOWN){
+hint("* File Unkown! *",7)
+EGP:egpAlpha(21,0)
+Load = 0
+}elseif(fileStatus() == _FILE_TIMEOUT){
+hint("* File Timeout! *",7)
+EGP:egpAlpha(21,0)
+Load = 0
+}elseif(fileStatus() == _FILE_404){
+hint("* File Not Found! *",7)
+EGP:egpAlpha(21,0)
+Load = 0
+}elseif(fileStatus() == _FILE_TRANSFER_ERROR){
+hint("* File Transfer Error! *",7)
+EGP:egpAlpha(21,0)
+Load = 0
+}  
+}
+
+if(Load == 2){
+    
+if(fileLoaded() & fileStatus() == _FILE_OK){
+
+hint(File + ".txt Loaded!",7)
+
+Load = 0  
+Saves = fileRead():explode("\n")
+Rec = Saves[1,string]
+Saves[2,string]:replace(" ","") # Remove spaces...
+
+if(!Saves[2,string]:toNumber() == 0){
+Tempo = Saves[2,string]:toNumber()
+}else{
+Tempo = 500
+}# Made By FailCake 
+
+if(Name != ""){
+Name = Saves[3,string]
+}
+
+if(Creator != ""){
+Creator = Saves[4,string]
+}
+
+Lengs = Saves[1,string]:length()
+
+EGP:egpText(14,Tempo:toString()+"ms",vec2(230,470))
+EGP:egpFont(14,"Verdana",20)
+
+EGP:egpText(3,"Title : "+Name,vec2(10,20))
+EGP:egpFont(3,"Verdana",30)
+
+EGP:egpText(6,"Creator : " + Creator,vec2(40,65))
+EGP:egpFont(6,"Verdana",20)
+
+EGP:egpText(20,Lengs:toString() + " Length",vec2(320,470))
+EGP:egpFont(20,"Verdana",20)
+
+EGP:egpAlpha(21,0)
+}
+}
+
+
+# Made By FailCake 
+if(Act > -1 & Clear == 0){
+for(F = Ma+1,Sc:count()){
+Pos[F,number] = Pos[F,number] - 20
+
+if(Pos[F,number] <= 20){
+EGP:egpRemove(F+MaxIndex - 1)
+Act-=1
+Ma+=1
+}
+
+if(Act > 0){
+DD = 1    
+}elseif(Act <= 0){
+DD = 0
+Reset = 1 
+}
+
+EGP:egpText(F+MaxIndex,Sc[F,string],vec2(Pos[F,number],Pitchs[Rec[F],number]*7-270))  
+EGP:egpFont(F+MaxIndex,"Verdana",20) 
+EGP:egpColor(F+MaxIndex,hsv2rgb(Pitchs[Rec[F],number]*7,1,1))
+
+}
+}
+
+if(Reset == 1){    
+
+Sc:clear()
+Pos:clear()
+F = 1
+Ma = 1
+Act = -2
+Stop = 0
+if(Loop == 1){
+K = 1
+Act = Rec:length() - 1
+}
+# Made By FailCake 
+Reset = 0
+}
+
+if(Record | Play){
+timer("beelp",500)
+
+if(clk("beelp")){
+D = !D
+if(D == 1){
+if(Record){
+EGP:egpAlpha(9,255)
+EGP:egpAlpha(10,255)  
+}else{
+EGP:egpAlpha(15,255)
+EGP:egpAlpha(16,255)
+}  
+}else{
+if(Record){
+EGP:egpAlpha(9,0)
+EGP:egpAlpha(10,0) 
+}else{
+EGP:egpAlpha(15,0)
+EGP:egpAlpha(16,0)
+}
+}
+} 
+   
+}else{
+EGP:egpAlpha(15,0)
+EGP:egpAlpha(16,0)
+}
+# Made By FailCake 
+if(Clear == 1){
+for(DF = 1,Rec:length()){
+EGP:egpRemove(DF + MaxIndex)
+
+if(DF >= Rec:length()){
+Clear = 0
+break    
+}    
+}    
+}
+
+
+
+
+
+# Made By FailCake 
+if(Decods == 1){ 
+Str = Content[Page,string]
+
+for(FDS = 1,Str:length()){
+    
+EGP:egpText(FDS+MaxIndex,Str[FDS],vec2(FDS*10+10,Pitchs[Str[FDS],number]*7-270))  
+EGP:egpFont(FDS+MaxIndex,"Verdana",20) 
+EGP:egpColor(FDS+MaxIndex,hsv2rgb(Pitchs[Str[FDS],number]*7,1,1))
+
+if(FDS >= Str:length()){
+Decods = 0  
+break   
+}
+
+}
+
+
+}
+
+# Made By FailCake 
+
+
+
+

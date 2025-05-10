@@ -1,0 +1,471 @@
+@name FailCake HeliChair
+@inputs Active Seat:wirelink Driv:entity
+@outputs Eject
+@persist Ops [Chair E]:entity P Rot Out Speed Driver:entity Df:entity Angfg Speedy Onc MaxSpeed Fire Aim:vector Ang Up Forward:vector Backward:vector 
+@persist AllowFly Musics:array Vector:vector OwnerOnly FirstAng:angle In Rdy Follow Vect2:vector Vect3:vector Timeout2 Float:vector Timeout [Rocket1 Rocket2]:entity
+@persist Dos InSpeed
+@trigger all
+runOnTick(1)
+
+W = Seat:number("W")
+S = Seat:number("S")
+A = Seat:number("A")
+D = Seat:number("D")
+
+Driver = Driv:driver()
+#Made By FailCake
+Ops = ops()
+Shoot = Seat:number("Mouse1")
+StartIt = Seat:number("R")
+Active = Seat:number("Active")
+Shift = Seat:number("Mouse2")
+Attack = Seat:number("Space")
+Beep = Seat:number("Shift")
+
+Music = Seat:number("Alt")
+
+#### SETTING ####
+
+OwnerOnly = 0
+
+#### SETTING ####
+
+
+
+if(first() | duped()){
+E = entity()
+#propSpawnEffect(0)
+
+Chair = E:isWeldedTo()
+Chair:soundPlay(100,100,"ambient/machines/machine1_hit2.wav")
+Chair:setMass(100)
+Eject = 0
+if(Chair:type() != "prop_vehicle_prisoner_pod"){
+hint("* [Error] Please Place the E2 at a Chair. *",7)
+selfDestructAll()    
+}else{
+hint("* Chair Validated! *",7)
+}
+
+Musics[0,string] = "music/hl2_song20_submix0.mp3"
+Musics[1,string] = "music/hl2_song20_submix4.mp3"
+Musics[2,string] = "music/hl2_song29.mp3"
+Musics[3,string] = "music/hl2_song31.mp3"
+Musics[4,string] = "music/hl2_song6.mp3"
+Musics[5,string] = "music/hl2_song30.mp3"
+
+FirstAng = Chair:angles()
+
+MaxSpeed = 40
+hint("Made By FailCake",7)
+holoCreate(1)
+holoModel(1,"models/props_docks/dock01_pole01a_128.mdl")
+holoParent(1,E)
+holoPos(1,E:toWorld(vec(-20,1.3,5.8)))
+holoAng(1,ang(0,90,0))
+holoScaleUnits(1,vec(3,3,40))
+ 
+holoCreate(2)
+holoModel(2,"models/props_c17/TrapPropeller_Blade.mdl")
+holoParent(2,E)
+holoPos(2,E:toWorld(vec(-33.8,1.3,4.5)))
+holoAng(2,ang(0,90,0))
+holoScaleUnits(2,vec(100,130,10)) 
+
+holoCreate(3)
+holoModel(3,"models/props_c17/TrapPropeller_Blade.mdl")
+holoParent(3,E)
+holoPos(3,E:toWorld(vec(-33.8,1.3,4.5)))
+holoAng(3,ang(0,-90,0))
+holoScaleUnits(3,vec(100,130,10)) 
+
+holoCreate(9)
+holoModel(9,"models/props_c17/TrapPropeller_Blade.mdl")
+holoParent(9,E)
+holoPos(9,E:toWorld(vec(-33.8,1.3,4.5)))
+holoAng(9,ang(0,0,0))
+holoScaleUnits(9,vec(100,130,10)) 
+
+holoCreate(10)
+holoModel(10,"models/props_c17/TrapPropeller_Blade.mdl")
+holoParent(10,E)
+holoPos(10,E:toWorld(vec(-33.8,1.3,4.5)))
+holoAng(10,ang(0,180,0))
+holoScaleUnits(10,vec(100,130,10)) 
+
+holoCreate(4)
+holoModel(4,"models/props_c17/TrapPropeller_Engine.mdl")
+holoParent(4,E)
+holoScaleUnits(4,vec(16,16,18))
+holoPos(4,E:toWorld(vec(0,0,4.2)))
+holoAng(4,ang(0,-90,0))
+
+holoCreate(5)
+holoModel(5,"models/weapons/W_missile_launch.mdl")
+holoParent(5,E)
+holoPos(5,E:toWorld(vec(10,15,-13)))
+holoAng(5,ang(0,-90,0))
+
+holoCreate(6)
+holoModel(6,"models/weapons/W_missile_launch.mdl")
+holoParent(6,E)
+holoPos(6,E:toWorld(vec(10,-15,-13)))
+holoAng(6,ang(0,-90,0))
+
+holoCreate(7)
+holoModel(7,"models/props_docks/dock01_pole01a_128.mdl")
+holoParent(7,E)
+holoPos(7,E:toWorld(vec(10,-12,-13)))
+holoScaleUnits(7,vec(1,1,8))
+holoAng(7,ang(0,90,90))
+
+holoCreate(8)
+holoModel(8,"models/props_docks/dock01_pole01a_128.mdl")
+holoParent(8,E)
+holoPos(8,E:toWorld(vec(10,12,-13)))
+holoScaleUnits(8,vec(0.8,0.8,5.5))
+holoAng(8,ang(0,90,90))
+
+holoCreate(11)
+holoModel(11,"models/props_vehicles/carparts_muffler01a.mdl")
+holoParent(11,E)
+holoPos(11,E:toWorld(vec(7.5,6,7)))
+holoScaleUnits(11,vec(15,5,4))
+holoAng(11,ang(0,90,90))
+
+holoCreate(12)
+holoModel(12,"models/props_junk/TrafficCone001a.mdl")
+holoParent(12,E)
+holoPos(12,E:toWorld(vec(-40.5,1,3.5)))
+holoScaleUnits(12,vec(7,7,10))
+holoAng(12,ang(0,0,0))
+
+holoCreate(13)
+holoModel(13,"models/props_junk/sawblade001a.mdl")
+holoParent(13,E)
+holoPos(13,E:toWorld(vec(-35.7,1,4)))
+holoScaleUnits(13,vec(20,20,1))
+holoAng(13,ang(0,0,0))
+
+holoCreate(15)
+holoModel(15,"models/props_junk/sawblade001a.mdl")
+holoParent(15,E)
+holoPos(15,E:toWorld(vec(-34.9,1,4)))
+holoScaleUnits(15,vec(20,20,1))
+holoAng(15,ang(0,0,0))
+
+holoCreate(14)
+holoColor(14,vec(0,255,0))
+holoModel(14,"hqicosphere")
+holoScaleUnits(14,vec(5,5,5))
+
+holoCreate(16)
+holoModel(16,"models/props_c17/pulleywheels_small01.mdl")
+holoParent(16,E)
+holoPos(16,E:toWorld(vec(-33,1.3,4.9)))
+holoScaleUnits(16,vec(6,8,8))
+holoAng(16,ang(90,0,0))
+
+Timeout = 0
+Speed = 0.1
+StartIt = 0
+Timeout2 = 0
+Rdy = 0
+
+E:soundPlay(1,0,"npc/combine_gunship/dropship_engine_near_loop1.wav")
+E:soundPlay(2,0,"npc/combine_gunship/engine_rotor_loop1.wav")  
+E:soundPlay(3,0,"npc/combine_gunship/engine_whine_loop1.wav") 
+
+
+}
+
+
+if(StartIt & Timeout2 == 0){
+Timeout2 = 1  
+Angfg = 1 
+if(Rdy == 1){
+Rdy = 0  
+}else{
+Rdy = 1    
+}
+ 
+}
+
+if(Timeout2){
+timer("hold",700)
+if(clk("hold")){
+Timeout2 = 0   
+}    
+}
+
+if(Active & Rdy == 1){ 
+if(Out){
+timer("bss",500)
+if(clk("bss")){
+Out = 0
+stoptimer("bss")    
+}    
+}
+  
+if(Music & Out == 0){
+Out = 1  
+
+if(P <= Musics:count()){
+P+=1
+}else{
+P = 0
+}
+
+Chair:soundPlay(200,0,Musics[P,string])
+E:soundPlay(201,0,Musics[P,string])  
+ 
+soundVolume(200,Speed*3)
+soundVolume(201,Speed*3)
+}    
+    
+#Made By FailCake 
+holoPos(14,Driver:aimPos())
+holoAlpha(14,255) 
+   
+soundPitch(1,Speed*3)
+soundPitch(2,Speed*3)
+soundPitch(3,Speed*3)
+
+if(Speed == 2){
+holoEntity(11):setTrails(10,10,1,"trails/smoke",vec(5,5,5),255)    
+}
+
+if(Speed <= MaxSpeed){   
+Speed+=0.05
+AllowFly = 0
+}else{
+AllowFly = 1
+}
+
+Angfg = 1
+
+holoAng(3,holoEntity(3):toWorld(ang(0,Speed,0)))
+holoAng(2,holoEntity(2):toWorld(ang(0,Speed,0)))    
+holoAng(9,holoEntity(9):toWorld(ang(0,Speed,0)))
+holoAng(10,holoEntity(10):toWorld(ang(0,Speed,0)))
+holoAng(12,holoEntity(12):toWorld(ang(0,Speed,0)))
+holoAng(13,holoEntity(13):toWorld(ang(0,Speed,0)))
+holoAng(15,holoEntity(15):toWorld(ang(0,Speed,0)))
+holoAng(1,holoEntity(1):toWorld(ang(0,Speed,0)))
+holoAng(16,holoEntity(16):toWorld(ang(0,0,-Speed)))
+## Firing
+
+if(Shoot){
+    
+if(Timeout == 0){
+Timeout = 1 
+E:soundPlay(10,0,"weapons/rpg/rocketfire1.wav")
+
+Rocket1 = propSpawn("models/props_phx/misc/potato_launcher_explosive.mdl",holoEntity(5):pos(),holoEntity(5):angles(),0)    
+Rocket1:setAlpha(0)
+Rocket1:setTrails(10,10,10,"trails/smoke",vec(255,255,255),255)
+
+Rocket2 = propSpawn("models/props_phx/misc/potato_launcher_explosive.mdl",holoEntity(6):pos(),holoEntity(6):angles(),0)    
+Rocket2:setAlpha(0)
+Rocket2:setTrails(10,10,10,"trails/smoke",vec(255,255,255),255)
+Aim = Driver:aimPos()
+
+Rocket1:propNotSolid(1)
+Rocket2:propNotSolid(1)  
+
+holoAlpha(5,0)
+holoAlpha(6,0)
+Follow = 0
+Fire = 1
+}
+
+}
+#Made By FailCake
+if(Fire){
+holoColor(14,vec(255,0,0))
+timer("unsa",300)
+if(clk("unsa")){
+Rocket1:propNotSolid(0)
+Rocket2:propNotSolid(0)    
+}    
+    
+timer("wait",3000)
+if(clk("wait")){
+Rocket1:propBreak()
+Rocket2:propBreak()   
+Fire = 0
+Timeout = 0 
+E:soundPlay(23,0,"items/ammo_pickup.wav")
+holoColor(14,vec(0,255,0))
+holoAlpha(5,255)
+holoAlpha(6,255)
+}    
+}
+
+
+if(Fire){
+timer("swich",200)
+
+if(clk("swich")){
+stoptimer("swich") 
+Follow = 1   
+}
+
+if(Follow){
+Vect2 = (Aim - Rocket1:pos())* 1000
+Vect3 = (Aim - Rocket2:pos())* 1000
+
+Rocket1:applyForce(Vect2 + $Vect2*5)
+Rocket2:applyForce(Vect3 + $Vect3*5)
+}else{
+Rocket1:applyForce(Rocket1:forward()*1000)
+Rocket2:applyForce(Rocket1:forward()*1000)
+}
+
+}
+
+if(AllowFly){
+Dos = 0
+
+if(A){
+Ang += 1   
+}
+
+if(D){
+Ang -= 1    
+}
+
+if(W == 0 & S == 0){
+Up = 0
+}
+
+if(W){
+Up = -10
+E:applyForce(Forward*Speedy + $Forward*Speedy) 
+}
+
+if(Shift){
+Speedy = 3000
+InSpeed = 3    
+}else{
+InSpeed = 1.5
+Speedy = 50
+}
+
+#Made By FailCake
+if(S){
+Up = 5 
+E:applyForce(Backward*50 + $Backward*50)   
+}
+
+if(Attack){
+In+=InSpeed  
+}
+if(Beep){
+In-=InSpeed    
+}
+
+#Made By FailCake   
+Forward=(Chair:pos()+Chair:forward()*2 - Chair:pos())
+Backward=(Chair:pos()+Chair:forward()*-2 - Chair:pos())
+
+Float = (vec(Chair:pos():x(),Chair:pos():y(),In)-Chair:pos())*100
+
+E:applyForce(-Chair:vel()/2)
+E:applyForce(Float+$Float*5)
+
+
+TarQ = quat(FirstAng + ang(0,Ang,Up))
+CurQ = quat(Chair)
+Q = TarQ/CurQ
+V = Chair:toLocal(rotationVector(Q)+Chair:pos())
+Chair:applyTorque((200*V - 12*Chair:angVelVector())*Chair:inertia()) 
+}
+}else{
+
+rangerFilter(E)
+rangerFilter(Chair)
+Rang = rangerOffset(2,Chair:pos(),-Chair:up())
+
+if(Rang:hit()){
+Dos = 1    
+}
+
+if(Dos == 1 | Speed < 0){
+In = Chair:pos():z() 
+Angfg = 0   
+}
+
+if(Angfg){
+Float = (vec(Chair:pos():x(),Chair:pos():y(),In)-Chair:pos())*80
+
+E:applyForce(-Chair:vel()/2)
+E:applyForce(Float+$Float*5)
+
+TarQ = quat(FirstAng + ang(0,Ang,Up))
+CurQ = quat(Chair)
+Q = TarQ/CurQ
+V = Chair:toLocal(rotationVector(Q)+Chair:pos())
+Chair:applyTorque((200*V - 12*Chair:angVelVector())*Chair:inertia())     
+}
+
+
+holoAlpha(14,0) 
+
+if(Speed > 0){
+Speed-=0.05    
+}
+
+In = Chair:pos():z()
+holoEntity(11):removeTrails()
+
+soundPitch(1,Speed*3)
+soundPitch(2,Speed*3)
+soundPitch(3,Speed*3)
+
+Rocket1:propBreak()
+Rocket2:propBreak()   
+Fire = 0
+Timeout = 0 
+
+holoAlpha(5,255)
+holoAlpha(6,255)
+
+#Made By FailCake
+Rdy = 0
+
+holoAng(3,holoEntity(3):toWorld(ang(0,Speed,0)))
+holoAng(2,holoEntity(2):toWorld(ang(0,Speed,0)))      
+holoAng(9,holoEntity(9):toWorld(ang(0,Speed,0)))
+holoAng(10,holoEntity(10):toWorld(ang(0,Speed,0)))
+holoAng(12,holoEntity(12):toWorld(ang(0,Speed,0)))
+holoAng(13,holoEntity(13):toWorld(ang(0,Speed,0)))
+holoAng(15,holoEntity(15):toWorld(ang(0,Speed,0)))
+holoAng(1,holoEntity(1):toWorld(ang(0,Speed,0)))
+holoAng(16,holoEntity(16):toWorld(ang(0,0,-Speed)))
+}
+#Made By FailCake   
+
+if(duped()){
+selfDestructAll()    
+}
+
+if(owner() == noentity()){
+selfDestructAll()      
+}
+
+if(Active){
+if(OwnerOnly == 1){
+Df = Driv:driver()    
+if(Df == owner()){
+Eject = 0    
+}else{
+Eject = 1  
+}
+    
+}
+}else{
+Eject = 0
+}
+
+## Made by FailCake!

@@ -1,0 +1,206 @@
+@name FailCake Weathley The Turtle
+@persist [E O]:entity [Death Attach Intro Idle Hacking Hacked Attack Sneak]:array
+@persist IsHolding HasSaidCrouch HasSaidLife
+@trigger all
+
+
+if(first() || duped()){
+runOnTick(1)
+
+E = entity()
+O = owner()
+
+
+holoCreate(1)
+holoModel(1,"models/props/de_tides/vending_turtle.mdl")
+holoPos(1,O:attachmentPos("Chest"))
+holoAng(1,O:attachmentAng("Chest"))
+holoParentAttachment(1,O,"Chest")
+holoPos(1,holoEntity(1):toWorld(vec(-7,0,0)))
+holoAng(1,holoEntity(1):toWorld(ang(0,-90,90)))
+holoAlpha(1,255)
+
+holoCreate(2)
+holoModel(2,"models/props/de_tides/vending_turtle.mdl")
+holoPos(2,O:attachmentPos("anim_attachment_RH"))
+holoAng(2,O:attachmentAng("anim_attachment_RH"))
+holoParentAttachment(2,O,"anim_attachment_RH")
+holoPos(2,holoEntity(2):toWorld(vec(4,4,1)))
+holoAng(2,holoEntity(2):toWorld(ang(0,-120,0)))
+holoAlpha(2,0)
+
+holoCreate(3)
+holoModel(3,"cube")
+holoPos(3,O:toWorld(vec(0,0,30)))
+holoParent(3,O)
+holoAlpha(3,0)
+
+## WEATHLEY DATA SOUNDS ## 
+Death:pushString("vo/items/wheatley_sapper/wheatley_player_death01.wav")
+Death:pushString("vo/items/wheatley_sapper/wheatley_player_death02.wav")
+Death:pushString("vo/items/wheatley_sapper/wheatley_player_death03.wav")
+Death:pushString("vo/items/wheatley_sapper/wheatley_player_death04.wav")
+Death:pushString("vo/items/wheatley_sapper/wheatley_player_death05.wav")
+Death:pushString("vo/items/wheatley_sapper/wheatley_player_death06.wav")
+Death:pushString("vo/items/wheatley_sapper/wheatley_player_death07.wav")
+Death:pushString("vo/items/wheatley_sapper/wheatley_player_death08.wav")
+Death:pushString("vo/items/wheatley_sapper/wheatley_player_death09.wav")
+Death:pushString("vo/items/wheatley_sapper/wheatley_player_death10.wav")
+Death:pushString("vo/items/wheatley_sapper/wheatley_player_death12.wav")
+Death:pushString("vo/items/wheatley_sapper/wheatley_player_death13.wav")
+Death:pushString("vo/items/wheatley_sapper/wheatley_player_death14.wav")
+Death:pushString("vo/items/wheatley_sapper/wheatley_player_death15.wav")
+Death:pushString("vo/items/wheatley_sapper/wheatley_player_death16.wav")
+Death:pushString("vo/items/wheatley_sapper/wheatley_player_death17.wav")
+Death:pushString("vo/items/wheatley_sapper/wheatley_player_death19.wav")
+Death:pushString("vo/items/wheatley_sapper/wheatley_player_death21.wav")
+Death:pushString("vo/items/wheatley_sapper/wheatley_player_death22.wav")
+Death:pushString("vo/items/wheatley_sapper/wheatley_player_death23.wav")
+Death:pushString("vo/items/wheatley_sapper/wheatley_player_death24.wav")
+Death:pushString("vo/items/wheatley_sapper/wheatley_player_death25.wav")
+Death:pushString("vo/items/wheatley_sapper/wheatley_player_death26.wav")
+
+Attach:pushString("vo/items/wheatley_sapper/wheatley_sapper_attached05.wav")
+Attach:pushString("vo/items/wheatley_sapper/wheatley_sapper_attached06.wav")
+Attach:pushString("vo/items/wheatley_sapper/wheatley_sapper_attached09.wav")
+Attach:pushString("vo/items/wheatley_sapper/wheatley_sapper_attached10.wav")
+Attach:pushString("vo/items/wheatley_sapper/wheatley_sapper_attached13.wav")
+Attach:pushString("vo/items/wheatley_sapper/wheatley_sapper_attached14.wav")
+Attach:pushString("vo/items/wheatley_sapper/wheatley_sapper_attached16.wav")
+Attach:pushString("vo/items/wheatley_sapper/wheatley_sapper_attached18.wav")
+Attach:pushString("vo/items/wheatley_sapper/wheatley_sapper_attached19.wav")
+Attach:pushString("vo/items/wheatley_sapper/wheatley_sapper_attached20.wav")
+Attach:pushString("vo/items/wheatley_sapper/wheatley_sapper_attached22.wav")
+Attach:pushString("vo/items/wheatley_sapper/wheatley_sapper_attached23.wav")
+Attach:pushString("vo/items/wheatley_sapper/wheatley_sapper_attached26.wav")
+
+Intro:pushString("vo/items/wheatley_sapper/wheatley_sapper_intro01.wav")
+Intro:pushString("vo/items/wheatley_sapper/wheatley_sapper_intro02.wav")
+Intro:pushString("vo/items/wheatley_sapper/wheatley_sapper_intro03.wav")
+Intro:pushString("vo/items/wheatley_sapper/wheatley_sapper_intro04.wav")
+Intro:pushString("vo/items/wheatley_sapper/wheatley_sapper_intro05.wav")
+
+Idle:pushString("vo/items/wheatley_sapper/wheatley_sapper_idle02.wav")
+Idle:pushString("vo/items/wheatley_sapper/wheatley_sapper_idle03.wav")
+Idle:pushString("vo/items/wheatley_sapper/wheatley_sapper_idle04.wav")
+Idle:pushString("vo/items/wheatley_sapper/wheatley_sapper_idle05.wav")
+Idle:pushString("vo/items/wheatley_sapper/wheatley_sapper_idle06.wav")
+Idle:pushString("vo/items/wheatley_sapper/wheatley_sapper_idle07.wav")
+Idle:pushString("vo/items/wheatley_sapper/wheatley_sapper_idle10.wav")
+Idle:pushString("vo/items/wheatley_sapper/wheatley_sapper_idle11.wav")
+Idle:pushString("vo/items/wheatley_sapper/wheatley_sapper_idle12.wav")
+Idle:pushString("vo/items/wheatley_sapper/wheatley_sapper_idle13.wav")
+Idle:pushString("vo/items/wheatley_sapper/wheatley_sapper_idle14.wav")
+Idle:pushString("vo/items/wheatley_sapper/wheatley_sapper_idle15.wav")
+Idle:pushString("vo/items/wheatley_sapper/wheatley_sapper_idle16.wav")
+Idle:pushString("vo/items/wheatley_sapper/wheatley_sapper_idle17.wav")
+Idle:pushString("vo/items/wheatley_sapper/wheatley_sapper_idle18.wav")
+Idle:pushString("vo/items/wheatley_sapper/wheatley_sapper_idle19.wav")
+Idle:pushString("vo/items/wheatley_sapper/wheatley_sapper_idle20.wav")
+Idle:pushString("vo/items/wheatley_sapper/wheatley_sapper_idle21.wav")
+Idle:pushString("vo/items/wheatley_sapper/wheatley_sapper_idle22.wav")
+Idle:pushString("vo/items/wheatley_sapper/wheatley_sapper_idle26.wav")
+Idle:pushString("vo/items/wheatley_sapper/wheatley_sapper_idle28.wav")
+Idle:pushString("vo/items/wheatley_sapper/wheatley_sapper_idle29.wav")
+Idle:pushString("vo/items/wheatley_sapper/wheatley_sapper_idle30.wav")
+Idle:pushString("vo/items/wheatley_sapper/wheatley_sapper_idle31.wav")
+Idle:pushString("vo/items/wheatley_sapper/wheatley_sapper_idle35.wav")
+Idle:pushString("vo/items/wheatley_sapper/wheatley_sapper_idle36.wav")
+Idle:pushString("vo/items/wheatley_sapper/wheatley_sapper_idle37.wav")
+Idle:pushString("vo/items/wheatley_sapper/wheatley_sapper_idle38.wav")
+Idle:pushString("vo/items/wheatley_sapper/wheatley_sapper_idle40.wav")
+Idle:pushString("vo/items/wheatley_sapper/wheatley_sapper_idle41.wav")
+Idle:pushString("vo/items/wheatley_sapper/wheatley_sapper_idle42.wav")
+Idle:pushString("vo/items/wheatley_sapper/wheatley_sapper_idle43.wav")
+Idle:pushString("vo/items/wheatley_sapper/wheatley_sapper_idle44.wav")
+
+Attack:pushString("vo/items/wheatley_sapper/wheatley_sapper_attack01.wav")
+Attack:pushString("vo/items/wheatley_sapper/wheatley_sapper_attack02.wav")
+Attack:pushString("vo/items/wheatley_sapper/wheatley_sapper_attack03.wav")
+Attack:pushString("vo/items/wheatley_sapper/wheatley_sapper_attack04.wav")
+Attack:pushString("vo/items/wheatley_sapper/wheatley_sapper_attack05.wav")
+Attack:pushString("vo/items/wheatley_sapper/wheatley_sapper_attack06.wav")
+Attack:pushString("vo/items/wheatley_sapper/wheatley_sapper_attack07.wav")
+Attack:pushString("vo/items/wheatley_sapper/wheatley_sapper_attack08.wav")
+Attack:pushString("vo/items/wheatley_sapper/wheatley_sapper_attack09.wav")
+Attack:pushString("vo/items/wheatley_sapper/wheatley_sapper_attack10.wav")
+Attack:pushString("vo/items/wheatley_sapper/wheatley_sapper_attack11.wav")
+
+Sneak:pushString("vo/items/wheatley_sapper/wheatley_sapper_sneak01.wav")
+Sneak:pushString("vo/items/wheatley_sapper/wheatley_sapper_sneak02.wav")
+Sneak:pushString("vo/items/wheatley_sapper/wheatley_sapper_sneak03.wav")
+Sneak:pushString("vo/items/wheatley_sapper/wheatley_sapper_sneak04.wav")
+Sneak:pushString("vo/items/wheatley_sapper/wheatley_sapper_sneak05.wav")
+
+holoEntity(1):soundPlay(2,0,Intro[randint(Intro:count()),string])
+timer("Jump",700)
+}
+
+## Weapon handling ##
+
+if(changed(O:weapon())){
+
+if(O:weapon():type() == "weapon_physcannon"){
+O:weapon():setAlpha(0.1)  
+holoAlpha(1,0)
+holoAlpha(2,255)
+IsHolding = 1
+stoptimer("idle_say")
+holoEntity(3):soundPlay(3,10,"weapons/draw_bow.wav")  
+}else{
+holoAlpha(1,255)
+holoAlpha(2,0)  
+IsHolding = 0
+timer("idle_say",randint(20000,25000))
+holoEntity(3):soundPlay(3,10,"weapons/draw_bow.wav")  
+}
+    
+}
+
+if(changed(O:isAlive()) && !O:isAlive()){
+holoEntity(1):soundPlay(7,0,Death[randint(Death:count()),string])    
+}
+
+if(O:isCrouch() && O:vel():length() / 2 > 20){
+    
+if(!HasSaidCrouch){
+HasSaidCrouch = 1
+timer("Crouch_delay",10000)
+holoEntity(1):soundPlay(7,0,Sneak[randint(Sneak:count()),string])     
+}elseif(!O:isCrouch()){
+
+if(HasSaidCrouch){
+HasSaidCrouch = 0    
+stoptimer("Crouch_delay")
+}
+
+}
+
+}
+
+
+if(clk("Crouch_delay")){
+HasSaidCrouch = 0   
+}
+
+if(changed(O:health()) && O:health() != 100 && O:isAlive()){
+    
+if(!HasSaidLife){
+HasSaidLife = 1
+timer("delay_life",3000)
+holoEntity(1):soundPlay(7,0,Attack[randint(Attack:count()),string])     
+}
+   
+}
+
+if(clk("delay_life")){
+HasSaidLife = 0    
+}
+
+if(clk("idle_say")){
+holoEntity(1):soundPlay(7,0,Idle[randint(Idle:count()),string])       
+}
+
+
+
+

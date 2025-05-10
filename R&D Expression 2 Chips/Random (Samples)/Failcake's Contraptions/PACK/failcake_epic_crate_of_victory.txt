@@ -1,0 +1,119 @@
+@name FailCake Epic Crate of Victory
+@persist [Main E Lock Suprise Hat Small Col]:entity Ang [Money]:array Mode:string Alpha
+@trigger all
+
+if(first() | duped()){
+runOnTick(1)
+propSpawnEffect(0)
+Alpha = 255
+
+E = entity()
+E:setAlpha(0)
+
+Main = propSpawn("models/Items/item_item_crate.mdl",E:toWorld(vec(0,0,0)),ang(0,0,0),1)
+Main:setMass(400)
+Lock = propSpawn("models/props_wasteland/prison_padlock001a.mdl",Main:toWorld(vec(1,15,13)),ang(0,90,0),1)
+Lock:parentTo(Main) 
+
+Mode = "Locked"
+E:soundPlay(1,0,"ui/item_crate_drop.wav")   
+
+}
+
+if(Mode == "Locked"){
+    
+findByModel("models/props/cs_assault/Money.mdl") 
+findIncludePlayerProps(owner())
+  
+Money = findToArray()
+
+if(Money:count() >= 1){
+
+for(I = 1,Money:count()){
+ 
+if(Money[I,entity]:pos():distance(Lock:pos()) <= 20){
+Mode = "unlock" 
+Money[I,entity]:propDelete()
+E:soundPlay(1,0,"ambient/levels/labs/coinslot1.wav")   
+}  
+ 
+}
+}
+  
+}
+
+if(Mode == "unlock"){
+timer("wait",1000)
+timer("break",2000)
+timer("show",6000)
+Mode = ""
+}
+
+if(clk("wait")){
+E:soundPlay(1,0,"ui/item_open_crate.wav")      
+}
+
+
+if(clk("break"))
+{
+Lock:propDelete()
+Lock = propSpawn("models/props_wasteland/prison_padlock001b.mdl",Main:toWorld(vec(1,15,13)),ang(0,-90,0),1)
+Lock:parentTo(Main)    
+Mode = "vanish"
+printColor(vec(255,0,0),"Unlocking Crate...") 
+}
+
+if(Mode == "vanish")
+{
+Alpha-=2
+Lock:setAlpha(Alpha)    
+}
+
+if(clk("show"))
+{
+Mode = "shows"   
+Lock:propDelete()
+stoptimer("show")
+
+}
+
+if(Mode == "shows"){
+Mode = ""
+timer("uhoh",6000)
+E:soundPlay(1,0,"misc/achievement_earned.wav")  
+printColor(vec(0,255,0),"You unboxed a...uh...melon!?")    
+Suprise = propSpawn("models/props_junk/watermelon01.mdl",Main:toWorld(vec(0,0,10)),ang(0,0,0),1)
+Hat = propSpawn("models/props_2fort/hardhat001.mdl",Suprise:toWorld(vec(0,0,3.3)),ang(0,-90,0),1)
+Hat:parentTo(Suprise)
+Main:propBreak()
+timer("say",5000)
+}
+
+if(clk("uhoh")){
+Mode ="spins"
+printColor(vec(0,255,0),"What the!? The Melon is acting strange!") 
+E:soundPlay(1,0,"ui/notification_alert.wav") 
+E:soundPlay(2,0,"player/taunt_medic_heroic.wav")
+E:soundPlay(5,0,"weapons/sentry_upgrading_steam1.wav")
+}
+
+if(clk("say")){
+E:soundPlay(4,0,"vo/engineer_autobuildingdispenser01.wav") 
+timer("bum",2000)      
+}
+
+if(Mode == "spins"){
+
+Ang+=2
+Suprise:setPos(Suprise:toWorld(vec(0,0,1)))
+Suprise:setAng(ang(0,Ang,0))    
+}
+
+if(clk("bum")){
+Mode = "fall"
+stoptimer("bum")
+Suprise:soundPlay(345,0,"weapons/teleporter_explode.wav")
+Suprise:soundPlay(34,0,"vo/engineer_paincrticialdeath05.wav")
+Suprise:propBreak()
+Hat:propDelete()    
+}

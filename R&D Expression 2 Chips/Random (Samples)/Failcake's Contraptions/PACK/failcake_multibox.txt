@@ -1,0 +1,46 @@
+@name Failcake MultiBox
+@persist [Boxes Pos]:table [E O Temp]:entity LIMIT INDEX
+@trigger all
+
+if(first() || duped()){
+    
+function void createBox(Many:number,Boxs:vector){ 
+     
+for(I = 1,Many){
+Temp = propSpawn("models/props_junk/wood_crate001a.mdl",Boxs + vec(0,0,17),ang(0,0,0),0)
+Temp:setSkin(randint(1,3))
+Temp:soundPlay(I,1,"npc/roller/remote_yes.wav") 
+Boxes[toString(Temp:id()),entity] = Temp  
+INDEX++ 
+}
+
+}
+
+}
+
+if(duped() | first()){
+    
+propSpawnEffect(0)
+runOnTick(1)
+
+E = entity()
+O = owner()
+
+createBox(1,E:pos())
+LIMIT = 200
+INDEX = 0
+}
+
+foreach(K,V:entity = Boxes)
+{
+    if(!V)
+    {
+       createBox(2,Pos[K,vector]) 
+       Boxes:remove(K)
+    }else{
+       Pos[K,vector] = V:pos()
+    }
+    
+}
+
+if(INDEX >= LIMIT){selfDestructAll()}

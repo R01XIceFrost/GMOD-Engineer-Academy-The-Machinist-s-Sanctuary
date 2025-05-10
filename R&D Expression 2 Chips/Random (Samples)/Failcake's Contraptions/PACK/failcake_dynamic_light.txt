@@ -1,0 +1,80 @@
+@name FailCake Dynamic Light
+@persist E:entity Count Distance F MaxLi 
+@persist Props:array
+@trigger all
+@model models/Gibs/wood_gib01e.mdl
+
+interval(Props:count() * 1.5) # To Prevent the Tick Exceding. More Props = More Slow
+
+if(first() || duped()){
+    
+E = entity() # The E2
+E:setSkin(randint(1,3)) # Random Skin , just for fun :3
+
+runOnLast(1) # To run one last time before the E2 is deleted
+
+## Settings
+MaxLi = 200 # The max ligth Range
+## Settings
+
+## Holos - Torch Flame(Body)
+
+holoCreate(1)
+holoModel(1,"hqsphere")
+holoPos(1,E:toWorld(vec(7,0,0)))
+holoParent(1,E)
+holoColor(1,vec(250,200,0))
+holoScaleUnits(1,vec(2.8,2.8,2.8))
+
+## Holos - Torch Flame(Body2)
+
+holoCreate(2)
+holoModel(2,"hqcone")
+holoPos(2,E:toWorld(vec(8.8,0,0)))
+holoParent(2,E)
+holoAng(2,ang(0,90,90))
+holoColor(2,vec(250,200,0))
+holoScaleUnits(2,vec(2.5,2.5,2.5))
+
+## Holos - Torch Flame(light Area)
+
+holoCreate(3)
+holoModel(3,"hqsphere")
+holoPos(3,E:toWorld(vec(8,0,0)))
+holoParent(3,E)
+holoColor(3,vec(250,170,0))
+holoAlpha(3,10)
+holoScaleUnits(3,vec(20,20,20))
+
+}
+
+
+## Find All your Props
+findByClass("prop_physics")
+findIncludePlayerProps(owner())
+Props = findToArray() # Include Them in a Array
+
+for(I = 1,Props:count()){ # Cycle on all your Props
+        
+Distance = Props[I,entity]:pos():distance(E:pos()) # The distance between the Prop and the E2
+F = MaxLi - Distance # Invert the Distance so that its light to dark and not dark to light
+
+      if(Distance <= MaxLi){ # Is it inside the max ligth range?
+
+      Props[I,entity]:setColor(F,F,F) # Set the Dark, More far = More Darker , Less far = More Light
+
+      }else{
+
+      Props[I,entity]:setColor(1,1,1) # Set Props Dark if they are too far away
+
+    }
+
+}
+
+
+# Reset all The Props Colors. And Remove Dark.
+if(last()){ # Last Run before deleting E2
+for(I = 1,Props:count()){
+Props[I,entity]:setColor(255,255,255) # Reset Props Color
+}    
+}

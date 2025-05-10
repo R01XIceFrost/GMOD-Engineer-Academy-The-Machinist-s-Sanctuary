@@ -1,0 +1,223 @@
+@name FailCake Anti-Guns Module - Product 5Vs
+@inputs Active
+@persist [E O Stuck Player Boom]:entity [Ply Weapon AllowedWeapons]:array Scans Tog Up Check GOGO Oks
+@trigger all
+@model
+
+function void killPly(){
+E:soundPlay(1,1,"/buttons/button11.wav")
+Stuck:propDelete()
+  #By FailCake
+Boom = propSpawn("models/props_phx/oildrum001_explosive.mdl",1) 
+Boom:propBreak()
+Boom = propSpawn("models/props_phx/oildrum001_explosive.mdl",1) 
+Boom:propBreak()
+
+Player = noentity()
+Ply:clear()
+Oks = 0
+
+holoColor(1,vec(255,0,0))
+holoColor(2,vec(255,0,0))
+holoColor(3,vec(255,0,0))
+holoColor(4,vec(255,0,0))
+holoColor(5,vec(255,0,0))
+
+}
+
+function void releasePly(){
+E:soundPlay(1,1,"buttons/button9.wav")  
+timer("release",400)
+}
+#By FailCake
+if(clk("release")){
+Stuck:propDelete()
+Player = noentity()
+Ply:clear()
+Oks = 0
+E:soundPlay(2,1,"physics/glass/glass_pottery_break4.wav") 
+ 
+holoColor(1,vec(255,0,0))
+holoColor(2,vec(255,0,0))
+holoColor(3,vec(255,0,0))
+holoColor(4,vec(255,0,0))
+holoColor(5,vec(255,0,0))
+}
+
+
+function number checkIt(LOl:string){
+
+  
+for(I=1,AllowedWeapons:count()){
+if(LOl == AllowedWeapons[I,string]){
+print(LOl + " - " + AllowedWeapons[I,string])
+return 0
+break    
+}
+
+if(I >= AllowedWeapons:count()) {
+return 1     
+}  
+}
+   
+}
+
+#By FailCake
+function void checkWeapons(Lol:array){
+    
+if(Lol:count() == 0){ ## Striped!
+releasePly()    
+}
+
+for(I=1,Weapon:count()){
+if(Weapon[I,entity]:isWeapon()){
+    
+if(checkIt(Weapon[I,entity]:type():sub(1,20)) == 1){
+killPly()
+break # He has a weapon.   
+}else{
+releasePly()
+}
+
+} 
+}  
+
+    
+}
+
+
+
+
+
+if(first() |duped()){
+runOnTick(1)
+
+propSpawnEffect(0)
+
+E = entity()
+O = owner() 
+   #By FailCake
+holoCreate(5)
+holoModel(5,"cube")
+holoPos(5,E:toWorld(vec(0,0,0.1)))
+holoColor(5,vec(255,0,0))
+holoScaleUnits(5,vec(80,80,1))    
+holoAlpha(5,30)
+holoParent(5,E)
+  
+holoCreate(1)
+holoModel(1,"cube")
+holoPos(1,E:toWorld(vec(0,40,0.1)))
+holoColor(1,vec(255,0,0))
+holoScaleUnits(1,vec(80,1,1))    
+holoParent(1,5)
+
+Oks = 0
+
+holoCreate(2)
+holoModel(2,"cube")
+holoPos(2,E:toWorld(vec(40,0,0.1)))
+holoColor(2,vec(255,0,0))
+holoAng(2,ang(0,90,0))
+holoScaleUnits(2,vec(80,1,1))    
+holoParent(2,5)
+
+holoCreate(3)
+holoModel(3,"cube")
+holoPos(3,E:toWorld(vec(-40,0,0.1)))
+holoColor(3,vec(255,0,0))
+holoAng(3,ang(0,90,0))
+holoScaleUnits(3,vec(80,1,1))    
+holoParent(3,5)
+#By FailCake
+holoCreate(4)
+holoModel(4,"cube")
+holoPos(4,E:toWorld(vec(0,-40,0.1)))
+holoColor(4,vec(255,0,0))
+holoScaleUnits(4,vec(80,1,1))    
+holoParent(4,5)
+Tog = 1
+
+## Allow Weapons ##
+AllowedWeapons:pushString("weapon_physgun")
+AllowedWeapons:pushString("weapon_physcannon")
+
+}
+
+#By FailCake
+if(changed(Active) & Active & Oks == 0){
+GOGO = 1
+Oks = 1
+}
+
+
+if(GOGO){
+GOGO = 0
+holoColor(1,vec(0,255,0))   
+holoColor(2,vec(0,255,0))
+holoColor(3,vec(0,255,0))
+holoColor(4,vec(0,255,0)) 
+holoColor(5,vec(0,255,0))
+E:soundPlay(1,1,"/buttons/button1.wav")
+timer("hold",200)
+}
+
+
+if(clk("hold")){
+stoptimer("hold")
+E:soundPlay(1,1,"physics/glass/glass_impact_bullet4.wav")
+Stuck = propSpawn("models/hunter/blocks/cube2x2x05.mdl",E:toWorld(vec(0,0,50)),ang(0,0,0),1)
+Stuck:setAlpha(0) 
+timer("beginscan",1000)   
+}
+#By FailCake
+if(clk("beginscan")){
+E:soundPlay(1,1,"weapons/physcannon/superphys_chargeup.wav") 
+ 
+findByClass("weapon_*")
+findIncludeClass("weapon_*")
+findExcludeClass("prop_physics")
+findExcludeClass("player")
+
+findInSphere(E:pos(),70)
+Weapon = findToArray()  ## Find Weapons
+
+timer("sad",1000)
+}
+
+if(clk("sad")){
+Scans = 1 
+E:soundPlay(2,0,"weapons/physcannon/superphys_hold_loop.wav")   
+}
+
+if(Scans)
+{
+    
+if(Tog == 1){
+if(Up < 100){
+Up+=1  
+}else{
+Tog = !Tog
+}
+}elseif(Tog == 0){
+if(Up > 0){
+Up-=1  
+}else{
+soundStop(2)
+Scans = 0
+checkWeapons(Weapon)
+Weapon:clear()
+Up = 0
+Tog = 1
+holoPos(5,E:toWorld(vec(0,0,0.1)))
+}
+}
+    #By FailCake
+holoPos(5,E:toWorld(vec(0,0,Up+0.1)))    
+}
+
+
+#By FailCake
+
+
+

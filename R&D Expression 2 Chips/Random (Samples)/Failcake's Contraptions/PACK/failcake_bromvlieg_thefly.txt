@@ -1,0 +1,52 @@
+@name Bromvlieg the Fly By FailCake
+@inputs 
+@outputs R RR
+@persist Bzz:array T Vector:vector Ply:entity
+@trigger all
+@model models/hunter/plates/plate.mdl
+
+#Made By FailCake 
+runOnTick(1)
+
+E = entity()
+
+if(first() | duped()){
+E:setColor(1,1,1)
+hint("Made By FailCake for CzechHero =D",7)   
+E:setMaterial("models/debug/debugwhite")
+E:setTrails(1,1,0.7,"trails/smoke",vec(1,1,1),255)
+E:propNotSolid(1)
+E:propFreeze(0)
+RR = 100
+}
+
+timer("Bzz",1000)
+
+Bzz[1,string]="ambient/animal/flies1.wav"
+Bzz[2,string]="ambient/animal/flies2.wav"
+Bzz[3,string]="ambient/animal/flies3.wav"
+Bzz[4,string]="ambient/animal/flies4.wav"
+Bzz[5,string]="ambient/animal/flies5.wav"
+
+if(clk("Bzz")){
+R = randint(1,5)
+E:soundPlay(1000,1000,Bzz[R,string])       
+}
+#Made By FailCake 
+findExcludePlayer(owner())
+findByClass("player")
+findInSphere(E:pos(),2000)
+Ply = findClosest(E:pos())
+T+=1
+
+timer("rand",400)
+
+if(clk("rand")){
+RR = randint(50,100)    
+}
+#Made By FailCake 
+X1 = cos(T*4)*RR
+X2 = sin(T*4)*RR
+
+Vector = (vec(X1,X2,80)+(Ply:pos()-E:pos())*E:mass())
+E:applyForce(Vector + $Vector*5)

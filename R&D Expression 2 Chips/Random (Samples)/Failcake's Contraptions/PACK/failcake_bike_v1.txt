@@ -1,0 +1,123 @@
+@name FailCake Bike V1 
+@inputs Seat:wirelink 
+@persist Eject Offs Vels MaxSpeed TEMP Delay
+@persist [ANG Ang]:angle Tim Speed
+@trigger all
+@model models/props_junk/bicycle01a.mdl
+
+runOnTick(1)
+
+E = entity()
+Angs = E:angles():roll()
+ANG = E:angles()
+# By FailCake
+W = Seat:number("W")
+S = Seat:number("S")
+A = Seat:number("A")
+D = Seat:number("D")
+MOUSE2 = Seat:number("Mouse2")
+Active = Seat:number("Active")
+MaxSpeed = 300
+
+rangerHitWater(0)
+rangerFilter(E)
+Rng = rangerOffset(E:pos(),E:pos()-vec(0,0,60))
+
+if(first()){
+Offs = 1    
+}
+
+
+if (Angs >= -35 & Angs <= 35 & Offs != 1){
+if (Rng:hit()){
+    Diff = 24-Rng:distance()
+    E:applyForce((vec(0,0,Diff)*20-E:vel()/30)*E:mass())
+
+    TarQ = quat(ang(0,Tim,0))  
+    CurQ = quat(E)
+    Q = TarQ/CurQ
+    V = E:toLocal(rotationVector(Q)+E:pos())
+    E:applyTorque((800*V - 12*E:angVelVector())*E:inertia()) 
+
+}
+}else{
+Offs = 1
+}
+
+# By FailCake
+if(Offs == 0){
+if(W){
+if(Speed <= MaxSpeed){
+Speed += 50
+E:applyForce((E:forward()*Speed+vec(0,0,Diff)*20-E:vel())*E:mass())    
+}else{
+if(Speed >= 0){
+Speed-=100
+}
+}
+}
+
+if(S){
+E:applyForce((-E:forward()*200+vec(0,0,Diff)*20-E:vel())*E:mass()) 
+}else{
+}
+
+
+if(A){
+Tim+=2
+}else{
+Tim = Tim
+}
+
+if(D){
+Tim-=2
+}else{
+Tim = Tim
+}
+}
+## Ranger Holo ##
+
+holoCreate(1)
+holoModel(1,"cube")
+holoScaleUnits(1,vec(2,15,15))
+holoParent(1,E)
+holoPos(1,E:toWorld(vec(37,0,-7)))
+holoAlpha(1,0)
+# By FailCake
+## Ranger Holo ##
+
+rangerHitWater(0)
+rangerFilter(E)
+Ranger = rangerOffset(300,holoEntity(1):pos(),holoEntity(1):forward())
+Distance = holoEntity(1):pos():distance(Ranger:position())
+Vels = E:vel():length()/10
+
+if(Distance <= 10 & Ranger:hit() & Vels >= 20){
+Offs = 1    
+}
+
+if(Offs == 1){
+timer("Delay",1000)
+if(clk("Delay")){
+Offs = 0
+stoptimer("Delay")    
+}    
+}
+
+if(Delay == 1){
+timer("Delay2",400)
+if(clk("Delay2")){
+Delay = 0
+stoptimer("Delay2")    
+}    
+}# By FailCake
+
+if(MOUSE2){
+if(Delay == 0){
+E:soundPlay(100,100,"ambient/alarms/city_firebell_loop1.wav")
+soundPitch(100,170)
+Delay = 1
+}    
+}else{
+soundStop(100)
+}# By FailCake

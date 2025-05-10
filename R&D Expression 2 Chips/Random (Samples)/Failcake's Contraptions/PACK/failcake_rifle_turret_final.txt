@@ -1,0 +1,214 @@
+@name FailCake Rifle Turret [GW2]
+@persist [E O Bullet TempTarget Target]:entity [H_TurretInfo]:table Index TIMER_DELAY TIMER_LIFE TURRET_LIFE TURRET_FIREDELAY TURRET_MUZZLE TURRET_RANGE
+@persist [Holos]:array Altura TURRET_BUILD TurrAngle:angle TURRET_CANFIRE TURRET_FIRING TURRET_MAXSHOTS TURRET_SHOTS Turn
+@trigger all
+@model models/hunter/blocks/cube05x05x05.mdl
+
+# NOTE : UNFINISHED
+# Made by FailCake
+function void turretShoot(){
+
+E:soundPlay(2,1,"turret/tu_fire1.wav")
+holoAlpha(16,255)  
+
+Bullet:propDelete()
+Bullet = propSpawn("models/hunter/plates/plate.mdl",0)
+Bullet:propNotSolid(1)
+Bullet:setPos(E:pos())
+Bullet:setColor(vec(0,0,0))
+Bullet:setMaterial("models/debug/debugwhite")
+Bullet:setMass(100)
+Bullet:applyForce((Target:shootPos()-Bullet:pos())*Bullet:mass()*10000)
+
+timer("colission",30)
+timer("muzzle",TURRET_MUZZLE)   
+}
+
+if(clk("colission")){
+Bullet:propNotSolid(0)   
+}
+
+if(clk("muzzle")){
+holoAlpha(16,0) 
+TURRET_FIRING = 0     
+}
+
+
+# Made by FailCake
+function number checkTurret(){
+    
+if(Index <= H_TurretInfo:count()){
+return 1    
+}else{
+return 0
+}
+
+}
+
+
+function void parentTurret(){
+    
+for(I = 1,H_TurretInfo:count()){
+Tbl = H_TurretInfo["part_"+I,table]  
+
+if(Tbl[5,number] != -1){
+holoParent(I,Holos[Tbl[5,number],entity])
+}else{
+holoParent(I,E)
+}
+
+}
+    
+}
+
+function void buildTurret(){
+
+Tbl = H_TurretInfo["part_"+Index,table]
+
+if(holoCanCreate()){
+    
+holoCreate(Index)
+holoModel(Index,Tbl[2,string])
+holoScale(Index,Tbl[3,vector])
+holoAng(Index,Tbl[4,angle])
+holoPos(Index,E:toWorld(Tbl[1,vector]))
+Holos:pushEntity(holoEntity(Index))
+
+if(Tbl[6,string]:lower() != "none"){
+holoMaterial(Index,Tbl[6,string]) 
+}
+
+if(Tbl[2,string] == "sphere" || Tbl[2,string] == "models/Effects/muzzleflash/minigunmuzzle.mdl"){
+holoAlpha(Index,0)    
+}
+
+Index+=1
+
+}
+
+}
+
+
+
+if(first() || duped()){
+runOnTick(1)  
+
+propSpawnEffect(1)
+
+E = entity()
+O = owner()
+# Made by FailCake
+E:setAlpha(0.1)
+Index = 1
+Target = noentity()
+TURRET_BUILD = 0
+Altura = 16
+TIMER_DELAY = 100
+TURRET_CHARGE = 5000
+TURRET_MAXSHOTS = 10
+TURRET_RANGE = 200
+TURRET_SHOTS = 0
+TURRET_LIFE = 100
+TURRET_MUZZLE = 80
+TURRET_FIREDELAY = 1500
+TIMER_LIFE = 500
+TURRET_CANFIRE = 1
+Turn = 0
+
+## The Turret Model ##
+
+H_TurretInfo["part_1",table] = table(vec(5,-5,7-Altura),"models/props_junk/harpoon002a.mdl",vec(1/3.5,1/3.5,1/3.5),ang(64,-45,0),-1,"none")
+H_TurretInfo["part_2",table] = table(vec(5,5,7-Altura),"models/props_junk/harpoon002a.mdl",vec(1/3.5,1/3.5,1/3.5),ang(64,45,0),-1,"none")
+H_TurretInfo["part_3",table] = table(vec(-5,-5,7-Altura),"models/props_junk/harpoon002a.mdl",vec(1/3.5,1/3.5,1/3.5),ang(116,45,0),-1,"none")
+H_TurretInfo["part_4",table] = table(vec(-5,5,7-Altura),"models/props_junk/harpoon002a.mdl",vec(1/3.5,1/3.5,1/3.5),ang(116,-45,0),-1,"none")
+H_TurretInfo["part_5",table] = table(vec(0,0,20-Altura),"models/props_junk/sawblade001a.mdl",vec(1/4,1/4,1/4),ang(0,0,0),-1,"none")
+H_TurretInfo["part_6",table] = table(vec(0,0,20.5-Altura),"models/props_c17/pulleywheels_small01.mdl",vec(1/4,1/4,1/4),ang(90,0,0),-1,"none")
+H_TurretInfo["part_7",table] = table(vec(0,-0.01,21-Altura),"models/Items/combine_rifle_ammo01.mdl",vec(1/4,1/4,1/4),ang(0,0,0),6,"none")
+H_TurretInfo["part_8",table] = table(vec(-2,0,24-Altura),"models/props_c17/pottery05a.mdl",vec(1/3,1/3,1/3),ang(90,0,0),6,"none")
+H_TurretInfo["part_9",table] = table(vec(0,0,28-Altura),"models/props_junk/PlasticCrate01a.mdl",vec(1/5,1/5,1/5),ang(0,90,90),6,"none")
+H_TurretInfo["part_10",table] = table(vec(0,0,28-Altura),"models/props_junk/PlasticCrate01a.mdl",vec(1/5,1/5,1/5),ang(0,-90,90),6,"none")
+H_TurretInfo["part_11",table] = table(vec(0,0,27.4-Altura),"cube",vec(0.2,0.28,0.3),ang(0,0,0),6,"models/props_foliage/tree_deciduous_01a_trunk")
+
+H_TurretInfo["part_12",table] = table(vec(-3,0,24-Altura),"models/props_c17/TrapPropeller_Lever.mdl",vec(1/5,1/5,1/5),ang(0,90,0),15,"none")
+H_TurretInfo["part_13",table] = table(vec(-3.9,0,23.1-Altura),"models/props_c17/TrapPropeller_Lever.mdl",vec(1/5,1/5,1/5),ang(0,0,90),15,"none")
+H_TurretInfo["part_14",table] = table(vec(-4.8,0,22.1-Altura),"models/props_c17/TrapPropeller_Lever.mdl",vec(1/5,1/5,1/5),ang(0,-90,0),15,"none")
+H_TurretInfo["part_15",table] = table(vec(-2,0,24-Altura),"sphere",vec(0.1,0.1,0.1),ang(0,0,0),6,"none")
+
+H_TurretInfo["part_16",table] = table(vec(7.8,0,24-Altura),"models/Effects/muzzleflash/minigunmuzzle.mdl",vec(1/7,1/7,1/7),ang(0,0,0),8,"none")
+
+timer("build",TIMER_DELAY)
+}
+
+if(clk("build")){
+    
+if(checkTurret()){
+timer("build",TIMER_DELAY)
+E:soundPlay(1,1,"garrysmod/content_downloaded.wav")
+buildTurret()
+}else{
+stoptimer("build")
+parentTurret()
+TURRET_BUILD = 1
+TurrAngle = Holos[6,entity]:angles()
+}
+
+}
+
+
+
+# Made by FailCake
+
+
+if(TURRET_BUILD){
+
+findByClass("player")
+findInSphere(E:pos(),TURRET_RANGE) 
+TempTarget = findClosest(E:pos())    
+
+if(Target == noentity() && TempTarget:isPlayer()){
+    
+Target = TempTarget  
+
+}elseif(Target != noentity()){
+
+if(Target:pos():distance(E:pos()) > TURRET_RANGE){
+Target = noentity() # find new target   
+}
+
+}
+
+if(TURRET_CANFIRE){
+Turn += 1
+Ang = ((Holos[6,entity]:pos() - Target:pos()):toAngle() + ang(0,180,0)):yaw()
+holoAng(6,E:toWorld(ang(90,Ang,0))) 
+holoAng(15,Holos[6,entity]:toWorld(ang(-90,Turn,0)))   
+}
+
+if(Target:isPlayer() && Target != noentity() && TURRET_FIRING == 0){
+    
+if(TURRET_SHOTS >= TURRET_MAXSHOTS && TURRET_CANFIRE == 1){
+TURRET_CANFIRE = 0 
+print("charging") 
+timer("recharges",5500)  
+stoptimer("fire")
+}elseif(TURRET_CANFIRE){
+timer("fire",randint(TURRET_FIREDELAY,TURRET_FIREDELAY + 500)) 
+TURRET_FIRING = 1   
+TURRET_SHOTS += 1
+}
+
+}
+# Made by FailCake
+
+}
+
+if(clk("fire")){
+turretShoot()    
+}
+
+if(clk("recharges")){
+TURRET_CANFIRE = 1   
+TURRET_SHOTS = 0 
+print("done") 
+}
+

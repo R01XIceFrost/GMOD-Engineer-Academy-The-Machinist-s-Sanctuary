@@ -1,0 +1,84 @@
+@name FailCake its a Trap 
+@outputs Hey Trap Onx In:entity
+@persist Ply:array [Hs Hah]:array
+@trigger all
+@model models/props_junk/watermelon01.mdl
+runOnTick(1)
+
+E = entity()
+O = owner()
+propSpawnEffect(0)
+findByClass("player")
+Ply = findToArray()    
+
+if(first()){
+    
+Hs[1,string] = "vo/npc/male01/excuseme02.wav"
+Hs[2,string] = "vo/coast/cardock/le_overhere.wav"
+Hs[3,string] = "vo/Streetwar/sniper/ba_overhere.wav"
+Hs[4,string] = "vo/npc/female01/overhere01.wav"
+Hs[5,string] = "vo/NovaProspekt/al_overhere.wav"
+
+Hs[6,string] = "vo/npc/male01/overhere01.wav"
+Hs[7,string] = "vo/ravenholm/monk_overhere.wav"
+Hs[8,string] = "vo/ravenholm/shotgun_overhere.wav"
+E:propNotSolid(1)
+Hs[9,string] = "vo/trainyard/al_overhere.wav"
+Hs[10,string] = "vo/npc/Alyx/al_excuse01.wav"
+Hs[11,string] = "vo/npc/Alyx/al_excuse02.wav"    
+Hs[12,string] = "vo/npc/Alyx/al_excuse03.wav"
+Hs[13,string] = "vo/npc/female01/excuseme01.wav" 
+
+Hah[1,string] = "vo/npc/Barney/ba_laugh01.wav"
+Hah[2,string] = "vo/npc/Barney/ba_laugh02.wav"
+Hah[3,string] = "vo/npc/Barney/ba_laugh03.wav"
+Hah[4,string] = "vo/npc/Barney/ba_laugh04.wav"
+Hah[5,string] = "vo/ravenholm/madlaugh01.wav"
+Hah[6,string] = "vo/ravenholm/madlaugh02.wav"
+Hah[7,string] = "vo/ravenholm/madlaugh03.wav"
+Hah[7,string] = "vo/ravenholm/madlaugh04.wav"
+}
+
+
+for(I = 0,Ply:count()){
+    
+if(Ply[I,entity]:pos():distance(E:pos()) <= 700 & Trap == 0){
+Hey = 1       
+}
+
+if(Ply[I,entity]:pos():distance(E:pos()) <= 40 & Trap == 0){
+Trap = 1    
+In = Ply[I,entity]
+}
+    
+}
+
+if(Trap){
+    
+if(Onx == 0){
+Onx = 1  
+Hey = 0
+Main = propSpawn("models/props_junk/TrashDumpster02.mdl",E:toWorld(vec(0,0,60)),ang(0,0,180),1) 
+Main2 = propSpawn("models/hunter/plates/plate5x5.mdl",E:toWorld(vec(0,0,-6)),ang(0,0,0),1)
+Main:setMaterial("models/props_interiors/metalfence007a")
+Main2:setMaterial("models/props_interiors/metalfence007a")
+E:setAlpha(0)
+E:propNotSolid(1)
+R = randint(1,Hah:count())
+E:soundPlay(100,100,Hah[R,string])
+hint("* You Traped "+In:name()+" ! *",7)
+}
+
+}
+
+
+if(Hey){
+
+timer("pst",5000)
+
+if(clk("pst")){
+R = randint(1,Hs:count())
+E:soundPlay(100,100,Hs[R,string])    
+}    
+    
+}

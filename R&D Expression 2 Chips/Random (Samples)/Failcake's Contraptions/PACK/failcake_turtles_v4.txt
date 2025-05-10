@@ -1,0 +1,185 @@
+@name FailCake Turtle V4
+@outputs Holo Rand ModelAny Rand2 Water R A:array DebugMode Sleep SleepMode SleepTime
+@trigger all
+@model models/props/de_tides/Vending_turtle.mdl
+
+##############################################
+# Added Swiming,Fliping and Hats & SleepMode #
+##############################################
+
+E = entity()
+Water = entity():isUnderWater()
+O = owner()
+
+
+findByModel("models/props/de_tides/Vending_turtle.mdl")
+A = findToArray()
+
+if(first()){
+hint("Made by FailCake",7)  
+hint("Total Turtles = " + A:count(),7)
+
+
+
+#### CONFIG ####
+DebugMode = 0 ## Debug ##
+SleepMode = 0 ## Turtles should sleep or not. ##
+SleepTime = 30 ## seconds to jump before sleep ##
+ModelAny = 1 ## Is there HoloModelAny? If not put 0 ##
+#### CONFIG ####
+
+
+
+Rand = randint(1,6)
+Sleep = 0
+
+if(Rand == 1){
+Holo = 1
+}elseif(Rand == 2){
+Holo = 0
+}elseif(Rand == 3){
+Holo = 2
+}elseif(Rand == 4){
+Holo = 3
+}elseif(Rand == 5){
+Holo = 4
+}elseif(Rand == 6){
+Holo = 5
+}
+if(DebugMode){
+hint("Rand = "+ Rand,7)
+}
+}
+
+Rand2 = randint(1000,2000)   
+Move=array()
+Move:setString(1,"player/footsteps/slosh1.wav")
+Move:setString(2,"player/footsteps/slosh2.wav")
+Move:setString(3,"player/footsteps/slosh3.wav")
+Move:setString(4,"player/footsteps/slosh4.wav")
+
+
+timer("jump",Rand2)
+
+if(Sleep == 0){
+if(clk("jump")){
+Ang = E:angles():roll()
+if(Water == 0){
+    if(Ang<170){
+        E:applyForce(-E:right() * 200 + E:up() * 200)
+        E:soundPlay(100,100,"ambient/levels/canals/drip4.wav") 
+        soundPitch(100,200)   
+    }
+    else{
+        E:applyTorque(E:forward() * 1700)
+        E:soundPlay(100,100,"ambient/levels/canals/drip4.wav") 
+        soundPitch(100,200)  
+    }
+}else{
+E:applyForce(-E:right() * 300)
+E:soundPlay(7331,0,Move:string(R))
+R=randint(1,4)
+}
+}else{
+E:applyForce(vec(0,0,0)) 
+}
+}else{
+E:soundPlay(100,100,"ui/gamestartup10.mp3")
+}
+
+if(Holo & holoCanCreate() & ModelAny){
+if(Holo == 1){
+holoCreate(1)
+holoModel(1,"models/props/de_tides/Vending_hat.mdl")   
+holoPos(1,E:toWorld(vec(0,6,5)))
+holoScale(1,vec(0.8,0.8,0.8))
+holoParent(1,E) 
+holoDelete(3)
+holoDelete(2) 
+}
+
+if(Holo == 2){
+holoCreate(1)
+holoModel(1,"models/props/de_tides/Vending_hat.mdl")   
+holoPos(1,E:toWorld(vec(0,6,5)))
+holoScale(1,vec(0.8,0.8,0.8))
+holoParent(1,E) 
+holoDelete(3)
+holoDelete(2) 
+holoDelete(4)
+holoAng(1,E:toWorld(ang(0,180,30))) 
+}
+
+if(Holo == 3){
+holoCreate(2)
+holoModel(2,"models/Effects/bday_hat.mdl")   
+holoPos(2,E:toWorld(vec(0,5,6.5)))
+holoScale(2,vec(1.2,1.2,1.2))
+holoAng(2,E:toWorld(ang(0,180,-30))) 
+holoParent(2,E) 
+holoDelete(1)
+holoDelete(3)
+holoDelete(4)     
+}
+
+if(Holo == 4){
+holoCreate(3)
+holoModel(3,"models/chefHat.mdl")   
+holoPos(3,E:toWorld(vec(0,5,6.4)))
+holoScale(3,vec(0.5,0.5,0.5))
+holoAng(3,E:toWorld(ang(0,180,-30))) 
+holoParent(3,E) 
+holoDelete(1)   
+holoDelete(2)
+holoDelete(4)   
+}
+
+if(Holo == 5){
+holoCreate(4)
+holoModel(4,"models/props_2fort/hardhat001.mdl")   
+holoPos(4,E:toWorld(vec(0,5,6.4)))
+holoScale(4,vec(0.4,0.4,0.4))
+holoAng(4,E:toWorld(ang(0,-90,0))) 
+holoParent(4,E) 
+holoDelete(1)   
+holoDelete(2)  
+holoDelete(3) 
+}
+
+}else{
+holoDelete(3) 
+holoDelete(2) 
+holoDelete(1)
+holoDelete(4)
+}
+
+if(SleepMode == 1){
+if(Sleep == 0){
+timer("sleep",SleepTime*1000)    
+}
+if(Sleep == 1){
+timer("wake",10000)    
+}
+
+if(clk("sleep")){
+Sleep = 1
+stoptimer("sleep")  
+if(DebugMode){
+hint("Turtle Going to Sleep",7)  
+}
+}
+if(clk("wake")){
+Sleep = 0
+stoptimer("wake") 
+if(DebugMode){
+hint("Turtle Going to Wake",7)    
+}
+}
+}
+
+
+#if(duped()){selfDestructAll()}
+
+####################################################################
+## Do not rename the E2 or remove the hint("Made by Failcake",100)##
+####################################################################

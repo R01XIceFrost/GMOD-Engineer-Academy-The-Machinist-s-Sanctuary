@@ -1,0 +1,226 @@
+@name FailCake PropPolter
+@persist [E O]:entity On Shoot Recharge Rs Re Holo:array Holos [Ang Ang2]:angle
+@persist [Prop Life Col]:array Version:string RDist Force B DebugMode Ang3:angle Toggle Poss:entity Dist Oks Point:vector Hold Mode:string MaxProp Ops G P Active MaxUntilClean MaxDist Total Clean Onx Kk Count
+@trigger all
+@model models/Items/combine_rifle_ammo01.mdl
+
+##################
+#Made By FailCake#
+##################
+#  Based On TTT  #
+#     Weapon     #
+##################
+
+if(ops() > Ops & DebugMode == 1){
+Ops = ops()    
+setName("FailCake Poltergeist "+Version+" [Max "+Ops+" ops] [TTT]")
+}
+
+if(first() | duped()){
+runOnTick(1)
+Version = "v3"
+
+E = entity()
+O = owner()
+setName("FailCake Poltergeist "+Version + " [TTT]")
+
+Mode = "place"
+
+Ops = 0
+Toggle = 0
+
+#models/dav0r/hoverball
+#cs_havana/carving01
+E:setMaterial("models/dav0r/hoverball")
+E:setAlpha(200)
+
+holoCreate(1)
+holoModel(1,"models/weapons/w_IRifle.mdl")
+holoPos(1,O:attachmentPos("anim_attachment_RH"))
+holoAng(1,O:attachmentAng("anim_attachment_RH"))
+holoParentAttachment(1,O,"anim_attachment_RH")
+holoPos(1,holoEntity(1):toWorld(vec(12,0,2)))
+holoAng(1,holoEntity(1):toWorld(ang(180,0,180)))
+holoAlpha(1,0)
+
+hint("Made By FailCake",7)
+#Made By FailCake
+holoCreate(2)
+holoModel(2,"models/Items/combine_rifle_ammo01.mdl")
+holoAlpha(2,0)
+
+## SETTINGS ##
+MaxProp = 10
+MaxUntilClean = 8
+MaxDist = 23400
+Dist = 200
+DebugMode = 0
+Force = 25
+RDist = 50
+## SETTINGS ##
+
+
+
+
+
+#Made By FailCake
+
+Holos = 0
+Recharge = 1   
+G = 0
+Active = 0
+Total = 0
+}
+
+if(changed(O:weapon())){
+if(O:weapon():type() == "laserpointer" || O:weapon():type() == "weapon_blank_pistol"){
+O:weapon():setAlpha(0)
+holoAlpha(1,255)  
+holoAlpha(2,100)  
+On = 1
+}else{
+holoAlpha(1,0)
+holoAlpha(2,0)  
+On = 0
+}
+}
+
+#Made By FailCake
+if(Mode == "place"){
+if(On){   
+if(O:aimEntity() != noentity() & O:aimEntity() != E & O:pos():distance(O:aimEntity():pos()) <= MaxDist & Clean == 0  & Recharge == 1 & !O:aimEntity():isPlayer() & !O:aimEntity():isNPC()){
+holoColor(2,vec(0,255,0)) 
+B = 1   
+}else{
+B = 0
+holoColor(2,vec(255,0,0)) 
+}  
+
+holoPos(2,O:aimPos())
+#Made By FailCake
+Ang2 = (O:aimNormal()):toAngle() +ang(90,0,0)
+holoAng(2,Ang2)
+  
+if(O:keyAttack2() & Recharge == 1 & B == 1)
+{
+Recharge = 0
+#weapons/mortar/mortar_fire1.wav
+holoEntity(1):soundPlay(1,0,"weapons/airboat/airboat_gun_energy"+randint(1,2)+".wav")
+Shoot = 1  
+soundStop(3)
+soundStop(2)
+}
+}
+
+if(Recharge == 0){
+Re+=1
+
+if(Re == 10){
+holoEntity(1):soundPlay(2,0,"weapons/physcannon/superphys_chargeup.wav")    
+}
+
+if(Re >= 100){
+Re = 0
+holoEntity(1):soundPlay(3,0,"buttons/button18.wav") 
+soundStop(1) 
+Recharge = 1   
+}
+}
+}
+#Made By FailCake
+
+
+if(Shoot == 1 & Mode == "place"){
+Shoot = 0
+
+if(Active <= MaxProp & Clean == 0){
+    
+G+=1
+Active+=1
+Total+=1
+
+holoCreate(G+3)
+holoModel(G+3,"models/Items/combine_rifle_ammo01.mdl")
+holoParent(G+3,O:aimEntity())
+#Made By FailCake
+holoPos(G+3,O:aimPos())
+Ang = (O:aimNormal()):toAngle() +ang(90,0,0)
+holoAng(G+3,Ang)
+holoEntity(G+3):setTrails(15,15,0.5,"trails/physbeam",vec(255,255,255),255)
+#Made By FailCake
+
+Prop:pushEntity(O:aimEntity())
+Life:pushNumber(randint(5,8)) 
+Holo:pushNumber(G+3)
+
+timer("Sp_"+G,1000) 
+}
+
+}
+
+
+
+#CODE Main
+
+for(P=1,Holo:count()){
+    
+if(clk("Sp_"+P)){
+#Made By FailCake
+if(Life[P,number] > 0){
+
+Prop[P,entity]:applyForce(((randvec(-RDist,RDist))*Force-Prop[P,entity]:vel())*Prop[P,entity]:mass())    
+
+Prop[P,entity]:soundPlay(P,0,"weapons/ar2/ar2_altfire.wav")
+Life[P,number] = Life[P,number] - 1
+timer("Sp_"+P,Life[P,number]*500) # Update Timer    
+
+}else{
+Prop[P,entity]:soundPlay(P,0,"weapons/physcannon/energy_disintegrate"+randint(4,5)+".wav")
+Col[P,number]=255
+Prop[P,entity]:propGravity(0)
+holoAlpha(Holo[P,number],0)
+holoEntity(Holo[P,number]):removeTrails()
+timer("Re_"+P,1)
+#Made By FailCake
+}
+
+
+
+}
+
+if(clk("Re_"+P)){
+if(Col[P,number] > 0){
+Col[P,number] = Col[P,number] - 3
+Prop[P,entity]:setColor(Col[P,number],Col[P,number],Col[P,number],255)
+timer("Re_"+P,1)    
+}else{
+Prop[P,entity]:propDelete()
+Active-=1
+holoDelete(Holo[P,number])
+
+if(Total >= MaxUntilClean && Clean == 0){
+Clean = 1
+print("* Out of Spirits! *")
+print("* Absorving More Spirits *")
+holoEntity(1):soundPlay(1,0,"weapons/ar2/ar2_reload_rotate.wav")
+}
+
+}
+
+}
+}
+#Made By FailCake
+
+if(Clean & Active <= 0){
+    
+if(Onx == 0){
+Onx = 1
+print("* Done! *")
+reset()   
+}
+
+#Made By FailCake   
+}
+
+#Made By FailCake
+

@@ -1,0 +1,151 @@
+@name FailCake Bananas 
+@persist [E O Banana Boome]:entity Beep Tim Boom:string Pitch Pos:vector [BoomB Ribs]:array Count
+@trigger all
+
+
+
+if(first() || duped()){
+runOnTick(1)
+
+O = owner()
+E = entity() 
+Banana = noentity()
+Boom = "NONE" 
+propSpawnEffect(0)
+
+
+holoCreate(1)
+holoModel(1,"models/props/cs_italy/bananna_bunch.mdl")
+holoPos(1,O:attachmentPos("anim_attachment_RH"))
+holoAng(1,O:attachmentAng("anim_attachment_RH"))
+holoParentAttachment(1,O,"anim_attachment_RH")
+holoPos(1,holoEntity(1):toWorld(vec(0,0,1)))
+holoAng(1,holoEntity(1):toWorld(ang(0,0,0)))
+holoAlpha(1,255)
+Tim = 800
+Pitch = 14
+
+Ribs:pushString("models/gibs/hgibs.mdl")
+Ribs:pushString("models/gibs/hgibs_rib.mdl")
+Ribs:pushString("models/gibs/hgibs_scapula.mdl")
+Ribs:pushString("models/gibs/hgibs_spine.mdl")
+Ribs:pushString("models/gibs/fast_zombie_torso.mdl")
+
+}
+
+
+if(changed(O:keyAttack2()) && O:keyAttack2() && Banana == noentity()){
+
+Banana = propSpawn("models/props/cs_italy/bananna_bunch.mdl",0)
+Banana:setPos(((holoEntity(1):pos() + vec(15,0,0) + O:eye()*2)))
+Banana:setAlpha(255)
+Banana:propNotSolid(1)
+Banana:applyForce(((O:eye())*500-Banana:vel())*Banana:mass())  
+timer("uncolide",100)
+holoAlpha(1,0)
+Banana:soundPlay(1,4,"buttons/button6.wav")  
+}
+
+if(clk("uncolide")){
+Banana:propNotSolid(0)    
+}
+
+
+if(changed(Banana) && Banana != noentity()){
+timer("bleep",Tim) 
+Banana:setTrails(20,20,3,"trails/laser",vec(255,255,255),255)   
+}
+
+if(Banana != noentity()){
+
+if(clk("bleep") && Boom == "NONE"){
+Beep = !Beep    
+Tim-=50
+if(Beep){
+Banana:setColor(255,0,0)  
+}else{
+Banana:setColor(255,255,255)  
+}
+
+Banana:soundPlay(1,3,"buttons/blip1.wav")
+
+if(Tim > 0){
+timer("bleep",Tim)
+}else{
+Banana:setColor(0,0,0) 
+stoptimer("bleep")
+Boom = "DEVIDE"
+Banana:soundPlay(1,3,"buttons/bell1.wav")
+}
+
+}    
+
+if(changed(Boom) && Boom == "DEVIDE"){
+Pos = Banana:pos()
+Banana:soundPlay(23,1000,"player/taunt_medic_heroic.wav") 
+Pitch = 0
+Banana:propFreeze(1)   
+timer("Spawn",2000)
+}
+
+if(Boom == "DEVIDE"){
+    
+if(Pitch < 80){
+ 
+Pitch+=0.1
+soundPitch(23,Pitch)
+
+Banana:setAng(ang(Pitch*30,Pitch*30,Pitch*30))
+Banana:setPos(Pos + vec(0,0,Pitch*3))
+
+
+Banana:setColor(Pitch*255/90,0,0)
+
+if(clk("Spawn")){
+Temp = propSpawn(Ribs[randint(-1,Ribs:count()),string],Banana:pos() + vec(randint(-50,50),randint(-50,50),20),ang(0,0,0),0) 
+BoomB:pushEntity(Temp)
+  
+timer("Spawn",900)    
+}
+
+}else{
+
+Banana:propBreak()
+
+Boom = "EXPLODE"
+Pos = Banana:pos()
+
+}
+    
+}
+
+}
+
+if(changed(Boom) && Boom == "EXPLODE"){
+timer("boom",400) 
+Count = 0   
+}
+
+
+
+if(Boom == "EXPLODE"){
+
+if(clk("boom")){
+
+if(Count < BoomB:count() + 1){
+
+Temp = propSpawn("models/props_phx/misc/potato_launcher_explosive.mdl",BoomB[Count,entity]:pos(),ang(0,0,0),1)
+Temp:propBreak()
+BoomB[Count,entity]:propDelete()
+timer("boom",400)  
+Count++ 
+}else{
+selfDestructAll()
+}
+   
+}
+  
+
+}
+
+

@@ -1,0 +1,79 @@
+@name FailCake Crash Invisible Block
+@persist TRIGGER [E]:entity HOLO_INDEX
+@trigger all
+@model models/items/item_item_crate.mdl
+
+if(first() || duped()){
+    
+    dsJoinGroup("bombCrashBand_FailCake")
+    propSpawnEffect(0)
+    runOnTick(1)
+    
+    E = entity()
+    
+    E:setMaterial("models/debug/debugwhite")
+    E:setColor(120,120,120)
+    E:setAlpha(0)
+    
+    holoCreate(1)
+    holoModel(1,"cube")
+    holoParent(1,E)
+    holoPos(1,E:toWorld(vec(0,0,13)))
+    holoScale(1,vec(2.7,2.7,2))
+    holoAlpha(1,50)
+    
+}
+
+if(TRIGGER == 0){
+    
+    findIncludeEntities(players())
+    local Pie = findInBox(E:toWorld(vec(15,-15,25.5)),E:toWorld(vec(-13,13,27.5)))
+    
+    if(Pie){ 
+        E:propNotSolid(1)
+        timer("reset",700)
+    }
+    
+}
+
+    if(dsClk("spawnSignal")){
+        
+        local Num = dsGetNumber()
+        
+        if(Num && TRIGGER == 0){  
+            timer("yay",randint(500,2400))
+            TRIGGER = 1
+        }
+        
+        if(TRIGGER && Num == -1){
+            timer("resetYay",randint(500,2400))
+            TRIGGER = 0
+        }
+    
+    }
+
+if(clk("resetYay")){
+    
+    E:propNotSolid(1)
+    E:setAlpha(0)
+    E:soundPlay(1,5,"garrysmod/balloon_pop_cute.wav")
+    soundPitch(1,randint(80,100))
+    holoAlpha(1,50)
+    
+}
+
+if(clk("yay")){
+    
+stoptimer("reset")
+E:propNotSolid(0)
+holoAlpha(1,0)
+E:setAlpha(255)
+E:soundPlay(1,5,"garrysmod/balloon_pop_cute.wav")
+soundPitch(1,randint(80,100))
+
+}
+
+
+if(clk("reset")){
+  E:propNotSolid(0)  
+}

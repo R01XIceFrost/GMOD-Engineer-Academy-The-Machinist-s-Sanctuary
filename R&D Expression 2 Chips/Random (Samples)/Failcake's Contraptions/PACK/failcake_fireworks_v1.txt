@@ -1,0 +1,297 @@
+@name FailCake FireWorks V1
+@inputs Ply:entity
+@outputs Activate Player:entity A:array Start Boom Red Blue Green Sa
+@persist Fire Up BOMT T T2 T3
+@trigger all
+
+## Made By [CG]FailCake ##
+
+## SETTINGS ##
+MapScale = 600 ## Set it to ween you want it to blow.
+## SETTINGS ##
+
+
+E = entity()
+
+if(first()){
+    
+hint("Made By [CG]FailCake",100)  
+holoCreate(5)
+holoModel(5,"cube")
+holoColor(5,vec(100,100,100))
+holoMaterial(5,"")
+
+holoCreate(6)
+holoModel(6,"cube")
+holoColor(6,vec(100,100,100))
+holoMaterial(6,"")
+      
+holoCreate(7)
+holoModel(7,"cube")
+holoColor(7,vec(100,100,100))
+holoMaterial(7,"")
+
+holoCreate(8)
+holoModel(8,"cube")
+holoColor(8,vec(100,100,100))
+holoMaterial(8,"")
+
+holoCreate(9)
+holoModel(9,"cube")
+holoColor(9,vec(100,100,100))
+holoMaterial(9,"")
+
+holoCreate(10)
+holoModel(10,"cube")
+holoColor(10,vec(100,100,100))
+holoMaterial(10,"")
+
+holoCreate(11)
+holoModel(11,"cube")
+holoColor(11,vec(100,100,100))
+holoMaterial(11,"")
+
+holoCreate(12)
+holoModel(12,"cube")
+holoColor(12,vec(100,100,100))
+holoMaterial(12,"")
+
+holoCreate(13)
+holoModel(13,"cube")
+holoColor(13,vec(100,100,100))
+holoMaterial(13,"")
+
+holoCreate(14)
+holoModel(14,"cube")
+holoColor(14,vec(100,100,100))
+holoMaterial(14,"")
+
+holoCreate(15)
+holoModel(15,"cube")
+holoColor(15,vec(100,100,100))
+holoMaterial(15,"")
+
+
+holoCreate(16)
+holoModel(16,"cube")
+holoColor(16,vec(100,100,100))
+holoMaterial(16,"")
+
+holoCreate(17)
+holoModel(17,"cube")
+holoColor(17,vec(100,100,100))
+holoMaterial(17,"")
+
+holoCreate(18)
+holoModel(18,"cube")
+holoColor(18,vec(100,100,100))
+holoMaterial(18,"")
+
+holoCreate(19)
+holoModel(19,"cube")
+holoColor(19,vec(100,100,100))
+holoMaterial(19,"")
+
+holoCreate(20)
+holoModel(20,"cube")
+holoColor(20,vec(100,100,100))
+holoMaterial(20,"")
+
+holoCreate(21)
+holoModel(21,"cube")
+holoColor(21,vec(100,100,100))
+holoMaterial(21,"")
+
+holoAlpha(5,0)
+holoAlpha(6,0)
+holoAlpha(7,0)
+holoAlpha(8,0)
+holoAlpha(9,0)
+holoAlpha(10,0)
+holoAlpha(11,0)
+holoAlpha(12,0)
+holoAlpha(13,0)
+holoAlpha(14,0)
+holoAlpha(15,0)
+holoAlpha(16,0)
+holoAlpha(17,0)
+holoAlpha(18,0)
+holoAlpha(19,0)
+holoAlpha(20,0)
+holoAlpha(21,0)    
+    
+    
+    interval(100)
+    findByClass("player")
+    A=findToArray() 
+    #E:setAlpha(0)
+Activate = 0
+Fire = 0  
+Start = 0 
+Boom
+}
+#player/general/flesh_burn.wav
+
+for(I=1,A:count()){
+interval(100)
+if(A[I,entity]:keyUse() & A[I,entity]:aimEntity()==entity() & Start == 0 & A[I,entity]:pos():distance(entity():pos())<= 70)
+{
+Player = A[I,entity]
+Start = 1
+}
+}
+
+if(Start){
+if(Fire <= 7){
+Fire+=0.1  
+if(Fire == 0.2){
+ holoEntity(1):soundPlay(1000,1000,"player/general/flesh_burn.wav")   
+}  
+}else{
+Activate = 1
+}
+if(Activate == 1){
+holoEntity(1):setTrails(5,5,5,"trails/smoke",vec(100,100,100),255)
+soundStop(1000)
+Start = 0
+}
+}
+
+
+holoCreate(1)
+holoModel(1,"hqcylinder")
+holoScaleUnits(1,vec(5,5,15))
+holoPos(1,E:toWorld(vec(0,0,20)))
+holoColor(1,vec(255,0,0))
+holoMaterial(1,"phoenix_storms/stripes")
+
+holoCreate(2)
+holoModel(2,"hqcone")
+holoScaleUnits(2,vec(5,5,5))
+holoPos(2,E:toWorld(vec(0,0,29.4)))
+holoColor(2,vec(255,255,0))
+holoMaterial(2,"")
+
+holoCreate(3)
+holoModel(3,"cube")
+holoScaleUnits(3,vec(1,1,14))
+holoPos(3,E:toWorld(vec(1.5,0,7)))
+holoColor(3,vec(255,155,0))
+holoMaterial(3,"")
+
+holoCreate(4)
+holoModel(4,"cylinder")
+holoScaleUnits(4,vec(1,1,7))
+holoPos(4,E:toWorld(vec(-1.5,-0.5,10+Fire)))
+holoColor(4,vec(100,100,100))
+holoMaterial(4,"")
+
+if(Activate){
+holoDelete(4) 
+if(Up == 10){
+holoEntity(1):soundPlay(2000,2000,"ambient/gas/cannister_loop.wav")   
+}
+if(Up <= MapScale & Boom == 0){
+interval(10)
+Up+=10
+holoPos(3,E:toWorld(vec(1.5,0,7+Up)))  
+holoPos(2,E:toWorld(vec(0,0,29.4+Up)))
+holoPos(1,E:toWorld(vec(0,0,20+Up)))
+}else{
+Boom = 1
+holoDelete(2)
+holoDelete(3)
+}
+}
+
+if(Boom){
+soundStop(2000)
+holoDelete(2)
+holoDelete(3)
+holoPos(1,E:toWorld(vec(0,0,20+MapScale)))
+holoAlpha(1,0)   
+interval(100)
+Up = 0
+BOMT +=0.1
+
+if(BOMT == 0.2){
+holoEntity(1):soundPlay(1000,1000,"ambient/explosions/explode_4.wav")    
+}
+
+interval(1)    
+T +=0.5
+T2 += 1
+T3 += 0.5
+
+
+Sa = 1
+if(T >= 0.5){
+holoScaleUnits(5,vec(Sa,Sa,Sa))
+holoPos(5,E:pos()+vec(T2,T,MapScale))
+holoScaleUnits(6,vec(Sa,Sa,Sa))
+holoPos(6,E:pos()+vec(T2,-T,MapScale))
+holoScaleUnits(7,vec(Sa,Sa,Sa))
+holoPos(7,E:pos()+vec(-T2,T,MapScale))
+holoScaleUnits(8,vec(Sa,Sa,Sa))
+holoPos(8,E:pos()+vec(-T2,-T,MapScale))
+holoScaleUnits(9,vec(Sa,Sa,Sa))
+holoPos(9,E:pos()+vec(T2,T,MapScale+T2))
+holoScaleUnits(10,vec(Sa,Sa,Sa))
+holoPos(10,E:pos()+vec(T2,-T,MapScale-T2))
+holoScaleUnits(12,vec(Sa,Sa,Sa))
+holoPos(12,E:pos()+vec(-T2,T,MapScale-T2))
+holoScaleUnits(11,vec(Sa,Sa,Sa))
+holoPos(11,E:pos()+vec(-T2,-T,MapScale-T2))
+holoScaleUnits(13,vec(Sa,Sa,Sa))
+holoPos(13,E:pos()+vec(T2,-T,MapScale+T2))
+holoScaleUnits(14,vec(Sa,Sa,Sa))
+holoPos(14,E:pos()+vec(-T2,-T,MapScale+T2))
+holoScaleUnits(15,vec(Sa,Sa,Sa))
+holoPos(15,E:pos()+vec(-T2,T,MapScale+T2))
+holoScaleUnits(16,vec(Sa,Sa,Sa))
+holoPos(16,E:pos()+vec(0,0,MapScale+T2))
+holoScaleUnits(17,vec(Sa,Sa,Sa))
+holoPos(17,E:pos()+vec(0,0,MapScale-T2))
+holoScaleUnits(18,vec(Sa,Sa,Sa))
+holoPos(18,E:pos()+vec(0,T,MapScale))
+holoScaleUnits(19,vec(Sa,Sa,Sa))
+holoPos(19,E:pos()+vec(T2,0,MapScale))
+holoScaleUnits(20,vec(Sa,Sa,Sa))
+holoPos(20,E:pos()+vec(0,-T,MapScale))    
+holoScaleUnits(21,vec(Sa,Sa,Sa))
+holoPos(21,E:pos()+vec(-T2,0,MapScale))
+}
+
+Red = randint(1,255)
+Blue = randint(1,255)
+Green = randint(1,255)
+
+if(T3 == 3){
+holoEntity(5):setTrails(10,10,10,"trails/smoke",vec(Red,Green,Blue),255)    
+holoEntity(6):setTrails(10,10,10,"trails/smoke",vec(Red,Green,Blue),255)    
+holoEntity(7):setTrails(10,10,10,"trails/smoke",vec(Red,Green,Blue),255)    
+holoEntity(8):setTrails(10,10,10,"trails/smoke",vec(Red,Green,Blue),255)    
+holoEntity(9):setTrails(10,10,10,"trails/smoke",vec(Red,Green,Blue),255)    
+holoEntity(10):setTrails(10,10,10,"trails/smoke",vec(Red,Green,Blue),255)    
+holoEntity(11):setTrails(10,10,10,"trails/smoke",vec(Red,Green,Blue),255)    
+holoEntity(12):setTrails(10,10,10,"trails/smoke",vec(Red,Green,Blue),255)    
+holoEntity(13):setTrails(10,10,10,"trails/smoke",vec(Red,Green,Blue),255)    
+holoEntity(14):setTrails(10,10,10,"trails/smoke",vec(Red,Green,Blue),255)    
+holoEntity(15):setTrails(10,10,10,"trails/smoke",vec(Red,Green,Blue),255)    
+holoEntity(16):setTrails(10,10,10,"trails/smoke",vec(Red,Green,Blue),255)    
+holoEntity(17):setTrails(10,10,10,"trails/smoke",vec(Red,Green,Blue),255)    
+holoEntity(18):setTrails(10,10,10,"trails/smoke",vec(Red,Green,Blue),255)    
+holoEntity(19):setTrails(10,10,10,"trails/smoke",vec(Red,Green,Blue),255)    
+holoEntity(20):setTrails(10,10,10,"trails/smoke",vec(Red,Green,Blue),255)    
+holoEntity(21):setTrails(10,10,10,"trails/smoke",vec(Red,Green,Blue),255)    
+
+}
+
+if(T3 >= 100){
+selfDestructAll()    
+}
+
+}
+
+if(duped()){selfDestructAll()}
+

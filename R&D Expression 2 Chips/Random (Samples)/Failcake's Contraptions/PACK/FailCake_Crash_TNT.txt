@@ -1,0 +1,307 @@
+@name FailCake Crash TNT
+@persist [E]:entity HOLO_INDEX EXPLODING TIMER
+@trigger all
+@model models/items/item_item_crate.mdl
+
+if(first() || duped()){
+    
+    propSpawnEffect(0)
+    # By FailCake :D
+    function void sendBoom(Rad:number){
+        
+        findClearBlackList()
+        findClearWhiteList()
+        
+        findInSphere(E:pos(),Rad)
+        
+        local FD = findToArray()
+        
+        if(FD:count() > 0){
+                
+            for(I = 0, FD:count()){
+                if(FD[I,entity]:isValid()){
+                    if(FD[I,entity]:type() == E:type() && FD[I,entity]:owner() == E:owner() ){
+                       dsSendDirect("explodeNEAR",FD[I,entity],E:pos())
+                    }
+                }
+            }
+                
+        }
+        
+    }
+    
+    function void deleteHoloRange(Start:number,End:number){
+        for(I = Start,End){
+            holoDelete(I)
+            HOLO_INDEX -= 1
+        }
+    }
+    
+    function void createHolo(Model:string,Scl:vector,Pos:vector,Ang:angle,Parent:entity, Color:vector){
+        
+        holoCreate(HOLO_INDEX)
+        holoModel(HOLO_INDEX,Model)
+        holoPos(HOLO_INDEX,Parent:toWorld(Pos))
+        holoAng(HOLO_INDEX,Parent:toWorld(Ang))
+        holoScaleUnits(HOLO_INDEX,Scl)
+        holoColor(HOLO_INDEX,Color)
+        holoParent(HOLO_INDEX,Parent)
+        
+        HOLO_INDEX+=1
+    }
+        
+    function void createStripes(){
+        
+        # STRIPES BOT #
+        createHolo("cube",vec(32,1,2),vec(1,15,5),ang(0,0,0),E,vec(255,200,0))
+        createHolo("cube",vec(32,1,2),vec(1,-17,5),ang(0,0,0),E,vec(255,200,0))
+        createHolo("cube",vec(33,1,2),vec(-15,-1,5),ang(0,90,0),E,vec(255,200,0))
+        createHolo("cube",vec(33,1,2),vec(17,-1,5),ang(0,90,0),E,vec(255,200,0))
+        
+        # STRIPES UP #
+        createHolo("cube",vec(32,1,2),vec(1,15,20),ang(0,0,0),E,vec(255,200,0))
+        createHolo("cube",vec(32,1,2),vec(1,-17,20),ang(0,0,0),E,vec(255,200,0))
+        createHolo("cube",vec(33,1,2),vec(-15,-1,20),ang(0,90,0),E,vec(255,200,0))
+        createHolo("cube",vec(33,1,2),vec(17,-1,20),ang(0,90,0),E,vec(255,200,0))
+
+    }
+    # By FailCake :D
+    function void createTNT(){
+        
+        # FRONT
+        # T
+        createHolo("cube",vec(2,1,5),vec(9,15,12),ang(0,0,0),E,vec(255,200,0))
+        createHolo("cube",vec(5,1,2),vec(9,15,15.4),ang(0,0,0),E,vec(255,200,0))
+        
+        # N
+        createHolo("cube",vec(2,1,7),vec(3.5,15,13),ang(0,0,0),E,vec(255,200,0))
+        createHolo("cube",vec(7,1,2),vec(1,15,13),ang(-45,0,0),E,vec(255,200,0))
+        createHolo("cube",vec(2,1,7),vec(-1.5,15,13),ang(0,0,0),E,vec(255,200,0))
+        
+        # T
+        createHolo("cube",vec(2,1,5),vec(-7,15,12),ang(0,0,0),E,vec(255,200,0))
+        createHolo("cube",vec(5,1,2),vec(-7,15,15.4),ang(0,0,0),E,vec(255,200,0))
+        
+        # BACK
+        # T
+        createHolo("cube",vec(2,1,5),vec(9,-17,12),ang(0,0,0),E,vec(255,200,0))
+        createHolo("cube",vec(5,1,2),vec(9,-17,15.4),ang(0,0,0),E,vec(255,200,0))
+        
+        # N
+        createHolo("cube",vec(2,1,7),vec(3.5,-17,13),ang(0,0,0),E,vec(255,200,0))
+        createHolo("cube",vec(7,1,2),vec(1,-17,13),ang(45,0,0),E,vec(255,200,0))
+        createHolo("cube",vec(2,1,7),vec(-1.5,-17,13),ang(0,0,0),E,vec(255,200,0))
+        
+        # T
+        createHolo("cube",vec(2,1,5),vec(-7,-17,12),ang(0,0,0),E,vec(255,200,0))
+        createHolo("cube",vec(5,1,2),vec(-7,-17,15.4),ang(0,0,0),E,vec(255,200,0))
+        
+        # LEFT
+        # T
+        createHolo("cube",vec(2,1,5),vec(-15,7,12),ang(0,90,0),E,vec(255,200,0))
+        createHolo("cube",vec(5,1,2),vec(-15,7,15.4),ang(0,90,0),E,vec(255,200,0))
+        # N
+        createHolo("cube",vec(2,1,7),vec(-15,-3.5,13),ang(0,90,0),E,vec(255,200,0))
+        createHolo("cube",vec(7,1,2),vec(-15,-1,13),ang(-45,90,0),E,vec(255,200,0))
+        createHolo("cube",vec(2,1,7),vec(-15,1.5,13),ang(0,90,0),E,vec(255,200,0))
+        # T
+        createHolo("cube",vec(2,1,5),vec(-15,-9,12),ang(0,90,0),E,vec(255,200,0))
+        createHolo("cube",vec(5,1,2),vec(-15,-9,15.4),ang(0,90,0),E,vec(255,200,0))
+        
+        # RIGHT
+        # T
+        createHolo("cube",vec(2,1,5),vec(17,7,12),ang(0,90,0),E,vec(255,200,0))
+        createHolo("cube",vec(5,1,2),vec(17,7,15.4),ang(0,90,0),E,vec(255,200,0))
+        # N
+        createHolo("cube",vec(2,1,7),vec(17,-3.5,13),ang(0,90,0),E,vec(255,200,0))
+        createHolo("cube",vec(7,1,2),vec(17,-1,13),ang(45,90,0),E,vec(255,200,0))
+        createHolo("cube",vec(2,1,7),vec(17,1.5,13),ang(0,90,0),E,vec(255,200,0))
+        # T
+        createHolo("cube",vec(2,1,5),vec(17,-9,12),ang(0,90,0),E,vec(255,200,0))
+        createHolo("cube",vec(5,1,2),vec(17,-9,15.4),ang(0,90,0),E,vec(255,200,0))
+ 
+    }
+   # By FailCake :D 
+    function void createNumber3(){
+
+        # Left
+        createHolo("cube",vec(2,1,7),vec(17,1,12.9),ang(0,90,0),E,vec(255,200,1))
+        createHolo("cube",vec(5,1,2),vec(17,-1.5,15.4),ang(0,90,0),E,vec(255,200,1))
+        createHolo("cube",vec(4,1,1.5),vec(17,-1.5,12.9),ang(0,90,0),E,vec(255,200,1))
+        createHolo("cube",vec(5,1,2),vec(17,-1.5,10.4),ang(0,90,0),E,vec(255,200,1))
+        
+        # Right
+        createHolo("cube",vec(2,1,7),vec(-15,-2,12.9),ang(0,90,0),E,vec(255,200,1))
+        createHolo("cube",vec(5,1,2),vec(-15,-0.5,15.4),ang(0,90,0),E,vec(255,200,1))
+        createHolo("cube",vec(4,1,1.5),vec(-15,-0.5,12.9),ang(0,90,0),E,vec(255,200,1))
+        createHolo("cube",vec(5,1,2),vec(-15,-0.5,10.4),ang(0,90,0),E,vec(255,200,1))
+        
+        # Front
+        createHolo("cube",vec(2,1,7),vec(0,15,12.9),ang(0,0,0),E,vec(255,200,1))
+        createHolo("cube",vec(5,1,2),vec(1.5,15,15.4),ang(0,0,0),E,vec(255,200,1))
+        createHolo("cube",vec(4,1,1.5),vec(1.5,15,12.9),ang(0,0,0),E,vec(255,200,1))
+        createHolo("cube",vec(5,1,2),vec(1.5,15,10.4),ang(0,0,0),E,vec(255,200,1))
+
+        # Back
+        createHolo("cube",vec(2,1,7),vec(2,-17,12.9),ang(0,0,0),E,vec(255,200,1))
+        createHolo("cube",vec(5,1,2),vec(0.5,-17,15.4),ang(0,0,0),E,vec(255,200,1))
+        createHolo("cube",vec(4,1,1.5),vec(0.5,-17,12.9),ang(0,0,0),E,vec(255,200,1))
+        createHolo("cube",vec(5,1,2),vec(0.5,-17,10.4),ang(0,0,0),E,vec(255,200,1))
+
+    }
+    
+    function void createNumber2(){
+        
+        # Front
+        createHolo("cube",vec(2,1,7),vec(1,15,12.9),ang(-45,0,0),E,vec(255,200,1))
+        createHolo("cube",vec(6,1,2),vec(1,15,15),ang(0,0,0),E,vec(255,200,1))
+        createHolo("cube",vec(6,1,2),vec(1,15,10),ang(0,0,0),E,vec(255,200,1))
+      
+        # Back
+        createHolo("cube",vec(2,1,7),vec(1,-17,12.9),ang(45,0,0),E,vec(255,200,1))
+        createHolo("cube",vec(6,1,2),vec(1,-17,15),ang(0,0,0),E,vec(255,200,1))
+        createHolo("cube",vec(6,1,2),vec(1,-17,10),ang(0,0,0),E,vec(255,200,1))
+        
+        # LEFT
+        createHolo("cube",vec(2,1,7),vec(-15,-1,12.9),ang(-45,90,0),E,vec(255,200,1))
+        createHolo("cube",vec(6,1,2),vec(-15,-1,15),ang(0,90,0),E,vec(255,200,1))
+        createHolo("cube",vec(6,1,2),vec(-15,-1,10),ang(0,90,0),E,vec(255,200,1))
+        
+        # RIGHT
+        createHolo("cube",vec(2,1,7),vec(17,-1,12.9),ang(45,90,0),E,vec(255,200,1))
+        createHolo("cube",vec(6,1,2),vec(17,-1,15),ang(0,90,0),E,vec(255,200,1))
+        createHolo("cube",vec(6,1,2),vec(17,-1,10),ang(0,90,0),E,vec(255,200,1))
+        
+    }
+  # By FailCake :D  
+    function void createNumber1(){
+        
+        # Front
+        createHolo("cube",vec(2,1,7),vec(0.5,15,12.9),ang(0,0,0),E,vec(255,200,1))
+        createHolo("cube",vec(5,1,2),vec(2,15,14.8),ang(25,0,0),E,vec(255,200,1))
+        
+        # BACK
+        createHolo("cube",vec(2,1,7),vec(1,-17,12.9),ang(0,0,0),E,vec(255,200,1))
+        createHolo("cube",vec(5,1,2),vec(-1,-17,14.5),ang(-25,0,0),E,vec(255,200,1))
+        
+        # LEFT
+        createHolo("cube",vec(2,1,7),vec(-15,-1,12.9),ang(0,90,0),E,vec(255,200,1))
+        createHolo("cube",vec(5,1,2),vec(-15,1,14.5),ang(25,90,0),E,vec(255,200,1))
+        
+        # RIGHT
+        createHolo("cube",vec(2,1,7),vec(17,1,12.9),ang(0,90,0),E,vec(255,200,1))
+        createHolo("cube",vec(5,1,2),vec(17,-1,14.5),ang(-25,90,0),E,vec(255,200,1))
+    }
+        
+}
+
+
+if(first() || duped()){
+    
+    dsJoinGroup("bombCrashBand_FailCake")
+            
+    runOnTick(1)
+    
+    E = entity()
+    
+    E:setMaterial("models/debug/debugwhite")
+    E:setColor(200,0,0)
+    E:propFreeze(0)
+    
+    createStripes()
+    createTNT()
+    
+    TIMER = 1500
+}
+
+# By FailCake :D
+
+if(EXPLODING == 0){ 
+    
+    
+    findIncludeEntities(players())
+    local Pie = findInBox(E:toWorld(vec(15,-15,25.5)),E:toWorld(vec(-13,13,27.5)))
+    local Bab = 0
+    
+    if(dsClk("explodeNEAR") || dsClk("explode_NITRO")){
+        local Dist = dsGetVector()
+        
+        if(E:pos():distance(Dist) < 100){
+            Bab = 0
+            EXPLODING = -1
+            E:soundPlay(3,0,"ambient/explosions/explode_"+randint(3,4)+".wav")   
+            timer("BOOM",100)
+            sendBoom(300)
+        }else{
+            Bab = 1
+        }
+        
+    }
+    
+    if(Pie || Bab){ 
+        
+        EXPLODING = 1
+              
+        E:propFreeze(0)  
+        
+        if(Bab){
+         E:applyForce(randvec()*10^4) 
+        }
+            
+        E:soundPlay(1,0,"buttons/button11.wav")
+        timer("Beep",TIMER)
+                    
+        HOLO_INDEX = 8
+        createNumber3()
+        deleteHoloRange(HOLO_INDEX,100)
+        
+    
+    }
+    
+    
+    # By FailCake :D
+    
+}else{
+
+    if(clk("Beep")){
+        
+       if(TIMER == 1500){
+           HOLO_INDEX = 8
+           createNumber2()
+           deleteHoloRange(HOLO_INDEX,100) 
+       }elseif(TIMER == (1500 - 600)){
+           HOLO_INDEX = 8
+           createNumber1()
+           deleteHoloRange(HOLO_INDEX,100)
+       }elseif(TIMER <= 0){
+    
+           stoptimer("Beep")
+           EXPLODING = 0
+           E:soundPlay(3,0,"ambient/explosions/explode_"+randint(3,4)+".wav")   
+           timer("BOOM",100)
+        
+           sendBoom(300)
+        
+       }
+    # By FailCake :D
+       TIMER -= 200
+    
+       E:soundPlay(1,0,"buttons/button10.wav")
+    
+       timer("Beep",TIMER)
+    
+    }
+
+}
+
+
+if(clk("BOOM")){
+ local Sp = propSpawn("models/props_c17/oildrum001_explosive.mdl",E:pos(),ang(0,0,0),1)
+ Sp:setAlpha(0)
+ Sp:propBreak()
+ selfDestructAll()
+}
+
+# By FailCake :D
+
+

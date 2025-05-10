@@ -1,0 +1,104 @@
+@name FailCake Washing Machine
+@outputs Timeout Ready Full Once Starts WashTime
+@persist Store:array I Item Tim I2
+@trigger all
+@model models/props_c17/FurnitureWashingmachine001a.mdl
+runOnTick(1)
+E = entity()
+E:setMass(50)
+
+if(first()){
+hint("Made By FailCake",7) 
+
+####  Config  #####
+WashTime = 10
+####  Config  #####
+   
+}
+
+O = owner()
+findByClass("prop_physics")
+findIncludePlayerProps(owner())
+C = findClosest(entity():pos())
+Distance = round(entity():pos():distance(C:pos()))
+DistanceO = round(entity():pos():distance(O:pos()))
+
+
+if(Distance <= 35 & Full == 1 & Timeout == 0){
+E:soundPlay(1030,1030,"buttons/combine_button_locked.wav")  
+Timeout = 1  
+}
+
+
+if(Distance <= 35 & Item <= 10 & Timeout == 0 & Full == 0 & Starts == 0){
+Timeout = 0  
+I+=1
+Item+=1
+C:propDelete()
+E:soundPlay(100,100,"garrysmod/content_downloaded.wav")
+Store[I,string]=C:model()  
+}else{
+
+if(Item > 0){
+Ready = 1    
+}
+
+if(Item >= 10){
+I = 0    
+Full = 1
+soundStop(100)
+}
+}
+
+if(Timeout){
+timer("Clean",1000)
+if(clk("Clean")){
+Timeout = 0    
+}    
+}else{
+stoptimer("Clean")
+}
+
+if(Ready == 1){
+if(O:keyUse() & DistanceO < 50 & Once == 0){  
+Once = 1
+Starts = 1  
+E:soundPlay(400,400,"buttons/combine_button1.wav")
+}
+}
+
+if(Starts){
+Tim+=0.01
+if(Tim == 1){
+E:soundPlay(50000,50000,"ambient/levels/labs/machine_moving_loop4.wav")    
+}
+
+if(Tim >= 2){
+R = randint(200,400)
+E:applyForce(vec(0,0,R) + E:forward()*80)
+}
+
+if(Tim >= WashTime){
+for(I2 = 0,Store:count()){
+Clean = propSpawn(Store[I2,string],E:pos()+vec(80,0,60),0)
+Clean:setColor(255,255,255)  
+}
+soundStop(50000)
+E:soundPlay(1000,1000,"buttons/bell1.wav")
+Tim = 0
+I2 = 0
+Item = 0
+Once = 0
+Starts = 0
+Full = 0
+I = 0
+}
+
+}
+
+if(duped()){selfDestructAll()}
+
+
+####################################################################
+## Do not rename the E2 or remove the hint("Made by Failcake",100)##
+####################################################################

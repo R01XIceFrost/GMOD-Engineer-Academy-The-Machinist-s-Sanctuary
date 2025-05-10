@@ -1,0 +1,152 @@
+@name FailCake Water Bottle
+@persist ANG Fill Stat:string
+@persist [E O]:entity Water Onc Onc2 Scale Open Ds
+@trigger all
+@model models/props_junk/garbage_plasticbottle003a.mdl
+
+if(first() | duped()){
+runOnTick(1)
+    
+E = entity()  
+O = owner()
+#Made By FailCake
+Water = 100
+Open = 0
+Stat = "Closed"
+holoCreate(2)
+holoModel(2,"cube")
+holoScaleUnits(2,vec(1,1,1))
+holoPos(2,E:toWorld(vec(0,0,11)))
+holoParent(2,E)
+holoAlpha(2,0)
+
+holoCreate(3)
+holoModel(3,"hqcylinder")
+holoScaleUnits(3,vec(3,3,1))
+holoColor(3,vec(90,90,90))
+holoPos(3,E:toWorld(vec(0,0,10)))
+holoParent(3,E)
+holoAlpha(3,255)
+
+holoCreate(4)
+holoModel(4,"hqcylinder")
+holoScaleUnits(4,vec(10,10,1))
+holoColor(4,vec(0,178,255))
+holoAlpha(4,0)
+
+holoCreate(1)
+holoModel(1,"hqcylinder")
+holoScaleUnits(1,vec(1,1,10))
+holoPos(1,E:toWorld(vec(0,5,11)))
+holoParent(1,2)
+holoAng(1,ang(90,90,0))
+holoAlpha(1,0)
+holoColor(1,vec(0,178,255))
+
+setName("FailCake Water Bottle [Water : "+round(Water)+"%][Closed]")
+}
+
+if(changed(O:keyAttack2()) & O:keyAttack2()){
+if(O:aimEntity() == E & O:pos():distance(E:pos()) <= 80){
+Open =!Open 
+
+if(Open == 1){
+Stat = "Open"   
+holoAlpha(3,0) 
+}elseif(Open == 0){
+Stat = "Closed"
+holoAlpha(3,255)
+}
+   #Made By FailCake
+E:soundPlay(3,0,"buttons/lever7.wav")
+}
+}
+
+
+if(E:isUnderWater() & Water < 100 & Open == 1){
+    
+if(Onc == 0){
+Onc = 1
+E:soundPlay(1,0,"ambient/creatures/leech_water_churn_loop2.wav") # fill sound
+soundVolume(1,0.1)
+}
+
+Water+=0.7
+setName("FailCake Water Bottle [Water : "+round(Water)+"%]")
+}else{
+Onc = 0
+soundStop(1)
+}
+
+
+
+
+
+if(!E:isUnderWater() & Water > 0 & Open == 1){
+
+ANG = E:angles():roll()
+
+if(ANG >= 65 | ANG < -65){
+Fill = 1
+
+rangerFilter(holoEntity(1))
+rangerFilter(holoEntity(2))
+
+Rang = rangerOffset(9900,holoEntity(2):pos(),-holoEntity(2):right())
+
+if(Rang:hit() & !Rang:entity():isPlayer()){
+holoPos(4,Rang:position())
+holoAlpha(4,50)
+}else{
+holoAlpha(4,0)
+}
+Ds = holoEntity(2):pos():distance(Rang:pos())/5
+Ds = 30-Ds
+#Made By FailCake
+holoScaleUnits(4,vec(Ds,Ds,1))
+holoAng(2,ang(0,0,-90))
+
+Scale = holoEntity(2):pos():distance(Rang:position())
+
+holoScaleUnits(1,vec(1,1,Scale))
+holoPos(1,holoEntity(2):toWorld(vec(0,Scale/2,0)))
+
+}else{
+Fill = 0
+holoAlpha(4,0)
+}
+ 
+}else{
+Fill = 0
+holoAlpha(4,0)
+}
+
+
+
+if(Fill){
+    
+if(Water > 0){
+holoAlpha(1,50) 
+  
+Water -= 0.2
+
+if(Onc2 == 0){
+Onc2 = 1  
+E:soundPlay(2,0,"ambient/water/water_flow_loop1.wav")
+soundVolume(2,0.5)
+}
+#Made By FailCake
+}else{
+Water = 0
+holoAlpha(1,0)
+soundStop(2)
+}
+
+}else{
+Onc2 = 0
+holoAlpha(1,0)
+soundStop(2)
+}
+
+setName("FailCake Water Bottle[Water : "+round(Water)+"%]["+Stat+"]")
+#Made By FailCake

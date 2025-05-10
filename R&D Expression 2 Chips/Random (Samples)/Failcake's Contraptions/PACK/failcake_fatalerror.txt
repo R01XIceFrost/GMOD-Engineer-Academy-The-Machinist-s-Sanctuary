@@ -1,0 +1,53 @@
+@name FailCake FatalError
+@inputs XWL:wirelink
+@persist Timer Sound
+@trigger all
+interval(1000)
+# Made BY Failcake :D
+if(first() || duped()){
+holoMaterial(4,"models/debug/debugwhite")  
+holoMaterial(1,"models/debug/debugwhite") 
+}
+# Made BY Failcake :D
+
+E = entity()
+Timer += 1
+
+XWL:egpBox(1,vec2(255,255),vec2(900,900))
+XWL:egpColor(1,vec4(0,0,140,255))
+
+
+XWL:egpBox(2,vec2(250,100),vec2(110,30))
+XWL:egpColor(2,vec4(200,200,200,255))
+
+XWL:egpText(3,"Windows",vec2(215,90))
+XWL:egpColor(3,vec4(0,0,140,255))
+
+XWL:egpText(4,"A fatal exception 0E has occured at 0137:BFFA21C9. The current",vec2(10,200))
+XWL:egpColor(4,vec4(255,255,255,255))
+
+XWL:egpText(5,"application will be terminated.",vec2(10,220))
+XWL:egpColor(5,vec4(255,255,255,255))
+
+XWL:egpText(6,"* Press any key to terminate the current application.",vec2(10,270))
+XWL:egpColor(6,vec4(255,255,255,255))
+
+XWL:egpText(7,"* Press CTRL+ALT+DEL again to restart your computer.",vec2(10,290))
+XWL:egpColor(7,vec4(255,255,255,255))
+
+XWL:egpText(8,"You will lose any unsaved information in all aplications.",vec2(10,310))
+XWL:egpColor(8,vec4(255,255,255,255))
+# Made BY Failcake :D
+XWL:egpText(9,"Press any key to continue ",vec2(150,400))
+XWL:egpColor(9,vec4(255,255,255,255))
+
+if(Timer == 1){
+XWL:egpText(9,"Press any key to continue _",vec2(150,400))
+}
+if(Timer == 2){
+XWL:egpText(9,"Press any key to continue ",vec2(150,400))
+}
+if(Timer == 3){
+Timer = 0
+}
+# Made BY Failcake :D

@@ -1,0 +1,69 @@
+@name FailCake CURVE EXPERIMENT
+@persist Posi:vector T [Ent1 Ent2 Ent3 E O]:entity [V1 VC1 VC2 V2]:vector Ok Ang:angle
+@trigger all    
+
+interval(100)
+
+function vector mid( A:vector, B:vector, D:number ){
+    return (B-A-30)*D + A
+}
+
+# Note this is just an experiment!
+# Made By FailCake :D
+
+if(first() | duped()){
+
+E = entity()
+propSpawnEffect(0)
+
+Ent1 = propSpawn("models/props_c17/pottery01a.mdl",E:pos() + vec(0,0,20),ang(0,0,0),1)
+Ent1:setColor(vec(255,0,0))
+Ent2 = propSpawn("models/props_c17/pottery02a.mdl",E:pos() + vec(0,0,20),ang(0,0,0),1)
+Ent2:setColor(vec(0,255,0))
+
+timer("wait",800)
+
+O = owner()
+
+holoCreate(4)
+holoModel(4,"models/Gibs/HGIBS.mdl")
+holoPos(4,E:toWorld(vec(0,0,0)))
+holoParent(4,E)
+
+holoEntity(4):setTrails(10,10,10,"trails/laser",vec(255,255,255),255)
+
+
+}
+
+if(clk("wait")){
+Ent3 = propSpawn("models/props_c17/pottery02a.mdl",E:pos() + vec(0,0,20),ang(0,0,0),1)
+Ent3:setColor(vec(0,0,255))
+}    
+
+if(O:keyUse()){
+Ok = 1    
+}
+
+
+if(Ok){
+    
+V1 = Ent1:pos()
+V2 = Ent3:pos()
+
+VC1 = Ent2:pos()
+
+VC2 = VC1
+
+
+T+=0.05
+# Formula
+Posi = (V1 * ((1-T)*(1-T)*(1-T))) + 3 * VC1 * T*(1-T)*(1-T) + 3 * VC2 * T * T * (1-T) + V2*T*T*T 
+
+holoPos(4,Posi)
+Ang = (holoEntity(4):pos() - V2):toAngle() + ang(0,180,0)
+holoAng(4,Ang)
+
+if(holoEntity(4):pos():distance(V2) <= 5){
+T = 0    
+}
+}

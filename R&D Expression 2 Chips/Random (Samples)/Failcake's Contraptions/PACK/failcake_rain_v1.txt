@@ -1,0 +1,68 @@
+@name FailCake Rain V1
+@persist Back S:array Height I X Y E:entity A Z Range 
+# Made By FailCake :D
+if(first()){
+
+E = entity()  
+E:setColor(255,255,255,0)
+E:setMaterial("models/debug/debugwhite")
+# Made By FailCake :D
+
+hint("Made by Failcake and Jack",7)   
+ 
+    ######### SETTINGS #########
+    Range = 300
+    Height = 300
+    ######### SETTINGS #########
+    
+    runOnTick(1)
+    A = 0
+    timer("spawn",500)
+}
+
+
+
+Back+=0.1
+
+if(Back == 2){
+E:soundPlay(1,999,"ambient/water/water_flow_loop1.wav")  
+soundPitch(1,100)  
+}
+if(Back >= 300){
+Back = 0
+soundStop(1)   
+}
+
+
+
+# Made By FailCake :D
+if(clk("spawn"))
+{
+    X = random(E:pos():x() - Range,E:pos():x() + Range)
+    Y = random(E:pos():y() - Range,E:pos():y() + Range)
+    A++
+    holoCreate(A)
+    holoModel(A,"cube")
+    holoScale(A,vec(0.1,0.1,0.5))
+    holoPos(A,vec(X,Y,E:pos():z() + Height))
+    holoColor(A,vec(0,0,255))
+    holoAlpha(A,150)
+    holoMaterial(A,"models/debug/debugwhite")
+    S:pushEntity(holoEntity(A))  
+    holoRenderFX(A,1)
+    
+    if(A < 60)
+{
+    timer("spawn",500)
+}
+}
+
+for(I = 1,S:count())
+{
+    Z = S[I,entity]:pos():z() - 5
+    holoPos(I,vec(S[I,entity]:pos():x(),S[I,entity]:pos():y(),Z))
+    if(Z < E:pos():z()) {holoPos(I,vec(S[I,entity]:pos():x(),S[I,entity]:pos():y(),E:pos():z() + Height))}
+
+}
+if(duped()){selfDestructAll()}
+# Made By FailCake :D

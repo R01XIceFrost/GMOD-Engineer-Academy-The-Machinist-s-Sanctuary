@@ -1,0 +1,279 @@
+@name FailCake Man Eating Fridge
+@outputs E:entity Eat Cos Debug Onc Attack:entity Kill Die Lol Died Ang:angle [Float]:vector In
+@persist T T2 Ply:array I Ranger:ranger
+@trigger all
+@model models/props_interiors/refrigerator01a.mdl
+
+# Reworked
+
+runOnTick(1)
+
+if(first() | duped()){
+E = entity()
+Eat = 0
+Debug = 0
+Onc = 0
+E:setMass(1000)
+Attack = noentity()
+
+holoCreate(1)
+holoModel(1,"cube")
+holoScaleUnits(1,vec(2,2,2))
+holoParent(1,E)
+holoAlpha(1,0)
+holoPos(1,E:toWorld(vec(16,-15.5,28.5)))
+
+holoCreate(3)
+holoModel(3,"cube")
+holoScaleUnits(3,vec(2,2,2))
+holoParent(3,E)
+holoAlpha(3,0)
+holoPos(3,E:toWorld(vec(16,-15.5,-5.5)))
+
+holoCreate(2)
+holoModel(2,"models/props_interiors/refrigeratorDoor02a.mdl")
+holoParent(2,1)
+holoPos(2,E:toWorld(vec(16,0,29)))
+
+holoCreate(4)
+holoModel(4,"models/props_interiors/refrigeratorDoor01a.mdl")
+holoParent(4,3)
+holoPos(4,E:toWorld(vec(16,0,-7)))
+
+## FOOD ##
+# Made by Failcake
+hint("Made by FailCake",7)
+holoCreate(5)
+holoModel(5,"models/Gibs/HGIBS.mdl")
+holoParent(5,E)
+holoAng(5,ang(0,-40,0))
+holoPos(5,E:toWorld(vec(-3,5,23.5)))
+
+holoCreate(6)
+holoModel(6,"models/props_junk/PopCan01a.mdl")
+holoParent(6,E)
+holoAng(6,ang(0,-40,0))
+holoPos(6,E:toWorld(vec(-3,-3,24)))
+
+holoCreate(7)
+holoModel(7,"models/props_junk/PopCan01a.mdl")
+holoParent(7,E)
+holoSkin(7,2)
+holoAng(7,ang(90,-40,0))
+holoPos(7,E:toWorld(vec(2,-9,22.5)))
+
+holoCreate(8)
+holoModel(8,"models/props_junk/garbage_plasticbottle002a.mdl")
+holoParent(8,E)
+holoAng(8,ang(-90,90,0))
+holoPos(8,E:toWorld(vec(6,5,22.5)))
+
+holoCreate(9)
+holoModel(9,"models/props_junk/watermelon01.mdl")
+holoParent(9,E)
+holoScale(9,vec(0.7,0.7,0.7))
+holoAng(9,ang(0,0,0))
+holoPos(9,E:toWorld(vec(-3,5,12.5)))
+
+holoCreate(10)
+holoModel(10,"models/props_junk/watermelon01_chunk01b.mdl")
+holoParent(10,E)
+holoScale(10,vec(0.7,0.7,0.7))
+holoAng(10,ang(0,90,0))
+holoPos(10,E:toWorld(vec(5,-7,10)))
+
+holoCreate(11)
+holoModel(11,"models/props_junk/garbage_takeoutcarton001a.mdl")
+holoParent(11,E)
+holoAng(11,ang(0,30,0))
+holoPos(11,E:toWorld(vec(-5,-8,13.5)))
+
+setName("FailCake Normal Fridge")
+
+holoCreate(12)
+holoModel(12,"models/props_junk/garbage_milkcarton001a.mdl")
+holoParent(12,E)
+holoAng(12,ang(90,90,0))
+holoPos(12,E:toWorld(vec(-5,4,0)))
+
+holoCreate(13)
+holoModel(13,"models/props_junk/garbage_milkcarton002a.mdl")
+holoParent(13,E)
+holoScale(13,vec(0.7,0.7,0.7))
+holoAng(13,ang(0,50,0))
+holoPos(13,E:toWorld(vec(2,-8,0)))
+
+holoCreate(14)
+holoModel(14,"models/props_junk/MetalBucket02a.mdl")
+holoParent(14,E)
+holoScale(14,vec(0.5,0.5,0.5))
+holoAng(14,ang(0,10,0))
+holoPos(14,E:toWorld(vec(0,0,-15)))
+
+holoCreate(15)
+holoModel(15,"models/props_junk/Shoe001a.mdl")
+holoParent(15,E)
+holoAng(15,ang(0,20,0))
+holoPos(15,E:toWorld(vec(0,5,-29)))
+
+holoCreate(16)
+holoModel(16,"models/props_junk/Shoe001a.mdl")
+holoParent(16,E)
+holoAng(16,ang(0,-20,0))
+holoPos(16,E:toWorld(vec(0,-5,-29)))
+
+holoCreate(17)
+holoModel(17,"models/props_junk/garbage_coffeemug001a.mdl")
+holoParent(17,E)
+holoAng(17,ang(0,-20,0))
+holoPos(17,E:toWorld(vec(5,3,-2.5)))
+
+holoCreate(18)
+holoModel(18,"models/props_interiors/Radiator01a.mdl")
+holoParent(18,E)
+holoAng(18,ang(-180,0,90))
+holoPos(18,E:toWorld(vec(-19,0,0)))
+
+holoCreate(19)
+holoModel(19,"models/props_lab/powerbox02d.mdl")
+holoParent(19,E)
+holoAng(19,ang(0,90,0))
+holoPos(19,E:toWorld(vec(-11.5,20,-30)))
+
+if(Debug){
+holoAlpha(2,40)  
+holoAlpha(4,40) 
+}else{
+holoAlpha(2,255)  
+holoAlpha(4,255) 
+}
+
+}
+
+if(Eat){ 
+    
+T+=1
+T2+=0.5
+Cos = cos(T*5)*90
+Cos2 = cos(T2*15)*90
+
+if(Onc == 0){
+Onc = 1  
+E:soundPlay(2,0,"npc/fast_zombie/fz_scream1.wav")   
+E:soundPlay(1,0,"npc/fast_zombie/gurgle_loop1.wav")
+setName("FailCake Man Eating Fridge")   
+In = E:pos():z()  
+}
+
+if(Cos < 3){
+holoAng(1,E:toWorld(ang(0,Cos,0)))
+}
+
+if(Cos2 < 3){
+holoAng(3,E:toWorld(ang(0,Cos2,0))) 
+}
+
+Kill = 1
+  
+}else{
+Cos = 0
+Cos2 = 0
+holoAng(1,E:toWorld(ang(0,Cos,0)))
+holoAng(3,E:toWorld(ang(0,Cos2,0)))
+soundStop(1)
+Onc = 0
+}
+
+if(Attack == noentity()){
+#findExcludePlayer(owner())
+findByClass("player")
+Ply = findToArray()
+
+for(I=1,Ply:count()){
+    
+if(Ply[I,entity]:pos():distance(E:pos()) <= 100){
+Eat = 1   
+Attack = Ply[I,entity]
+}
+    
+}
+}
+
+if(Died & Die == 0){
+if(Attack:health() > 0){
+Died = 0
+Kill = 0
+Lol = 0
+Attack = noentity()  
+soundStop(2)  
+soundStop(1)
+soundStop(5)
+soundStop(3)
+}    
+}
+
+Ranger = rangerOffset(200,E:pos(),-E:up() + vec(0,0,-30))
+
+if(Kill & Die == 0){
+Float = ((Ranger:position()+vec(0,0,50))-E:pos())*1500
+
+Ang = (E:pos() - Attack:pos()):toAngle() + ang(0,-180,0)  
+Ang = Ang:setPitch(0)
+TarQ = quat(Ang)
+CurQ = quat(E)
+Q = TarQ/CurQ
+V = E:toLocal(rotationVector(Q)+E:pos())
+
+if(Died == 0 & Die == 0){
+    
+E:applyForce(Float+$Float*5)
+E:applyForce(-E:vel()*14)
+E:applyForce(E:forward()*6500)
+E:applyTorque((200*V - 12*E:angVelVector())*E:inertia()) 
+E:propFreeze(0) 
+}
+
+if(Attack:health() <= 0 & Die == 0){
+Died = 1 
+Eat = 0
+setName("FailCake Normal Fridge")
+if(Lol == 0){
+Lol = 1
+E:soundPlay(5,0,"vo/SandwichEat09.wav")
+soundStop(2)  
+soundStop(1)
+soundStop(3)   
+}
+E:propFreeze(1) 
+}
+
+}
+
+if(E:isUnderWater()){
+Die = 1    
+}
+
+if(Die){
+E:setColor(90,90,90,255)
+
+if(changed(Die)){  
+E:soundPlay(4,0,"npc/headcrab/die1.wav") 
+}
+ 
+holoColor(2,vec(90,90,90))
+holoColor(4,vec(90,90,90))
+soundStop(2)
+Eat = 0
+Die = 1
+soundStop(1)
+
+timer("delete",5000)
+if(clk("delete")){
+selfDestructAll()    
+}
+
+}
+
+if(duped() | owner() == noentity()){
+selfDestructAll()    
+}
