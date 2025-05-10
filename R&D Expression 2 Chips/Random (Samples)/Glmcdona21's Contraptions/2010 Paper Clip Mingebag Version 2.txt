@@ -10,7 +10,6 @@
 @model models/kleiner.mdl
 @trigger 
 
-template
 
 #[
 SOURCE: https://youtu.be/HrGXtXybOcs?si=uC3MQ8-KlZ0XIkgi
