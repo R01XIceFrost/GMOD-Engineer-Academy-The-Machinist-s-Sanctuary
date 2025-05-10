@@ -1,0 +1,25 @@
+@name Hologram 101 #2 
+@persist T
+@strict 
+
+#April 28, 2025
+#Sample https://youtu.be/HhDpIlqyzrY?si=F9SjFy_sxNzSx_qu (ancient video but the basic concept is applied
+
+
+event tick() {
+
+T = T+1
+
+X = cos(T) #simple cos just like a cos gate
+
+Y = sin(T) #simple sin just like a sin gate
+
+Z = tan(T)
+
+holoCreate(1,entity():pos() + (vec(X*50,Y*50,Z*10)), vec(1,1,1), ang(0,0,Z*90),vec(0,0,255),"torus2")  
+holoParent(1, entity())  
+
+
+}
+
+

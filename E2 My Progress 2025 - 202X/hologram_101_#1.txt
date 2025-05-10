@@ -1,0 +1,38 @@
+@name Hologram 101 #1
+@persist 
+@strict
+
+#April 27, 2025
+
+#[ 
+Shoutout to Nova Astral from Discord Wiremod pointing out my issue 
+when I tried to recreate it on my own from 2010 sample Gmod E2 Tutorial - Basic holoGrams   
+https://youtu.be/WPK9M7ZXcSY?si=hHrKV6Qx40wj6E31
+]#
+
+if(first()) {
+    holoCreate(1,entity():pos() + vec(0,0,0), vec(1,1,1), ang(90,0,0),vec(0,100,255),"torus2")  
+    holoParent(1, entity())  
+}
+
+
+
+
+
+#[ sample code from 2010 hologram beginners E2
+
+@name Hologram Sample 2010
+@persist
+
+if (first()) {
+    holoCreate(1)
+    holoScale(1, vec(2,1,3))
+    holoPos(1, entity():pos() + vec(0,0,30))
+    holoColor(1, vec(0,0,255))
+    holoAng(1, ang(90,0,45))
+    holoModel(1, "hqclinder2")
+    holoMaterial(1, "debug/debugdrawflat")
+    holoParent(1, entity())
+}
+
+]#
