@@ -1,0 +1,106 @@
+@name FailCake FlashBang
+@outputs A:array Once Flash B:array Start
+@persist Player:entity Timer Click Pla Alpha Start
+@trigger all
+@model models/weapons/w_eq_flashbang.mdl
+
+#Source: https://youtu.be/GcF8sQwhKHQ?si=YSkmuPBUuX9e1Clp
+
+interval(100)
+E = entity()
+E:setMass(5)
+E:setColor(255,255,255)
+if(first()){
+
+hint("MADE BY [CG]FailCake",100)   
+
+    Alpha = 255
+    E:removeTrails()
+    findByClass("player")
+    A=findToArray()
+}
+
+for(I=1,A:count()){
+    Player = A[I,entity]
+    if(Player:keyUse() & Player:aimEntity()==entity() & Once==0){
+hint("Acti",100)
+Once = 1
+}
+}
+
+if(Once){
+Timer += 0.5
+Click += 0.5
+if(Timer == 1){
+E:soundPlay(4000,4000,"weapons/pinpull.wav")
+E:setTrails(10,10,5,"trails/laser",vec(255,0,0),200)
+}
+if(Click == 3){
+E:soundPlay(1000,1000,"weapons/grenade/tick1.wav")
+}
+
+if(Click >= 4){
+soundStop(1000)
+Click = 0
+}
+if(Timer == 10){
+E:soundPlay(2000,2000,"weapons/flashbang/flashbang_explode1.wav")   
+E:soundPlay(3000,3000,"weapons/flashbang/flashbang_explode2.wav")   
+}
+if(Timer >= 10){
+soundStop(1000)
+Flash = 1
+}
+}
+
+
+if(Flash){
+E:setAlpha(0)
+holoCreate(1)
+holoModel(1,"icosphere3")
+holoAlpha(1,0)
+holoPos(1,E:pos()+vec(0,0,0))
+holoScale(1,vec(-50,-50,-50))
+holoParent(1,E)
+EE=holoEntity(1)
+
+for(I=0,A:count()){
+    Player = A[I,entity]
+    
+    if(
+        (Player:pos():distance(EE:pos())<400)
+    ){
+
+Start = 1
+}
+}
+}
+
+
+if(Start){
+    
+
+for(I=1,A:count()){
+    Player = A[I,entity]
+
+    
+    if(Player:pos():distance(EE:pos())<400)
+    {
+    if(Alpha > 0) {Alpha-=1}
+    if(Alpha <= 0){selfDestructAll()}
+    holoCreate(I+1)
+    holoParentAttachment(I+1,Player,"anim_attachment_head")
+    holoModel(I+1,"hqicosphere")
+    holoPos(I+1,Player:pos()+vec(0,0,50))
+    holoScale(I+1,vec(-5,-5,-5))
+    holoColor(I+1,vec(255,255,255))
+    holoAlpha(I+1,Alpha)
+    
+    }
+                   Start = 0 }
+}
+
+if(duped()){selfDestructAll()}
+if(duped()){selfDestructAll()}
+
+## Press e in it and RUN ##

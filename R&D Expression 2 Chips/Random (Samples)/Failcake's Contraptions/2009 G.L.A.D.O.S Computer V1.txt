@@ -1,0 +1,536 @@
+@name FailCake's G.L.A.D.O.S Computer V1
+@inputs Activate
+@outputs Screen Screewait
+@persist Speech Move Think
+
+#Source: G.L.A.D.O.S Computer V1
+
+if(first()){
+hint("Made By FailCake",999)
+}
+## Made By FailCake
+OP = entity()
+UP = 0
+##Floor##
+  holoCreate(1)
+    holoModel(1,"cube")
+    holoParent(1, OP)
+    holoScale(1,vec(3,3,0.1))
+    holoAng(1,ang(0,0,0))
+    holoPos(1,OP:pos()+vec(0,0,1+UP))
+    holoColor(1,vec(250,250,250))
+    holoMaterial(1,"phoenix_storms/metalset_1-2")
+
+##MonitorCube##
+  holoCreate(2)
+holoModel(2,"cube")
+    holoParent(2, OP)
+    holoScale(2,vec(1.4,1.4,1.4))
+    holoAng(2,ang(0,0,0))
+    holoPos(2,OP:pos()+vec(0,0,15+UP))
+    holoColor(2,vec(255,255,255))
+    holoMaterial(2,"phoenix_storms/metalfloor_2-3")
+##MonitorBase##
+    holoCreate(3)
+    holoModel(3,"cylinder")
+    holoParent(3, OP)
+    holoScale(3,vec(0.5,0.5,0.5))
+    holoAng(3,ang(0,0,0))
+    holoPos(3,OP:pos()+vec(0,0,5+UP))
+    holoColor(3,vec(255,255,255))
+    holoMaterial(3,"phoenix_storms/metalfloor_2-3")
+##MonitorBasecili##
+    holoCreate(4)
+    holoModel(4,"cylinder")
+    holoParent(4, OP)
+    holoScale(4,vec(1,1,0.2))
+    holoAng(4,ang(0,0,0))
+    holoPos(4,OP:pos()+vec(0,0,2+UP))
+    holoColor(4,vec(255,255,255))
+    holoMaterial(4,"phoenix_storms/metalfloor_2-3")
+    
+    ##MonitorBlack##
+    holoCreate(5)
+    holoModel(5,"cube")
+    holoParent(5, OP)
+    holoScale(5,vec(1.2,0.1,1.2))
+    holoAng(5,ang(0,0,0))
+    holoPos(5,OP:pos()+vec(0,8,15.5+UP))
+    holoColor(5,vec(30,30,30))
+  ## Made By FailCake  
+        ##keyboard##
+    holoCreate(6)
+    holoModel(6,"cube")
+    holoParent(6, OP)
+    holoScale(6,vec(2,0.7,0.1))
+    holoAng(6,ang(0,0,0))
+    holoPos(6,OP:pos()+vec(3,12,2+UP))
+    holoColor(6,vec(255,255,255))
+    holoMaterial(6,"phoenix_storms/pack2/train_floor")
+    
+    
+    ##GLADOS EYE1##
+    holoCreate(7)
+    holoModel(7,"cube")
+    holoParent(7, OP)
+    holoScale(7,vec(0.2,0.2,0.1))
+    holoAng(7,ang(90,0,0))
+    holoPos(7,OP:pos()+vec(2,8,19+UP))
+    holoColor(7,vec(0,0,90))
+
+        ##GLADOS EYE2##
+    holoCreate(8)
+    holoModel(8,"cube")
+    holoParent(8, OP)
+    holoScale(8,vec(0.2,0.2,0.1))
+    holoAng(8,ang(90,0,0))
+    holoPos(8,OP:pos()+vec(-2,8,19+UP))
+    holoColor(8,vec(0,0,90))
+
+    ##GLADOS Moving Mouth##
+    holoCreate(9)
+    holoModel(9,"cube")
+    holoParent(9, OP)
+    holoScale(9,vec(0.5,0.2,0.1))
+    holoAng(9,ang(0,0,0))
+    holoPos(9,OP:pos()+vec(0,8,14+UP))
+    holoColor(9,vec(0,0,90))
+
+    ##GLADOS Dead##
+    holoCreate(10)
+    holoModel(10,"cube")
+    holoParent(10, OP)
+    holoScale(10,vec(0.2,0.2,0.1))
+    holoAng(10,ang(0,0,0))
+    holoPos(10,OP:pos()+vec(-2,8,19+UP))
+    holoColor(10,vec(0,0,0))
+
+    ##GLADOS Dead2##
+    holoCreate(11)
+    holoModel(11,"cube")
+    holoParent(11, OP)
+    holoScale(11,vec(0.2,0.2,0.1))
+    holoAng(11,ang(0,0,0))
+    holoPos(11,OP:pos()+vec(2,8,19+UP))
+    holoColor(11,vec(0,0,0))
+
+    ##diskBox##
+    holoCreate(12)
+    holoModel(12,"cube")
+    holoParent(12, OP)
+    holoScale(12,vec(0.4,0.7,0.5))
+    holoAng(12,ang(90,0,0))
+    holoPos(12,OP:pos()+vec(-14,0,3.3+UP))
+    holoColor(12,vec(255,255,255))
+    holoMaterial(12,"")
+    holoMaterial(12,"phoenix_storms/metalfloor_2-3")
+        ##blacksick1##
+    holoCreate(13)
+    holoModel(13,"cube")
+    holoParent(13, OP)
+    holoScale(13,vec(0.4,0.1,0.1))
+    holoAng(13,ang(0,0,0))
+    holoPos(13,OP:pos()+vec(-14,3.7,2.6+UP))
+    holoColor(13,vec(50,50,50))
+    holoMaterial(13,"")
+    
+            ##blacksick2##
+    holoCreate(14)
+    holoModel(14,"cube")
+    holoParent(14, OP)
+    holoScale(14,vec(0.4,0.1,0.1))
+    holoAng(14,ang(0,0,0))
+    holoPos(14,OP:pos()+vec(-14,3.7,4+UP))
+    holoColor(14,vec(50,50,50))
+    holoMaterial(14,"")
+ ## Made By FailCake   
+    ##PcLigthGreen##
+    holoCreate(15)
+    holoModel(15,"icosphere3")
+    holoParent(15, OP)
+    holoScale(15,vec(0.1,0.1,0.1))
+    holoAng(15,ang(0,0,0))
+    holoPos(15,OP:pos()+vec(-7,8,7.5+UP))
+    holoColor(15,vec(255,255,255))
+    holoMaterial(15,"")
+    
+    ##PcLigthThinking##
+    holoCreate(16)
+    holoModel(16,"icosphere3")
+    holoParent(16, OP)
+    holoScale(16,vec(0.1,0.1,0.1))
+    holoAng(16,ang(0,0,0))
+    holoPos(16,OP:pos()+vec(-5,8,7.5+UP))
+    holoColor(16,vec(255,255,255))
+    holoMaterial(16,"")
+    
+        ##Mouse##
+    holoCreate(17)
+    holoModel(17,"icosphere3")
+    holoParent(17, OP)
+    holoScale(17,vec(0.3,0.6,0.2))
+    holoAng(17,ang(0,0,0))
+    holoPos(17,OP:pos()+vec(-13,12,2+UP))
+    holoColor(17,vec(100,100,100))
+    holoMaterial(17,"models/shiny")
+
+    ##Mousekey1##
+    holoCreate(18)
+    holoModel(18,"cube")
+    holoParent(18, OP)
+    holoScaleUnits(18,vec(1,1,1))
+    holoAng(18,ang(0,0,0))
+    holoPos(18,OP:pos()+vec(-12,10.5,2.5+UP))
+    holoColor(18,vec(1,1,1))
+    holoMaterial(18,"")
+    
+       ##Mousekey2##
+    holoCreate(19)
+    holoModel(19,"cube")
+    holoParent(19, OP)
+    holoScaleUnits(19,vec(1,1,1))
+    holoAng(19,ang(0,0,0))
+    holoPos(19,OP:pos()+vec(-13,10.5,2.7+UP))
+    holoColor(19,vec(1,1,1))
+    holoMaterial(19,"")
+    
+    
+        ##Mousekey3##
+    holoCreate(20)
+    holoModel(20,"cube")
+    holoParent(20, OP)
+    holoScaleUnits(20,vec(1,1,1))
+    holoAng(20,ang(0,0,0))
+    holoPos(20,OP:pos()+vec(-14,10.5,2.5+UP))
+    holoColor(20,vec(1,1,1))
+    holoMaterial(20,"")
+    
+        ##cable1##
+    holoCreate(21)
+    holoModel(21,"cylinder")
+    holoParent(21, OP)
+    holoScaleUnits(21,vec(1,1,9))
+    holoAng(21,ang(90,0,0))
+    holoPos(21,OP:pos()+vec(-7,0,2+UP))
+    holoColor(21,vec(255,255,255))
+  holoMaterial(21,"models/XQM/LightLinesGB")
+    
+   ## Made By FailCake         ##cable2##
+    holoCreate(22)
+    holoModel(22,"cylinder")
+    holoParent(22, OP)
+    holoScaleUnits(22,vec(1,1,5))
+    holoAng(22,ang(90,0,90))
+    holoPos(22,OP:pos()+vec(0,8,2+UP))
+    holoColor(22,vec(255,255,255))
+    holoMaterial(22,"models/XQM/LightLinesGB")
+    
+    
+    holoAlpha(7,0)
+    holoAlpha(8,0)
+    holoAlpha(9,0)
+    holoAlpha(10,0)
+    holoAlpha(11,0)
+if(Activate == 1){
+interval(1000)
+holoColor(15,vec(0,255,0))
+Speech += 1
+Think += 1
+
+Screen = Speech
+if(Speech > 2){
+holoAlpha(7,255)
+holoAlpha(8,255)
+holoAlpha(9,255)
+}
+
+if(Think == 1){
+holoColor(16,vec(255,0,0))
+}
+if(Think == 2){
+holoColor(16,vec(255,255,255))
+Think = 0
+}
+
+if(Speech == 1){
+holoColor(5,vec(255,255,255))
+}
+if(Speech == 2){
+soundPlay(80000,80000,"synth/tri.wav")
+}else{
+soundStop(80000)
+}
+if(Speech == 3){
+holoColor(5,vec(1,1,1))
+soundPlay(90000,90000,"music/portal_still_alive.mp3")
+}
+if(Speech >= 3){
+Move += 1
+if(Move == 2){
+holoScale(9,vec(0.5,0.5,0.5))
+holoAng(9,ang(90,90,0))
+holoModel(9,"torus3")
+}
+if(Move == 2.5){
+holoAng(9,ang(0,0,0))
+holoScale(9,vec(0.5,0.2,0.1))
+holoModel(9,"cube")
+}
+if(Move == 3){
+Move = 0
+}
+}
+
+
+if(Speech == 33){
+holoAlpha(10,255)
+holoAlpha(11,255)
+holoColor(7,vec(255,0,0))
+holoColor(8,vec(255,0,0))
+holoColor(9,vec(255,0,0))
+holoColor(10,vec(255,0,0))
+holoColor(11,vec(255,0,0))
+}
+## Made By FailCake
+if(Speech == 35){
+holoAlpha(10,0)
+holoAlpha(11,0)
+holoColor(7,vec(0,0,90))
+holoColor(8,vec(0,0,90))
+holoColor(9,vec(0,0,90))
+}
+if(Speech == 56){
+holoAlpha(10,255)
+holoAlpha(11,255)
+holoColor(10,vec(255,0,0))
+holoColor(11,vec(255,0,0))
+holoColor(7,vec(255,0,0))
+holoColor(8,vec(255,0,0))
+holoColor(9,vec(255,0,0))
+}else{
+holoAlpha(10,0)
+holoAlpha(11,0)
+holoColor(7,vec(0,0,90))
+holoColor(8,vec(0,0,90))
+holoColor(9,vec(0,0,90)) 
+}
+
+## Made By FailCake
+if(Speech == 60){
+holoAlpha(10,255)
+holoAlpha(11,255)
+holoColor(10,vec(255,0,0))
+holoColor(11,vec(255,0,0))
+holoColor(7,vec(255,0,0))
+holoColor(8,vec(255,0,0))
+holoColor(9,vec(255,0,0))
+}
+
+if(Speech == 61){
+holoAlpha(10,0)
+holoAlpha(11,0)
+holoColor(7,vec(0,0,90))
+holoColor(8,vec(0,0,90))
+holoColor(9,vec(0,0,90)) 
+}
+
+if(Speech == 69){
+holoAlpha(10,255)
+holoAlpha(11,255)
+holoColor(10,vec(255,0,0))
+holoColor(11,vec(255,0,0))
+holoColor(7,vec(255,0,0))
+holoColor(8,vec(255,0,0))
+holoColor(9,vec(255,0,0))
+}
+
+if(Speech == 72){
+holoAlpha(10,0)
+holoAlpha(11,0)
+holoColor(10,vec(255,0,0))
+holoColor(11,vec(255,0,0))
+holoColor(7,vec(0,0,90))
+holoColor(8,vec(0,0,90))
+holoColor(9,vec(0,0,90)) 
+}
+
+if(Speech == 100){
+holoAlpha(10,0)
+holoAlpha(11,0)
+holoColor(7,vec(0,255,0))
+holoColor(8,vec(0,255,0))
+holoColor(9,vec(0,255,0))
+}
+
+if(Speech == 102){
+holoAlpha(10,0)
+holoAlpha(11,0)
+holoColor(7,vec(0,0,90))
+holoColor(8,vec(0,0,90))
+holoColor(9,vec(0,0,90)) 
+}
+
+if(Speech == 108){
+holoAlpha(10,0)
+holoAlpha(11,0)
+holoColor(7,vec(90,90,0))
+holoColor(8,vec(90,90,0))
+holoColor(9,vec(90,90,0))
+}
+
+if(Speech == 110){
+holoAlpha(10,0)
+holoAlpha(11,0)
+holoColor(7,vec(90,0,0))
+holoColor(8,vec(90,0,0))
+holoColor(9,vec(90,0,0)) 
+}
+
+if(Speech == 128){
+holoAlpha(10,0)
+holoAlpha(11,0)
+holoColor(7,vec(255,0,255))
+holoColor(8,vec(255,0,255))
+holoColor(9,vec(255,0,255))
+}
+
+if(Speech == 130){
+holoAlpha(10,0)
+holoAlpha(11,0)
+holoColor(7,vec(90,0,0))
+holoColor(8,vec(90,0,0))
+holoColor(9,vec(90,0,0)) 
+}
+
+## Still ##
+
+if(Speech == 151){
+holoAlpha(10,0)
+holoAlpha(11,0)
+holoColor(7,vec(0,255,0))
+holoColor(8,vec(0,255,0))
+holoColor(9,vec(0,255,0))
+}
+## Made By FailCake
+if(Speech == 153){
+holoAlpha(10,0)
+holoAlpha(11,0)
+holoColor(7,vec(90,0,0))
+holoColor(8,vec(90,0,0))
+holoColor(9,vec(90,0,0)) 
+}
+
+if(Speech == 155){
+holoAlpha(10,0)
+holoAlpha(11,0)
+holoColor(7,vec(0,255,0))
+holoColor(8,vec(0,255,0))
+holoColor(9,vec(0,255,0))
+}
+## Made By FailCake
+if(Speech == 157){
+holoAlpha(10,0)
+holoAlpha(11,0)
+holoColor(7,vec(90,0,0))
+holoColor(8,vec(90,0,0))
+holoColor(9,vec(90,0,0)) 
+}
+
+
+if(Speech == 159){
+holoAlpha(10,0)
+holoAlpha(11,0)
+holoColor(7,vec(0,255,0))
+holoColor(8,vec(0,255,0))
+holoColor(9,vec(0,255,0))
+}
+
+if(Speech == 162){
+holoAlpha(10,0)
+holoAlpha(11,0)
+holoColor(7,vec(90,0,0))
+holoColor(8,vec(90,0,0))
+holoColor(9,vec(90,0,0)) 
+}
+
+if(Speech == 163){
+holoAlpha(10,0)
+holoAlpha(11,0)
+holoColor(7,vec(0,255,0))
+holoColor(8,vec(0,255,0))
+holoColor(9,vec(0,255,0))
+}
+
+if(Speech == 165){
+holoAlpha(10,0)
+holoAlpha(11,0)
+holoColor(7,vec(90,0,0))
+holoColor(8,vec(90,0,0))
+holoColor(9,vec(90,0,0)) 
+}
+
+if(Speech == 167){
+holoAlpha(10,0)
+holoAlpha(11,0)
+holoColor(7,vec(0,255,0))
+holoColor(8,vec(0,255,0))
+holoColor(9,vec(0,255,0))
+}
+
+if(Speech == 170){
+holoAlpha(10,0)
+holoAlpha(11,0)
+holoColor(7,vec(90,0,0))
+holoColor(8,vec(90,0,0))
+holoColor(9,vec(90,0,0)) 
+}
+
+if(Speech == 171){
+holoAlpha(10,0)
+holoAlpha(11,0)
+holoColor(7,vec(0,255,0))
+holoColor(8,vec(0,255,0))
+holoColor(9,vec(0,255,0))
+}
+
+if(Speech == 173){
+holoAlpha(10,0)
+holoAlpha(11,0)
+holoColor(7,vec(90,0,0))
+holoColor(8,vec(90,0,0))
+holoColor(9,vec(90,0,0)) 
+}
+
+if(Speech > 177){
+Activate = 0
+    holoAlpha(7,0)
+    holoAlpha(8,0)
+    holoAlpha(9,0)
+    holoAlpha(10,0)
+    holoAlpha(11,0)
+    holoColor(16,vec(255,255,255))
+holoColor(15,vec(255,255,255))
+}
+soundStop(1)
+}else{
+## Made By FailCake
+holoColor(16,vec(255,255,255))
+holoColor(15,vec(255,255,255))
+holoAlpha(7,0)
+holoAlpha(8,0)
+holoAlpha(9,0)
+soundStop(90000)
+soundStop(80000)
+Think = 0
+Speech = 0
+Move = 0
+}
+## Made By FailCake
+## VERSION BETA!
+
+if(duped()){selfDestructAll()}
+if(duped()){selfDestructAll()}
+if(duped()){selfDestructAll()}
+if(duped()){selfDestructAll()}
+if(duped()){selfDestructAll()}
+if(duped()){selfDestructAll()}

@@ -1,0 +1,173 @@
+@name Papers Voice Player
+@inputs
+@outputs 
+@persist ContinueSearch LSearchString:string SearchResult:array LPlay Sounds:array Ready
+@persist SearchString:string LE
+@trigger 
+
+#[
+SOURCE:https://youtu.be/Mu75gzm2ErY?si=1Ua9KtnfoJFhWeLr
+
+Description:
+This is a simple entertaining chip which:
+
+    Uploads a list of all voice sound files to the server
+    Filters and plays these sound files based on your chat in-game
+
+
+Controls
+I recommend watching the video to see how to use the chip, but here is a basic list of controls:
+E (use): Plays the next sound file in the search result.
+Prefix a chat with '.': Keeps the chat silent but voice is still played.
+
+Video
+
+
+Code
+DO NOT COPY AND PASTE. Please follow the instructions in the Installation section at the bottom of this post or it will not work.
+
+]#
+
+if( first() | duped() )
+{
+    print("Made by Paper Clip")
+    # Load the file
+    if(!fileLoaded("sounds.txt") )
+    {fileLoad("sounds.txt")}
+    Ready = 0
+    ContinueSearch = 0
+    runOnChat(1)
+    
+    owner():soundPlay(1,60,"vo/k_lab/kl_initializing.wav")
+    
+    # Set up the initial prints
+    timer("initPrint1", 1)
+    timer("initPrint2", 6000)
+    timer("initPrint3", 12000)
+    timer("initPrint4", 20000)
+    timer("initPrint5", 27000)
+    timer("initPrint6", 35000)
+}
+
+if( clk("initPrint1" ) )
+{
+    print("Uploading file to server. This takes ~10 seconds and will cause a lag spike.")
+}elseif( clk("initPrint2" ) )
+{
+    print("You NEED the sounds.txt provided at http://www.wiremod.com/forum/contraptions-saves/17213-voice-chip.html")
+}elseif( clk("initPrint3" ) )
+{
+    print("The complete list of sound files will be searched and played when chatting.")
+}elseif( clk("initPrint4" ) )
+{
+    print("To play a sound file without chatting, start the sentence with a '.', ie say .hacks")
+}elseif( clk("initPrint5" ) )
+{
+    print("Press E repeatedly to play the sound files.")
+}elseif( clk("initPrint6" ) )
+{
+    print("Some keywords: hacks, madlaugh, zombies, shit, pain, humper, idiot, calm, hopeless, mutual, yeah, god, dedicate, caution, dreamed, mustfollow, gladly, kl_, al_, halt, done, kill, hearcat, damn")
+    timer("initPrint6", 120000)
+}
+
+
+if( !Ready )
+{
+    if( fileLoaded("sounds.txt") )
+    {Ready = 1, Sounds=fileRead("sounds.txt"):explode(" "), print("Sound file loaded."), owner():soundPlay(1,60,"vo/NovaProspekt/kl_ready.wav")}
+}else{
+    # Play sounds
+    if( chatClk(owner()) | ContinueSearch > 0 )
+    {
+        String=owner():lastSaid()
+        if(!ContinueSearch)
+        {
+            # Hide the chat if it started with a "."
+            if( String:index(1) == "." )
+            {hideChat(1)}
+            
+            # Pick the best search keyword (at least 4 characters)
+            TmpArray = String:replace(".",""):replace(",",""):replace(".",""):replace("?",""):replace("!",""):explode(" ")
+            SearchString = ""
+            for( I = 1, TmpArray:count() )
+            {
+                if( TmpArray[I,string]:length() > 3 )
+                {
+                    SearchString = TmpArray[I,string]
+                    break
+                }
+            }
+            if( SearchString == "" ) { SearchString = TmpArray[1,string] }
+            
+            SearchString = SearchString:lower()
+        }
+        if( SearchString != LSearchString | ContinueSearch )
+        {
+            # Perform a search
+            LPlay = 1
+            if(!ContinueSearch){print("Starting search."), ContinueSearch = 1, SearchResult=array()}
+            Start = ContinueSearch
+            while( ContinueSearch <= Sounds:count() )
+            {
+                if(  opcounter()>maxquota() ) {interval(10), exit()}
+                # Search this filename
+                if( Sounds[ContinueSearch,string]:find(SearchString) )
+                { SearchResult:pushString(Sounds[ContinueSearch,string]) }
+                ContinueSearch++
+            }
+            if( ContinueSearch > Sounds:count() )
+            {
+                ContinueSearch = 0
+                # Finished search
+                if(SearchResult:count() > 0)
+                {
+                    # Play first entry
+                    LPlay = round(random(1,SearchResult:count()))
+                    soundPurge()
+                    owner():soundPlay(1,60,SearchResult[LPlay,string])
+                    soundVolume(1,10000)
+                    print("Playing " + LPlay + " of " + SearchResult:count() + " results: " + SearchResult[LPlay,string])
+                }else{
+                    # No matches found
+                    print("No matches found :(")
+                }
+            }else{ 
+                # Need to continue search
+                interval(10)
+            }
+        }else{
+            if( SearchResult:count() > 0 )
+            {
+                # Play another sound from our search result
+                LPlay = mod(LPlay,SearchResult:count())+1
+                soundPurge()
+                owner():soundPlay(1,30,SearchResult[LPlay,string])
+                soundVolume(1,10000)
+                print("Playing " + LPlay + " of " + SearchResult:count() + " results: " + SearchResult[LPlay,string])
+            }
+        }
+        LSearchString = SearchString
+    }elseif( (!LE & owner():keyUse()) )
+    {
+        if( SearchResult:count() > 0 )
+        {
+            # Play another sound from our search result
+            LPlay = mod(LPlay,SearchResult:count())+1
+            soundPurge()
+            owner():soundPlay(1,30,SearchResult[LPlay,string])
+            soundVolume(1,10000)
+            print("Playing " + LPlay + " of " + SearchResult:count() + " results: " + SearchResult[LPlay,string])
+        }else{
+            Rnd = round(random(1,Sounds:count()))
+            soundPurge()
+            owner():soundPlay(1,30,Sounds[Rnd,string])
+            soundVolume(1,10000)
+            print("Playing random sound: " + Sounds[Rnd,string])
+        }
+    }
+    LE = owner():keyUse()
+}
+
+interval(100)
+
+

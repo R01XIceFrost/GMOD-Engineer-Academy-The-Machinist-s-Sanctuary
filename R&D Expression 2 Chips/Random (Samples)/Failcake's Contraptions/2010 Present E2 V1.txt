@@ -1,0 +1,145 @@
+@name FailCake Present E2 V1
+@inputs 
+@outputs Started Random First R RR RR2 Spawn Once Clean Pl MaxRange MaxTime MinTime
+@persist Player:array I I2 Ang Pressall:array Alpha Op S S2 Ply:entity Pl
+@trigger all
+@model models/props_halloween/pumpkin_loot.mdl
+
+#Source: https://youtu.be/A88zXcKdxMI?si=BjGSxTKJyXz7lvY8
+
+#ui/halloween_loot_spawn.wav
+#ui/halloween_loot_found.wav
+#ui/halloween_boss_summoned_fx.wav
+#ui/gamestartup_halloween.mp3
+runOnTick(1)
+E=entity()
+
+if(first()){
+First = 1
+Alpha = 0
+findByClass("player")
+Player = findToArray()
+hint("Made By FailCake",7)
+if(Player:count()> 1){
+for(I = 0,Player:count()){
+holoCreate(I)
+holoPos(I,Player[I,entity]:pos())
+holoAlpha(I,0)
+holoModel(I,"cube")
+holoScale(I,vec(1,1,1))
+holoParent(I,Player[I,entity])
+holoEntity(I):soundPlay(10+I,1000,"ui/halloween_boss_summoned_fx.wav")
+
+}
+propSpawnEffect(0)
+Started = 1
+}else{
+hint("Not Enougth Players! Min is 2!",7)
+Started = 0
+selfDestructAll()
+}
+
+### Config ###
+MaxRange = 30
+MaxTime = 20
+MinTime = 10
+### Config ###
+
+
+concmd("say [Present E2]:The Present E2 Has Been Spawned!")
+}
+
+Pres = array()
+Pres:setString(1,"models/effects/bday_gib01.mdl")
+Pres:setString(2,"models/effects/bday_gib02.mdl")
+Pres:setString(3,"models/effects/bday_gib03.mdl")
+Pres:setString(4,"models/effects/bday_gib04.mdl") 
+
+if(Started){
+    
+if(First){
+Random = randint(MinTime*1000,MaxTime*1000)
+First = 0
+print("Present Time = "+Random/1000)
+Spawn = 1
+}
+
+if(Spawn == 1){
+timer("RandPos",Random)  
+}else{
+stoptimer("RandPos")
+}
+
+if(clk("RandPos")){
+R = randint(1,4)
+print("Present Spawned!")
+concmd("say [Present E2]:A Present has Been Spawned!")
+RR = randint(-MaxRange*100,MaxRange*100)
+RR2 = randint(-MaxRange*100,MaxRange*100)
+Present = propSpawn(Pres:string(R),E:toWorld(vec(RR,RR2,10)),1)
+Spawn = 0  
+Pressall[1,entity]= Present 
+}
+}
+
+
+if(Spawn == 0){
+for(I2 = 1,Pressall:count()){
+Ang+=0.1
+Op+=0.1
+if(Op ==1){
+holoEntity(I2):soundPlay(100+I2,1000,"ui/halloween_loot_spawn.wav") 
+} 
+if(Alpha <=255){
+Alpha+=0.1
+Pressall[I2,entity]:setAlpha(Alpha) 
+Pressall[I2,entity]:propNotSolid(1)
+}else{
+
+for(S = 1,Player:count()){
+Pressall[S,entity]:propNotSolid(0)
+timer("Tedt",100)
+
+if(clk("Tedt")){
+if(S2<=Player:count()){
+S2++
+Ply = Player[S2,entity]
+}else{
+S2 = 0
+}
+}
+
+if(Ply:keyUse() & Ply:aimEntity() == Pressall[S,entity] & Ply:pos():distance(Pressall[S,entity]:pos())<= 60){
+Name = Ply:name()
+print("Present Found by "+ Name + "!")
+concmd("say [Present E2]:Present Found By "+Name+"!")
+Pressall[S,entity]:propDelete() 
+holoEntity(S):soundPlay(20330+S,233000,"ui/halloween_loot_found.wav")
+Clean = 1
+}
+}
+
+}
+
+
+Pressall[I2,entity]:setAngles(ang(0,Ang,0))  
+I2 = 0
+}
+}
+
+if(Clean){
+I2 = 0
+Op = 0
+First = 1
+Ang= 0
+Clean =0 
+Alpha = 0  
+Pl = 0 
+}
+
+if(duped()){selfDestructAll()}
+
+
+####################################################################
+## Do not rename the E2 or remove the hint("Made by Failcake",100)##
+####################################################################

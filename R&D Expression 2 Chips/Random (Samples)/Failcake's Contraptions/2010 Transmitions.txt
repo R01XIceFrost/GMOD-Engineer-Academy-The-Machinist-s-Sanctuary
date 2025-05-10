@@ -1,0 +1,108 @@
+@name FailCake Transmitions
+@outputs On
+@persist Def Def2 Def3 Def4
+@trigger all
+@model models/props/radio_reference.mdl
+
+#Source: https://youtu.be/Irpeh6EPT9g?si=AGbpGJW2uXEP1Mht
+
+runOnTick(1)
+
+if(first()){
+hint("Made By FailCake",7)
+}
+
+LocModel = "models/props_lab/huladoll.mdl"
+
+E = entity()
+
+Trans=array()
+Trans:setString(1,"ambient/dinosaur1.wav")
+Trans:setString(2,"ambient/dinosaur2.wav")
+
+
+Die=array()
+Die:setString(1,"ambient/dinosaur_fizzle.wav")
+Die:setString(2,"ambient/dinosaur_fizzle2.wav")
+Die:setString(3,"ambient/dinosaur_fizzle3.wav")
+
+holoCreate(1)
+holoModel(1,"hqicosphere")
+holoPos(1,E:toWorld(vec(3.5,0,1.5)))
+holoScaleUnits(1,vec(1.5,1.5,1.5))
+holoMaterial(1,"models/debug/debugwhite")
+holoParent(1,E)
+
+findByModel(LocModel)
+Transmod = findClosest(entity():pos())
+Distance = round(entity():pos():distance(Transmod:pos()))
+Transmod:setAlpha(0)
+
+if(Distance < 40){
+Def += 0.1
+Def2 = 0
+Def3 = 0
+soundStop(101,3)
+soundStop(102,3)
+holoColor(1,vec(0,255,0))
+R=randint(1,2)
+if(Def == 2){
+E:soundPlay(100,100,Trans:string(R)) 
+}
+}elseif(Distance >= 40 & Distance < 70){
+Def =0
+Def2 +=0.1
+Def3 = 0
+soundStop(100,3)
+soundStop(102,3)
+holoColor(1,vec(255,0,0))
+if(Def2 == 2){
+E:soundPlay(101,101,"ambient/dinosaur_noise.wav") 
+}
+}elseif(Distance >= 70){
+Def = 0
+Def2 =0
+Def3 +=0.1
+soundStop(100,3)
+soundStop(101,3)
+holoColor(1,vec(255,0,0))
+if(Def3 == 2){
+E:soundPlay(102,102,"ambient/music/looping_radio_mix.wav") 
+}
+}
+
+if(E:isUnderWater() | On){
+On = 1
+Def4+=0.1
+R=randint(1,2)
+soundStop(100,3)
+soundStop(101,3)
+soundStop(102,3)
+if(Def4 == 2){
+E:soundPlay(1230,1230,Die:string(R))     
+}    
+if(Def4 >= 50){
+selfDestructAll()    
+}
+}
+
+if(E:isOnFire() | On){
+On = 1
+Def4+=0.1
+R=randint(1,2)
+soundStop(100,3)
+soundStop(101,3)
+soundStop(102,3)
+if(Def4 == 2){
+E:soundPlay(1230,1230,Die:string(R))     
+}    
+if(Def4 >= 50){
+selfDestructAll()    
+}    
+}
+
+if(duped()){selfDestructAll()}
+
+##################################################  ##################
+## Do not rename the E2 or remove the hint("Made by Failcake",100)##
+##################################################  ##################

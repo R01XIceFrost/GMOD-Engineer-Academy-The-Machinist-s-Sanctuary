@@ -1,0 +1,2144 @@
+@name Nexus Wars
+@inputs [Egp1 Egp2 Base1Link Base2Link]:wirelink
+@inputs [Bunkers1 Bunkers2]:array Reset
+@outputs [TargetsPlayer1 TargetsPlayer2]:array
+@persist [Player1 Player2 Base1 Base2]:entity Ready1 Ready2 Units:array GameState LastState Count StartCount Structures:array ResetDuration
+@persist [Bullets Entities]:array UnitLength StructureLength BulletLength EntityLength Continue TargetsPlayer1:array TargetsPlayer2:array TargetsPlayer1Index:array TargetsPlayer2Index:array
+@persist Player1LastUse Player2LastUse Player1Money Player2Money EgpMoney UnitBuildPeriod B_I B_J B_N SpeedFactor
+@persist ContinueUnitMoving ContinueBulletMoving GamePhysicsInterval NumTargets TargetRandomness PropDeleteList:array BulletGravity
+@persist Explosions:array ExplosionLength BulletDeleteList:array BulletPreDeleteList:array UnitKillMoneyGainFactor RefreshMoney
+@persist UnitLimit Bunkers:array BunkerLength WinningPlayer RefundFactor Player1LastRClick Player2LastRClick
+@persist SpawningUnits RandmnessOfMoveDirection DamageRadiusFactor ModelSet AiStrategies:array Player1AiStrat Player2AiStrat Ai1Unit Ai2Unit
+@persist TestArrayUnitLength SpawnType SuddenDeathTime SuddenDeathEgp
+@trigger none
+
+#[
+SOURCE: https://youtu.be/e29cnWGgWz4?si=1IgqoDlDTbh_LZwB
+
+INFO: 
+CODE
+Click on this link for the e2 code: [C] Garry's Mod Nexus Wars e2 - Pastebin.com
+A whopping 2000 lines of code, I seem unable to include it in this post because it is so big. The attached files at the bottom of this post are dupes where the e2 chip is already wired up.
+
+Input wiring instructions:
+Egp1:wirelink -> EGP Screen for player 1
+Egp2:wirelink -> EGP Screen for player 2
+Base1Link:wirelink -> Main base prop for player 1
+Base2Link:wirelink -> Main base prop for player 2
+Reset -> From a non-toggle wire button. Hold this button to reset the system.
+Ignore the Bunkers1 and Bunkers2 inputs
+
+REQUIREMENTS
+Here are a couple servers it works well on:
+
+Omnicron's server: 173.56.27.170:27017 (The large unit set doesn't work here)
+Unsmart's server: 89.238.160.112:27017
+
+
+Propcore. This is on about 30% of servers. For the large unit set, the server must also have HL2:ep2 props enabled.
+
+If you are playing singleplayer or you own the multiplayer server, do this to enable propcore:
+1. Install uwsvn: Unofficial Wire-Extras SVN (UWSVN)
+2. Type these commands in console to enable propcore:
+
+
+Code:
+
+wire_expression2_extension_enable propcore
+sbox_E2_PropCore 2
+sbox_E2_maxPropsPerSecond 10
+wire_expression2_reload
+
+    DOWNLOAD ADV. DUPE
+    Download the attached files and save the .txt files to this folder:
+    C:\Program Files\Steam\steamapps\<username>\garrysmod\garrysm od\data\adv_duplicator
+
+    nexus_small1.txt:
+
+
+    nexus_small2.txt:
+
+
+    If you create your own unit tree or ai strategy, please post it! 
+
+Attached Files Attached Files
+
+    File Type: txt nexus_small1.txt (102.3 KB, 611 views)
+    File Type: txt nexus_small2.txt (107.0 KB, 526 views)
+    File Type: txt nexus_huge.txt (98.9 KB, 500 views)
+
+    Last edited by Paper Clip; 04-28-2011 at 07:49 PM. 
+
+
+
+]#
+
+if( first() | duped() )
+{
+    runOnLast(1)
+    timer("init",2000)
+}elseif( clk("init") )
+{
+    ###################################################
+    ######### SETTINGS
+    ###################################################
+    SuddenDeathTime = 200    # Change this to a smaller number for a shorter game.
+    
+    ModelSet = 1             # 1: small units, 2: giant units
+    
+    UnitLimit = 60           # The maximum number of units.
+    
+    GamePhysicsInterval = 50 # Increasing this number will result in fewer e2 ops and less lag in the game
+                             # when lots of units are spawned. But this will also result in bigger jumps
+                             # for units and bullets when travelling.
+                            
+    RefundFactor = 0.7       # This means you get 70% of your money back for selling a building.
+    
+    Player1Money = 15        # Initial player 1 money
+    Player2Money = 15        # Initial player 2 money
+    
+    UnitKillMoneyGainFactor = 1 # 1 means you get the normal amount of money for killing a unit. 0.5 means you
+                                # will get half the amount of money for killing a unit.
+                                
+    UnitBuildPeriod = 30*200/GamePhysicsInterval  # You can change this number to change the rate at which
+                                                  # new unit waves are spawned. A smaller number means more
+                                                  # frequent wave spawning.
+    ###################################################
+    ###################################################
+    ###################################################
+    
+    
+    
+    
+    SpawningUnits = 0
+    SpawnType = 1
+    propSpawnEffect(0)
+    if( ModelSet == 1 )
+    {
+        DamageRadiusFactor = 1
+        SpeedFactor = 2*GamePhysicsInterval/200
+    }else{
+        DamageRadiusFactor = 10
+        SpeedFactor = 2*GamePhysicsInterval/20
+    }
+    BulletGravity = -3*SpeedFactor/10 # You can change the gravity on the bullets if you like.
+    NumTargets = 8
+    TargetRandomness = 3
+    RandmnessOfMoveDirection = 0.05
+    
+    Player1 = noentity()
+    Player2 = noentity()
+    
+    TargetsPlayer2 = array()
+    TargetsPlayer1 = array()
+    TargetsPlayer2Index = array()
+    TargetsPlayer1Index = array()
+    
+    # Game state
+    LastState = -1
+    GameState = 0   # 0: Waiting for players to be ready.
+                    # 1: Game countdown to start
+                    # 2: Game in progress
+                    # 3: Score screen
+    Base1 = Base1Link:entity()
+    Base2 = Base2Link:entity()
+    Base1:setColor( vec4(255,0,0,255) )
+    Base1:setMaterial("models/debug/debugwhite")
+    Base2:setColor( vec4(0,0,255,255) )
+    Base2:setMaterial("models/debug/debugwhite")
+    
+    #### Setup the ai strategy array
+    # The sequence of numbers indicates the build order. After finishing the build
+    # order, he will loop the build order.
+    AiStrategies[1,string] = "11233355" # Tanks, arty, supertank
+    AiStrategies[2,string] = "2213326565" # Infantry, arty, boomer/supertank
+    AiStrategies[3,string] = "2135555555" # Supertank!
+    AiStrategies[4,string] = "123312331233" # Artillery
+    AiStrategies[5,string] = "88888888888800000" # Stupid Mob/Buggy Rush
+    AiStrategies[6,string] = "21434124465" # Balanced paratrooper attack
+    AiStrategies[7,string] = "8882211331122" # Lightweight attack
+    AiStrategies[8,string] = "8872999129001200" # Rocket spam
+    AiStrategies[9,string] = "122134366666555" # General boomer attack
+
+    
+    # Setup the unit structure arrays
+    
+    #### Bunker Array
+    # 1: Entity:entity
+    # 2: Health:number
+    # 3: Team:number
+    # 4: Special:number # 1: win the game, 2: nothing
+    BunkerLength = 4
+    
+    # Create the base entries
+    Index = 1
+    Bunkers[Index,entity] = Base1, Index++
+    Bunkers[Index,normal] = 400, Index++
+    Bunkers[Index,normal] = 1, Index++
+    Bunkers[Index,normal] = 1, Index++
+    
+    Bunkers[Index,entity] = Base2, Index++
+    Bunkers[Index,normal] = 400, Index++
+    Bunkers[Index,normal] = 2, Index++
+    Bunkers[Index,normal] = 1, Index++
+    
+    #### Bullet Array:
+    # 1: Velocity:vector
+    # 2: SourceUnit:number # The source unit type of the bullet
+    # 3: Entity:entity
+    Bullets = array()
+    BulletLength = 3
+    
+    #### Explosions:
+    # 1: Position:vector
+    # 2: Radius:number
+    # 3: Damage:number
+    Explosions = array()
+    ExplosionLength = 3
+    
+    #### Entity Array:
+    # 1: EntId:number
+    # 2: Velocity:number
+    # 3: SourceUnit:number # The source unit type
+    # 4: Health:number # Health
+    # 5: LFireCount:number # Count of last fire shot
+    # 6: TargetId:number
+    # 7: Owner:number
+    # 8: InClosestList:number
+    Entities = array()
+    EntityLength = 8
+    
+    #### Unit Array:
+    # 1: Name:string
+    # 2: Health:number
+    # 3: Speed:number
+    # 4: Cost:number
+    # 5: BuildTime:number (NOT IMPLEMENTED IN THE CODE!)
+    # 6: Model:string
+    # 7: MaxBulletLaunchAngle:number
+    # 8: BulletModel:string
+    # 9: BulletExplosionTrail:string
+    # 10: BulletTrail:string
+    # 11: BulletSpeed:number
+    # 12: FireRate:number
+    # 13: DamageSplashRange:number
+    # 14: Damage:number
+    # 15: Range:number
+    # 16: FireSound:string(NOT IMPLEMENTED IN THE CODE!)
+    # 17: HitSound:string(NOT IMPLEMENTED IN THE CODE!)
+    # 18: DieSound:string(NOT IMPLEMENTED IN THE CODE!)
+    # 19: RequiredUnit1:number
+    # 20: RequiredUnit2:number
+    # 21: FallSpeed:number
+    # 22: ClimbSpeed:number
+    # 23: WeaponType:number # Weapon type: 1 arcing shell. This is the only weapon type right now.
+    # 24: MinAngle:number
+    # 25: ShotRandomness:number
+    # IMPORTANT NOTE: Units must be ordered such that base units (units required by other units to build) are before the unit that requires them.
+    UnitLength = 25
+    
+    # Blaster Tank
+    Base = 0 #1
+    Units[Base+1,string] = "Tank"    # name
+    Units[Base+2,number] = 80                # health
+    Units[Base+3,number] = 40                 # speed
+    Units[Base+4,number] = 15                # cost
+    Units[Base+5,number] = 5                 # buildtime(NOT IMPLEMENTED IN THE CODE!)
+    Units[Base+6,string] = "models/props_junk/garbage_coffeemug001a.mdl" # model
+    Units[Base+7,number] = 35                 # MaxBulletLaunchAngle
+    Units[Base+8,string] = "models/Items/AR2_Grenade.mdl" # bullet model
+    Units[Base+9,string] = "trails/smoke"    # bullet explosion trail
+    Units[Base+10,string] = "trails/smoke"   # bullet trail
+    Units[Base+11,number] = 100               # bullet speed
+    Units[Base+12,number] = 15               # fire rate
+    Units[Base+13,number] = 5                # damage splash range
+    Units[Base+14,number] = 30                # damage
+    Units[Base+15,number] = 4000               # range
+    Units[Base+16,string] = "weapons/gauss/fire1.wav" # fire sound
+    Units[Base+17,string] = ""               # hit sound
+    Units[Base+18,string] = "weapons/rpg/shotdown.wav" # die sound
+    Units[Base+19,number] = -1               # required unit 1
+    Units[Base+20,number] = -1               # required unit 2
+    Units[Base+21,number] = 100             # Fall speed
+    Units[Base+22,number] = 40             # Climb speed
+    Units[Base+23,number] = 1             # Weapon type: 1 arcing shell
+    Units[Base+24,number] = -30            # MinBulletLaunchAngle 
+    Units[Base+25,number] = 1            # Randomness of shot
+    if( ModelSet == 2 )
+    {
+        Units[Base+6,string] = "models/combine_turrets/combine_cannon.mdl"
+        Units[Base+8,string] = "models/props_combine/combine_emitter01.mdl"
+    }
+    
+    Base = Base + UnitLength #2
+    Units[Base+1,string] = "Marine"        # name
+    Units[Base+2,number] = 50                # health
+    Units[Base+3,number] = 70                 # speed
+    Units[Base+4,number] = 10                # cost
+    Units[Base+5,number] = 3                 # buildtime(NOT IMPLEMENTED IN THE CODE!)
+    Units[Base+6,string] = "models/props_junk/PopCan01a.mdl" # model
+    Units[Base+7,number] = 13                 # MaxBulletLaunchAngle
+    Units[Base+8,string] = "models/alyx_EmpTool_prop.mdl" # bullet model
+    Units[Base+9,string] = "trails/smoke"    # bullet explosion trail
+    Units[Base+10,string] = "trails/smoke"   # bullet trail
+    Units[Base+11,number] = 500               # bullet speed
+    Units[Base+12,number] = 10               # fire rate
+    Units[Base+13,number] = 2                # damage splash range
+    Units[Base+14,number] = 15                # damage
+    Units[Base+15,number] = 2200               # range
+    Units[Base+16,string] = "weapons/gauss/fire1.wav" # fire sound
+    Units[Base+17,string] = ""               # hit sound
+    Units[Base+18,string] = "weapons/rpg/shotdown.wav" # die sound
+    Units[Base+19,number] = -1               # required unit 1
+    Units[Base+20,number] = -1               # required unit 
+    Units[Base+21,number] = 100             # Fall speed
+    Units[Base+22,number] = 40             # Climb speed
+    Units[Base+23,number] = 1             # Weapon type: 1 arcing shell
+    Units[Base+24,number] = -40            # MinBulletLaunchAngle 
+    Units[Base+25,number] = 0.5            # Randomness of shot
+    if( ModelSet == 2 )
+    {
+        Units[Base+6,string] = "models/props_combine/breenpod.mdl"
+        Units[Base+8,string] = "models/weapons/w_combine_sniper.mdl"
+    }
+    
+    Base = Base + UnitLength #3
+    Units[Base+1,string] = "Artillery"        # name
+    Units[Base+2,number] = 20                # health
+    Units[Base+3,number] = 50                 # speed
+    Units[Base+4,number] = 20                # cost
+    Units[Base+5,number] = 7                 # buildtime(NOT IMPLEMENTED IN THE CODE!)
+    Units[Base+6,string] = "models/props_interiors/pot02a.mdl" # model
+    Units[Base+7,number] = 60                 # MaxBulletLaunchAngle
+    Units[Base+8,string] = "models/Gibs/Shield_Scanner_Gib1.mdl" # bullet model
+    Units[Base+9,string] = "trails/smoke"    # bullet explosion trail
+    Units[Base+10,string] = "trails/smoke"   # bullet trail
+    Units[Base+11,number] = 85               # bullet speed
+    Units[Base+12,number] = 110               # fire rate
+    Units[Base+13,number] = 10                # damage splash range
+    Units[Base+14,number] = 15                # damage
+    Units[Base+15,number] = 12000               # range
+    Units[Base+16,string] = "weapons/gauss/fire1.wav" # fire sound
+    Units[Base+17,string] = ""               # hit sound
+    Units[Base+18,string] = "weapons/rpg/shotdown.wav" # die sound
+    Units[Base+19,number] = 1               # required unit 1
+    Units[Base+20,number] = 2               # required unit 2
+    Units[Base+21,number] = 100             # Fall speed
+    Units[Base+22,number] = 30             # Climb speed
+    Units[Base+23,number] = 1             # Weapon type: 1 arcing shell
+    Units[Base+24,number] = 25            # MinBulletLaunchAngle 
+    Units[Base+25,number] = 1            # Randomness of shot
+    if( ModelSet == 2 )
+    {
+        Units[Base+6,string] = "models/combine_room/combine_monitor002.mdl"
+        Units[Base+8,string] = "models/combine_helicopter/helicopter_bomb01.mdl"
+    }
+    
+    Base = Base + UnitLength #4
+    Units[Base+1,string] = "Paratrooper"        # name
+    Units[Base+2,number] = 40                # health
+    Units[Base+3,number] = 80                 # speed
+    Units[Base+4,number] = 15                # cost
+    Units[Base+5,number] = 4                 # buildtime (NOT IMPLEMENTED IN THE CODE!)
+    Units[Base+6,string] = "models/Items/combine_rifle_ammo01.mdl" # model
+    Units[Base+7,number] = 10                 # MaxBulletLaunchAngle
+    Units[Base+8,string] = "models/alyx_EmpTool_prop.mdl" # bullet model models/props_combine/headcrabcannister01a_skybox.mdl
+    Units[Base+9,string] = "trails/smoke"    # bullet explosion trail
+    Units[Base+10,string] = "trails/smoke"   # bullet trail
+    Units[Base+11,number] = 300               # bullet speed
+    Units[Base+12,number] = 10               # fire rate
+    Units[Base+13,number] = 2                # damage splash range
+    Units[Base+14,number] = 40                # damage
+    Units[Base+15,number] = 2600               # range
+    Units[Base+16,string] = "weapons/gauss/fire1.wav" # fire sound
+    Units[Base+17,string] = ""               # hit sound
+    Units[Base+18,string] = "weapons/rpg/shotdown.wav" # die sound
+    Units[Base+19,number] = 2               # required unit 1
+    Units[Base+20,number] = -1               # required unit 
+    Units[Base+21,number] = 3             # Fall speed
+    Units[Base+22,number] = 100             # Climb speed
+    Units[Base+23,number] = 1             # Weapon type: 1 arcing shell
+    Units[Base+24,number] = -90            # MinBulletLaunchAngle 
+    Units[Base+25,number] = 2            # Randomness of shot
+    if( ModelSet == 2 )
+    {
+        Units[Base+6,string] = "models/combine_helicopter.mdl"
+        Units[Base+8,string] = "models/props_combine/combine_emitter01.mdl"
+    }
+    
+    Base = Base + UnitLength #5
+    Units[Base+1,string] = "Super Tank"        # name
+    Units[Base+2,number] = 300                # health
+    Units[Base+3,number] = 50                 # speed
+    Units[Base+4,number] = 70                # cost
+    Units[Base+5,number] = 15                 # buildtime(NOT IMPLEMENTED IN THE CODE!)
+    Units[Base+6,string] = "models/props_combine/breenlight.mdl" # model
+    Units[Base+7,number] = 15                 # MaxBulletLaunchAngle
+    Units[Base+8,string] = "models/Items/AR2_Grenade.mdl" # bullet model
+    Units[Base+9,string] = "trails/smoke"    # bullet explosion trail
+    Units[Base+10,string] = "trails/smoke"   # bullet trail
+    Units[Base+11,number] = 170               # bullet speed
+    Units[Base+12,number] = 20               # fire rate
+    Units[Base+13,number] = 10                # damage splash range
+    Units[Base+14,number] = 45                # damage
+    Units[Base+15,number] = 6000               # range
+    Units[Base+16,string] = "weapons/gauss/fire1.wav" # fire sound
+    Units[Base+17,string] = ""               # hit sound
+    Units[Base+18,string] = "weapons/rpg/shotdown.wav" # die sound
+    Units[Base+19,number] = 3               # required unit 1
+    Units[Base+20,number] = -1               # required unit 2
+    Units[Base+21,number] = 100             # Fall speed
+    Units[Base+22,number] = 50             # Climb speed
+    Units[Base+23,number] = 1             # Weapon type: 1 arcing shell
+    Units[Base+24,number] = -30            # MinBulletLaunchAngle 
+    Units[Base+25,number] = 2            # Randomness of shot
+    if( ModelSet == 2 )
+    {
+        Units[Base+6,string] = "models/combine_apc.mdl"
+        Units[Base+8,string] = "models/combine_helicopter/helicopter_bomb01.mdl"
+    }
+    
+    Base = Base + UnitLength #6
+    Units[Base+1,string] = "Boomer"        # name
+    Units[Base+2,number] = 250                # health
+    Units[Base+3,number] = 160                 # speed
+    Units[Base+4,number] = 50                # cost
+    Units[Base+5,number] = 5                 # buildtime(NOT IMPLEMENTED IN THE CODE!)
+    Units[Base+6,string] = "models/props_junk/watermelon01.mdl" # model
+    Units[Base+7,number] = 20                 # MaxBulletLaunchAngle
+    Units[Base+8,string] = "models/props_combine/headcrabcannister01a_skybox.mdl" # bullet model
+    Units[Base+9,string] = "trails/smoke"    # bullet explosion trail
+    Units[Base+10,string] = "trails/smoke"   # bullet trail
+    Units[Base+11,number] = 50               # bullet speed
+    Units[Base+12,number] = 100               # fire rate
+    Units[Base+13,number] = 100                # damage splash range
+    Units[Base+14,number] = 250                # damage
+    Units[Base+15,number] = 600               # range
+    Units[Base+16,string] = "weapons/gauss/fire1.wav" # fire sound
+    Units[Base+17,string] = ""               # hit sound
+    Units[Base+18,string] = "weapons/rpg/shotdown.wav" # die sound
+    Units[Base+19,number] = 4               # required unit 1
+    Units[Base+20,number] = -1               # required unit 
+    Units[Base+21,number] = 70             # Fall speed
+    Units[Base+22,number] = 150             # Climb speed
+    Units[Base+23,number] = 1             # Weapon type: 1 arcing shell
+    Units[Base+24,number] = -40            # MinBulletLaunchAngle 
+    Units[Base+25,number] = 1            # Randomness of shot
+    if( ModelSet == 2 )
+    {
+        Units[Base+6,string] = "models/props_trainstation/tanker.mdl"
+        Units[Base+8,string] = "models/combine_helicopter/helicopter_bomb01.mdl"
+    }
+    
+    Base = Base + UnitLength #7
+    Units[Base+1,string] = "Grenadier"        # name
+    Units[Base+2,number] = 40                # health
+    Units[Base+3,number] = 120                 # speed
+    Units[Base+4,number] = 10                # cost
+    Units[Base+5,number] = 5                 # buildtime(NOT IMPLEMENTED IN THE CODE!)
+    Units[Base+6,string] = "models/props_junk/garbage_glassbottle003a.mdl" # model
+    Units[Base+7,number] = 20                 # MaxBulletLaunchAngle
+    Units[Base+8,string] = "models/Gibs/Shield_Scanner_Gib1.mdl" # bullet model
+    Units[Base+9,string] = "trails/smoke"    # bullet explosion trail
+    Units[Base+10,string] = "trails/smoke"   # bullet trail
+    Units[Base+11,number] = 60               # bullet speed
+    Units[Base+12,number] = 25               # fire rate
+    Units[Base+13,number] = 80                # damage splash range
+    Units[Base+14,number] = 50                # damage
+    Units[Base+15,number] = 1000               # range
+    Units[Base+16,string] = "weapons/gauss/fire1.wav" # fire sound
+    Units[Base+17,string] = ""               # hit sound
+    Units[Base+18,string] = "weapons/rpg/shotdown.wav" # die sound
+    Units[Base+19,number] = -1               # required unit 1
+    Units[Base+20,number] = -1               # required unit 
+    Units[Base+21,number] = 90             # Fall speed
+    Units[Base+22,number] = 70             # Climb speed
+    Units[Base+23,number] = 1             # Weapon type: 1 arcing shell
+    Units[Base+24,number] = -40            # MinBulletLaunchAngle 
+    Units[Base+25,number] = 1            # Randomness of shot
+    if( ModelSet == 2 )
+    {
+        Units[Base+6,string] = "models/props_combine/combine_generator01.mdl"
+        Units[Base+8,string] = "models/combine_helicopter/helicopter_bomb01.mdl"
+    }
+    
+    Base = Base + UnitLength #8
+    Units[Base+1,string] = "Angry Mob"        # name
+    Units[Base+2,number] = 35                # health
+    Units[Base+3,number] = 150                 # speed
+    Units[Base+4,number] = 6                # cost
+    Units[Base+5,number] = 5                 # buildtime(NOT IMPLEMENTED IN THE CODE!)
+    Units[Base+6,string] = "models/items/combine_rifle_cartridge01.mdl" # model
+    Units[Base+7,number] = 75                 # MaxBulletLaunchAngle
+    Units[Base+8,string] = "models/alyx_EmpTool_prop.mdl" # bullet model
+    Units[Base+9,string] = "trails/smoke"    # bullet explosion trail
+    Units[Base+10,string] = "trails/smoke"   # bullet trail
+    Units[Base+11,number] = 80               # bullet speed
+    Units[Base+12,number] = 12               # fire rate
+    Units[Base+13,number] = 2                # damage splash range
+    Units[Base+14,number] = 15                # damage
+    Units[Base+15,number] = 800               # range
+    Units[Base+16,string] = "weapons/gauss/fire1.wav" # fire sound
+    Units[Base+17,string] = ""               # hit sound
+    Units[Base+18,string] = "weapons/rpg/shotdown.wav" # die sound
+    Units[Base+19,number] = -1               # required unit 1
+    Units[Base+20,number] = -1               # required unit 
+    Units[Base+21,number] = 140             # Fall speed
+    Units[Base+22,number] = 140             # Climb speed
+    Units[Base+23,number] = 1             # Weapon type: 1 arcing shell
+    Units[Base+24,number] = -40            # MinBulletLaunchAngle 
+    Units[Base+25,number] = 1            # Randomness of shot
+    if( ModelSet == 2 )
+    {
+        Units[Base+6,string] = "models/props_combine/breenpod_inner.mdl"
+        Units[Base+8,string] = "models/weapons/w_combine_sniper.mdl"
+    }
+    
+    Base = Base + UnitLength #9
+    Units[Base+1,string] = "Rocket Arty"        # name
+    Units[Base+2,number] = 20                # health
+    Units[Base+3,number] = 40                 # speed
+    Units[Base+4,number] = 20                # cost
+    Units[Base+5,number] = 5                 # buildtime(NOT IMPLEMENTED IN THE CODE!)
+    Units[Base+6,string] = "models/props_lab/desklamp01.mdl" # model
+    Units[Base+7,number] = 75                 # MaxBulletLaunchAngle
+    Units[Base+8,string] = "models/alyx_EmpTool_prop.mdl" # bullet model
+    Units[Base+9,string] = "trails/smoke"    # bullet explosion trail
+    Units[Base+10,string] = "trails/smoke"   # bullet trail
+    Units[Base+11,number] = 50               # bullet speed
+    Units[Base+12,number] = 10               # fire rate
+    Units[Base+13,number] = 30                # damage splash range
+    Units[Base+14,number] = 5                # damage
+    Units[Base+15,number] = 4000               # range
+    Units[Base+16,string] = "weapons/gauss/fire1.wav" # fire sound
+    Units[Base+17,string] = ""               # hit sound
+    Units[Base+18,string] = "weapons/rpg/shotdown.wav" # die sound
+    Units[Base+19,number] = 7               # required unit 1
+    Units[Base+20,number] = -1               # required unit 
+    Units[Base+21,number] = 120             # Fall speed
+    Units[Base+22,number] = 40             # Climb speed
+    Units[Base+23,number] = 1             # Weapon type: 1 arcing shell
+    Units[Base+24,number] = 30            # MinBulletLaunchAngle 
+    Units[Base+25,number] = 3            # Randomness of shot
+    if( ModelSet == 2 )
+    {
+        Units[Base+6,string] = "models/props_combine/masterinterface.mdl"
+        Units[Base+8,string] = "models/props_combine/combine_emitter01.mdl"
+    }
+    
+    Base = Base + UnitLength #10
+    Units[Base+1,string] = "Buggy"        # name
+    Units[Base+2,number] = 300                # health
+    Units[Base+3,number] = 250                 # speed
+    Units[Base+4,number] = 40                # cost
+    Units[Base+5,number] = 5                 # buildtime(NOT IMPLEMENTED IN THE CODE!)
+    Units[Base+6,string] = "models/props_wasteland/gear01.mdl" # model
+    Units[Base+7,number] = 45                 # MaxBulletLaunchAngle
+    Units[Base+8,string] = "models/alyx_EmpTool_prop.mdl" # bullet model
+    Units[Base+9,string] = "trails/smoke"    # bullet explosion trail
+    Units[Base+10,string] = "trails/smoke"   # bullet trail
+    Units[Base+11,number] = 200               # bullet speed
+    Units[Base+12,number] = 5               # fire rate
+    Units[Base+13,number] = 5                # damage splash range
+    Units[Base+14,number] = 40                # damage
+    Units[Base+15,number] = 1000               # range
+    Units[Base+16,string] = "weapons/gauss/fire1.wav" # fire sound
+    Units[Base+17,string] = ""               # hit sound
+    Units[Base+18,string] = "weapons/rpg/shotdown.wav" # die sound
+    Units[Base+19,number] = 8               # required unit 1
+    Units[Base+20,number] = -1               # required unit 
+    Units[Base+21,number] = 160             # Fall speed
+    Units[Base+22,number] = 160             # Climb speed
+    Units[Base+23,number] = 1             # Weapon type: 1 arcing shell
+    Units[Base+24,number] = -45            # MinBulletLaunchAngle 
+    Units[Base+25,number] = 3            # Randomness of shot
+    TestArrayUnitLength = Base+25
+    if( ModelSet == 2 )
+    {
+        Units[Base+6,string] = "models/props_combine/combine_tptimer.mdl"
+        Units[Base+8,string] = "models/props_combine/combine_emitter01.mdl"
+    }
+    
+    
+    #### Structures Array:
+    # 1: TopLeft:vec2
+    # 2: BottomRight:vec2
+    # 3: UnitIndex:number
+    # 4: StructureCountPlayer1:number  # The number of structures that have been built of this type.
+    # 5: Layer:number
+    # 6: EGPIndex:number
+    # 7: StructureCountPlayer2:number
+    StructureLength = 7
+    UnitCount = Units:count()/UnitLength
+    print( UnitCount:toString() + " units loaded.")
+    
+    ##########################
+    ##### Structure button placement
+    ##########################
+    Egp1:egpClear()
+    Egp2:egpClear()
+    Egp1:egpResolution(vec2(0,0),vec2(100,100))
+    Egp2:egpResolution(vec2(0,0),vec2(100,100))
+    
+    Width = 25
+    Height = 10
+    EgpIndex = 10
+    I = 1
+    SuperMaxLayer = 0
+    while( I <= UnitCount )
+    {
+        # Create this button
+        
+        Structures[(I-1)*StructureLength+3,number] = I
+
+        # Decide on the layer to place this button in by looking at the requirement layers
+        HighestLayer = -1
+        if( Units[(I-1)*UnitLength+19,number] > 0 )
+        {
+            if( Structures[(Units[(I-1)*UnitLength+19,number]-1)*StructureLength+5,number] > HighestLayer )
+            {
+                HighestLayer = Structures[(Units[(I-1)*UnitLength+19,number]-1)*StructureLength+5,number]
+            }
+        }
+        if( Units[(I-1)*UnitLength+20,number] > 0 )
+        {
+            if( Structures[(Units[(I-1)*UnitLength+20,number]-1)*StructureLength+5,number] > HighestLayer )
+            {
+                HighestLayer = Structures[(Units[(I-1)*UnitLength+20,number]-1)*StructureLength+5,number]
+            }
+        }
+        
+        # Set this structure layer
+        if( HighestLayer != -1 )
+        {
+            Structures[(I-1)*StructureLength+5,number] = HighestLayer + 1
+        }else{
+            Structures[(I-1)*StructureLength+5,number] = 0
+        }
+        
+        if( SuperMaxLayer < Structures[(I-1)*StructureLength+5,number] )
+        {
+            SuperMaxLayer = Structures[(I-1)*StructureLength+5,number]
+        }
+        
+        I++
+    }
+    
+    Layer = 0
+    while( Layer <= SuperMaxLayer+1 )
+    {
+        I = 1
+        HeightOffset = 0
+        while( I <= UnitCount )
+        {
+            # Check if this building is on this layer.
+            if( Structures[(I-1)*StructureLength+5,number] == Layer )
+            {
+                # Place this structure button
+                Center = vec2(Layer*(1.2*Width)+Width/2+5,Height/2+HeightOffset+40)
+                Size = vec2(Width,Height)
+                Egp1:egpBox(EgpIndex,Center,Size )
+                Egp2:egpBox(EgpIndex,Center,Size )
+                if( Layer > 0 )
+                {
+                    Egp1:egpColor(EgpIndex,vec(80,80,80))
+                    Egp2:egpColor(EgpIndex,vec(80,80,80))
+                }
+                Egp1:egpText(EgpIndex+1,Units[(I-1)*UnitLength+1,string] + " x" + Structures[(I-1)*StructureLength+4,number],Center-Size:setY(0)/2.2-vec2(0,4))
+                Egp2:egpText(EgpIndex+1,Units[(I-1)*UnitLength+1,string] + " x" + Structures[(I-1)*StructureLength+7,number],Center-Size:setY(0)/2.2-vec2(0,4))
+                Egp1:egpText(EgpIndex+2,"Cost: " + Units[(I-1)*UnitLength+4,number],Center-Size:setY(0)/2.2+vec2(0,1))
+                Egp2:egpText(EgpIndex+2,"Cost: " + Units[(I-1)*UnitLength+4,number],Center-Size:setY(0)/2.2+vec2(0,1))
+                Egp1:egpColor(EgpIndex+1,vec(0,0,0))
+                Egp2:egpColor(EgpIndex+1,vec(0,0,0))
+                Egp1:egpColor(EgpIndex+2,vec(0,0,0))
+                Egp2:egpColor(EgpIndex+2,vec(0,0,0))
+                HeightOffset = HeightOffset + Height*1.1
+                Structures[(I-1)*StructureLength+6,number] = EgpIndex
+                EgpIndex = EgpIndex + 3
+                
+                # Place the hitbox
+                Structures[(I-1)*StructureLength+1,vector2] = Center - Size/2
+                Structures[(I-1)*StructureLength+2,vector2] = Center + Size/2
+                
+                # Draw the dependency lines
+                if( Layer > 0 )
+                {
+                    if( Units[(I-1)*UnitLength+19,number] > 0 )
+                    {
+                        # Draw this line
+                        Index = Units[(I-1)*UnitLength+19,number]
+                        Egp1:egpLine(EgpIndex,Structures[(Index-1)*StructureLength+2,vector2]-Size:setX(0)/2 ,Center-Size/2)
+                        Egp2:egpLine(EgpIndex,Structures[(Index-1)*StructureLength+2,vector2]-Size:setX(0)/2 ,Center-Size/2)
+                        EgpIndex++
+                    }
+                if( Units[(I-1)*UnitLength+20,number] > 0 )
+                    {
+                        # Draw this line
+                        Index = Units[(I-1)*UnitLength+20,number]
+                        Egp1:egpLine(EgpIndex,Structures[(Index-1)*StructureLength+2,vector2]-Size:setX(0)/2 ,Center-Size/2)
+                        Egp2:egpLine(EgpIndex,Structures[(Index-1)*StructureLength+2,vector2]-Size:setX(0)/2 ,Center-Size/2)
+                        EgpIndex++
+                    }
+                }
+            }
+            
+            I++
+        }
+        Layer = Layer + 1
+    }
+    
+    # Create the money egp
+    EgpMoney = EgpIndex+1
+    Egp1:egpBoxOutline(EgpMoney-1,vec2(50,95),vec2(30,10))
+    Egp2:egpBoxOutline(EgpMoney-1,vec2(50,95),vec2(30,10))
+    Egp1:egpText(EgpMoney,"Money: " + Player1Money,vec2(40,92))
+    Egp1:egpColor(EgpMoney,vec(255,255,255))
+    Egp2:egpText(EgpMoney,"Money: " + Player2Money,vec2(40,92))
+    Egp2:egpColor(EgpMoney,vec(255,255,255))
+    EgpIndex = EgpIndex + 2
+    
+    # Save this egp frame
+    Egp1:egpSaveFrame("techTree")
+    Egp2:egpSaveFrame("techTree")
+}elseif( last() | clk("reset") )
+{
+    # Erase the created props
+    I = 1
+    while( I <= Entities:count()/EntityLength )
+    {
+        Ent = entity(Entities[(I-1)*EntityLength + 1,number])
+        Ent:propDelete()
+        I++
+    }
+    I = 1
+    while( I <= Bullets:count()/BulletLength )
+    {
+        Ent = Bullets[(I-1)*BulletLength + 3,entity]
+        Ent:propDelete()
+        I++
+    }
+    while( PropDeleteList:count() > 0 )
+    {
+        Ent = PropDeleteList:popEntity()
+        Ent:propDelete()
+    }
+    while( BulletDeleteList:count() > 0 )
+    {
+        Ent = BulletDeleteList:popEntity()
+        Ent:propDelete()
+    }
+    while( BulletPreDeleteList:count() > 0 )
+    {
+        Ent = BulletPreDeleteList:popEntity()
+        Ent:propDelete()
+    }
+    
+    SpawningUnits = 0
+    Explosions = array()
+    Entities = array()
+    Bullets = array()
+    Units = array()
+    Structures = array()
+    Player1LastUse = 0
+    Player2LastUse = 0
+    Player1 = noentity()
+    Player2 = noentity()
+    StartCount = 0
+    LastState = -1
+    GameState = 0
+    Count = 0
+    if( clk("reset") )
+    { timer( "init", 300 ) }
+    exit()
+}elseif( clk("updatePrereq") )
+{
+    # Update the prerequisit colouring
+    I = 1
+    UnitCount = Units:count()/UnitLength
+    while( I <= UnitCount )
+    {
+        # Check player 1 prereqs
+        Prereq1 = Units[(I-1)*UnitLength + 19,number]
+        Prereq2 = Units[(I-1)*UnitLength + 20,number]
+        if( (Prereq1 < 1 | Structures[(Prereq1-1)*StructureLength + 4,number] > 0)
+            & (Prereq2 < 1 | Structures[(Prereq2-1)*StructureLength + 4,number] > 0) )
+        {
+            # Set this to white
+            EgpIndex = Structures[(I-1)*StructureLength + 6,number]
+            Egp1:egpColor(EgpIndex,vec(255,255,255))
+        }
+        
+        # Check player 2 prereqs
+        Prereq1 = Units[(I-1)*UnitLength + 19,number]
+        Prereq2 = Units[(I-1)*UnitLength + 20,number]
+        if( (Prereq1 < 1 | Structures[(Prereq1-1)*StructureLength + 7,number] > 0)
+            & (Prereq2 < 1 | Structures[(Prereq2-1)*StructureLength + 7,number] > 0) )
+        {
+            # Set this to white
+            EgpIndex = Structures[(I-1)*StructureLength + 6,number]
+            Egp2:egpColor(EgpIndex,vec(255,255,255))
+        }
+        
+        I++
+    }
+    exit()
+}elseif( clk("updateMoney") | (RefreshMoney & mod(Count,20) == 0 ) )
+{
+    # Update the player money
+    Egp1:egpText(EgpMoney,"Money: " + floor(Player1Money),vec2(40,92))
+    Egp2:egpText(EgpMoney,"Money: " + floor(Player2Money),vec2(40,92))
+    RefreshMoney = 0
+    if( clk("updateMoney") )
+    {exit()}
+}elseif( clk("produceUnits") )
+{
+    if( Entities:count()/EntityLength < UnitLimit )
+    {
+        B_I = 1
+        B_N = 0
+        B_J = 0
+        SpawningUnits = 1
+    }
+    exit()
+}
+
+Count++
+
+# Handle the hold-down reset switch
+if( Reset )
+{
+    ResetDuration++
+    if( ResetDuration > 10 )
+    {
+        # Reset
+        timer("reset",100)
+        Egp1:entity():soundPlay(1,0,"ambient/machines/spindown.wav")
+        Egp2:entity():soundPlay(2,0,"ambient/machines/spindown.wav")
+        ResetDuration = 0
+        exit()
+    }
+}elseif( ResetDuration > 0 )
+{
+    ResetDuration = 0
+}
+
+if( GameState == 0 )
+{
+    #################################
+    #### WAITING FOR PLAYERS STATE
+    #################################
+    
+    # Initialization
+    if( GameState != LastState )
+    {
+        Player1 = noentity()
+        Player2 = noentity()
+        Ready1 = 0
+        Ready2 = 0
+        
+        # Draw the egp start screens
+        Egp1:egpClear()
+        Egp2:egpClear()
+        Egp1:egpResolution(vec2(0,0),vec2(100,100))
+        Egp2:egpResolution(vec2(0,0),vec2(100,100))
+        
+        # Set the cursors
+        Egp1:egpCircle(1,vec2(0,0),vec2(3,3))
+        Egp1:egpColor(1,vec4(255,255,255,100))
+        Egp1:egpParentToCursor(1)
+        Egp2:egpCircle(1,vec2(0,0),vec2(3,3))
+        Egp2:egpColor(1,vec4(255,255,255,100))
+        Egp2:egpParentToCursor(1)
+        
+        # Set the ready buttons
+        Egp1:egpBox(2,vec2(50,50),vec2(30,20))
+        Egp1:egpColor(2,vec(255,0,0))
+        Egp2:egpBox(2,vec2(50,50),vec2(30,20))
+        Egp2:egpColor(2,vec(255,0,0))
+        Egp1:egpText(3,"Ready",vec2(46,49))
+        Egp2:egpText(3,"Ready",vec2(46,49))
+        
+        # Create the BOT vs BOT button
+        Egp1:egpBox(9,vec2(50,75),vec2(30,20))
+        Egp1:egpColor(9,vec(255,255,255))
+        Egp2:egpBox(9,vec2(50,75),vec2(30,20))
+        Egp2:egpColor(9,vec(255,255,255))
+        Egp1:egpText(10,"BOT vs BOT",vec2(40,74))
+        Egp2:egpText(10,"BOT vs BOT",vec2(40,74))
+        Egp1:egpColor(10,vec(0,0,0))
+        Egp2:egpColor(10,vec(0,0,0))
+        
+        # Draw the nexus logo
+        Egp1:egpBox(5,vec2(15,15),vec2(20,20))
+        Egp1:egpColor(5,vec(50,50,50))
+        Egp1:egpTriangle(6,vec2(15,10),vec2(15+10,30),vec2(15-10,30))
+        Egp1:egpText(7,"GMOD NEXUS WARS",vec2(30,5))
+        Egp1:egpText(8,"by Paper Clip",vec2(30,10))
+        
+        Egp2:egpBox(5,vec2(15,15),vec2(20,20))
+        Egp2:egpColor(5,vec(50,50,50))
+        Egp2:egpTriangle(6,vec2(15,10),vec2(15+10,30),vec2(15-10,30))
+        Egp2:egpText(7,"GMOD NEXUS WARS",vec2(30,5))
+        Egp2:egpText(8,"by Paper Clip",vec2(30,10))
+        
+        # Cursor order
+        Egp1:egpOrder(1,1000)
+        Egp2:egpOrder(1,1000)
+        
+        LastState = GameState
+    }
+    
+    # Control the players looking at the screen
+    Players = players()
+    I = 1
+    while( I <= Players:count() )
+    {
+        if( !Player2 & Egp2:entity() == Players[I,entity]:aimEntity() & Players[I,entity]:keyUse() & inrange(Egp2:egpCursor(Players[I,entity]),vec2(50-15, 50-10),vec2(50+15, 50+10)) )
+        {
+            Player2 = Players[I,entity]
+            
+            # This player is ready
+            Egp2:egpColor(2,vec(0,0,255))
+            Egp2:egpText(4,"Start Singleplayer",vec2(37,49))
+            Egp2:egpText(3,Player2:name() + ": Waiting for other player to click ready!",vec2(0,35))
+            Egp1:egpText(5,Player2:name() + " is waiting for you to press ready!",vec2(0,65))
+            Ready2 = 1
+            Egp2:entity():soundPlay(2,0,"items/clipinsert1.wav")
+            interval(1500)
+            exit()
+        }
+        if( !Player1 & Egp1:entity() == Players[I,entity]:aimEntity() & Players[I,entity]:keyUse() & inrange(Egp1:egpCursor(Players[I,entity]),vec2(50-15, 50-10),vec2(50+15, 50+10)) )
+        {
+            Player1 = Players[I,entity]
+            
+            # This player is ready
+            Egp1:egpColor(2,vec(0,0,255))
+            Egp1:egpText(4,"Start Singleplayer",vec2(37,49))
+            Egp1:egpText(3,Player1:name() + ": Waiting for other player to click ready!",vec2(0,35))
+            Egp2:egpText(5,Player1:name() + " is waiting for you to press ready!",vec2(0,65))
+            Ready1 = 1
+            Egp1:entity():soundPlay(1,0,"items/clipinsert1.wav")
+            interval(1500)
+            exit()
+        }
+        if( Egp1:entity() == Players[I,entity]:aimEntity() & Players[I,entity]:keyUse() & inrange(Egp1:egpCursor(Players[I,entity]),vec2(50-15, 50-10+25),vec2(50+15, 50+10+25)) )
+        {
+            # Start a BOT vs BOT game
+            Player1 = entity()
+            Player2 = entity()
+            GameState = 1
+            Egp1:entity():soundPlay(1,0,"items/clipinsert1.wav")
+            Egp2:entity():soundPlay(2,0,"items/clipinsert1.wav")
+            interval(200)
+            exit()
+        }
+        I++
+    }
+    
+    if( Egp2:entity() == Player2:aimEntity() & Player2:keyUse() & inrange(Egp2:egpCursor(Player2),vec2(50-15, 50-10),vec2(50+15, 50+10)) )
+    {
+        # Start a singleplayer game
+        Egp2:entity():soundPlay(2,0,"items/clipinsert1.wav")
+        Player1 = entity()
+        GameState = 1
+    }
+    if( Egp1:entity() == Player1:aimEntity() & Player1:keyUse() & inrange(Egp1:egpCursor(Player1),vec2(50-15, 50-10),vec2(50+15, 50+10)) )
+    {
+        # Start a singleplayer game
+        Egp1:entity():soundPlay(1,0,"items/clipinsert1.wav")
+        Player2 = entity()
+        GameState = 1
+    }
+    
+    if( Ready1 & Ready2 )
+    {
+        # Start the game
+        GameState = 1
+    }
+    
+    interval(100)
+}elseif( GameState == 1 )
+{
+    #################################
+    #### START GAME COUNTDOWN
+    #################################
+    if( GameState != LastState )
+    {
+        # Initialize state
+        
+        # Draw the egp start screens
+        Egp1:egpClear()
+        Egp2:egpClear()
+        
+        # Draw the nexus logo
+        Egp1:egpBox(5,vec2(15,15),vec2(20,20))
+        Egp1:egpColor(5,vec(50,50,50))
+        Egp1:egpTriangle(6,vec2(15,10),vec2(15+10,30),vec2(15-10,30))
+        Egp1:egpText(7,"GMOD NEXUS WARS",vec2(30,5))
+        Egp1:egpText(8,"by Paper Clip",vec2(30,10))
+        
+        Egp2:egpBox(5,vec2(15,15),vec2(20,20))
+        Egp2:egpColor(5,vec(50,50,50))
+        Egp2:egpTriangle(6,vec2(15,10),vec2(15+10,30),vec2(15-10,30))
+        Egp2:egpText(7,"GMOD NEXUS WARS",vec2(30,5))
+        Egp2:egpText(8,"by Paper Clip",vec2(30,10))
+        
+        
+        if( Player1 != entity() )
+        {P1Name = Player1:name()}
+        else
+        {P1Name = "BOT"}
+        
+        if( Player2 != entity() )
+        {P2Name = Player2:name()}
+        else
+        {P2Name = "BOT"}
+        
+        Egp1:egpText(10,"Player 1: " + P1Name,vec2(30,15))
+        Egp2:egpText(10,"Player 1: " + P1Name,vec2(30,15))
+        
+        Egp1:egpText(9,"Player 2: " + P2Name,vec2(30,20))
+        Egp2:egpText(9,"Player 2: " + P2Name,vec2(30,20))
+        
+        # Draw Countdown
+        Egp1:egpText(1,"Game starting in: 10",vec2(30,50))
+        Egp2:egpText(1,"Game starting in: 10",vec2(30,50))
+        
+        StartCount = Count            
+        LastState = GameState
+    }
+    
+    # Sound and countdown
+    if( mod(Count - StartCount,15) == 0  )
+    {
+        Egp1:entity():soundPlay(1,0,"hydra/hydra_bump2.wav")
+        Egp2:entity():soundPlay(2,0,"hydra/hydra_bump2.wav")
+        Egp1:egpSetText(1,"Game starting in: " + round(5-(Count - StartCount)/15))
+        Egp2:egpSetText(1,"Game starting in: " + round(5-(Count - StartCount)/15))
+    }
+    
+    # Next state transition
+    if( (Count - StartCount)/15 > 5 )
+    {
+        Egp1:entity():soundPlay(1,0,"ambient/alarms/klaxon1.wav")
+        Egp2:entity():soundPlay(2,0,"ambient/alarms/klaxon1.wav")
+        GameState = 2
+    }
+    interval(70)
+}elseif( GameState == 2 )
+{
+    #################################
+    #### GAME IN PROGRESS
+    #################################
+    if( GameState != LastState )
+    {
+        # Initialize this state
+        
+        # Set the ai strategies
+        Player1AiStrat = randint( 1, AiStrategies:count() )
+        Player2AiStrat = randint( 1, AiStrategies:count() )
+        Ai1Unit = 1 
+        Ai2Unit = 1
+        while( AiStrategies:count() > 1 & Player1AiStrat == Player2AiStrat )
+        {
+            Player1AiStrat = randint( 1, AiStrategies:count() )
+            Player2AiStrat = randint( 1, AiStrategies:count() )
+        }
+        
+        # Draw the egp start screens
+        Egp1:egpClear()
+        Egp2:egpClear()
+        
+        # Load the tech tree
+        Egp1:egpLoadFrame("techTree")
+        Egp2:egpLoadFrame("techTree")
+        
+        # Draw the nexus logo
+        Egp1:egpBox(1,vec2(15,15),vec2(20,20))
+        Egp1:egpColor(1,vec(50,50,50))
+        Egp1:egpTriangle(2,vec2(15,10),vec2(15+10,30),vec2(15-10,30))
+        Egp1:egpText(3,"GMOD NEXUS WARS",vec2(30,5))
+        Egp1:egpText(4,"by Paper Clip",vec2(30,10))
+        
+        Egp2:egpBox(1,vec2(15,15),vec2(20,20))
+        Egp2:egpColor(1,vec(50,50,50))
+        Egp2:egpTriangle(2,vec2(15,10),vec2(15+10,30),vec2(15-10,30))
+        Egp2:egpText(3,"GMOD NEXUS WARS",vec2(30,5))
+        Egp2:egpText(4,"by Paper Clip",vec2(30,10))
+        
+        # Draw the refund factor and unit cap
+        Egp1:egpText(7,"Refund Percent (Right click): " + 100*RefundFactor, vec2(30,25))
+        Egp2:egpText(7,"Refund Percent (Right click): " + 100*RefundFactor, vec2(30,25))
+        Egp1:egpText(8,"Unit Limit: 0/" + UnitLimit, vec2(30,30))
+        Egp2:egpText(8,"Unit Limit: 0/" + UnitLimit, vec2(30,30))
+        
+        Egp1:egpText(200,"Sudden Deadh In: " + SuddenDeathTime, vec2(30,35))
+        Egp2:egpText(200,"Sudden Deadh In: " + SuddenDeathTime, vec2(30,35))
+        
+        # Set the cursors
+        Egp1:egpCircle(5,vec2(0,0),vec2(3,3))
+        Egp1:egpColor(5,vec4(255,255,255,100))
+        Egp1:egpParentToCursor(5)
+        Egp2:egpCircle(5,vec2(0,0),vec2(3,3))
+        Egp2:egpColor(5,vec4(255,255,255,100))
+        Egp2:egpParentToCursor(5)
+        
+        if( Player1 != entity() )
+        {P1Name = Player1:name()}
+        else
+        {P1Name = "BOT"}
+        
+        if( Player2 != entity() )
+        {P2Name = Player2:name()}
+        else
+        {P2Name = "BOT"}
+        
+        Egp1:egpText(6,"Player 1: " + P1Name,vec2(30,15))
+        Egp2:egpText(6,"Player 1: " + P1Name,vec2(30,15))
+        
+        Egp1:egpText(9,"Player 2: " + P2Name,vec2(30,20))
+        Egp2:egpText(9,"Player 2: " + P2Name,vec2(30,20))
+        
+        
+        StartCount = Count
+        LastState = GameState
+    }
+    
+    #### New Buildings Processing
+    if( Player1:aimEntity() == Egp1:entity() & ( (Player1:keyUse() & !Player1LastUse) | ( Player1:keyAttack2() & !Player1LastRClick) ) )
+    {
+        # Player 1 pressed use while looking at the screen. Lets see if he hit a button.
+        I = 1
+        while( I <= Units:count()/UnitLength )
+        {
+            # Check if we hit this button
+            if( inrange(Egp1:egpCursor(Player1),Structures[(I-1)*StructureLength + 1,vector2],Structures[(I-1)*StructureLength + 2,vector2]) )
+            {
+                # We hit this button.
+                UnitIndex = Structures[(I-1)*StructureLength + 3,number]
+                Cost = Units[(UnitIndex-1)*UnitLength + 4,number]
+                
+                if( Player1:keyUse() )
+                {
+                    # Try to build this building
+                    if( Cost <= Player1Money )
+                    {
+                        # We have the money, check prereqs
+                        Prereq1 = Units[(UnitIndex-1)*UnitLength + 19,number]
+                        Prereq2 = Units[(UnitIndex-1)*UnitLength + 20,number]
+                        if( (Prereq1 < 1 | Structures[(Prereq1-1)*StructureLength + 4,number] > 0)
+                            & (Prereq2 < 1 | Structures[(Prereq2-1)*StructureLength + 4,number] > 0) )
+                        {
+                            # We have met the prequisits, lets build this!
+                            Player1Money = Player1Money - Cost
+                            Structures[(I-1)*StructureLength + 4,number] = Structures[(I-1)*StructureLength + 4,number] + 1
+                            Egp1:entity():soundPlay(1,0,"ambient/machines/hydraulic_1.wav")
+                            if( Structures[(I-1)*StructureLength + 4,number] == 1 )
+                            {
+                                # Schedule a prerequisit update
+                                timer("updatePrereq",100)
+                            }
+                            timer("updateMoney",100)
+                            
+                            # Update the building count
+                            EgpIndex = Structures[(I-1)*StructureLength + 6,number]
+                            Egp1:egpSetText(EgpIndex+1, Units[(I-1)*UnitLength+1,string] + " x" + Structures[(I-1)*StructureLength+4,number])
+                        }else{
+                            Egp1:entity():soundPlay(1,0,"ambient/alarms/klaxon1.wav")
+                        }
+                    }else{
+                        Egp1:entity():soundPlay(1,0,"ambient/alarms/klaxon1.wav")
+                    }
+                }else{
+                    # Trying to sell this building
+                    Number = Structures[(I-1)*StructureLength + 4,number]
+                    if( Number > 0 )
+                    {
+                        # Sell this building
+                        Egp1:entity():soundPlay(1,0,"doors/doormove4.wav")
+                        Structures[(I-1)*StructureLength + 4,number] = Number - 1
+                        Player1Money = Player1Money + RefundFactor*Cost
+                        EgpIndex = Structures[(I-1)*StructureLength + 6,number]
+                        Egp1:egpSetText(EgpIndex+1, Units[(I-1)*UnitLength+1,string] + " x" + Structures[(I-1)*StructureLength+4,number])
+                        if( Number == 1 )
+                        {timer("updatePrereq",50)}
+                        timer("updateMoney",100)
+                    }
+                }
+            }
+            I++
+        }
+    }
+    if( Player2:aimEntity() == Egp2:entity() & ( (Player2:keyUse() & !Player2LastUse) | ( Player2:keyAttack2() & !Player2LastRClick) ) )
+    {
+        # Player 1 pressed use while looking at the screen. Lets see if he hit a button.
+        I = 1
+        while( I <= Units:count()/UnitLength )
+        {
+            # Check if we hit this button
+            if( inrange(Egp2:egpCursor(Player2),Structures[(I-1)*StructureLength + 1,vector2],Structures[(I-1)*StructureLength + 2,vector2]) )
+            {
+                # We hit this button.
+                UnitIndex = Structures[(I-1)*StructureLength + 3,number]
+                Cost = Units[(UnitIndex-1)*UnitLength + 4,number]
+                
+                if( Player2:keyUse() )
+                {
+                    # Try to build this building
+                    if( Cost <= Player2Money )
+                    {
+                        # We have the money, check prereqs
+                        Prereq1 = Units[(UnitIndex-1)*UnitLength + 19,number]
+                        Prereq2 = Units[(UnitIndex-1)*UnitLength + 20,number]
+                        if( (Prereq1 < 1 | Structures[(Prereq1-1)*StructureLength + 7,number] > 0)
+                            & (Prereq2 < 1 | Structures[(Prereq2-1)*StructureLength + 7,number] > 0) )
+                        {
+                            # We have met the prequisits, lets build this!
+                            Player2Money = Player2Money - Cost
+                            Structures[(I-1)*StructureLength + 7,number] = Structures[(I-1)*StructureLength + 7,number] + 1
+                            Egp2:entity():soundPlay(1,0,"ambient/machines/hydraulic_1.wav")
+                            if( Structures[(I-1)*StructureLength + 7,number] == 1 )
+                            {
+                                # Schedule a prerequisit update
+                                timer("updatePrereq",100)
+                            }
+                            timer("updateMoney",100)
+                            
+                            # Update the building count
+                            EgpIndex = Structures[(I-1)*StructureLength + 6,number]
+                            Egp2:egpSetText(EgpIndex+1, Units[(I-1)*UnitLength+1,string] + " x" + Structures[(I-1)*StructureLength+7,number])
+                        }else{
+                            Egp2:entity():soundPlay(1,0,"ambient/alarms/klaxon1.wav")
+                        }
+                    }else{
+                        Egp2:entity():soundPlay(1,0,"ambient/alarms/klaxon1.wav")
+                    }
+                }else{
+                    # Trying to sell this building
+                    Number = Structures[(I-1)*StructureLength + 7,number]
+                    if( Number > 0 )
+                    {
+                        # Sell this building
+                        Egp2:entity():soundPlay(1,0,"doors/doormove4.wav")
+                        Structures[(I-1)*StructureLength + 7,number] = Number - 1
+                        Player2Money = Player2Money + RefundFactor*Cost
+                        EgpIndex = Structures[(I-1)*StructureLength + 6,number]
+                        Egp2:egpSetText(EgpIndex+1, Units[(I-1)*UnitLength+1,string] + " x" + Structures[(I-1)*StructureLength+7,number])
+                        if( Number == 1 )
+                        {timer("updatePrereq",50)}
+                        timer("updateMoney",100)
+                    }
+                }
+            }
+            I++
+        }
+    }
+    
+    Player1LastUse = Player1:keyUse()
+    Player1LastRClick = Player1:keyAttack2()
+    Player2LastUse = Player2:keyUse()
+    Player2LastRClick = Player2:keyAttack2()
+    
+    #################################
+    #### UNIT SPAWNING
+    #################################
+    if( mod(Entities:count(),EntityLength) != 0 )
+    { print("ERROR: " + Entities:count() + "," + EntityLength) }
+    
+    if( SpawningUnits & SuddenDeathTime > 0 )
+    {
+        # Play the spawn sound effect
+        Egp1:entity():soundPlay(1,0,"doors/door_metal_gate_close1.wav")
+        Egp2:entity():soundPlay(2,0,"doors/door_metal_gate_close1.wav")
+
+        if( B_I == 0 ) {B_I = 1}
+        # Create new units for each building
+        while( B_I <= Units:count()/UnitLength )
+        {
+            if( maxquota()-opcounter() < 100 )
+            {
+                Count--
+                interval(250)
+                exit()
+            }
+            
+            
+            # Player 1 production
+            if( B_N <= 0 & B_J <= 0 )
+            {B_N = Structures[(B_I-1)*StructureLength + 4,number]}
+            while( B_N > 0 )
+            {
+                # Create a new unit of this type
+                Ent = propSpawn(Units[(B_I-1)*UnitLength +6,string],Base1:massCenter() + DamageRadiusFactor*(30 + randint(-20,20))*(Base2:pos() - Base1:pos()):normalized() + DamageRadiusFactor*randint(-10,10)*(Base2:pos() - Base1:pos()):normalized():cross(vec(0,0,1)),(Base2:pos() - Base1:pos()):toAngle(),1)
+                if( !Ent )
+                {
+                    Count--
+                    interval(50)
+                    exit()
+                }
+                if( Ent:id() > 0 )
+                {
+                    Ent:setColor( vec(255,0,0) )
+                    Ent:setMaterial("models/debug/debugwhite")
+                    #if( !Ent )
+                    #{ timer("produceUnitsContinue",400), exit() }
+                    K = Entities:count()
+                    if( mod(K,EntityLength) != 0 )
+                    { print("ERROR: " + K + "," + EntityLength) }
+                    Entities[K+1,number] = Ent:id()
+                    Entities[K+2,number] =  1
+                    Entities[K+3,number] =  B_I
+                    Entities[K+4,number] =  Units[(B_I-1)*UnitLength + 2,number]
+                    Entities[K+5,number] =  1
+                    Entities[K+6,number] =  entity():id()
+                    Entities[K+7,number] =  1 # player 1
+                    Entities[K+8,number] =  -1
+                }
+                B_N--
+            }
+            
+            if( maxquota()-opcounter() < 100 )
+            {
+                Count--
+                interval(250)
+                exit()
+            }
+            
+            # Player 2 production
+            if( B_J <= 0 )
+            {B_J = Structures[(B_I-1)*StructureLength + 7,number]}
+            while( B_J > 0 )
+            {
+                # Create a new unit of this type
+                Ent = propSpawn(Units[(B_I-1)*UnitLength +6,string],Base2:massCenter() + DamageRadiusFactor*(30 + randint(-20,20))*(Base1:pos() - Base2:pos()):normalized() + DamageRadiusFactor*randint(-10,10)*(Base2:pos() - Base1:pos()):normalized():cross(vec(0,0,1)),(Base1:pos() - Base2:pos()):toAngle(),1)
+                if( !Ent )
+                {
+                    Count--
+                    interval(50)
+                    exit()
+                }
+                if( Ent:id() > 0 )
+                {
+                    Ent:setColor( vec(0,0,255) )
+                    Ent:setMaterial("models/debug/debugwhite")
+                    #if( !Ent )
+                    #{ timer("produceUnitsContinue",400), exit() }
+                    K = Entities:count()
+                    if( mod(K,EntityLength) != 0 )
+                    { print("ERROR: " + K + "," + EntityLength) }
+                    Entities[K+1,number] = Ent:id()
+                    Entities[K+2,number] =  1
+                    Entities[K+3,number] =  B_I
+                    Entities[K+4,number] =  Units[(B_I-1)*UnitLength + 2,number]
+                    Entities[K+5,number] =  1
+                    Entities[K+6,number] =  entity():id()
+                    Entities[K+7,number] =  2 # player 2
+                    Entities[K+8,number] =  -1
+                }
+                B_J--
+            }
+            B_I++
+        }
+        SpawningUnits = 0
+    }
+    
+    #### AI Processing
+    if( mod(Count,40) == 0 )
+    {
+        # AI Building Processing
+        if( Player1 == entity() )
+        {
+            # Player 1 is a bot
+            StratString = AiStrategies[Player1AiStrat,string]
+            if( Ai1Unit > StratString:length() )
+            {
+                Ai1Unit = 1
+            }
+            UnitType = StratString:sub(Ai1Unit,Ai1Unit):toNumber()
+            if( UnitType == 0 ) { UnitType = 10 }
+            
+            # See if we have enough money to build this
+            Cost = Units[(UnitType-1)*UnitLength + 4,number]
+            
+            if( Cost <= Player1Money )
+            {
+                # Build it
+                Player1Money = Player1Money - Cost
+                Structures[(UnitType-1)*StructureLength + 4,number] = Structures[(UnitType-1)*StructureLength + 4,number] + 1
+                Egp1:entity():soundPlay(1,0,"ambient/machines/hydraulic_1.wav")
+                if( Structures[(UnitType-1)*StructureLength + 4,number] == 1 )
+                {
+                    # Schedule a prerequisit update
+                    timer("updatePrereq",100)
+                }
+                timer("updateMoney",100)
+                
+                # Update the building count
+                EgpIndex = Structures[(UnitType-1)*StructureLength + 6,number]
+                Egp1:egpSetText(EgpIndex+1, Units[(UnitType-1)*UnitLength+1,string] + " x" + Structures[(UnitType-1)*StructureLength+4,number])
+                
+                Ai1Unit++
+            }
+        }
+        
+        if( Player2 == entity() )
+        {
+            # Player 2 is a bot
+            StratString = AiStrategies[Player2AiStrat,string]
+            
+            if( Ai2Unit > StratString:length() )
+            {
+                Ai2Unit = 1
+            }
+            UnitType = StratString:sub(Ai2Unit,Ai2Unit):toNumber()
+            if( UnitType == 0 ) { UnitType = 10 }
+            
+            # See if we have enough money to build this
+            Cost = Units[(UnitType-1)*UnitLength + 4,number]
+            if( Cost <= Player2Money )
+            {
+                # Build it
+                Player2Money = Player2Money - Cost
+                Structures[(UnitType-1)*StructureLength + 7,number] = Structures[(UnitType-1)*StructureLength + 7,number] + 1
+                Egp2:entity():soundPlay(1,0,"ambient/machines/hydraulic_1.wav")
+                if( Structures[(UnitType-1)*StructureLength + 7,number] == 1 )
+                {
+                    # Schedule a prerequisit update
+                    timer("updatePrereq",100)
+                }
+                timer("updateMoney",100)
+                
+                # Update the building count
+                EgpIndex = Structures[(UnitType-1)*StructureLength + 6,number]
+                Egp2:egpSetText(EgpIndex+1, Units[(UnitType-1)*UnitLength+1,string] + " x" + Structures[(UnitType-1)*StructureLength+7,number])
+                
+                Ai2Unit++
+            }
+        }
+    }
+    
+    
+    
+    
+    
+    
+    
+    # Building processing
+    if( ContinueUnitMoving == 0 & ContinueBulletMoving == 0 )
+    {
+        # Update unit limit egps
+        if( mod(Count,20) == 0 )
+        {
+            Egp1:egpText(8,"Unit Limit: " + Entities:count()/EntityLength + "/" + UnitLimit, vec2(30,30))
+            Egp2:egpText(8,"Unit Limit: " + Entities:count()/EntityLength + "/" + UnitLimit, vec2(30,30))
+        }
+        
+        ##############################
+        ##############################
+        #### Building Processing
+        ##############################
+        ##############################
+        I = 1
+        while( I <= Bunkers:count()/BunkerLength )
+        {
+            Ent = Bunkers[(I-1)*BunkerLength + 1,entity]
+            if( Ent:getAlpha() != 0 )
+            {
+                Health = Bunkers[(I-1)*BunkerLength + 2,number]
+                Player = Bunkers[(I-1)*BunkerLength + 3,number]
+                Special = Bunkers[(I-1)*BunkerLength + 4,number]
+                
+                # Check for explosion damage
+                P = 1
+                while( P <= Explosions:count()/ExplosionLength )
+                {
+                    ExplosionPos = Explosions[(P-1)*ExplosionLength + 1,vector]
+                    ExplosionRad = Explosions[(P-1)*ExplosionLength + 2,number]
+                    
+                    #print("Distance: " + (Ent:massCenter() - ExplosionPos):length() )
+                    #print("Radius: " + (ExplosionRad + Ent:boxSize():length()) )
+                    
+                    # Check if we have been hit
+                    if( (Ent:massCenter() - ExplosionPos):length() <= ExplosionRad + Ent:boxSize():length() )
+                    {
+                        # OUCH! We have been hit!
+                        ExplosionDam = Explosions[(P-1)*ExplosionLength + 3,number]
+                        Health = Health - ExplosionDam
+                        if( Health == 0 )
+                        { Health = -1 }
+                        Bunkers[(I-1)*BunkerLength + 2,number] = Health
+                    }
+                    P++
+                }
+                
+                # Check if we are dead
+                if( Health <= 0 )
+                {
+                    # Dead bunker
+                    Ent:setAlpha(0)
+                    
+                    # Check if the game has been lost
+                    if( Special == 1 )
+                    {
+                        # A home-base is dead! This player lost.
+                        GameState = 3
+                        WinningPlayer = (!(Player - 1)) + 1
+                        soundPurge()
+                        Egp1:entity():soundPlay(1,0,"music/hl2_song6.mp3")
+                        Egp2:entity():soundPlay(1,0,"music/hl2_song6.mp3")
+                        interval(100)
+                        exit()
+                    }
+                }
+            }
+            
+            I++
+        }
+    }
+    
+    ##############################
+    ##############################
+    #### Entity Processing
+    ##############################
+    ##############################
+    
+    
+    # Process the removal of dead units in the qeue
+    if( mod(Count,10) == 0 & PropDeleteList:count() > 0 )
+    {
+        while( PropDeleteList:count() > 0 )
+        {
+            TmpEnt = PropDeleteList:popEntity()
+            TmpEnt:propBreak()
+        }
+    }
+    
+    if( ContinueUnitMoving > 0 )
+    {
+        I = ContinueUnitMoving
+    }elseif( ContinueBulletMoving > 0 )
+    {
+        I = Entities:count()/EntityLength + 1
+    }else{
+        I = 1
+    }
+    
+    while( I <= Entities:count()/EntityLength )
+    {
+        # Process this entity
+        
+        if( maxquota()-opcounter() < 100 )
+        {
+            ContinueUnitMoving = I
+            ContinueBulletMoving = 0
+            interval(20)
+            Count--
+            exit()
+        }
+        
+        # Load some details
+        EntIndex = (I-1)*EntityLength
+        Ent = entity(Entities[EntIndex+1,number])
+        Speed = Entities[EntIndex+2,number]
+        Owner = Entities[EntIndex+7,number]
+        SourceUnit = Entities[EntIndex+3,number]
+        SourceUnitIndex = (SourceUnit-1)*UnitLength
+        UnitIndex = Entities[(I-1)*EntityLength + 3,number]
+        Speedmax = Units[SourceUnitIndex + 3,number]*SpeedFactor/10
+        FallSpeed = Units[SourceUnitIndex + 21,number]*SpeedFactor/10
+        ClimbSpeed = Units[SourceUnitIndex + 22,number]*SpeedFactor/10
+        Health = Entities[EntIndex+4,number]
+        
+        ##############################
+        ### TAKING DAMAGE
+        ##############################
+        
+        # We check the explosions array to see if we are near any of them
+        P = 1
+        while( P <= Explosions:count()/ExplosionLength )
+        {
+            ExplosionPos = Explosions[(P-1)*ExplosionLength + 1,vector]
+            ExplosionRad = Explosions[(P-1)*ExplosionLength + 2,number]*DamageRadiusFactor
+            
+            # Check if we have been hit
+            if( (Ent:massCenter() - ExplosionPos):length() <= ExplosionRad + Ent:boxSize():length() )
+            {
+                # OUCH! We have been hit!
+                ExplosionDam = Explosions[(P-1)*ExplosionLength + 3,number]
+                Health = Health - ExplosionDam
+                if( Health == 0 )
+                { Health = -1 }
+                
+                Entities[EntIndex+4,number] = Health
+                
+            }
+            P++
+        }
+        
+        
+        ##############################
+        ### UNIT DEATH
+        ##############################
+        # make sure this unit is still alive
+        if( !Ent | Health < 0 )
+        {
+            # Remove this guy from the target list if required
+            if( Entities[EntIndex+8,number] == 1 )
+            {
+                # Remove this guy from target list
+                Cost = Units[SourceUnitIndex + 4,number]
+                BuildTime = Units[SourceUnitIndex + 5,number]
+                if( Owner == 1 )
+                {
+                    # Give Player1 some money
+                    Player2Money = Player2Money + Cost/BuildTime*UnitKillMoneyGainFactor
+                    
+                    P = 1
+                    while( P <= TargetsPlayer2:count() )
+                    {
+                        if( !TargetsPlayer2[P,entity] | TargetsPlayer2[P,entity] == Ent )
+                        { TargetsPlayer2:removeEntity(P) }
+                        P++
+                    }
+                }else{
+                    # Give Player2 some money
+                    Player1Money = Player1Money + Cost/BuildTime*UnitKillMoneyGainFactor
+                
+                    P = 1
+                    while( P <= TargetsPlayer1:count() )
+                    {
+                        if( !TargetsPlayer1[P,entity] | TargetsPlayer1[P,entity] == Ent )
+                        { TargetsPlayer1:removeEntity(P) }
+                        P++
+                    }
+                }
+                RefreshMoney = 1
+            }
+            
+            # Remove this unit
+            if( Ent )
+            {
+                PropDeleteList:pushEntity(Ent)
+                Ent:soundPlay(Ent:id(),0,Units[SourceUnitIndex + 18,string])
+                Ent:setColor(vec4(0,0,0,50))
+            }
+
+            Entities:removeNumber(EntIndex+1)
+            Entities:removeNumber(EntIndex+1)
+            Entities:removeNumber(EntIndex+1)
+            Entities:removeNumber(EntIndex+1)
+            Entities:removeNumber(EntIndex+1)
+            Entities:removeNumber(EntIndex+1)
+            Entities:removeNumber(EntIndex+1)
+            Entities:removeNumber(EntIndex+1)
+        }else{
+            ##############################
+            ### UNIT SHOOTING
+            ##############################
+            LFireCount = Entities[EntIndex+5,number]
+            FireRate = Units[SourceUnitIndex + 12,number]
+            Target = entity(Entities[EntIndex+6,number])
+            FireType = Units[SourceUnitIndex + 23,number]
+            BulletSpeed = Units[SourceUnitIndex + 11,number]*SpeedFactor/10
+            MaxAngle = Units[SourceUnitIndex + 7,number]
+            MinAngle = Units[SourceUnitIndex + 24,number]
+            
+            
+            if( Target != entity() & Target & (Count - LFireCount > FireRate) )
+            {
+                # We can shoot and have a target, lets make sure he is within range.
+                DifPos = Target:massCenter() - (Ent:massCenter()+Ent:boxSize():setX(0):setY(0))
+                DifPosNoZ = (Target:massCenter() - (Ent:massCenter()+Ent:boxSize():setX(0):setY(0))):setZ(0)
+                FiringRange = Units[SourceUnitIndex+15,number]*SpeedFactor/10
+                
+                if( FireType == 1 & DifPos:length() < 2*FiringRange ) # Arcing shell
+                {
+                    # Calculate the range based on the difference in elevation.
+                    # Assumes max range is when firing at 45 degrees.
+                    Time = DifPosNoZ:length()/BulletSpeed
+
+
+                    # Calculate the firing vertical force so that it will arc to where they currently are, no motion prediction.
+                    SpeedY = (DifPos:z() - (BulletGravity*Time^2)/2)/Time
+                    Angle = abs( atan(SpeedY,BulletSpeed) )
+                    
+                    if( Angle < MaxAngle & Angle > MinAngle )
+                    {
+                        Randomness = Units[SourceUnitIndex + 25,number]
+                        Direction = vec(0,0,SpeedY+random(-Randomness,Randomness)*random(-Randomness,Randomness)) + DifPosNoZ:normalized()*BulletSpeed
+                        
+                        # Do a short-range ranger check to make sure we aren't about to blow ourselves up
+                        Ranger = rangerOffset( 50, (Ent:massCenter()+Ent:boxSize():setX(0):setY(0)), Direction)
+                        if( !Ranger:hit() | (Ranger:hit() & Ranger:entity() & (Owner == 1 & Ranger:entity():getColor() == vec(0,0,255) ) | (Owner == 2 & Ranger:entity():getColor() == vec(255,0,0) ) ) )
+                        {
+                            # Create this bullet
+                            Entities[EntIndex+5,number] = Count
+                            Bullet = propSpawn(Units[SourceUnitIndex + 8,string],(Ent:massCenter()+Ent:boxSize():setX(0):setY(0)),Direction:toAngle(),1)
+                            if( Bullet )
+                            {
+                                # Fire only if we actually created a bullet
+                                if( Owner == 1 )
+                                {
+                                    Bullet:setTrails(1*DamageRadiusFactor,1*DamageRadiusFactor,100,Units[SourceUnitIndex + 10,string],vec(255,80,80),150)
+                                }else{
+                                    Bullet:setTrails(1*DamageRadiusFactor,1*DamageRadiusFactor,100,Units[SourceUnitIndex + 10,string],vec(80,80,255),150)
+                                }
+                                Bullets:pushVector(Direction)
+                                Bullets:pushNumber(SourceUnit)
+                                Bullets:pushEntity(Bullet)
+                            }else{
+                                # We were unable to spawn a bullet, we need to pause the game until we can spawn a new bullet.
+                                ContinueUnitMoving = I
+                                ContinueBulletMoving = 0
+                                interval(100)
+                                Count--
+                                exit()
+                            }
+                        }
+                    }
+                }
+            }
+            if( Count - LFireCount > FireRate )
+            {
+                ##############################
+                ### UNIT MOVING
+                ##############################
+                
+                # Select the direction with some radomness
+                if( Entities[(I-1)*EntityLength + 7,number] == 1 )
+                {
+                    Dir = (Base2:massCenter() - Ent:massCenter()):normalized() + randvec(-RandmnessOfMoveDirection,RandmnessOfMoveDirection):setZ(0)
+                }else{
+                    Dir = (Base1:massCenter() - Ent:massCenter()):normalized() + randvec(-RandmnessOfMoveDirection,RandmnessOfMoveDirection):setZ(0)
+                }
+                
+                
+                # Accelerate the unit
+                Speed = clamp(Speed + Speedmax/8, 0.1,Speedmax)
+                
+                # Perform a forward ranger check
+                rangerFilter(Ent)
+                Ranger=rangerOffset(Ent:boxSize():x()/2+Speed,Ent:boxCenterW(),Dir)
+                if( Ranger:hit() )
+                {
+                    Speed = clamp(Speed - Speedmax/5, 0.1,Speedmax)
+                    HitEnt = Ranger:entity()
+                    Colour = HitEnt:getColor()
+                    if( !(Colour == vec(255,0,0) | Colour == vec(0,0,255)) )
+                    {
+                        # A world entity, move up over the object
+                        MoveDir = -Ranger:hitNormal():cross(vec(0,0,1):cross(Dir))
+                        if( MoveDir:dot(Dir) < 0 | Ranger:hitNormal() == vec(0,0,0) )
+                        {MoveDir = vec(0,0,1)}
+                        
+                        #if( MoveDir:z() < 0 ) {MoveDir = -MoveDir}
+                        Speed = ClimbSpeed
+                    }else{
+                        # A unit
+                        
+                        # Move to the side of this entity which is closer
+                        MoveDir = Dir:normalized() - (HitEnt:massCenter()-Ent:massCenter()):normalized() #( (HitEnt:massCenter()-Ent:massCenter()) - (HitEnt:massCenter()-Ent:massCenter()):dot(Dir)*Dir ):normalized():setZ(0)
+                        
+                        # Make sure this is clear
+                        rangerFilter(Ent)
+                        Ranger=rangerOffset((Speed + Speedmax/4),Ent:massCenter(),MoveDir)
+                        if( Ranger:hit() )
+                        {
+                            # Backup or go straight up into the air
+                            Rnd = randint(1,2)
+                            if( Rnd == 1 )
+                            {
+                                # Jump up into the air
+                                MoveDir = vec(0,0,1)
+                                Speed = 2*Speedmax
+                            }elseif( Rnd == 2 ){
+                                # Backup
+                                MoveDir = -MoveDir
+                                Speed = 0
+                            }
+                        }
+                    }
+                }else{
+                    MoveDir = Dir:setZ(0)
+                }
+                
+                
+            }else{
+                Speed = 0
+                MoveDir = vec(1,1,0)
+            }
+            
+            # Accelerate the unit
+            Entities[EntIndex + 2,number] = clamp(Speed,0.1,999999)
+            DifPos = Speed*MoveDir:normalized()
+            
+            # Perform a downwards ranger check
+            if( MoveDir:z() <= 0 )
+            {
+                rangerFilter(Ent)
+                Ranger=rangerOffset(max(Ent:boxSize():z()/2,FallSpeed) +  Ent:boxSize():z(),Ent:boxCenterW()+Ent:boxSize():z()/2,vec(0,0,-1))
+                
+                if( !Ranger:hit() )
+                {
+                    # Fall the complete falling speed distance
+                    DifPos = DifPos/2 - vec(0,0,FallSpeed)
+                #}elseif(Ranger:distance() > Ent:boxSize():z() )
+                #{
+                #    # Falling a partial falling speed distance                
+                #    DifPos = DifPos/2 - vec(0,0,Ranger:distance()-Ent:boxSize():z()/2)
+                }else{
+                    DifPos = DifPos/2 + vec(0,0,Ranger:pos():z()-Ent:boxCenterW():z()+Ent:boxSize():z()/2)
+                }
+            }else{
+                Entities[EntIndex + 2,number] = Speedmax
+            }
+            
+            
+            
+            # Move the unit
+            Ent:setPos( Ent:pos() + DifPos )
+    
+            ##############################
+            ### TARGET FINDING AND TARGET UPDATING
+            ##############################
+            if( mod(Count+I,15) == 0 )
+            {
+                # Load the firing range
+                FiringRange = Units[SourceUnitIndex+15,number]*SpeedFactor/10
+    
+                
+                # Update the closest units list
+                InClosest = Entities[EntIndex+8,number]
+                if( InClosest == -1 ) # So that we don't add ourselves more than once in the list
+                {
+                    if( Owner == 1 )
+                    {
+                        if( !TargetsPlayer2[ NumTargets, entity] | (TargetsPlayer2[ TargetsPlayer2:count(), entity]:massCenter()-Base2:massCenter()):length() > (Ent:massCenter()-Base2:massCenter()):length() )
+                        {
+                            # We are closer than the furthest target in the list, so lets add ourselves
+                            N = TargetsPlayer2:count()-1
+                            while( N > 0 & ( !TargetsPlayer2[ N, entity] | (TargetsPlayer2[ N, entity]:massCenter()-Base2:massCenter()):length() > (Ent:massCenter()-Base2:massCenter()):length() ) )
+                            {
+                                N--
+                            }
+                            N++
+                                
+                            # Tell the unit we are bumping him out
+                            Entities[ (TargetsPlayer2Index[N,number] - 1)*EntityLength + 8,number] = -1
+                            
+                            # Now insert and remove
+                            TargetsPlayer2:removeEntity(NumTargets)
+                            TargetsPlayer2Index:removeNumber(NumTargets)
+                            TargetsPlayer2:insertEntity(N,Ent)
+                            TargetsPlayer2Index:insertNumber(N,I)
+                            Entities[EntIndex+8,number] = 1
+                        }
+                    }elseif( Owner == 2 )
+                    {
+                        if( !TargetsPlayer1[ NumTargets, entity] | (TargetsPlayer1[ TargetsPlayer1:count(), entity]:massCenter()-Base1:massCenter()):length() > (Ent:massCenter()-Base1:massCenter()):length() )
+                        {
+                            # We are closer than the furthest target in the list, so lets add ourselves
+                            N = TargetsPlayer1:count()-1
+                            while( N > 0 & ( !TargetsPlayer1[ N, entity] | (TargetsPlayer1[ N, entity]:massCenter()-Base1:massCenter()):length() > (Ent:massCenter()-Base1:massCenter()):length() ) )
+                            {
+                                N--
+                            }
+                            N++
+                            
+                            # Tell the unit we are bumping him out
+                            Entities[ (TargetsPlayer1Index[N,number] - 1)*EntityLength + 8,number] = -1
+                            
+                            # Now insert and remove
+                            TargetsPlayer1:removeEntity(NumTargets)
+                            TargetsPlayer1Index:removeNumber(NumTargets)
+                            TargetsPlayer1:insertEntity(N,Ent)
+                            TargetsPlayer1Index:insertNumber(N,I)
+                            Entities[EntIndex+8,number] = 1
+                        }
+                    }
+                }
+            }
+            if( mod(Count+I,round(60*7/Speedmax*SpeedFactor/10)) == 0 )
+            {
+                # Load the firing range
+                FiringRange = Units[SourceUnitIndex+15,number]*SpeedFactor/10
+                
+                # Check if a structure is in range
+                BuildingFound = 0
+                if( randint(1,2) == 1 )
+                {
+                    N = Bunkers:count()/BunkerLength
+                    while( N > 0 )
+                    {
+                        if( (Bunkers[(N-1)*BunkerLength + 1,entity]:massCenter() - Ent:massCenter()):length() < FiringRange 
+                            & Bunkers[(N-1)*BunkerLength + 3,number] != Owner )
+                        {
+                            # Target this building
+                            if( Bunkers[(N-1)*BunkerLength + 1,entity]:id() > 0 )
+                            {Entities[EntIndex+6,number] = Bunkers[(N-1)*BunkerLength + 1,entity]:id()}
+                            BuildingFound = 1
+                            #print("targeting building: ")
+                            break
+                        }
+                        N--
+                    }
+                }
+                
+                if( !BuildingFound )
+                {
+                    # Search for a target for this guy
+                    if( Owner == 1 )
+                    {
+                        N = randint(1,TargetRandomness)
+                        while( N <= TargetsPlayer1:count() )
+                        {
+                            if( TargetsPlayer1[N,entity] & (TargetsPlayer1[N,entity]:massCenter() - Ent:massCenter()):length() < FiringRange*2 )
+                            {
+                                # He could be within firing range
+                                if( TargetsPlayer1[N,entity]:id() > 0 )
+                                {Entities[EntIndex+6,number] = TargetsPlayer1[N,entity]:id()}
+                                break
+                            }
+                            
+                            N = N + randint(1,TargetRandomness)
+                        }
+                    }else{
+                        N = randint(1,TargetRandomness)
+                        while( N <= TargetsPlayer2:count() )
+                        {
+                            if( TargetsPlayer2[N,entity] & (TargetsPlayer2[N,entity]:massCenter() - Ent:massCenter()):length() < FiringRange*2 )
+                            {
+                                # He could be within firing range
+                                if( TargetsPlayer2[N,entity]:id() > 0 )
+                                {Entities[EntIndex+6,number] = TargetsPlayer2[N,entity]:id()}
+                                break
+                            }
+                            
+                            N = N + randint(1,TargetRandomness)
+                        }
+                    }
+                }
+            }
+            
+        }
+        I++
+    }
+    ContinueUnitMoving = 0
+    
+    ##############################
+    ##############################
+    #### Bullet Processing
+    ##############################
+    ##############################
+    
+    if( ContinueBulletMoving > 0 )
+    {
+        I = ContinueBulletMoving
+    }else{
+        I = 1
+        
+        # Clean up exploded bullets from last cycle
+        if( mod(Count,10) == 0 & BulletDeleteList:count() > 0 )
+        {
+            while( BulletDeleteList:count() > 0 )
+            {
+                TmpEnt = BulletDeleteList:popEntity()
+                TmpEnt:propDelete()
+            }
+        }
+        if( BulletPreDeleteList:count() > 0 )
+        {
+            while( BulletPreDeleteList:count() > 0 )
+            {
+                TmpEnt = BulletPreDeleteList:popEntity()
+                TmpEnt:setPos( TmpEnt:pos() + TmpEnt:forward()*10 )
+                BulletDeleteList:pushEntity(TmpEnt)
+            }
+        }
+        
+        # Clear the explosions list
+        Explosions = array()
+    }
+    
+    while( I <= Bullets:count()/BulletLength )
+    {
+        if( maxquota()-opcounter() < 100 )
+        {
+            ContinueBulletMoving = I
+            interval(20)
+            Count--
+            exit()
+        }
+        
+        # Process this bullet
+        UnitType = Bullets[(I-1)*BulletLength + 2,number]
+        AttackType = Units[(UnitType-1)*UnitLength + 23,number] # 1 arc, 2 direct fire, 3 none
+        Velocity = Bullets[(I-1)*BulletLength + 1,vector]
+        Ent = Bullets[(I-1)*BulletLength + 3,entity]
+        
+        if( AttackType == 1 )
+        {
+            # We apply gravity to the bullet and move it forwards
+            rangerFilter(Ent)
+            Ranger = rangerOffset( Velocity:length(), Ent:massCenter(), Velocity:normalized() )
+            if( Ranger:hit() )
+            {
+                # Explode at the hit point
+                
+                if( Ranger:entity() & ( Ranger:entity():getColor() == vec(255,0,0) | Ranger:entity():getColor() == vec(0,0,255)) )
+                {
+                    # We hit a unit, center the explosion on him
+                    Explosions:pushVector( Ranger:entity():massCenter() )
+                }else{
+                    Explosions:pushVector( Ranger:pos() )
+                }
+                
+                # Register an explosion at this point, units will check themselves if they are hit!
+                Explosions:pushNumber( Units[(UnitType-1)*UnitLength + 13,number] )
+                Explosions:pushNumber( Units[(UnitType-1)*UnitLength + 14,number] )
+                
+                # Create the special effect for this bullet
+                Ent:setTrails(DamageRadiusFactor*40,DamageRadiusFactor*40,DamageRadiusFactor*10,Units[(UnitType-1)*UnitLength + 9,string],vec(120,120,120),255)
+                Ent:setPos( Ranger:pos()-Ent:forward()*10*DamageRadiusFactor )
+                #Ent:setColor(vec4(1,0,0,1))
+                
+                # Clean the bullet up
+                BulletPreDeleteList:pushEntity(Ent)
+                
+                Bullets:removeVector((I-1)*BulletLength + 1)
+                Bullets:removeNumber((I-1)*BulletLength + 1)
+                Bullets:removeEntity((I-1)*BulletLength + 1)
+            }else{
+                # Move the bullet
+                Velocity = Velocity + vec(0,0,BulletGravity)
+                if( Velocity == vec(0,0,0) )
+                { Velocity = vec(0,0,-0.0001) }
+                Ent:setPos( Ent:pos() + Velocity )
+                Bullets[(I-1)*BulletLength + 1,vector] = Velocity
+                
+                if( mod(Count+I,5) == 0 )
+                {
+                    Ent:setAng( Velocity:toAngle() )
+                }
+            }
+        }
+        
+        
+        I++
+    }
+    ContinueBulletMoving = 0
+    
+    #### Process the creation of new units
+    if( mod(Count, UnitBuildPeriod) == round(UnitBuildPeriod/2) )
+    {
+        timer("produceUnits",100)
+    }
+    
+    #### Sudden death processing
+    if( mod(Count,20) == 0 )
+    {
+        # update the sudden death text
+        if( SuddenDeathTime > 0 )
+        {
+            Egp1:egpText(200,"Sudden Death In: " + SuddenDeathTime, vec2(30,35))
+            Egp2:egpText(200,"Sudden Death In: " + SuddenDeathTime, vec2(30,35))
+        }elseif( SuddenDeathTime == 0 )
+        {
+            Egp1:entity():soundPlay(5,0,"doors/vent_open2.wav")
+            Egp2:entity():soundPlay(6,0,"doors/vent_open2.wav")
+            Egp1:egpText(200,"SUDDEN DEATH", vec2(30,35))
+            Egp2:egpText(200,"SUDDEN DEATH" + SuddenDeathTime, vec2(30,35))
+        }
+        
+        if( SuddenDeathTime < 20 & SuddenDeathTime > 0 )
+        {
+            Egp1:entity():soundPlay(3,0,"doors/vent_open3.wav")
+            Egp2:entity():soundPlay(4,0,"doors/vent_open3.wav")
+        }
+        SuddenDeathTime--
+    }
+    
+    
+    interval(GamePhysicsInterval)
+}elseif( GameState == 3 )
+{
+    #################################
+    #### GAME OVER
+    #################################
+    if( GameState != LastState )
+    {
+        # Initialize this state
+        
+        # Draw the egp start screens
+        Egp1:egpClear()
+        Egp2:egpClear()
+        
+        # Draw the nexus logo
+        Egp1:egpBox(1,vec2(15,15),vec2(20,20))
+        Egp1:egpColor(1,vec(50,50,50))
+        Egp1:egpTriangle(2,vec2(15,10),vec2(15+10,30),vec2(15-10,30))
+        Egp1:egpText(3,"GMOD NEXUS WARS",vec2(30,5))
+        Egp1:egpText(4,"by Paper Clip",vec2(30,10))
+        
+        Egp2:egpBox(1,vec2(15,15),vec2(20,20))
+        Egp2:egpColor(1,vec(50,50,50))
+        Egp2:egpTriangle(2,vec2(15,10),vec2(15+10,30),vec2(15-10,30))
+        Egp2:egpText(3,"GMOD NEXUS WARS",vec2(30,5))
+        Egp2:egpText(4,"by Paper Clip",vec2(30,10))
+        
+        
+        
+        Egp1:egpText(6,"Player 1: " + Player1:name(),vec2(30,20))
+        Egp2:egpText(6,"Player 2: " + Player2:name(),vec2(30,20))
+        
+        if( WinningPlayer == 1 )
+        {
+            Egp1:egpText(7,"GAME OVER! Player " + Player1:name() + " wins!", vec2(20,35))
+            Egp2:egpText(7,"GAME OVER! Player " + Player1:name() + " wins!", vec2(20,35))
+        }else{
+            Egp1:egpText(7,"GAME OVER! Player " + Player2:name() + " wins!", vec2(20,35))
+            Egp2:egpText(7,"GAME OVER! Player " + Player2:name() + " wins!", vec2(20,35))
+        }
+        
+        # Draw the finish button on the screens
+        Egp1:egpBox(8,vec2(50,50),vec2(30,20))
+        Egp1:egpColor(8,vec(255,0,0))
+        Egp2:egpBox(8,vec2(50,50),vec2(30,20))
+        Egp2:egpColor(8,vec(255,0,0))
+        Egp1:egpText(9,"Reset",vec2(46,49))
+        Egp2:egpText(9,"Reset",vec2(46,49))
+        
+        
+        # Set the cursors
+        Egp1:egpCircle(5,vec2(0,0),vec2(3,3))
+        Egp1:egpColor(5,vec4(255,255,255,100))
+        Egp1:egpParentToCursor(5)
+        Egp2:egpCircle(5,vec2(0,0),vec2(3,3))
+        Egp2:egpColor(5,vec4(255,255,255,100))
+        Egp2:egpParentToCursor(5)
+        
+        StartCount = Count
+        LastState = GameState
+        
+        interval(2000)
+    }else{
+        
+        Players = players()
+        I = 1
+        while( I <= Players:count() )
+        {
+            if( (Egp1:entity() == Players[I,entity]:aimEntity() & Players[I,entity]:keyUse() & inrange(Egp1:egpCursor(Players[I,entity]),vec2(50-15, 50-10),vec2(50+15, 50+10)))
+                | (Egp2:entity() == Players[I,entity]:aimEntity() & Players[I,entity]:keyUse() & inrange(Egp2:egpCursor(Players[I,entity]),vec2(50-15, 50-10),vec2(50+15, 50+10))) )
+            {
+                # Reset
+                timer("reset",300)
+                exit()
+            }
+            I++
+        }
+    
+        interval(80)
+    }
+}else{
+    interval(70)
+}

@@ -1,0 +1,318 @@
+@name Space Wars
+@inputs BlueW BlueSeat:entity RedW RedSeat:entity
+@outputs BluePosition:vector BlueDirection:vector
+@outputs RedPosition:vector RedDirection:vector 
+@persist ID GPS:vector Scale Blue1:entity Blue2:entity Blue3:entity Red1:entity Red2:entity Red3:entity
+@persist BlueShip:entity RedShip:entity Speed Ent:entity
+@persist BlueHealth1 BlueHealth2 BlueHealth3 RedHealth1 RedHealth2 RedHealth3 BlueShipHealth RedShipHealth BlueDead RedDead
+@trigger 
+
+#SOURCE: https://youtu.be/EuE93_s-Ju4?si=BEGN3_eqKifGjnjX
+
+#[
+
+INFO:
+
+
+Space Wars is a game made almost entirely out of IamMcLovin's E2 holograms. In this game, you are pitted against a friend in an epic battle - in space. The objective is to destroy all three of the enemy planets, all while defending your own planets by killing the enemy ship.
+
+Features:
+
+    Awesome two-player gameplay!
+    Intense action!
+    A chance to humiliate your friends!
+
+
+]# 
+    
+    if(first()|duped()){
+        runOnTick(1)
+        Ent = entity()
+        ID = Ent:id()
+        GPS = Ent:pos()
+        Scale = 0.25
+        Speed = 1
+     #Domes
+     if(Scale <= 0.25){
+            holoCreate(ID-5, GPS+vec(0,0,200), vec(50,50,50), ang(0,0,0), vec(255,255,255), "dome2")
+            holoMaterial(ID-5, "models/gibs/metalgibs/metal_gibs")
+            holoParent(ID-5, Ent)
+            holoCreate(ID-4, GPS+vec(0,0,209.5), vec(50,50,50), ang(0,0,180), vec(255,255,255), "dome2")
+            holoMaterial(ID-4, "models/gibs/metalgibs/metal_gibs")
+            holoParent(ID-4, Ent)
+     }
+        holoCreate(ID-3, BlueSeat:pos(), vec(9,9,9), ang(0,0,0), vec(255,255,255), "hqsphere2")
+        holoMaterial(ID-3, "models/gibs/metalgibs/metal_gibs")
+        holoParent(ID-3, BlueSeat)
+        holoCreate(ID-2, RedSeat:pos(), vec(9,9,9), ang(0,0,0), vec(255,255,255), "hqsphere2")
+        holoMaterial(ID-2, "models/gibs/metalgibs/metal_gibs")
+        holoModel(ID-2, "hqsphere2")
+        holoParent(ID-2, RedSeat)
+     #Walls
+        holoCreate(ID, GPS+vec(0,0,900)*Scale, vec(-140,-140,-140)*Scale, ang(0,0,0), vec(255,255,255), "hqsphere2")
+    #    holoCreate(ID, GPS+vec(600,300,300)*Scale, vec(0.5,50,50)*Scale)
+        holoMaterial(ID, "models/props_lab/cornerunit_cloud")
+        holoParent(ID, Ent)
+     #Randomly Placed Planets
+        BlueSize1 = random(2,3)
+        holoCreate(ID+16, entity():pos()+vec(0,0,900)*Scale+(randvec()*450)*Scale, vec(BlueSize1,BlueSize1,BlueSize1)*Scale, ang(0,0,0), vec(0,0,255), "hqicosphere2")
+        holoParent(ID+16, Ent)
+        Blue1 = holoEntity(ID+16)
+        BlueSize2 = random(2,3)
+        holoCreate(ID+17, entity():pos()+vec(0,0,900)*Scale+(randvec()*450)*Scale, vec(BlueSize2,BlueSize2,BlueSize2)*Scale, ang(0,0,0), vec(0,0,255), "hqicosphere2")
+        holoParent(ID+17, Ent)
+        Blue2 = holoEntity(ID+17)
+        BlueSize3 = random(2,3)
+        holoCreate(ID+18, entity():pos()+vec(0,0,900)*Scale+(randvec()*450)*Scale, vec(BlueSize3,BlueSize3,BlueSize3)*Scale, ang(0,0,0), vec(0,0,255), "hqicosphere2")
+        holoParent(ID+18, Ent)
+        Blue3 = holoEntity(ID+18)
+        RedSize1 = random(2,3)
+        holoCreate(ID+19, entity():pos()+vec(0,0,900)*Scale+(randvec()*450)*Scale, vec(RedSize1,RedSize1,RedSize1)*Scale, ang(0,0,0), vec(255,0,0), "hqicosphere2")
+        holoParent(ID+19, Ent)
+        Red1 = holoEntity(ID+19)
+        RedSize2 = random(2,3)
+        holoCreate(ID+20, entity():pos()+vec(0,0,900)*Scale+(randvec()*450)*Scale, vec(RedSize2,RedSize2,RedSize2)*Scale, ang(0,0,0), vec(255,0,0), "hqicosphere2")
+        holoParent(ID+20, Ent)
+        Red2 = holoEntity(ID+20)
+        RedSize3 = random(2,3)
+        holoCreate(ID+21, entity():pos()+vec(0,0,900)*Scale+(randvec()*450)*Scale, vec(RedSize3,RedSize3,RedSize3)*Scale, ang(0,0,0), vec(255,0,0), "hqicosphere2")
+        holoParent(ID+21, Ent)
+        Red3 = holoEntity(ID+21)
+     #Starting Points
+        holoCreate(ID+22, entity():pos()+vec(0,0,900)*Scale+vec(575,0,0)*Scale, vec(3,3,1)*Scale, ang(0,0,0), vec(0,0,255), "hqcylinder2")
+        holoParent(ID+22, Ent)
+        holoCreate(ID+23, entity():pos()+vec(0,0,900)*Scale+vec(-575,0,0)*Scale, vec(3,3,1)*Scale, ang(0,0,0), vec(255,0,0), "hqcylinder2")
+        holoParent(ID+23, Ent)
+     #Ships
+        holoCreate(ID+24, entity():pos()+vec(0,0,900)*Scale+vec(575,0,0)*Scale, vec(0.5,0.5,1)*Scale, ang(0,0,0), vec(0,0,200), "hqcone")
+        holoParent(ID+24, entity())
+        BlueShip = holoEntity(ID+24)
+        holoCreate(ID+25, entity():pos()+vec(0,0,900)*Scale+vec(-575,0,0)*Scale, vec(0.5,0.5,1)*Scale, ang(0,0,0), vec(200,0,0), "hqcone")
+        holoParent(ID+25, entity())
+        RedShip = holoEntity(ID+25)
+     #Weaponry
+        holoCreate(ID+26, BlueShip:pos()*Scale, vec(0.1,0.1,0.1)*Scale, ang(90,90,0), vec(0,0,255), "hqcone")
+        holoParent(ID+26, BlueShip)
+        holoCreate(ID+27, RedShip:pos()*Scale, vec(0.1,0.1,0.1)*Scale, ang(90,90,0), vec(255,0,0), "hqcone")
+        holoParent(ID+27, RedShip)
+     
+     #Combat System
+     #Blue
+        BlueHealth1 = 100 * BlueSize1 + 55
+        BlueHealth2 = 100 * BlueSize2 + 55
+        BlueHealth3 = 100 * BlueSize3 + 55
+     #Red
+        RedHealth1 = 100 * RedSize1 + 55
+        RedHealth2 = 100 * RedSize2 + 55
+        RedHealth3 = 100 * RedSize3 + 55
+     #Ships
+        BlueShipHealth = 50
+        RedShipHealth = 50
+    }
+    #Manual Reset
+    if(owner():aimEntity()==entity()&owner():keyUse()){
+        reset()
+    }
+    #Movement & Collision
+    if(BlueShip:pos():distance(GPS+vec(0,0,900*Scale))>900*Scale){
+        holoPos(ID+24, holoEntity(ID+22):pos()+(vec(0,0,75)*Scale))
+    }
+    if(RedShip:pos():distance(GPS+vec(0,0,900*Scale))>900*Scale){
+        holoPos(ID+25, holoEntity(ID+23):pos()+(vec(0,0,75)*Scale)) 
+    }
+     
+    #Blue
+    BlueShipBlueCollision = (inrange(BlueShip:pos()-GPS, Blue1:pos()-15*Scale-GPS, Blue1:pos()+15*Scale-GPS) | inrange(BlueShip:pos()-GPS, Blue2:pos()-15*Scale-GPS, Blue2:pos()+15*Scale-GPS) | inrange(BlueShip:pos()-GPS, Blue3:pos()-15*Scale-GPS, Blue3:pos()+15*Scale-GPS))
+    BlueShipRedCollision = (inrange(BlueShip:pos()-GPS, Red1:pos()-15*Scale-GPS, Red1:pos()+15*Scale-GPS) | inrange(BlueShip:pos()-GPS, Red2:pos()-15*Scale-GPS, Red2:pos()+15*Scale-GPS) | inrange(BlueShip:pos()-GPS, Red3:pos()-15*Scale-GPS, Red3:pos()+15*Scale-GPS))
+    BlueDirection = BlueSeat:driver():eye():normalized()
+    BluePosition = BlueShip:pos()-(BlueDirection*50*Scale):rotate(-10,0,0)
+    holoAng(ID+24, ang(-BlueDirection:toAngle():pitch()-90,BlueDirection:toAngle():yaw()+180,0))
+    if(BlueW & BlueShip:pos():distance(GPS+vec(0,0,900*Scale))<800*Scale & !BlueShipBlueCollision & !BlueShipRedCollision){
+        holoPos(ID+24, BlueShip:pos()+BlueDirection*Speed*Scale)
+        holoAlpha(ID+22, (1/BlueShip:pos():distance(holoEntity(ID+22):pos()))*255)
+    } elseif(BlueW){
+        holoPos(ID+24, BlueShip:pos()-BlueDirection*Speed+2*Scale)
+    }
+    #Red
+    RedShipBlueCollision = (inrange(RedShip:pos()-GPS, Blue1:pos()-15*Scale-GPS, Blue1:pos()+15*Scale-GPS) | inrange(RedShip:pos()-GPS, Blue2:pos()-15*Scale-GPS, Blue2:pos()+15*Scale-GPS) | inrange(RedShip:pos()-GPS, Blue3:pos()-15*Scale-GPS, Blue3:pos()+15*Scale-GPS))
+    RedShipRedCollision = (inrange(RedShip:pos()-GPS, Red1:pos()-15*Scale-GPS, Red1:pos()+15*Scale-GPS) | inrange(RedShip:pos()-GPS, Red2:pos()-15*Scale-GPS, Red2:pos()+15*Scale-GPS) | inrange(RedShip:pos()-GPS, Red3:pos()-15*Scale-GPS, Red3:pos()+15*Scale-GPS))
+    RedDirection = RedSeat:driver():eye():normalized()
+    RedPosition = RedShip:pos()-(RedDirection*50*Scale):rotate(ang(10,0,0))
+    holoAng(ID+25, ang(-RedDirection:toAngle():pitch()-90,RedDirection:toAngle():yaw()+180,0))
+    if(RedW & BlueShip:pos():distance(GPS+vec(0,0,900*Scale))<800*Scale & !RedShipBlueCollision & !RedShipRedCollision){
+        holoPos(ID+25, RedShip:pos()+RedDirection*Speed*Scale)
+        holoAlpha(ID+23, (1/RedShip:pos():distance(holoEntity(ID+23):pos()))*255)
+    } elseif(RedW){
+        holoPos(ID+25, RedShip:pos()-RedDirection*Speed+2*Scale)
+    }
+     
+    #Combat
+    #Blue
+    if(inrange(BlueShip:elevation(Red1:pos())-90,-25,25)&inrange(BlueShip:bearing(Red1:pos()),-85,85) & BlueShip:pos():distance(Red1:pos())<100*Scale & BlueSeat:driver():keyAttack1()){
+        holoPos(ID+26,  BlueShip:pos()+BlueDirection*(BlueShip:pos():distance(Red1:pos())/2))
+        holoScaleUnits(ID+26, vec(0.5,0.5,BlueShip:pos():distance(Red1:pos())))
+        holoAng(ID+26, BlueShip:angles())
+        RedHealth1--
+        holoColor(ID+19, vec(clamp(RedHealth1, 50, 255),0,0))
+        BlueSeat:soundPlay(ID,0,"beams/beamstart5.wav")
+     soundPitch(ID, 150)
+    } elseif(inrange(BlueShip:elevation(Red2:pos())-90,-25,25)&inrange(BlueShip:bearing(Red2:pos()),-85,85) & BlueShip:pos():distance(Red2:pos())<100*Scale & BlueSeat:driver():keyAttack1()){
+        holoPos(ID+26,  BlueShip:pos()+BlueDirection*(BlueShip:pos():distance(Red2:pos())/2))
+        holoScaleUnits(ID+26, vec(0.5,0.5,BlueShip:pos():distance(Red2:pos())))
+        holoAng(ID+26, BlueShip:angles())
+        RedHealth2--
+        holoColor(ID+20, vec(clamp(RedHealth2, 50, 255),0,0))
+        BlueSeat:soundPlay(ID,0,"beams/beamstart5.wav")
+     soundPitch(ID, 150)
+    } elseif(inrange(BlueShip:elevation(Red3:pos())-90,-25,25)&inrange(BlueShip:bearing(Red3:pos()),-85,85) & BlueShip:pos():distance(Red3:pos())<100*Scale & BlueSeat:driver():keyAttack1()){
+        holoPos(ID+26,  BlueShip:pos()+BlueDirection*(BlueShip:pos():distance(Red3:pos())/2))
+        holoScaleUnits(ID+26, vec(0.5,0.5,BlueShip:pos():distance(Red3:pos())))
+        holoAng(ID+26, BlueShip:angles())
+        RedHealth3--
+        holoColor(ID+21, vec(clamp(RedHealth3, 50, 255),0,0))
+        BlueSeat:soundPlay(ID,0,"beams/beamstart5.wav")
+     soundPitch(ID, 150)
+    } elseif(inrange(BlueShip:elevation(RedShip:pos())-90,-10,10)&inrange(BlueShip:bearing(RedShip:pos()),-25,25)&BlueShip:pos():distance(RedShip:pos())<100*Scale&BlueSeat:driver():keyAttack1()){
+        holoPos(ID+26,  BlueShip:pos()+BlueDirection*(BlueShip:pos():distance(RedShip:pos())/2))
+        holoScaleUnits(ID+26, vec(0.5,0.5,BlueShip:pos():distance(RedShip:pos())))
+        holoAng(ID+26, BlueShip:angles())
+        RedShipHealth--
+        BlueSeat:soundPlay(ID,0,"beams/beamstart5.wav")
+     soundPitch(ID, 150)
+    } elseif(BlueSeat:driver():keyAttack1()){
+        holoPos(ID+26, BlueShip:pos()+BlueDirection*(35*Scale))
+        holoAng(ID+26, BlueShip:angles())
+        holoScaleUnits(ID+26,vec(1,1,(BlueDirection*20):length()))
+        BlueSeat:soundPlay(ID,0,"beams/beamstart5.wav")
+     soundPitch(ID, 150)
+    } else {
+        holoPos(ID+26, BlueShip:pos())
+        holoScale(ID+26, vec(0.1,0.1,0.1)*Scale)
+    }
+     
+    if(BlueHealth1<=0 & $BlueHealth1){
+     if(holoEntity(ID+16)!=noentity()){
+            BlueSeat:soundPlay(holoEntity(ID+16):id(),3000, "ambient/explosions/exp1.wav")
+            RedSeat:soundPlay(holoEntity(ID+16):id(),3000, "ambient/explosions/exp1.wav")
+            BlueDead++
+            RedSeat:hintDriver("You destroyed Planet 1!", 5)
+            BlueSeat:hintDriver("Planet 1 destroyed!", 5)
+     }
+        holoDelete(ID+16)
+    }
+    if(BlueHealth2<=0 & $BlueHealth2){
+     if(holoEntity(ID+17)!=noentity()){
+            BlueSeat:soundPlay(holoEntity(ID+17):id(),3000, "ambient/explosions/exp2.wav")
+            RedSeat:soundPlay(holoEntity(ID+17):id(),3000, "ambient/explosions/exp2.wav")
+            BlueDead++
+            RedSeat:hintDriver("You destroyed Planet 2!", 5)
+            BlueSeat:hintDriver("Planet 2 destroyed!", 5)
+     }
+        holoDelete(ID+17)
+    }
+    if(BlueHealth3<=0 & $BlueHealth3){
+     if(holoEntity(ID+18)!=noentity()){
+            BlueSeat:soundPlay(holoEntity(ID+18):id(),3000, "ambient/explosions/exp3.wav")
+            RedSeat:soundPlay(holoEntity(ID+18):id(),3000, "ambient/explosions/exp3.wav")
+            BlueDead++
+            RedSeat:hintDriver("You destroyed Planet 3!", 5)
+            BlueSeat:hintDriver("Planet 1 destroyed!", 5)
+     }
+        holoDelete(ID+18)
+    }
+    if(BlueShipHealth<=0 & $BlueHealth3){
+        holoPos(ID+24, entity():pos()+vec(0,0,900)*Scale+vec(575,0,0)*Scale)
+        BlueShipHealth = 50
+    }
+    if(BlueDead == 3){
+        RedSeat:hintDriver("You have defeated "+BlueSeat:driver():name()+"!", 5)
+        BlueSeat:hintDriver(RedSeat:driver():name()+" has defeated you!", 5)
+        RedSeat:ejectPod()
+        BlueSeat:killPod()
+        reset()
+    }
+    #Red
+    if(inrange(RedShip:elevation(Blue1:pos())-90,-25,25)&inrange(RedShip:bearing(Blue1:pos()),-85,85) & RedShip:pos():distance(Blue1:pos())<100*Scale & RedSeat:driver():keyAttack1()){
+        holoPos(ID+27,  RedShip:pos()+RedDirection*(RedShip:pos():distance(Blue1:pos())/2))
+        holoScaleUnits(ID+27, vec(0.5,0.5,RedShip:pos():distance(Blue1:pos())))
+        holoAng(ID+27, RedShip:angles())
+        BlueHealth1--
+        holoColor(ID+16, vec(0,0,clamp(BlueHealth1, 50, 255)))
+        RedSeat:soundPlay(ID+1,0,"beams/beamstart5.wav")
+     soundPitch(ID+1, 150)
+    } elseif(inrange(RedShip:elevation(Blue2:pos())-90,-25,25)&inrange(RedShip:bearing(Blue2:pos()),-85,85) & RedShip:pos():distance(Blue2:pos())<100*Scale & RedSeat:driver():keyAttack1()){
+        holoPos(ID+27,  RedShip:pos()+RedDirection*(RedShip:pos():distance(Blue2:pos())/2))
+        holoScaleUnits(ID+27, vec(0.5,0.5,RedShip:pos():distance(Blue2:pos())))
+        holoAng(ID+27, RedShip:angles())
+        BlueHealth2--
+        holoColor(ID+17, vec(0,0,clamp(BlueHealth2, 50, 255)))
+        RedSeat:soundPlay(ID+1,0,"beams/beamstart5.wav")
+     soundPitch(ID+1, 150)
+    } elseif(inrange(RedShip:elevation(Blue3:pos())-90,-25,25)&inrange(RedShip:bearing(Blue3:pos()),-85,85) & RedShip:pos():distance(Blue3:pos())<100*Scale & RedSeat:driver():keyAttack1()){
+        holoPos(ID+27,  RedShip:pos()+RedDirection*(RedShip:pos():distance(Blue3:pos())/2))
+        holoScaleUnits(ID+27, vec(0.5,0.5,RedShip:pos():distance(Blue3:pos())))
+        holoAng(ID+27, RedShip:angles())
+        BlueHealth3--
+        holoColor(ID+18, vec(0,0,clamp(BlueHealth3, 50, 255)))
+        RedSeat:soundPlay(ID+1,0,"beams/beamstart5.wav")
+     soundPitch(ID+1, 150)
+    } elseif(inrange(RedShip:elevation(BlueShip:pos())-90,-10,10)&inrange(RedShip:bearing(BlueShip:pos()),-25,25)&RedShip:pos():distance(BlueShip:pos())<100*Scale&RedSeat:driver():keyAttack1()){
+        holoPos(ID+27,  RedShip:pos()+RedDirection*(RedShip:pos():distance(BlueShip:pos())/2))
+        holoScaleUnits(ID+27, vec(0.5,0.5,RedShip:pos():distance(BlueShip:pos())))
+        holoAng(ID+27, RedShip:angles())
+        BlueShipHealth--
+        RedSeat:soundPlay(ID+1,0,"beams/beamstart5.wav")
+     soundPitch(ID+1, 150)
+    } elseif(RedSeat:driver():keyAttack1()){
+        holoPos(ID+27, RedShip:pos()+RedDirection*(35*Scale))
+        holoAng(ID+27, RedShip:angles())
+        holoScaleUnits(ID+27, vec(1,1,(RedDirection*20):length()))
+        RedSeat:soundPlay(ID+1,0,"beams/beamstart5.wav")
+     soundPitch(ID+1, 150)
+    } else {
+        holoPos(ID+27, BlueShip:pos())
+        holoScale(ID+27, vec(0.1,0.1,0.1)*Scale)
+    }
+     
+    if(RedHealth1<=0 & $RedHealth1){
+     if(holoEntity(ID+19)!=noentity()){
+            BlueSeat:soundPlay(holoEntity(ID+19):id(),3000, "ambient/explosions/exp1.wav")
+            RedSeat:soundPlay(holoEntity(ID+19):id(),3000, "ambient/explosions/exp1.wav")
+            RedDead++
+            BlueSeat:hintDriver("You destroyed Planet 1!", 5)
+            RedSeat:hintDriver("Planet 1 destroyed!", 5)
+     }
+        holoDelete(ID+19)
+    }
+    if(RedHealth2<=0 & $RedHealth2){
+     if(holoEntity(ID+20)!=noentity()){
+            BlueSeat:soundPlay(holoEntity(ID+20):id(),3000, "ambient/explosions/exp2.wav")
+            RedSeat:soundPlay(holoEntity(ID+20):id(),3000, "ambient/explosions/exp2.wav")
+            RedDead++
+            BlueSeat:hintDriver("You destroyed Planet 2!", 5)
+            RedSeat:hintDriver("Planet 2 destroyed!", 5)
+     }
+        holoDelete(ID+20)
+    }
+    if(RedHealth3<=0 & $RedHealth3){
+     if(holoEntity(ID+21)!=noentity()){
+            BlueSeat:soundPlay(holoEntity(ID+21):id(),3000, "ambient/explosions/exp3.wav")
+            RedSeat:soundPlay(holoEntity(ID+21):id(),3000, "ambient/explosions/exp3.wav")
+            RedDead++
+            BlueSeat:hintDriver("You destroyed Planet 3!", 5)
+            RedSeat:hintDriver("Planet 3 destroyed!", 5)
+     }
+        holoDelete(ID+21)
+    }
+    if(RedShipHealth<=0 & $RedHealth3){
+        holoPos(ID+25, entity():pos()+vec(0,0,900)*Scale+vec(-575,0,0)*Scale)
+        RedShipHealth = 50
+    }
+     
+    if(RedDead == 3){
+        BlueSeat:hintDriver("You have defeated "+RedSeat:driver():name()+"!", 5)
+        RedSeat:hintDriver(BlueSeat:driver():name()+" has defeated you!", 5)
+        BlueSeat:ejectPod()
+        RedSeat:killPod()
+        reset()
+    }

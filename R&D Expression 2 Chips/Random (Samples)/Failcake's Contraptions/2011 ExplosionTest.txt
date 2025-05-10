@@ -1,0 +1,300 @@
+@name FailCake ExplosionTest
+@outputs Time On Destroy I I2 Go Stop Timeout Ts P2 Unfreeze Gravity:vector Dist
+@persist [Props In Filt]:array
+@outputs Power Slow MaxProps Onc Vel Dia Delete Inter Filter Banana P Follow Active Follo:entity
+@trigger all
+@model models/dav0r/tnt/tnt.mdl
+
+#Source: https://youtu.be/-akv7v1xT7E?si=9_rLqKktv0a44Dp0
+
+#[
+
+INFO:
+
+The Explosion Simulator!
+
+Questions:
+
+Q: What is this?!
+A: An E2 that simulates an explosion =).
+
+Q: How to use it?
+A: Simple! Just paste it and press e on it (you must be close).
+
+Q: It seems a bit mingy!
+A: Yes, it seems, but it only works on your props and not the other people.
+
+Q: Its giving me an error at unweld()
+A: I wasnt sure if it was a custom extension or on the wiremod unofficial svn. If it gives error, simply remove it.
+
+
+]#
+
+
+runOnTick(1)
+runOnChat(1)
+
+
+O = owner()
+E = entity()
+
+if(first() | duped()){
+hint("Made By FailCake",7) 
+print("* Printed Commands On Console *")
+printColor(vec(255,0,0))
+print(_HUD_PRINTCONSOLE,"#")
+print(_HUD_PRINTCONSOLE,"#")
+print(_HUD_PRINTCONSOLE,"##### FailCake Explosion Simulator #####")
+print(_HUD_PRINTCONSOLE,"-time <number> to setup the time it takes before exploding.")
+print(_HUD_PRINTCONSOLE,"-power <number> to setup the Power of the Explosion.")
+print(_HUD_PRINTCONSOLE,"-slowmo <number 1 or 0> to Enable / Disable SlowMo.")
+print(_HUD_PRINTCONSOLE,"-filter to Filter the Prop from Exploding.")
+print(_HUD_PRINTCONSOLE,"-follow to Follow the Prop.")
+print(_HUD_PRINTCONSOLE,"-clean to Remove the Props and E2.")
+print(_HUD_PRINTCONSOLE,"-explode to Manual Explode.")
+print(_HUD_PRINTCONSOLE,"########################################")
+print(_HUD_PRINTCONSOLE,"#")
+print(_HUD_PRINTCONSOLE,"#")
+
+Time = 5    
+On = 0
+Filter = 0
+Destroy = 0
+Go = 0
+I = 0
+I2 = 0
+Power = 50
+Unfreeze = 0
+Slow = 0
+MaxProps = 55
+Inter = 300
+Dia = 500
+
+E:soundPlay(6000,6000,"weapons/c4/c4_plant.wav") 
+E:soundPlay(4000,4000,"radio/bombpl.wav") 
+Gravity=vec(0,0,9.015)
+
+}
+
+Chat = owner():lastSaid():explode(" ")
+
+if (chatClk(owner())){
+if(Chat[1,string] == "-power" & Unfreeze == 0){
+Power = Chat[2,string]:toNumber()
+hint("* Power Set To "+Power+" *",7)    
+}
+
+if(Chat[1,string] == "-time" & Unfreeze == 0){
+Time = Chat[2,string]:toNumber()
+hint("* Timer Set To "+Time+" *",7)    
+}
+
+if(Chat[1,string] == "-explode" & On == 0){
+hint("* Auto Exploding! *",7)
+On = 1    
+}
+
+if(Chat[1,string] == "-clean"){
+Delete = 1
+hint("* Cleaning Props *",7)    
+}
+
+if(Chat[1,string] == "-interval" & Unfreeze == 0){
+Inter = Chat[2,string]:toNumber()
+hint("* Interval Set To "+Inter+" *",7)    
+}
+
+if(Chat[1,string] == "-distance" & Unfreeze == 0){
+Dia = Chat[2,string]:toNumber()
+hint("* Distance Set To "+Dia+" *",7)    
+}
+
+if(Chat[1,string] == "-follow" & Unfreeze == 0){
+Follow = 1
+Follo = noentity()
+hint("* Select the Prop to Follow *",7)    
+}
+
+if(Chat[1,string] == "-unfollow" & Active == 1){
+Follow = 0
+Active = 0
+Follo = noentity()
+hint("* Following now Off *",7)    
+}
+
+if(Chat[1,string] == "-filter" & Filter == 0){
+Filter = 1
+hint("* Select the Props To Filter *",7)    
+}
+
+if(Chat[1,string] == "-slowmo"){
+    
+if(Chat[2,string]:toNumber() == 0){
+Slow = 0
+hint("* SlowMo Desactivated *",7) 
+}
+if(Chat[2,string]:toNumber() == 1){
+Slow = 1
+hint("* SlowMo Activated *",7) 
+}    
+}
+}
+
+if(Follow){
+if(O:keyAttack2() & O:aimEntity() != noentity() & O:aimEntity() != E){
+Follo = O:aimEntity()
+Follow = 0
+Active = 1
+hint("* Following Prop "+Follo:model()+" *",7)
+}     
+}
+
+if(Filter){
+if(O:keyAttack2() & O:aimEntity() != noentity() & O:aimEntity() != E & Timeout == 0){
+Timeout = 1
+P++    
+Filt[P,entity] = O:aimEntity()
+O:aimEntity():setColor(200,0,0,200)
+hint("* Added Prop "+O:aimEntity():model()+" *",7)
+} 
+
+if(O:keyUse()){
+for(L = 1,Filt:count()){
+Filt[L,entity]:setColor(255,255,255,255)    
+}    
+if(L >= Filt:count()){
+Filter = 0  
+hint("* Total Props Filtering "+ Filt:count() +" *",7)  
+}
+} 
+ 
+}
+
+
+if(O:pos():distance(E:pos()) <= 100 & O:keyUse() & O:aimEntity() == E & On == 0){
+On = 1
+E:soundPlay(100,100,"buttons/button5.wav")    
+}
+
+if(On){
+timer("beep",1000)
+
+if(clk("beep") & Time > 0){
+Time-=1    
+E:soundPlay(200,2,"weapons/c4/c4_click.wav")
+}    
+
+if(Time <= 0){
+Destroy = 1 
+On = 0   
+}
+    
+}
+
+
+if(Destroy){
+    
+for(F=1,Filt:count()){
+findExcludeEntity(Filt[F,entity])
+}
+
+findExcludeEntity(E)
+findByClass("prop_physics")
+findIncludePlayerProps(owner())
+Props = findToArray()    
+
+
+
+for(I = 0,Props:count()){
+    
+if(Props[I,entity]:pos():distance(E:pos()) <= Dia){
+I2++
+In[I2,entity] = Props[I,entity]
+
+if(In:count() >= MaxProps){
+if(Onc == 0){
+Onc = 1
+Slow = 0 
+hint("* Too Many Props! Disabling SlowMo. *",7)   
+}
+}
+
+}    
+}
+
+if(I >= Props:count()){
+Destroy = 0
+Go = 1    
+}
+
+}
+
+
+if(Go){
+ 
+if(Unfreeze == 0){
+for(P2=1,In:count()){
+In[P2,entity]:propFreeze(0)   
+In[P2,entity]:unWeld()
+Dist =E:pos():distance(In[P2,entity]:pos())
+In[P2,entity]:applyForce((In[P2,entity]:pos()-E:pos())*Dist*Power)
+In[P2,entity]:setTrails(10,10,10,"trails/laser",vec(255,255,255),255)
+}
+if(P2 >= In:count()){
+Unfreeze = 1
+Destroy = 0
+Go = 0
+E:setAlpha(0)
+E:propNotSolid(1)
+E:soundPlay(100,100,"ambient/explosions/explode_1.wav")
+}    
+}
+}
+ 
+
+if(Unfreeze == 1){   
+
+Vel = Follo:vel():length() / 2
+
+if(Active){
+timer("inter",Inter)
+if(clk("inter")&Vel >= 10){    
+if(Banana <= 30){
+Banana+=1    
+}else{
+Active = 0
+}
+
+holoCreate(Banana)
+holoModel(Banana,"cube")  
+holoPos(Banana,Follo:pos())  
+holoColor(Banana,vec(Banana,-Banana,0))
+holoMaterial(Banana,"models/debug/debugwhite")
+
+}   
+}
+
+if(Slow){ 
+for(P=1,In:count()){    
+In[P,entity]:applyForce((Gravity-In[P,entity]:vel()/100)*In[P,entity]:mass())        
+} 
+}
+
+}
+
+if(Timeout){
+timer("hs",500)
+if(clk("hs")){
+Timeout = 0
+stoptimer("hs") 
+}   
+}
+
+if(Delete){
+for(K=1,In:count()){
+In[K,entity]:propDelete()        
+}
+if(K >= In:count()){
+selfDestructAll()   
+} 
+}

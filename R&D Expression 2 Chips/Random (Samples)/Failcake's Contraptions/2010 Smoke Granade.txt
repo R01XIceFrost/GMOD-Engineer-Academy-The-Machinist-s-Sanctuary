@@ -1,0 +1,115 @@
+@name Failcake Smoke Granade
+@inputs Insta
+@outputs A:array Once StartSmoke
+@persist Player:entity Click Timer SmokeTime SmokeTimer2
+@trigger all
+@model models/weapons/w_eq_smokegrenade.mdl
+
+#Source: https://youtu.be/GcF8sQwhKHQ?si=nMEul9yyFf9w0s3z
+
+interval(100)
+E = entity()
+E:setMass(5)
+E:setColor(255,255,255)
+if(first()){
+hint("MADE BY [CG]FailCake",100)
+    E:removeTrails()
+    findByClass("player")
+    A=findToArray()
+}
+
+for(I=0,A:count()){
+    Player = findResult(I)
+    if(Player:keyUse() & Player:aimEntity()==entity() & Once==0){
+hint("Acti",100)
+Once = 1
+}
+}
+if(Once | Insta == 1){
+Timer += 0.1
+Click += 0.5
+if(Timer == 1){
+E:setTrails(10,10,5,"trails/laser",vec(255,0,0),200)
+}
+if(Click == 2){
+E:soundPlay(1000,1000,"weapons/grenade/tick1.wav")
+}
+
+if(Click >= 4){
+soundStop(1000)
+Click = 0
+}
+
+if(Timer >= 10){
+Smoke = 1
+}
+}
+
+if(Smoke | Insta == 1){
+SmokeTime+= 0.1
+
+R = randint(0,200)
+R2 = randint(0,200)
+R3 = randint(0,200)
+R4 = randint(0,200)
+R5 = randint(0,200)
+R6 = randint(0,200)
+R7 = randint(0,200)
+R8 = randint(0,200)
+R9 = randint(0,200)
+
+if(SmokeTime == 1){
+hint("smoke",100)
+E:soundPlay(2000,2000,"")
+E:applyForce(vec(R,R2,R3))
+StartSmoke = 1
+}else{
+E:applyForce(vec(0,0,0))
+}
+}
+
+if(StartSmoke | Insta == 1){
+SmokeTimer2+=0.1
+holoCreate(1)
+holoModel(1,"cube")
+holoScaleUnits(1,vec(1,1,1))
+holoAlpha(1,0)
+
+holoCreate(2)
+holoModel(2,"cube")
+holoScaleUnits(2,vec(1,1,1))
+holoAlpha(2,0)
+
+holoCreate(3)
+holoModel(3,"cube")
+holoScaleUnits(3,vec(1,1,1))
+holoAlpha(3,0)
+
+if(SmokeTimer2 <= 10 | Insta == 1){
+holoPos(1,E:pos()+vec(R,R2,R3))
+holoPos(2,E:pos()+vec(R4,R5,R6))
+holoPos(3,E:pos()+vec(R7,R8,R9))
+}else{
+E:setMass(100000)
+E:setColor(0,0,0,0)
+soundStop(2000)
+}
+
+Click+=0
+Click = 0
+if(SmokeTimer2 == 1){
+E:soundPlay(2000,2000,"weapons/smokegrenade/sg_explode.wav")
+holoEntity(1):setTrails(699,1,100,"trails/smoke",vec(90,90,90),255)
+holoEntity(2):setTrails(699,1,100,"trails/smoke",vec(50,50,50),255)
+holoEntity(3):setTrails(699,1,100,"trails/smoke",vec(90,90,90),255)
+}
+if(SmokeTimer2 >= 90){
+E:removeTrails()
+soundStop(1000)
+selfDestructAll()
+}
+}
+
+if(duped()){selfDestructAll()}
+if(duped()){selfDestructAll()}
+if(duped()){selfDestructAll()}

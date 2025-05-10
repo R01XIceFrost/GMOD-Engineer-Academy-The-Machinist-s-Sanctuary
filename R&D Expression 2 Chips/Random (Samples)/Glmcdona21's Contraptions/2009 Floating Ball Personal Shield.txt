@@ -1,0 +1,600 @@
+@name Paper Clip Object Orbiter Version 2
+@inputs
+@outputs Spawn Undo
+@persist B1_Pos:vector Good Name:string Target:entity Ball1:entity Ball2:entity Ball3:entity
+@persist Asdf NumIntercept Count OrbitMode NumBalls LastCrouch LastPower Theta Owner:entity OwnerLoaded T1:entity T2:entity T3:entity B1:entity B2:entity B3:entity
+
+#[
+
+#Source: https://youtu.be/iMMRIhfptvI?si=nt2j_rCWqEy29a1f
+Description
+This is a contraption which uses E2 apply force and a prop spawner to create your very own personal shield against people shooting you. Whenever any player aims at you with a gun, it intersects the path with one of the balls orbiting you and therefore preventing them from shooting you.
+
+The ball orbit pattern can be changed by crouching and standing back up again.
+
+It is designed to handle up to three people aiming at you at one time.
+
+Balls respawn as they are destroyed.
+
+Instructions
+Just spawn the attached contraption!
+
+Video
+Thanks to WhiteFox for helping me with the video!
+
+
+Expression Code
+I know this could be made simpler, this has probably been very-much overcomplicated, but I think I did a decent job performance wise. Here is a quick summary of what the variables are:
+
+Code:
+
+]#
+
+Good = 0
+interval(10)
+
+if( NumBalls < 3 )
+{
+    Owner = owner()
+    Spawner = entity():isWeldedTo(1)
+    Count++
+    if( Count > 20 )
+    {
+        Count = 0
+        if( Spawn == 1 )
+        {
+            ############ LOAD BALL ID ###########
+            findClearWhiteList()
+            findIncludePlayerProps( entity():owner() )
+            if( findByModel("models/combine_helicopter/helicopter_bomb01.mdl") > 1 )
+            {
+                findSortByDistance(entity():pos())
+                TmpEnt = findResult(1)
+                if( TmpEnt == Spawner | TmpEnt == Ball1 | TmpEnt == Ball2 | TmpEnt == Ball3 ) {TmpEnt = findResult(2)}
+                if( TmpEnt == Spawner | TmpEnt == Ball1 | TmpEnt == Ball2 | TmpEnt == Ball3 ) {TmpEnt = findResult(3)}
+                if( TmpEnt == Spawner | TmpEnt == Ball1 | TmpEnt == Ball2 | TmpEnt == Ball3 ) {TmpEnt = findResult(4)}
+                if( TmpEnt == Spawner | TmpEnt == Ball1 | TmpEnt == Ball2 | TmpEnt == Ball3 ) {TmpEnt = findResult(5)}
+                if( TmpEnt == Spawner | TmpEnt == Ball1 | TmpEnt == Ball2 | TmpEnt == Ball3 ) {TmpEnt = findResult(6)}
+                if( TmpEnt == Spawner | TmpEnt == Ball1 | TmpEnt == Ball2 | TmpEnt == Ball3 ) {TmpEnt = findResult(7)}
+                if( TmpEnt & TmpEnt != Ball1 & TmpEnt != Ball2 & TmpEnt != Ball3 & TmpEnt != Spawner  )
+                {
+                    # We found our newly spawned chaff prop
+                    TmpEnt:setMass(10)
+                    TmpEnt:setAlpha(50)
+                    NumBalls++
+                    if(!Ball1){
+                        Ball1 = TmpEnt
+                    }elseif(!Ball2){
+                        Ball2 = TmpEnt
+                    }elseif(!Ball3){
+                        Ball3 = TmpEnt
+                    }
+                }
+            }
+        }
+        Spawn = !Spawn
+    }
+}
+
+if( NumBalls > 0){
+    interval(10)
+    if( !Ball1 + !Ball2 + !Ball3 != 3-NumBalls ) { NumBalls-- }
+    if( LastCrouch != Owner:isCrouch() & Owner:isCrouch() == 0 ){ OrbitMode = OrbitMode + 1 }
+    Good = 1
+
+
+    # See if we need to protect the ball bearer
+    if( entity(1)!= Owner & entity(1):weapon():type():left(6) == "weapon" ) {
+        # Note this weapon
+        TmpEnt = entity(1)
+        if( TmpEnt != T1 & TmpEnt != T2 & TmpEnt != T3 )
+        {
+            DifPos = Owner:pos()-TmpEnt:shootPos()
+            DifVel = TmpEnt:eye()
+            Angle = acosr(DifVel:normalized():dot(DifPos:normalized()))*180/pi()
+            if( abs(Angle) < 90 )
+            {
+                # See if this weapon blast has an intersection path with our radius
+                IntersectRadius = sinr(acosr(DifVel:normalized():dot(DifPos:normalized())))*DifPos:length()
+                if( IntersectRadius < 100 )
+                {
+                    # We need to intercept this weapon path
+                    NumIntercept++
+                    
+                    # Find an open target
+                    if( !T1 ){T1 = TmpEnt B1 = entity(3957943)}
+                    elseif( !T2 ){T2 = TmpEnt B2 = entity(3957943)}
+                    elseif( !T3 ){T3 = TmpEnt B3 = entity(3957943)}
+                }
+            }
+        }
+    }
+    if( entity(2)!= Owner & entity(2):weapon():type():left(6) == "weapon" ) {
+        # Note this weapon
+        TmpEnt = entity(2)
+        if( TmpEnt != T1 & TmpEnt != T2 & TmpEnt != T3 )
+        {
+            DifPos = Owner:pos()-TmpEnt:shootPos()
+            DifVel = TmpEnt:eye()
+            Angle = acosr(DifVel:normalized():dot(DifPos:normalized()))*180/pi()
+            if( abs(Angle) < 90 )
+            {
+                # See if this weapon blast has an intersection path with our radius
+                IntersectRadius = sinr(acosr(DifVel:normalized():dot(DifPos:normalized())))*DifPos:length()
+                if( IntersectRadius < 100 )
+                {
+                    # We need to intercept this weapon path
+                    NumIntercept++
+                    
+                    # Find an open target
+                    if( !T1 ){T1 = TmpEnt B1 = entity(3957943)}
+                    elseif( !T2 ){T2 = TmpEnt B2 = entity(3957943)}
+                    elseif( !T3 ){T3 = TmpEnt B3 = entity(3957943)}
+                }
+            }
+        }
+    }
+    if( entity(3)!= Owner & entity(3):weapon():type():left(6) == "weapon" ) {
+        # Note this weapon
+        TmpEnt = entity(3)
+        if( TmpEnt != T1 & TmpEnt != T2 & TmpEnt != T3 )
+        {
+            DifPos = Owner:pos()-TmpEnt:shootPos()
+            DifVel = TmpEnt:eye()
+            Angle = acosr(DifVel:normalized():dot(DifPos:normalized()))*180/pi()
+            if( abs(Angle) < 90 )
+            {
+                # See if this weapon blast has an intersection path with our radius
+                IntersectRadius = sinr(acosr(DifVel:normalized():dot(DifPos:normalized())))*DifPos:length()
+                if( IntersectRadius < 100 )
+                {
+                    # We need to intercept this weapon path
+                    NumIntercept++
+                    
+                    # Find an open target
+                    if( !T1 ){T1 = TmpEnt B1 = entity(3957943)}
+                    elseif( !T2 ){T2 = TmpEnt B2 = entity(3957943)}
+                    elseif( !T3 ){T3 = TmpEnt B3 = entity(3957943)}
+                    
+                    print( "Player added to intercept list" )
+                }
+            }
+        }
+    }
+    if( entity(4)!= Owner & entity(4):weapon():type():left(6) == "weapon" ) {
+        # Note this weapon
+        TmpEnt = entity(4)
+        if( TmpEnt != T1 & TmpEnt != T2 & TmpEnt != T3 )
+        {
+            DifPos = Owner:pos()-TmpEnt:shootPos()
+            DifVel = TmpEnt:eye()
+            Angle = acosr(DifVel:normalized():dot(DifPos:normalized()))*180/pi()
+            if( abs(Angle) < 90 )
+            {
+                # See if this weapon blast has an intersection path with our radius
+                IntersectRadius = sinr(acosr(DifVel:normalized():dot(DifPos:normalized())))*DifPos:length()
+                if( IntersectRadius < 100 )
+                {
+                    # We need to intercept this weapon path
+                    NumIntercept++
+                    
+                    # Find an open target
+                    if( !T1 ){T1 = TmpEnt B1 = entity(3957943)}
+                    elseif( !T2 ){T2 = TmpEnt B2 = entity(3957943)}
+                    elseif( !T3 ){T3 = TmpEnt B3 = entity(3957943)}
+                    
+                    print( "Player added to intercept list" )
+                }
+            }
+        }
+    }
+    if( entity(5)!= Owner & entity(5):weapon():type():left(6) == "weapon" ) {
+        # Note this weapon
+        TmpEnt = entity(5)
+        if( TmpEnt != T1 & TmpEnt != T2 & TmpEnt != T3 )
+        {
+            DifPos = Owner:pos()-TmpEnt:shootPos()
+            DifVel = TmpEnt:eye()
+            Angle = acosr(DifVel:normalized():dot(DifPos:normalized()))*180/pi()
+            if( abs(Angle) < 90 )
+            {
+                # See if this weapon blast has an intersection path with our radius
+                IntersectRadius = sinr(acosr(DifVel:normalized():dot(DifPos:normalized())))*DifPos:length()
+                if( IntersectRadius < 100 )
+                {
+                    # We need to intercept this weapon path
+                    NumIntercept++
+                    
+                    # Find an open target
+                    if( !T1 ){T1 = TmpEnt B1 = entity(3957943)}
+                    elseif( !T2 ){T2 = TmpEnt B2 = entity(3957943)}
+                    elseif( !T3 ){T3 = TmpEnt B3 = entity(3957943)}
+                    
+                    print( "Player added to intercept list" )
+                }
+            }
+        }
+    }
+    if( entity(6)!= Owner & entity(6):weapon():type():left(6) == "weapon" ) {
+        # Note this weapon
+        TmpEnt = entity(6)
+        if( TmpEnt != T1 & TmpEnt != T2 & TmpEnt != T3 )
+        {
+            DifPos = Owner:pos()-TmpEnt:shootPos()
+            DifVel = TmpEnt:eye()
+            Angle = acosr(DifVel:normalized():dot(DifPos:normalized()))*180/pi()
+            if( abs(Angle) < 90 )
+            {
+                # See if this weapon blast has an intersection path with our radius
+                IntersectRadius = sinr(acosr(DifVel:normalized():dot(DifPos:normalized())))*DifPos:length()
+                if( IntersectRadius < 100 )
+                {
+                    # We need to intercept this weapon path
+                    NumIntercept++
+                    
+                    # Find an open target
+                    if( !T1 ){T1 = TmpEnt B1 = entity(3957943)}
+                    elseif( !T2 ){T2 = TmpEnt B2 = entity(3957943)}
+                    elseif( !T3 ){T3 = TmpEnt B3 = entity(3957943)}
+                    
+                    print( "Player added to intercept list" )
+                }
+            }
+        }
+    }
+    if( entity(7)!= Owner & entity(7):weapon():type():left(6) == "weapon" ) {
+        # Note this weapon
+        TmpEnt = entity(7)
+        if( TmpEnt != T1 & TmpEnt != T2 & TmpEnt != T3 )
+        {
+            DifPos = Owner:pos()-TmpEnt:shootPos()
+            DifVel = TmpEnt:eye()
+            Angle = acosr(DifVel:normalized():dot(DifPos:normalized()))*180/pi()
+            if( abs(Angle) < 90 )
+            {
+                # See if this weapon blast has an intersection path with our radius
+                IntersectRadius = sinr(acosr(DifVel:normalized():dot(DifPos:normalized())))*DifPos:length()
+                if( IntersectRadius < 100 )
+                {
+                    # We need to intercept this weapon path
+                    NumIntercept++
+                    
+                    # Find an open target
+                    if( !T1 ){T1 = TmpEnt B1 = entity(3957943)}
+                    elseif( !T2 ){T2 = TmpEnt B2 = entity(3957943)}
+                    elseif( !T3 ){T3 = TmpEnt B3 = entity(3957943)}
+                    
+                    print( "Player added to intercept list" )
+                }
+            }
+        }
+    }
+    if( entity(8)!= Owner & entity(8):weapon():type():left(6) == "weapon" ) {
+        # Note this weapon
+        TmpEnt = entity(8)
+        if( TmpEnt != T1 & TmpEnt != T2 & TmpEnt != T3 )
+        {
+            DifPos = Owner:pos()-TmpEnt:shootPos()
+            DifVel = TmpEnt:eye()
+            Angle = acosr(DifVel:normalized():dot(DifPos:normalized()))*180/pi()
+            if( abs(Angle) < 90 )
+            {
+                # See if this weapon blast has an intersection path with our radius
+                IntersectRadius = sinr(acosr(DifVel:normalized():dot(DifPos:normalized())))*DifPos:length()
+                if( IntersectRadius < 100 )
+                {
+                    # We need to intercept this weapon path
+                    NumIntercept++
+                    
+                    # Find an open target
+                    if( !T1 ){T1 = TmpEnt B1 = entity(3957943)}
+                    elseif( !T2 ){T2 = TmpEnt B2 = entity(3957943)}
+                    elseif( !T3 ){T3 = TmpEnt B3 = entity(3957943)}
+                    
+                    print( "Player added to intercept list" )
+                }
+            }
+        }
+    }
+    if( entity(9)!= Owner & entity(9):weapon():type():left(6) == "weapon" ) {
+        # Note this weapon
+        TmpEnt = entity(9)
+        if( TmpEnt != T1 & TmpEnt != T2 & TmpEnt != T3 )
+        {
+            DifPos = Owner:pos()-TmpEnt:shootPos()
+            DifVel = TmpEnt:eye()
+            Angle = acosr(DifVel:normalized():dot(DifPos:normalized()))*180/pi()
+            if( abs(Angle) < 90 )
+            {
+                # See if this weapon blast has an intersection path with our radius
+                IntersectRadius = sinr(acosr(DifVel:normalized():dot(DifPos:normalized())))*DifPos:length()
+                if( IntersectRadius < 100 )
+                {
+                    # We need to intercept this weapon path
+                    NumIntercept++
+                    
+                    # Find an open target
+                    if( !T1 ){T1 = TmpEnt B1 = entity(3957943)}
+                    elseif( !T2 ){T2 = TmpEnt B2 = entity(3957943)}
+                    elseif( !T3 ){T3 = TmpEnt B3 = entity(3957943)}
+                    
+                    print( "Player added to intercept list" )
+                }
+            }
+        }
+    }
+    if( entity(10)!= Owner & entity(10):weapon():type():left(6) == "weapon" ) {
+        # Note this weapon
+        TmpEnt = entity(10)
+        if( TmpEnt != T1 & TmpEnt != T2 & TmpEnt != T3 )
+        {
+            DifPos = Owner:pos()-TmpEnt:shootPos()
+            DifVel = TmpEnt:eye()
+            Angle = acosr(DifVel:normalized():dot(DifPos:normalized()))*180/pi()
+            if( abs(Angle) < 90 )
+            {
+                # See if this weapon blast has an intersection path with our radius
+                IntersectRadius = sinr(acosr(DifVel:normalized():dot(DifPos:normalized())))*DifPos:length()
+                if( IntersectRadius < 100 )
+                {
+                    # We need to intercept this weapon path
+                    NumIntercept++
+                    
+                    # Find an open target
+                    if( !T1 ){T1 = TmpEnt B1 = entity(3957943)}
+                    elseif( !T2 ){T2 = TmpEnt B2 = entity(3957943)}
+                    elseif( !T3 ){T3 = TmpEnt B3 = entity(3957943)}
+                    
+                    print( "Player added to intercept list" )
+                }
+            }
+        }
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    # Process the target interceptions
+    if( NumIntercept > 0 )
+    {
+        if( T1 )
+        {
+            # Process target 1
+            TmpEnt = T1
+            DifPos = Owner:pos()-TmpEnt:shootPos()
+            DifVel = TmpEnt:eye()
+            Angle = acosr(DifVel:normalized():dot(DifPos:normalized()))*180/pi()
+            if( abs(Angle) < 90 )
+            {
+                # See if this weapon blast has an intersection path with our radius
+                IntersectRadius = sinr(acosr(DifVel:normalized():dot(DifPos:normalized())))*DifPos:length()
+                if( IntersectRadius < 100 )
+                {
+                    # Calculate the intercept point
+                    InterceptPt = DifVel:normalized() * ( DifPos:length() - 100 ) + TmpEnt:shootPos()
+                    
+                    # Check if a ball is assigned to intercept this
+                    if( !B1 )
+                    {
+                        # Assign an unassigned ball
+                        if( Ball1 & Ball1 != B1 & Ball1 != B2 & Ball1 != B3 ){B1 = Ball1}
+                        elseif( Ball2 & Ball2 != B1 & Ball2 != B2 & Ball2 != B3 ){B1 = Ball2}
+                        elseif( Ball3 & Ball3 != B1 & Ball3 != B2 & Ball3 != B3 ){B1 = Ball3}
+                    }
+                    
+                    # Apply force to put the ball in position
+                    B_Pos = InterceptPt
+                    B_Prop_Pos = B_Pos-B1:pos()
+                    B_Deriv_Pos = B1:vel()
+                    B1:applyForce(1000*B_Prop_Pos - 5*B_Deriv_Pos)
+                }else{
+                    # no longer worry about it
+                    T1 = entity(3957943)
+                    B1 = entity(3957943)
+                    NumIntercept--
+                }
+            }else{
+                # no longer worry about it
+                T1 = entity(3957943)
+                B1 = entity(3957943)
+                NumIntercept--
+            }
+        }
+        if( T2 )
+        {
+            # Process target 2
+            TmpEnt = T2
+            DifPos = Owner:pos()-TmpEnt:shootPos()
+            DifVel = TmpEnt:eye()
+            Angle = acosr(DifVel:normalized():dot(DifPos:normalized()))*180/pi()
+            if( abs(Angle) < 90 )
+            {
+                # See if this weapon blast has an intersection path with our radius
+                IntersectRadius = sinr(acosr(DifVel:normalized():dot(DifPos:normalized())))*DifPos:length()
+                if( IntersectRadius < 100 )
+                {
+                    # Calculate the intercept point
+                    InterceptPt = DifVel:normalized() * ( DifPos:length() - 100 ) + TmpEnt:shootPos()
+                    
+                    # Check if a ball is assigned to intercept this
+                    if( !B2 )
+                    {
+                        # Assign an unassigned ball
+                        if( Ball1 & Ball1 != B1 & Ball1 != B2 & Ball1 != B3 ){B2 = Ball1}
+                        elseif( Ball2 & Ball2 != B1 & Ball2 != B2 & Ball2 != B3 ){B2 = Ball2}
+                        elseif( Ball3 & Ball3 != B1 & Ball3 != B2 & Ball3 != B3 ){B2 = Ball3}
+                    }
+                    
+                    # Apply force to put the ball in position
+                    B_Pos = InterceptPt
+                    B_Prop_Pos = B_Pos-B1:pos()
+                    B_Deriv_Pos = B1:vel()
+                    B2:applyForce(1000*B_Prop_Pos - 5*B_Deriv_Pos)
+                }else{
+                    # no longer worry about it
+                    T2 = entity(3957943)
+                    B2 = entity(3957943)
+                    NumIntercept--
+                }
+            }else{
+                # no longer worry about it
+                T2 = entity(3957943)
+                B2 = entity(3957943)
+                NumIntercept--
+            }
+        }
+        if( T3 )
+        {
+            # Process target 3
+            TmpEnt = T3
+            DifPos = Owner:pos()-TmpEnt:shootPos()
+            DifVel = TmpEnt:eye()
+            Angle = acosr(DifVel:normalized():dot(DifPos:normalized()))*180/pi()
+            if( abs(Angle) < 90 )
+            {
+                # See if this weapon blast has an intersection path with our radius
+                IntersectRadius = sinr(acosr(DifVel:normalized():dot(DifPos:normalized())))*DifPos:length()
+                if( IntersectRadius < 100 )
+                {
+                    # Calculate the intercept point
+                    InterceptPt = DifVel:normalized() * ( DifPos:length() - 100 ) + TmpEnt:shootPos()
+                    
+                    # Check if a ball is assigned to intercept this
+                    if( !B3 )
+                    {
+                        # Assign an unassigned ball
+                        if( Ball1 & Ball1 != B1 & Ball1 != B2 & Ball1 != B3 ){B3 = Ball1}
+                        elseif( Ball2 & Ball2 != B1 & Ball2 != B2 & Ball2 != B3 ){B3 = Ball2}
+                        elseif( Ball3 & Ball3 != B1 & Ball3 != B2 & Ball3 != B3 ){B3 = Ball3}
+                    }
+                    
+                    # Apply force to put the ball in position
+                    B_Pos = InterceptPt
+                    B_Prop_Pos = B_Pos-B1:pos()
+                    B_Deriv_Pos = B1:vel()
+                    B3:applyForce(1000*B_Prop_Pos - 5*B_Deriv_Pos)
+                }else{
+                    # no longer worry about it
+                    T3 = entity(3957943)
+                    B3 = entity(3957943)
+                    NumIntercept--
+                }
+            }else{
+                # no longer worry about it
+                T3 = entity(3957943)
+                B3 = entity(3957943)
+                NumIntercept--
+            }
+        }
+    }
+    
+    
+    if( mod(OrbitMode,3)+1 == 1 )
+    {
+        Radius = 100
+        ########## Orbit the target with the balls ##########
+        Theta = Theta + 1.5
+        Theta = mod(Theta,360)
+        if( Ball1 != B1 & Ball1 != B2 & Ball1 != B3 )
+        {
+            B_Pos = (Owner:shootPos()-Owner:pos())/2 + Owner:pos()
+            B_Circle = vec(Radius*cos(Theta),Radius*sin(Theta),0)
+            B_Pos = B_Pos + B_Circle
+            B_Prop_Pos = B_Pos-Ball1:pos()
+            B_Deriv_Pos = Ball1:vel()
+            Ball1:applyForce(1000*B_Prop_Pos - 5*B_Deriv_Pos)
+        }
+        if( Ball2 != B1 & Ball2 != B2 & Ball2 != B3 )
+        {
+            B_Pos = (Owner:shootPos()-Owner:pos())/2 + Owner:pos()
+            B_Circle = vec(Radius*cos(-Theta),Radius*sin(-Theta),0)
+            B_Pos = B_Pos + B_Circle
+            B_Prop_Pos = B_Pos-Ball2:pos()
+            B_Deriv_Pos = Ball2:vel()
+            Ball2:applyForce(1000*B_Prop_Pos - 5*B_Deriv_Pos)
+        }
+        if( Ball3 != B1 & Ball3 != B2 & Ball3 != B3 )
+        {
+            B_Pos = (Owner:shootPos()-Owner:pos())/2 + Owner:pos()
+            B_Circle = vec(Radius*cos(Theta + 180),Radius*sin(Theta + 180),0)
+            B_Pos = B_Pos + B_Circle
+            B_Prop_Pos = B_Pos-Ball3:pos()
+            B_Deriv_Pos = Ball3:vel()
+            Ball3:applyForce(1000*B_Prop_Pos - 5*B_Deriv_Pos)
+        }
+    }elseif( mod(OrbitMode,3)+1 == 2 ){
+        Radius = 50
+        ########## Orbit in front of th person ##########
+        Theta = Theta + 5
+        Theta = mod(Theta,360)
+        if( Ball1 != B1 & Ball1 != B2 & Ball1 != B3 )
+        {
+            B_Pos = Owner:shootPos() + Owner:eye()*200
+            B_Circle = vec(0,Radius*cos(Theta),Radius*sin(Theta))
+            B_Circle = B_Circle:rotate(Owner:eye():toAngle())
+            B_Pos = B_Pos + B_Circle
+            B_Prop_Pos = B_Pos-Ball1:pos()
+            B_Deriv_Pos = Ball1:vel()
+            Ball1:applyForce(1000*B_Prop_Pos - 5*B_Deriv_Pos)
+        }
+        if( Ball2 != B1 & Ball2 != B2 & Ball2 != B3 )
+        {
+            B_Pos = Owner:shootPos() + Owner:eye()*200
+            B_Circle = vec(0,Radius*cos(Theta+120),Radius*sin(Theta+120))
+            B_Circle = B_Circle:rotate(Owner:eye():toAngle())
+            B_Pos = B_Pos + B_Circle
+            B_Prop_Pos = B_Pos-Ball2:pos()
+            B_Deriv_Pos = Ball2:vel()
+            Ball2:applyForce(1000*B_Prop_Pos - 5*B_Deriv_Pos)
+        }
+        if( Ball3 != B1 & Ball3 != B2 & Ball3 != B3 )
+        {
+            B_Pos = Owner:shootPos() + Owner:eye()*200
+            B_Circle = vec(0,Radius*cos(Theta-120),Radius*sin(Theta-120))
+            B_Circle = B_Circle:rotate(Owner:eye():toAngle())
+            B_Pos = B_Pos + B_Circle
+            B_Prop_Pos = B_Pos-Ball3:pos()
+            B_Deriv_Pos = Ball3:vel()
+            Ball3:applyForce(1000*B_Prop_Pos - 5*B_Deriv_Pos)
+        }
+    }elseif( mod(OrbitMode,3)+1 == 3 ){
+        Radius = 50
+        ########## Orbit around the top of the person ##########
+        Theta = Theta + 5
+        Theta = mod(Theta,360)
+        if( Ball1 != B1 & Ball1 != B2 & Ball1 != B3 )
+        {
+            B_Pos = Owner:shootPos() + vec(0,0,100)
+            B_Circle = vec(Radius*cos(Theta),Radius*sin(Theta),0)
+            B_Pos = B_Pos + B_Circle
+            B_Prop_Pos = B_Pos-Ball1:pos()
+            B_Deriv_Pos = Ball1:vel()
+            Ball1:applyForce(1000*B_Prop_Pos - 5*B_Deriv_Pos)
+        }
+        if( Ball2 != B1 & Ball2 != B2 & Ball2 != B3 )
+        {
+            B_Pos = Owner:shootPos() + vec(0,0,100)
+            B_Circle = vec(Radius*cos(Theta+120),Radius*sin(Theta+120),0)
+            B_Pos = B_Pos + B_Circle
+            B_Prop_Pos = B_Pos-Ball2:pos()
+            B_Deriv_Pos = Ball2:vel()
+            Ball2:applyForce(1000*B_Prop_Pos - 5*B_Deriv_Pos)
+        }
+        if( Ball3 != B1 & Ball3 != B2 & Ball3 != B3 )
+        {
+            B_Pos = Owner:shootPos() + vec(0,0,100)
+            B_Circle = vec(Radius*cos(Theta-120),Radius*sin(Theta-120),0)
+            B_Pos = B_Pos + B_Circle
+            B_Prop_Pos = B_Pos-Ball3:pos()
+            B_Deriv_Pos = Ball3:vel()
+            Ball3:applyForce(1000*B_Prop_Pos - 5*B_Deriv_Pos)
+        }
+    }
+}
+
+LastCrouch = Owner:isCrouch()
+

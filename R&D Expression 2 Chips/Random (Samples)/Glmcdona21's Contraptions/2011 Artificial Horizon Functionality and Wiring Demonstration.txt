@@ -1,0 +1,358 @@
+@name EPG Hud
+@inputs AltEgp:wirelink ReferencePropLink:wirelink
+@outputs 
+@persist Size:vector2 AltimeterEgpBase BackgroundEgpBase CompassEgpBase SpeedEgpBase AltEgpBase
+@persist [AltPos AltSize RadarPos RadarSize]:vector2
+@persist S_MaxAngle NumMarkers LastPitch Init LastRoll LastYaw LastSpeed LastHeight Count
+@trigger 
+
+#[
+SOURCE: https://youtu.be/xnqBEj1QYf4?si=GNQPDVKHYco4NwBb
+
+
+Description
+This is an artificial horizon airplane/helicopter instrument panel. It has the speed in knots on the left, compass on the bottom, artificial horizon in the centre, and altitude in gmod units on the right. It is extremely easy to add to your own contraptions, and you don't have to give me credit for using this. But please don't claim it as your own. It is built using EGP and should work on almost any build server since all it requires is standard wiremod.
+
+Code
+Sorry for the code being so messy. It is well optimized to try and reduce the usermessage lag as much as possible.
+Code:
+
+]#
+
+Count++
+if( (first() | duped() | ~AltEgp) )
+{
+    timer("init",5000)
+}elseif(clk("init"))
+{
+    Init = 0
+    LastPitch = 10000
+    LastYaw = 10000
+    LastRoll = 10000
+    
+    # Settings
+    S_MaxAngle = 45
+    NumMarkers = 90/5
+    
+    
+    # Initialize the hud
+    AltEgp:egpClear()
+    AltEgp:egpDrawTopLeft(1)
+    AltimeterEgpBase = 15
+    
+    
+    # Altimeter Epg
+    AltEgp:egpResolution(vec2(0,0),vec2(1,1))
+    
+    
+    # Sky background
+    AltEgp:egpBox(AltimeterEgpBase, vec2(0.2,0.1), vec2(0.5,0.7) )
+    AltEgp:egpColor(AltimeterEgpBase,vec(70,70,200))
+    
+    # Grass Background
+    AltEgp:egpTriangle(AltimeterEgpBase+1, vec2(0.35-10*0.5,0.55), vec2(0.35+10*0.5,0.55), vec2(0.35,10) )
+    AltEgp:egpColor(AltimeterEgpBase+1,vec(10,150,10))
+
+    ### Create the artificial horizon
+    # Create the centre bar
+    AltEgp:egpBox(AltimeterEgpBase+2, vec2(0.45-0.2,0.5), vec2(0.4,0.01) )
+    AltEgp:egpColor(AltimeterEgpBase+2,vec(255,255,255  ))
+    AltEgp:egpText(AltimeterEgpBase+3,(0):toString(),v  ec2(0.21,-0.02))
+    AltEgp:egpParent(AltimeterEgpBase+3,AltimeterEgpBa  se+2)
+    
+    # Create the rest of the bar
+    I = 1
+    Index = AltimeterEgpBase+4
+    while( I < NumMarkers )
+    {
+        if( mod(I,2) == 1 )
+        {
+            # Odd, so this is a half-marker
+            AltEgp:egpBox(Index, vec2(0.06-0.1,I * 0.35/(S_MaxAngle/5)), vec2(0.08,0.005) )
+            AltEgp:egpColor(Index,vec(255,255,255))
+            
+            AltEgp:egpBox(Index+1, vec2(0.06-0.1,-I * 0.35/(S_MaxAngle/5)), vec2(0.08,0.005) )
+            AltEgp:egpColor(Index+1,vec(255,255,255))
+            
+            # Parent
+            AltEgp:egpParent(Index,AltimeterEgpBase+2)
+            AltEgp:egpParent(Index+1,AltimeterEgpBase+2)
+            Index += 2
+        }else{
+            # Even, so this is a full marker
+            AltEgp:egpBox(Index, vec2(-0.1,I * 0.35/(S_MaxAngle/5)), vec2(0.2,0.005) )
+            AltEgp:egpColor(Index,vec(255,255,255))
+            
+            AltEgp:egpBox(Index+1, vec2(-0.1,-I * 0.35/(S_MaxAngle/5)), vec2(0.2,0.005) )
+            AltEgp:egpColor(Index+1,vec(255,255,255))
+            
+            # Add text
+            AltEgp:egpText(Index+2,(I*5):toString(),vec2(-0.09,I * 0.35/(S_MaxAngle/5)-0.02)+vec2(0.2,0.005))
+            AltEgp:egpText(Index+3,(I*5):toString(),vec2(-0.09,-I * 0.35/(S_MaxAngle/5)-0.02)+vec2(0.2,0.005))
+            
+            # Parent
+            AltEgp:egpParent(Index,AltimeterEgpBase+2)
+            AltEgp:egpParent(Index+1,AltimeterEgpBase+2)
+            AltEgp:egpParent(Index+2,AltimeterEgpBase+2)
+            AltEgp:egpParent(Index+3,AltimeterEgpBase+2)
+            Index += 4
+        }
+        I++
+    }
+    
+    # Draw the plane
+    AltEgp:egpTriangle(Index, vec2(0.45-0.15,0.45+0.04), vec2(0.45-0.09,0.45+0.04), vec2(0.45,0.45) )
+    AltEgp:egpColor(Index,vec(0,0,0))
+    AltEgp:egpTriangle(Index+1, vec2(0.45+0.15,0.45+0.04), vec2(0.45+0.09,0.45+0.04), vec2(0.45,0.45) )
+    AltEgp:egpColor(Index+1,vec(0,0,0))
+    AltEgp:egpTriangleOutline(Index+2, vec2(0.45-0.15,0.45+0.04), vec2(0.45-0.09,0.45+0.04), vec2(0.45,0.45) )
+    AltEgp:egpColor(Index+2,vec(255,255,255))
+    AltEgp:egpTriangleOutline(Index+3, vec2(0.45+0.15,0.45+0.04), vec2(0.45+0.09,0.45+0.04), vec2(0.45,0.45) )
+    AltEgp:egpColor(Index+3,vec(255,255,255))
+    AltEgp:egpLine(Index+4, vec2(0.45-0.05,0.45), vec2(0.45+0.05,0.45))
+    AltEgp:egpColor(Index+4,vec(255,255,255))
+    Index += 5
+    
+    # Black background
+    AltEgp:egpBox(1, vec2(0,0), vec2(0.2,1) )
+    AltEgp:egpColor(1,vec(0,0,0))
+    
+    AltEgp:egpBox(2, vec2(0,0), vec2(1,0.1) )
+    AltEgp:egpColor(2,vec(0,0,0))
+    
+    AltEgp:egpBox(3, vec2(0.7,0), vec2(0.3,1) )
+    AltEgp:egpColor(3,vec(0,0,0))
+    
+    AltEgp:egpBox(4, vec2(0,0.8), vec2(1,0.2) )
+    AltEgp:egpColor(4,vec(0,0,0))
+    
+    ### Compass
+    CompassEgpBase = Index
+    
+    # Draw the compass on the bottom
+    AltEgp:egpBox(CompassEgpBase,vec2(0.1,0.90),vec2(0  .8,0.5))
+    AltEgp:egpColor(CompassEgpBase,vec(120,120,120))
+    
+    # Create the needle
+    AltEgp:egpTriangle(CompassEgpBase+1,vec2(0.5-0.015,0.9-0.03),vec2(0.5+0.015,0.9-0.03),vec2(0.5,0.9))
+    AltEgp:egpColor(CompassEgpBase+1,vec(255,255,255))
+    AltEgp:egpLine(CompassEgpBase+2,vec2(0.5,0.9),vec2  (0.5,1))
+    AltEgp:egpSize(CompassEgpBase+2,2)
+    AltEgp:egpColor(CompassEgpBase+2,vec(255,255,255))
+    
+    # Create the compass markers and digits, we mark every 5 degrees and label every 10 degrees
+    AltEgp:egpBox(CompassEgpBase+3, vec2(0.5,0.94), vec2(0.005,0.06) )
+    AltEgp:egpColor(CompassEgpBase+3,vec(255,255,255))
+    AltEgp:egpText(CompassEgpBase+4,(0):toString(),vec  2(-0.01,-0.07))
+    AltEgp:egpColor(CompassEgpBase+4,vec(255,255,255))
+    AltEgp:egpParent(CompassEgpBase+4,CompassEgpBase+3  )
+    
+    Angle = -40
+    Index = CompassEgpBase+5
+    while( Angle <= 360+40 )
+    {
+        if( Angle != 0 )
+        {
+            if( mod(Angle,10) != 0 )
+            {
+                # This is a half angle marker
+                AltEgp:egpBox(Index, vec2( (0.4*Angle/30),0), vec2(0.005,0.04) )
+                AltEgp:egpColor(Index,vec(255,255,255))
+                AltEgp:egpParent(Index,CompassEgpBase+3)
+                Index++
+            }else{
+                # This is a full angle marker
+                AltEgp:egpBox(Index, vec2( (0.4*Angle/30),-0.02), vec2(0.005,0.06) )
+                AltEgp:egpColor(Index,vec(255,255,255))
+                AltEgp:egpParent(Index,CompassEgpBase+3)
+                
+                if( Angle < 0 )
+                {
+                    AltEgp:egpText(Index+1,(Angle+360):toString(),vec2  (-0.01 + (0.4*Angle/30),-0.07))
+                }else{
+                    AltEgp:egpText(Index+1,mod(Angle,360):toString(),v  ec2(-0.01 + (0.4*Angle/30),-0.07))
+                }
+                AltEgp:egpColor(Index+1,vec(255,255,255))
+                AltEgp:egpParent(Index+1,CompassEgpBase+3)
+                Index+=2
+            }
+        }
+        
+        Angle = Angle + 5
+    }
+    
+    ### More background
+    AltEgp:egpBox(5, vec2(0,0.9), vec2(0.1,0.2) )
+    AltEgp:egpColor(5,vec(0,0,0))
+    AltEgp:egpBox(6, vec2(0.9,0.9), vec2(0.1,0.2) )
+    AltEgp:egpColor(6,vec(0,0,0))
+    
+    ### Speed meter
+    SpeedEgpBase = Index
+    
+    # Draw the box
+    AltEgp:egpBox(SpeedEgpBase, vec2( 0.12,0.1), vec2(0.06,0.75) )
+    AltEgp:egpColor(SpeedEgpBase,vec(120,120,120))
+    
+    # Draw the notches
+    Index = SpeedEgpBase+5
+    Y = -0.70/2
+    while( Y < 0.70/2 )
+    {
+        # Create this notch
+        AltEgp:egpLine(Index,vec2(0.15,Y+0.1+0.75/2),vec2(0.18,Y+0.1+0.75/2))
+        AltEgp:egpColor(Index,vec(255,255,255))
+        Index++
+        
+        Y = Y + 0.70/15
+    }
+    
+    # Draw the indicator parent
+    AltEgp:egpBox(SpeedEgpBase+1, vec2( 0.015,0.415 ), vec2(0.12,0.07) )
+    AltEgp:egpColor(SpeedEgpBase+1,vec(0,0,0))
+    
+    # Draw the indicator
+    AltEgp:egpBoxOutline(SpeedEgpBase+2, vec2( -0.065,-0.07/2 ), vec2(0.125,0.07) )
+    AltEgp:egpColor(SpeedEgpBase+2,vec(255,255,255))
+    AltEgp:egpSize(SpeedEgpBase+2,2)
+    AltEgp:egpParent(SpeedEgpBase+2,SpeedEgpBase+1)
+    
+    AltEgp:egpTriangle(SpeedEgpBase+3, vec2(0.06,0.02), vec2(0.06+0.02,0), vec2(0.06,-0.02) )
+    AltEgp:egpColor(SpeedEgpBase+3,vec(0,0,0))
+    AltEgp:egpParent(SpeedEgpBase+3,SpeedEgpBase+1)
+    
+    AltEgp:egpText(SpeedEgpBase+4, "123" , vec2( -0.055,-0.02 ) )
+    AltEgp:egpColor(SpeedEgpBase+4,vec(255,255,255))
+    AltEgp:egpParent(SpeedEgpBase+4,SpeedEgpBase+1)
+    
+    
+    ### Create the altitude meter
+    AltEgpBase = Index
+    
+    # Draw the box
+    AltEgp:egpBox(AltEgpBase, vec2( 0.72,0.1), vec2(0.06,0.75) )
+    AltEgp:egpColor(AltEgpBase,vec(120,120,120))
+    
+    # Draw the notches
+    Index = AltEgpBase+5
+    Y = -0.70/2
+    while( Y < 0.70/2 )
+    {
+        # Create this notch
+        AltEgp:egpLine(Index,vec2(0.72,Y+0.1+0.75/2),vec2(0.75,Y+0.1+0.75/2))
+        AltEgp:egpColor(Index,vec(255,255,255))
+        Index++
+        
+        Y = Y + 0.70/15
+    }
+    
+    # Draw the indicator parent
+    AltEgp:egpBoxOutline(AltEgpBase+1, vec2( 0.78,0.415 ), vec2(0.2,0.07) )
+    AltEgp:egpColor(AltEgpBase+1,vec(255,255,255))
+    
+    AltEgp:egpTriangle(AltEgpBase+2, vec2(-0.1,0.02), vec2(-0.1-0.02,0), vec2(-0.1,-0.02) )
+    AltEgp:egpColor(AltEgpBase+2,vec(0,0,0))
+    AltEgp:egpParent(AltEgpBase+2,AltEgpBase+1)
+    
+    AltEgp:egpText(AltEgpBase+3, "123" , vec2( -0.1+0.01,-0.02 ) )
+    AltEgp:egpColor(AltEgpBase+3,vec(255,255,255))
+    AltEgp:egpParent(AltEgpBase+3,AltEgpBase+1)
+    
+    # Setup the ranger
+    rangerPersist(1)
+    rangerHitEntities(0)
+    rangerHitWater(1)
+}elseif( Init == 0 )
+{
+    # Wait until we finish processing the message lineup
+    if( egpQueue() == 0 )
+    { Init = 1 }
+}elseif( egpCanSendUmsg() ){
+    # Calculate the pitch yaw and roll.
+    if( ReferencePropLink:entity() )
+    {
+        Pitch = ReferencePropLink:entity():angles():pitch()
+        Roll = ReferencePropLink:entity():angles():roll()
+        Yaw = ReferencePropLink:entity():angles():yaw()+180
+    }else{
+        Pitch = AltEgp:entity():angles():pitch()
+        Roll = AltEgp:entity():angles():roll()
+        Yaw = AltEgp:entity():angles():yaw()+180
+    }
+    
+    ### Update the artificial horizon markers
+    if( abs(Pitch-LastPitch) > 1 )
+    {
+        # Update the marker position
+        AltEgp:egpPos(AltimeterEgpBase+2, vec2(0.45-0.2,0.45+Pitch/S_MaxAngle * 0.35 ) )
+        LastPitch = Pitch
+    }
+    
+    ### Update the artificial horizon ground-level
+    if( abs(Roll-LastRoll) > 1 | abs(Pitch-LastPitch) > 1 )
+    {
+        if( abs(Roll) < 90 )
+        {
+            LastPt = vec2(0.45,10)
+        }else{
+            LastPt = vec2(0.45,-10)
+        }
+        AltEgp:egpTriangle(AltimeterEgpBase+1, vec2(0.45-10*0.5,0.45 + Pitch/S_MaxAngle * 0.35 - tan(Roll)*10*0.5), vec2(0.45+10*0.5,0.45 + Pitch/S_MaxAngle * 0.35 + tan(Roll)*10*0.5), LastPt )
+        
+        LastRoll = Roll
+    }
+    
+    ### Update the compass
+    if( abs(Yaw-LastYaw) > 2 )
+    {
+        AltEgp:egpPos(CompassEgpBase+3,vec2(0.5 - 0.4*Yaw/30,0.94))
+        LastYaw = Yaw
+    }
+    
+    
+    if( mod(Count,3) == 0 )
+    {
+        ### Update the speedometer
+        
+        # Update the text
+        Speed = toUnit("knots",AltEgp:entity():vel():length())
+        if( abs(Speed-LastSpeed) > 1 )
+        {
+            MaxSpeed = toUnit("knots",2000)
+            if( Speed > MaxSpeed ) { MaxSpeed = Speed }
+            AltEgp:egpSetText(SpeedEgpBase+4, int(Speed):toString() )
+            
+            # Update the position
+            AltEgp:egpPos(SpeedEgpBase+1, vec2( 0.015,0.8 - 0.7*Speed/MaxSpeed ) )
+            
+            LastSpeed = Speed
+        }
+        
+        ### Update the altimeter
+        Ranger=rangerOffset(40000,AltEgp:entity():massCent  er(),vec(0,0,-1))
+        Height = Ranger:distance()
+        if( abs(Height-LastHeight) > 1 )
+        {
+            # Update the text
+            AltEgp:egpSetText(AltEgpBase+3, int(Height):toString() )
+            
+            # Update the position
+            if( Height > 3000 )
+            {MaxHeight = Height}
+            else
+            {MaxHeight = 3000 }
+            AltEgp:egpPos(AltEgpBase+1, vec2( 0.78,0.8 - 0.7*Height/MaxHeight ) )
+            
+            LastHeight = Height
+        }
+    }
+}else{
+    # Can't sent a usermessage yet
+    interval(10)
+    exit()
+}
+
+
+
+interval(100)
+

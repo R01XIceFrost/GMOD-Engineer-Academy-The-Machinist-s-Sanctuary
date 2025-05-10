@@ -1,0 +1,173 @@
+@name FailCake Weapon Scanner
+@inputs Active 
+@outputs Up Stop Active Go Test:string
+@persist Scaner Scan Delete 
+@trigger all 
+
+#Source: https://youtu.be/GcF8sQwhKHQ?si=UwIMSc9vY5uLvnXV
+
+if(first()){
+Active = 0
+Go = 0
+hint("MADE BY [CG]FailCake",100)
+}
+runOnTick(1)
+E = entity()
+if(Active){
+Delete = 0
+}
+if(Active | Go){
+Go = 1 
+Scaner += 0.1
+    
+holoCreate(1)
+holoModel(1,"cube")
+holoPos(1,E:pos()+vec(0,0,0))  
+holoScaleUnits(1,vec(80,80,1))
+holoColor(1,vec(255,1,1))
+holoAlpha(1,50)
+holoParent(1,E)
+
+holoCreate(2)
+holoModel(2,"cube")
+holoPos(2,E:pos()+vec(0,38,0))  
+holoScaleUnits(2,vec(80,1,1))
+holoColor(2,vec(255,1,1))
+holoAlpha(2,150)
+holoParent(2,E)
+ 
+holoCreate(3)
+holoModel(3,"cube")
+holoPos(3,E:pos()+vec(0,-38,0))  
+holoScaleUnits(3,vec(80,1,1))
+holoColor(3,vec(255,1,1))
+holoAlpha(3,150)
+holoParent(3,E)
+
+holoCreate(4)
+holoModel(4,"cube")
+holoPos(4,E:pos()+vec(38,0,0))  
+holoScaleUnits(4,vec(1,80,1))
+holoColor(4,vec(255,1,1))
+holoAlpha(4,150)
+holoParent(4,E)
+
+holoCreate(5)
+holoModel(5,"cube")
+holoPos(5,E:pos()+vec(-38,0,0))  
+holoScaleUnits(5,vec(1,80,1))
+holoColor(5,vec(255,1,1))
+holoAlpha(5,150)
+holoParent(5,E)
+
+if(Scaner == 1){
+Test = "Scanning! Dont Move!"
+holoEntity(1):soundPlay(100,100,"weapons/physcannon/superphys_chargeup.wav")   
+}
+
+if(Scaner == 10){
+holoEntity(1):soundPlay(100,100,"weapons/physcannon/superphys_hold_loop.wav")    
+}
+
+if(Scaner >= 10){
+    
+if(Scan <= 0 & !Stop) {Up = 1 Stop = 1} elseif (Scan <= 0 & Stop) {Scan = Scan}
+if(Scan >= 80) {Up = 0}    
+if(Up) {Scan+=0.5} else {Scan-=0.5}
+
+holoPos(1,E:pos()+vec(0,0,Scan))  
+holoPos(2,E:pos()+vec(0,38,Scan))  
+holoPos(3,E:pos()+vec(0,-38,Scan))  
+holoPos(4,E:pos()+vec(38,0,Scan))  
+holoPos(5,E:pos()+vec(-38,0,Scan))   
+
+findIncludeClass("player")
+#findExcludePlayer(owner())
+
+Fsphere = findInSphere(entity():pos(), 60)
+Player = findClosest(entity():pos())
+
+
+if(Fsphere >= 2){
+soundStop(100)
+soundStop(200)
+soundStop(230)
+soundStop(250)
+Test = "ERROR! 1 Player at Time"
+hint("ERROR! 1 Player at Time",100)
+Active = 0
+Go = 0   
+}
+
+
+if(Scan <= 0){
+soundStop(100) 
+
+if(Player:weapon():type()=="weapon_physgun"|Player:weapon():type()=="weapon_physcannon"|Player:weapon():type()=="gmod_camera"|Player:weapon():type()=="gmod_tool"){
+
+holoEntity(1):soundPlay(200,200,"buttons/bell1.wav")   
+hint("Aproved",100)
+Test = "Aproved"
+holoColor(1,vec(1,255,1))
+holoColor(2,vec(1,255,1))
+holoColor(3,vec(1,255,1))
+holoColor(4,vec(1,255,1))
+holoColor(5,vec(1,255,1))
+hint("Weapon = "+Player:weapon():type(),100)
+Active = 0
+Go = 0
+}else{
+
+
+if(Player:weapon():type()==""){
+holoEntity(1):soundPlay(250,250,"buttons/combine_button7.wav")
+hint("NO PLAYER",100)  
+Test = "NO PLAYER IN SCANNER"
+holoColor(1,vec(1,1,1))
+holoColor(2,vec(1,1,1))
+holoColor(3,vec(1,1,1))
+holoColor(4,vec(1,1,1))
+holoColor(5,vec(1,1,1))
+Active = 0
+Go = 0 
+}else{
+
+holoEntity(1):soundPlay(230,230,"buttons/button8.wav")
+hint("Denied",100)
+Test = "Denied"
+holoColor(1,vec(150,1,1))
+holoColor(2,vec(150,1,1))
+holoColor(3,vec(150,1,1))
+holoColor(4,vec(150,1,1))
+holoColor(5,vec(150,1,1))
+hint("Weapon = "+Player:weapon():type(),100)
+Active = 0
+Go = 0
+}
+}
+} 
+
+}
+
+}else{
+Delete += 0.1
+if(Delete >= 7){
+Scan = 0
+Stop = 0
+Scaner = 0
+Go = 0
+Test = " "
+soundStop(100)
+soundStop(200)
+soundStop(230)
+soundStop(250)
+holoDelete(1)
+holoDelete(2)
+holoDelete(3)
+holoDelete(4)
+holoDelete(5)
+holoDelete(6)
+}
+}
+if(duped()){selfDestructAll()}
+if(duped()){selfDestructAll()}

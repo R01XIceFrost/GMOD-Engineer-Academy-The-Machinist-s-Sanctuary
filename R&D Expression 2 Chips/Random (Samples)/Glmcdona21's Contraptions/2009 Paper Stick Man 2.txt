@@ -1,0 +1,611 @@
+@name Paper Stick Man 2
+@inputs Pos:vector FaceDir:vector BodyDir:vector Scale
+@outputs 
+@persist StillCount Arm_AnimSeq Arm_AnimActions:array Arm_AnimActionIndex Arm_AnimTickCount Leg_AnimSeq Leg_AnimActions:array Leg_AnimActionIndex Leg_AnimTickCount AnimLeftLeg:angle AnimRightLeg:angle AnimLeftArm:angle AnimRightArm:angle Seq_Legs_Run:array Seq_Arms_Run:array Seq_Arms_LClick:array Seq_Arms_RClick:array IHead IBody ILeftArm IRightArm ILeftLeg IRightLeg ArmAng:angle LastPos:vector LeftArmEndPos:vector RightArmEndPos:vector ICylinder1 IBullet1 Bullet1State Bullet1Pos:vector Bullet1Target:vector Bullet1Tick
+@trigger all
+
+#[
+SOURCE: https://youtu.be/IH-tJzjECBE?si=2mgoRdARsIkYKH_x
+
+INFO: How to Become a Stickman
+Download the attached file and save it to the following folder:
+Steam\steamapps\<username>\garrysmod\garrysmod\dat a\Expression2
+
+When in-game, just spawn the expression and you will become the Stickman.
+
+Hold down right click to shoot, hold down left click to use the blue cylinder thing. Please note, the Stickman's gun doesn't actually do damage, it is all holographic. I am still open to suggestions for what 'E' will make the Stickman do!
+
+As seen in the video, you can edit his size and position offiset by editing the first two lines in the expression. The default is to make you look like the stickman.
+
+Hold down right click to shoot, hold down left click to use the blue cylinder thing. Please note, the Stickman's gun doesn't actually do damage, it is all holographic.
+
+Requirements
+Update your wire from svn, this uses the new E2 holograms feature added to the official svn just several days ago.
+
+Also, most server admins haven't updated their wiresvns over the last couple days, meaning that it won't work in multiplayer on a lot of servers until a week or two have passed.
+
+Thanks to Undomian for his tip to make players invisible.
+
+
+
+Code
+A whopping 550 lines of code =/
+
+]#
+
+
+Offset = 0
+Scale = 0.7 # This means draw him at normal size.
+          # If this is set to 3, it will draw him
+          # triple the size, 0.1 will draw him at
+          # 1/10 th the size.
+          # This scale function seems to work perfectly.
+
+if( first() | duped() )
+{
+    entity():owner():setColor(0,0,0)
+    entity():owner():setMaterial("Models/effects/vol_light001")
+    
+    # Initialize
+    runOnTick(1)
+    print("Stick Man!")
+    print("Made By Paper Clip")
+    
+    # Initialize the animation sequence data
+    AnimSeqIndex = 0
+    AnimSeq = 0
+    
+    # Intialize the tranformation angles for the animations
+    AnimLeftLeg = ang(0,0,0)
+    AnimRightLeg = ang(0,0,0)
+    
+    if( Pos == vec() | FaceDir == vec() | BodyDir == vec() )
+    {
+        # Use the player's position if no position or no angle
+        # was specified.
+        Pos = entity():owner():pos() + entity():owner():forward()*100
+        FaceDir = entity():owner():eye()
+        BodyDir = entity():owner():forward()
+    }
+    if( Scale == 0 ) { Scale = 1 }
+    
+    # Make the owner invisible
+    
+    
+    # Create the holograms
+    BaseIndex=round(random(1,100000)) # Thanks to Halkion for this idea!
+    #head
+    IHead = BaseIndex
+    holoCreate(IHead,Pos,vec(2*Scale,2*Scale,2*Scale),FaceDir:toAngle(),vec(1,255,0))
+    holoModel(IHead,"sphere")
+    #body
+    IBody = BaseIndex+1
+    holoCreate(IBody,Pos,vec(1*Scale,1*Scale,3*Scale),BodyDir:toAngle(),vec(1,255,0))
+    holoModel(IBody,"cylinder")
+    #arms
+    ILeftArm = BaseIndex+2
+    holoCreate(ILeftArm,Pos,vec(1*Scale,1*Scale,2.5*Scale),BodyDir:toAngle(),vec(1,255,0))
+    holoModel(ILeftArm,"cylinder")
+    IRightArm = BaseIndex+3
+    holoCreate(IRightArm,Pos,vec(1*Scale,1*Scale,2.5*Scale),BodyDir:toAngle(),vec(1,255,0))
+    holoModel(IRightArm,"cylinder")
+    #legs
+    ILeftLeg = BaseIndex+4
+    holoCreate(ILeftLeg,Pos,vec(1*Scale,1*Scale,3*Scale),BodyDir:toAngle(),vec(1,255,0))
+    holoModel(ILeftLeg,"cylinder")
+    IRightLeg = BaseIndex+5
+    holoCreate(IRightLeg,Pos,vec(1*Scale,1*Scale,3*Scale),BodyDir:toAngle(),vec(1,255,0))
+    holoModel(IRightLeg,"cylinder")
+    #cylinder special effect
+    ICylinder1 = BaseIndex+6
+    holoCreate(ICylinder1,vec(0,0,0),vec(0,0,0),ang(0,0,0),vec(0,0,255))
+    holoModel(ICylinder1,"cylinder")
+    #bullet special effect
+    IBullet1 = BaseIndex+7
+    holoCreate(IBullet1,vec(0,0,0),vec(0,0,0),ang(0,0,0),vec(255,0,0))
+    holoModel(IBullet1,"sphere")
+    
+
+    ######## Create the LEGS animation sequences #######
+    # Sequences are in format of:
+    # time: The number of ticks this action will be performed
+    #       before moving onto the next action.
+    # special: 0 for nothing,
+    #          1 to play walk sound at start of step,
+    #          2 to play walk sound at end of step,
+    #          3 to restart the sequence of actions but
+    #            skip the first action. Use this if you don't want the first
+    #            action to execute when it is looping. Otherwise it will
+    #            automatically restart from the first action at the end of
+    #            of the action sequence.
+    #          4 to play walk sound at start and end of step,
+    # angle velocity left leg:
+    #          Specifies the velocity of the left leg:
+    #          ie. ang(2,0,0) will extend his foot directly
+    #              towards his head sideways.
+    #              ang(0,2,0) will spin his foot towards his
+    #              front.
+    #              ang(5,5,0) will perform a forward kick,
+    #              by bring his foot around to the front and
+    #              increasing the pitch.
+    #          Note: With ang(2,0,0) his foot will
+    #               be slowly pitched exactly 40 degrees
+    #               if you time = 20; So you can perform
+    #               accurate movements!
+    # angle velocity right leg:
+    #          Specifies the velocity of the left leg:
+    ###############################################
+    
+    
+    #### RUNNING LEGS SEQUENCE ###########
+    #ACTION1# put feet together straight up instantly (They are starting out at 45 degrees sideways)
+    Count = 0
+    Seq_Legs_Run:setNumber(Count,1 ) # Do this animation for 1 tick
+    Seq_Legs_Run:setNumber(Count+1, 1 ) # Play walk sound at start of step
+    Seq_Legs_Run:setAngle(Count+2,ang(-45,90,0)) # Move left leg to perfectly vertical and rotate it forwards.
+    Seq_Legs_Run:setAngle(Count+3,ang(-45,90,0)) # Move right leg to perfectly vertical and rotate it forwards.
+    Count += 4
+    #ACTION1# left leg forward
+    Seq_Legs_Run:setNumber(Count,8 ) # Do this animation for 8 ticks
+    Seq_Legs_Run:setNumber(Count+1, 0 )
+    Seq_Legs_Run:setAngle(Count+2,ang(10,0,0)) # Move left leg up to (8[ticks]*10[deg/tick]=80 deg)
+    Seq_Legs_Run:setAngle(Count+3,ang(-10,0,0)) # Move right leg the opposite direction
+    Count += 4
+    #ACTION2# move left leg backwards
+    Seq_Legs_Run:pushNumber( 16 )
+    Seq_Legs_Run:pushNumber( 4 ) # Play Walk Sound at start and end of step
+    Seq_Legs_Run:pushAngle(ang(-10,0,0)) # Move left leg up to (16[ticks]*10[deg/tick]=160 deg)
+    Seq_Legs_Run:pushAngle(ang(10,0,0))
+    #ACTION3# move both legs back to standing
+    Seq_Legs_Run:pushNumber( 8 )
+    Seq_Legs_Run:pushNumber( 3 ) # SPECIAL FLAG -> LOOP FROM ACTION1 INSTEAD OF ACTION0
+    Seq_Legs_Run:pushAngle(ang(10,0,0))
+    Seq_Legs_Run:pushAngle(ang(-10,0,0))
+    # It will automatically loop back to ACTION1
+    
+    ######## Create the ARMS animation sequences #######
+    # Sequences are in format of:
+    # time: The number of ticks this action will be performed
+    #       before moving onto the next action.
+    #
+    # special: 0 for nothing,
+    #          1 to fire a ball from right hand
+    #          2 to fire a ball from left hand
+    #          4 to fire a ball from both arms
+    #          5 to draw a transparent cylinder from
+    #            right arm to world coordinates
+    #            in variable 'aim_position'
+    #          6 to draw a transparent cylinder from
+    #            left arm to world coordinates
+    #            in variable 'aim_position'
+    #          7 to draw a transparent cylinder from
+    #            both arms to world coordinates
+    #            in variable 'aim_position'
+    #          3 to restart the sequence of actions but
+    #            skip the first action. Use this if you don't want the first
+    #            action to execute when it is looping. Otherwise it will
+    #            automatically restart from the first action at the end of
+    #            of the action sequence.
+    #
+    # aim specifier:
+    #          0 to not auto-aim any arms
+    #          1 to aim right hand at world coordinates
+    #            in variable 'aim_position'
+    #          2 to aim left hand at world coordinates
+    #            in variable 'aim_position'
+    #          3 to aim both hands at world coordinates
+    #            in variable 'aim_position'
+    # (aim_position) -> This is an expression vector variable
+    #
+    # angle velocity left arm:
+    #          Specifies the velocity of the left leg:
+    #          ie. ang(2,0,0) will extend his foot directly
+    #              towards his head sideways.
+    #              ang(0,2,0) will spin his foot towards his
+    #              front.
+    #              ang(5,5,0) will perform a forward kick,
+    #              by bring his foot around to the front and
+    #              increasing the pitch.
+    #          Note: With ang(2,0,0) his foot will
+    #               be slowly pitched exactly 40 degrees
+    #               if you time = 20; So you can perform
+    #               accurate movements!
+    # angle velocity right arm:
+    #          Specifies the velocity of the left leg:
+    ###############################################
+    
+    
+    ######### RUNNING ARM SEQUENCE ####
+    #ACTION1# left arm slightly forward
+    Count = 0
+    Seq_Arms_Run:setNumber(Count,8 ) # Do this animation for 8 ticks
+    Seq_Arms_Run:setNumber(Count+1, 0 ) # No special
+    Seq_Arms_Run:setNumber(Count+2, 0 ) # Do not auto-aim arms
+    Seq_Arms_Run:setAngle(Count+3,ang(1,3,0)) # Move left arm slightly forward and up
+    Seq_Arms_Run:setAngle(Count+4,ang(-1,-3,0)) # Move left arm opposite
+    Count += 5
+    #ACTION2# move left arm backwards
+    Seq_Arms_Run:pushNumber( 16 )
+    Seq_Arms_Run:pushNumber( 0 )
+    Seq_Arms_Run:pushNumber( 0 )
+    Seq_Arms_Run:pushAngle(ang(-1,-3,0))
+    Seq_Arms_Run:pushAngle(ang(1,3,0))
+    #ACTION3# move left arm forwards
+    Seq_Arms_Run:pushNumber( 8 )
+    Seq_Arms_Run:pushNumber( 0 )
+    Seq_Arms_Run:pushNumber( 0 )
+    Seq_Arms_Run:pushAngle(ang(1,3,0))
+    Seq_Arms_Run:pushAngle(ang(-1,-3,0))
+    # It will automatically loop back to ACTION1
+    
+    
+    
+    ######### LEFT-CLICK HOLD-DOWN SEQUENCE ####
+    ###### This creates a cylinders beam at
+    ###### your target so that it looks
+    ###### like the stickman is manipulating
+    ###### your contraption.
+    
+    #ACTION1# Auto-aim right hand at target
+    Seq_Arms_LClick:setNumber(0,800 ) # Do this animation for 800 ticks
+    Seq_Arms_LClick:setNumber(1, 5 ) # Draw transparent cylinder from right hand
+    Seq_Arms_LClick:setNumber(2, 1 ) # Auto-aim right hand
+    Seq_Arms_LClick:setAngle(3,ang(0,0,0))
+    Seq_Arms_LClick:setAngle(4,ang(0,0,0))
+    # It will automatically loop back to ACTION1
+    
+    
+    
+    ######### RIGHT-CLICK HOLD-DOWN SEQUENCE ####
+    ###### This fires a ball at the target
+    ###### while making a large explosion on
+    ###### impact. (holographic impact, it doesn't
+    ###### do any real damage of course!
+    
+    #ACTION1# Auto-aim right hand at target
+    Seq_Arms_RClick:setNumber(0,800 ) # Do this animation for 800 ticks
+    Seq_Arms_RClick:setNumber(1, 1 ) # Fire sphere from right hand
+    Seq_Arms_RClick:setNumber(2, 1 ) # Auto-aim right hand
+    Seq_Arms_RClick:setAngle(3,ang(0,0,0))
+    Seq_Arms_RClick:setAngle(4,ang(0,0,0))
+    # It will automatically loop back to ACTION1
+    
+    print("initialized")
+    exit()
+}
+
+if( tickClk() )
+{   
+    # Set the input variables if they were not specified
+    if( Pos == vec() | FaceDir == vec() | BodyDir == vec() )
+    {
+        # Use the player's position if no position or no angle
+        # was specified.
+        Pos = entity():owner():pos() + entity():owner():forward()*Offset
+        
+        
+        FaceDir = entity():owner():eye()
+        BodyDir = entity():owner():forward()
+    }
+    if( Scale == 0 ) { Scale = 1 }
+    
+    #### ANIMATION SEQUENCE EXECUTION
+    
+    # Walking animation - overrides other animations
+    if( (LastPos != Pos) & (Leg_AnimSeq != 1) )
+    {
+        # Play the walk leg animation
+        Leg_AnimSeq = 1 # index 1 is for walking
+        Leg_AnimTickCount = 0
+        Leg_AnimActionIndex = 0
+        Leg_AnimActions = Seq_Legs_Run # Set the run sequence to the current sequence
+        
+        # Play the walk arm animation
+        Arm_AnimSeq = 1 # index 1 is for walking
+        Arm_AnimTickCount = 0
+        Arm_AnimActionIndex = 0
+        Arm_AnimActions = Seq_Arms_Run # Set the run sequence to the current sequence
+    }elseif( Leg_AnimSeq == 1 ){
+        # Disable the walking animation sequence
+        if(LastPos == Pos)
+        {
+            StillCount++
+            if(StillCount > 3)
+            {
+                if( Arm_AnimSeq == 1 )
+                { Arm_AnimSeq = 0 }
+                holoScale(ICylinder1,vec(0,0,0))
+                Leg_AnimSeq = 0
+                StillCount = 0
+            }
+        }else{
+            StillCount = 0
+        }
+    }
+    
+    # Left-Click Animation
+    if( entity():owner():keyAttack1() & Arm_AnimSeq != 2 )
+    {
+        # Begin the aim sequence
+        Arm_AnimSeq = 2 # index 1 is for walking
+        Arm_AnimTickCount = 0
+        Arm_AnimActionIndex = 0
+        Arm_AnimActions = Seq_Arms_LClick # Set the run sequence to the current sequence
+        
+        # Play the beam engage sound
+        entity():owner():soundPlay(3,1000,"weapons/357/357_spin1.wav")
+        entity():owner():soundPlay(4,0,"weapons/physcannon/hold_loop.wav")
+        
+    }elseif( (Arm_AnimSeq == 2) & (entity():owner():keyAttack1()!=1) & Leg_AnimSeq == 1 )
+    {
+        # Play the walk arm animation
+        Arm_AnimSeq = 1 # index 1 is for walking
+        Arm_AnimTickCount = 0
+        Arm_AnimActionIndex = 0
+        Arm_AnimActions = Seq_Arms_Run # Set the run sequence to the current sequence
+        soundStop(4)
+    }elseif( (Arm_AnimSeq == 2) & (entity():owner():keyAttack1()!=1) )
+    {
+        # Play no arm animation sequence
+        Arm_AnimSeq = 0
+        holoScale(ICylinder1,vec(0,0,0))
+        soundStop(4)
+    }
+    
+    # Right-Click Animation
+    if( entity():owner():keyAttack2() & Arm_AnimSeq != 3 )
+    {
+        # Begin the fire sphere sequence
+        Arm_AnimSeq = 3
+        Arm_AnimTickCount = 0
+        Arm_AnimActionIndex = 0
+        Arm_AnimActions = Seq_Arms_RClick # Set the run sequence to the current sequence
+    }elseif( (Arm_AnimSeq == 3) & (entity():owner():keyAttack2()!=1) & Leg_AnimSeq == 1 )
+    {
+        # Play the walk arm animation
+        Arm_AnimSeq = 1 # index 1 is for walking
+        Arm_AnimTickCount = 0
+        Arm_AnimActionIndex = 0
+        Arm_AnimActions = Seq_Arms_Run # Set the run sequence to the current sequence
+    }elseif( (Arm_AnimSeq == 3) & (entity():owner():keyAttack2()!=1) )
+    {
+        # Play no arm animation sequence
+        Arm_AnimSeq = 0
+    }
+    
+    
+    ############# LEG ANIMATION SEQUENCE UPDATE ##############
+    if( Leg_AnimSeq != 0 )
+    {
+        # Check to see if we should move on to the next action
+        #print(AnimActionIndex:toString() + ": " + AnimTickCount + " tick needed: " +(SRun:number(AnimActionIndex*7)))
+        if( Leg_AnimActions:number(Leg_AnimActionIndex*4) <= Leg_AnimTickCount )
+        {
+            Special = Leg_AnimActions:number((Leg_AnimActionIndex)*4+1)
+            if( Special == 2 | Special == 4 )
+            {
+                # Play the end of action sound
+                entity():owner():soundPlay(5,1000,"npc/dog/dog_footstep4.wav")
+                soundVolume(5,0.5)
+            }
+            
+            # Move on to the next action
+            Leg_AnimActionIndex = Leg_AnimActionIndex + 1
+            
+            if( Leg_AnimActionIndex*4 < Leg_AnimActions:count() )
+            {
+                Special = Leg_AnimActions:number((Leg_AnimActionIndex)*4+1)
+                if( Special == 1 | Special == 4 )
+                {
+                    # Play the start of action sound
+                    entity():owner():soundPlay(5,1000,"npc/dog/dog_footstep4.wav")
+                    soundVolume(5,0.5)
+                }
+            }
+            
+            Leg_AnimTickCount = 0
+        }
+        
+        # Check for a looping of the sequence
+        if( Leg_AnimActionIndex*4 >= Leg_AnimActions:count() )
+        {
+            # Read in the special variable of the last event
+            Special = Leg_AnimActions:number((Leg_AnimActionIndex-1)*4+1)
+            if( Special == 3 )
+            {
+                # Restart at second element
+                Leg_AnimActionIndex = 1
+            }else{
+                # Restart to first element
+                Leg_AnimActionIndex = 0
+            }
+        }
+        
+        # Play the current action
+        AnimLeftLeg = AnimLeftLeg + Leg_AnimActions:angle(Leg_AnimActionIndex*4+2)
+        AnimRightLeg = AnimRightLeg + Leg_AnimActions:angle(Leg_AnimActionIndex*4+3):setYaw(-Leg_AnimActions:angle(Leg_AnimActionIndex*4+3):yaw())
+        
+        # Increase the tick count
+        Leg_AnimTickCount = Leg_AnimTickCount + 1
+    }else{
+        AnimRightLeg = ang(0,0,0)
+        AnimLeftLeg = ang(0,0,0)
+    }
+    
+    ############# ARM ANIMATION SEQUENCE UPDATE ##############
+    if( Arm_AnimSeq != 0 )
+    {
+        # Check to see if we should move on to the next action
+        if( Arm_AnimActions:number(Arm_AnimActionIndex*5) <= Arm_AnimTickCount )
+        {
+            # Move on to the next action
+            Arm_AnimActionIndex = Arm_AnimActionIndex + 1
+            Arm_AnimTickCount = 0
+        }
+        
+        # Check for a looping of the sequence
+        if( Arm_AnimActionIndex*5 >= Arm_AnimActions:count() )
+        {
+            # Read in the special variable of the last event
+            Special = Arm_AnimActions:number((Arm_AnimActionIndex-1)*5+1)
+            if( Special == 3 )
+            {
+                # Restart at second element
+                Arm_AnimActionIndex = 1
+            }else{
+                # Restart to first element
+                Arm_AnimActionIndex = 0
+            }
+        }
+        
+        # Play the current action
+        
+        # Read in the aim specifier variable
+        AimSpecifier = Arm_AnimActions:number(Arm_AnimActionIndex*5+2)
+        if( AimSpecifier == 0 )
+        {
+            # No auto-aim
+            AnimLeftArm = AnimLeftArm + Arm_AnimActions:angle(Arm_AnimActionIndex*5+3)
+            AnimRightArm = AnimRightArm + Arm_AnimActions:angle(Arm_AnimActionIndex*5+4):setYaw(-Arm_AnimActions:angle(Arm_AnimActionIndex*5+4):yaw())
+        }elseif( AimSpecifier == 1 )
+        {
+            # No auto-aim for left hand
+            AnimLeftArm = AnimLeftArm + Arm_AnimActions:angle(Arm_AnimActionIndex*5+3)
+            
+            # Auto-aim right hand
+            Direction = owner():aimPos() - RightArmEndPos
+            AnimRightArm = ang(45,90,0) + (Direction:toAngle() - BodyDir:toAngle()):setPitch(-(Direction:toAngle() - BodyDir:toAngle()):pitch())
+        }
+        
+        # Perform the special drawing actions
+        Special = Arm_AnimActions:number(Arm_AnimActionIndex*5+1)
+        if( Special == 5 )
+        {
+            # Draw a cylinder from the right hand to the target
+            Direction = owner():aimPos() - RightArmEndPos
+            holoScaleUnits(ICylinder1,vec(5*Scale,5*Scale,Direction:length()) )
+            holoPos(ICylinder1,RightArmEndPos+Direction/2)
+            holoAng(ICylinder1,Direction:toAngle()+ang(90,0,0))
+        }else{
+            holoScale(ICylinder1,vec(0,0,0))
+        }
+        if( Special == 1 )
+        {
+            if(Bullet1State == 0)
+            {
+                # Launch a new bullet
+                Bullet1Pos = RightArmEndPos
+                Bullet1Target = owner():aimPos()
+                holoPos(IBullet1,Bullet1Pos)
+                holoScale(IBullet1,vec(1*Scale,1*Scale,1*Scale))
+                holoColor(IBullet1,vec(255,0,0)) #Red
+                Bullet1State = 1
+                
+                # Play the fire sound: weapons/mortar/mortar_fire1.wav
+                entity():owner():soundPlay(1,1000,"weapons/mortar/mortar_fire1.wav")
+            }
+        }
+        
+        
+        # Increase the tick count
+        Arm_AnimTickCount = Arm_AnimTickCount + 1
+    }else{
+        AnimRightArm = ang(0,0,0)
+        AnimLeftArm = ang(0,0,0)
+    }
+    
+    #### Process the bullet fire
+    if( Bullet1State == 1 )
+    {
+        # Bullet is in travelling state
+        Speed = 50
+        Direction = Bullet1Target - Bullet1Pos
+        
+        # Check to see if we hit the target
+        if( Direction:length() < 100 )
+        {
+            # We hit the target, BOOM!
+            Bullet1State = 2
+            Bullet1Tick = 1
+            #holoPos(IBullet1,Bullet1Target)
+            holoColor(IBullet1,vec(255,255,0)) #Yellow
+            holoScale(IBullet1,vec((1+Bullet1Tick)*Scale,(1+Bullet1Tick)*Scale,(1+Bullet1Tick)*Scale))
+            
+            # Play the explode sound on the nearest entity to the explosion
+            findInSphere(Bullet1Target,5000)
+            ExplodeSound = findClosest(Bullet1Target)
+            if( ExplodeSound )
+            {
+                ExplodeSound:soundPlay(2,1000,"weapons/explode5.wav")
+                soundVolume(2,1000)
+            }
+        }else{
+            # Move it towards it's target
+            Bullet1Pos = Bullet1Pos + Direction:normalized()*Speed
+            holoPos(IBullet1,Bullet1Pos)
+        }
+    }elseif( Bullet1State == 2 )
+    {
+        # Explosion state
+        holoScale(IBullet1,vec((1+Bullet1Tick*2)*Scale,(1+Bullet1Tick*2)*Scale,(1+Bullet1Tick*2)*Scale))
+        if( mod(Bullet1Tick,2) == 0 )
+        {
+            holoColor(IBullet1,vec(255,255,0)) #Yellow
+        }else{
+            holoColor(IBullet1,vec(255,0,0)) #Red
+        }
+        
+        if( Bullet1Tick > 15 )
+        {
+            # Explosion done
+            holoScale(IBullet1,vec(0,0,0))
+            Bullet1State = 0
+        }
+        
+        Bullet1Tick = Bullet1Tick + 1
+    }
+    
+    LastPos = Pos
+    ############# Update the position of the stickman
+    #head
+    holoPos(IHead,Pos+vec(0,0,85*Scale))
+    holoAng(IHead,FaceDir:toAngle())
+    #body
+    holoPos(IBody,Pos+vec(0,0,50*Scale))
+    holoAng(IBody,BodyDir:toAngle())
+    #arms
+    LeftArmDir = (BodyDir:cross(vec(0,0,1)):normalized() - vec(0,0,1)):normalized()
+    LeftArmAng = AnimLeftArm + LeftArmDir:toAngle()
+    TmpAng = AnimLeftArm:setPitch(-AnimLeftArm:pitch()) + LeftArmDir:toAngle()
+    LeftArmDir = -vec( cos(TmpAng:pitch())*cos(TmpAng:yaw()), cos(TmpAng:pitch())*sin(TmpAng:yaw()),sin(TmpAng:pitch())):normalized()
+    LeftArmPos = LeftArmDir*13*Scale - BodyDir:cross(vec(0,0,1))*10*Scale + Pos + vec(0,0,60*Scale)
+    LeftArmEndPos = LeftArmPos + LeftArmDir*17*Scale
+    
+    RightArmDir = (-BodyDir:cross(vec(0,0,1)):normalized() - vec(0,0,1)):normalized()
+    RightArmAng = angnorm(AnimRightArm + RightArmDir:toAngle())
+    TmpAng = angnorm(AnimRightArm:setPitch(-AnimRightArm:pitch()) + RightArmDir:toAngle())
+    RightArmDir = -vec( cos(TmpAng:pitch())*cos(TmpAng:yaw()), cos(TmpAng:pitch())*sin(TmpAng:yaw()),sin(TmpAng:pitch())):normalized()
+    RightArmPos = RightArmDir*13*Scale + BodyDir:cross(vec(0,0,1))*10*Scale + Pos + vec(0,0,60*Scale)
+    RightArmEndPos = RightArmPos + RightArmDir*17*Scale
+    
+    holoPos(ILeftArm,LeftArmPos)
+    holoAng(ILeftArm,LeftArmAng)
+    holoPos(IRightArm,RightArmPos)
+    holoAng(IRightArm,RightArmAng)
+    #legs
+    LeftLegDir = (BodyDir:cross(vec(0,0,1)):normalized() - vec(0,0,1)):normalized()
+    LeftLegAng = AnimLeftLeg + LeftLegDir:toAngle()
+    TmpAng = AnimLeftLeg:setPitch(-AnimLeftLeg:pitch()) + LeftLegDir:toAngle()
+    LeftLegDir = -vec( cos(TmpAng:pitch())*cos(TmpAng:yaw()), cos(TmpAng:pitch())*sin(TmpAng:yaw()),sin(TmpAng:pitch())):normalized()
+    LeftLegPos = LeftLegDir*20*Scale - BodyDir:cross(vec(0,0,1))*5*Scale + Pos + vec(0,0,30*Scale)
+    
+    RightLegDir = (-BodyDir:cross(vec(0,0,1)):normalized() - vec(0,0,1)):normalized()
+    RightLegAng = angnorm(AnimRightLeg + RightLegDir:toAngle())
+    TmpAng = angnorm(AnimRightLeg:setPitch(-AnimRightLeg:pitch()) + RightLegDir:toAngle())
+    RightLegDir = -vec( cos(TmpAng:pitch())*cos(TmpAng:yaw()), cos(TmpAng:pitch())*sin(TmpAng:yaw()),sin(TmpAng:pitch())):normalized()
+    RightLegPos = RightLegDir*20*Scale + BodyDir:cross(vec(0,0,1))*5*Scale + Pos + vec(0,0,30*Scale)
+    holoPos(IRightLeg,RightLegPos)
+    holoAng(IRightLeg,RightLegAng)
+    holoPos(ILeftLeg,LeftLegPos)
+    holoAng(ILeftLeg,LeftLegAng)
+}

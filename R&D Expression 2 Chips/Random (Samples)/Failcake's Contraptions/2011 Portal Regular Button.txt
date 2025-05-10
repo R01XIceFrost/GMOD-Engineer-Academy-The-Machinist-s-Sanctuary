@@ -1,0 +1,347 @@
+@name FailCake Portal Regular Button
+@outputs On OwnerOnly MinDist Sound Up T Speed Turr Reached Gd L Time
+@outputs Cos Sin Debug Timer Timeout Part P MaxTur Hei SpawnTime SpawnRate
+@outputs FF MaxCube X Y Done Gravity:vector Jump BBlack Delete Timerss Tss PM Ups Base:entity
+@persist [Ply Cos2 Sin2 T2 Cubes]:array Dd Angs
+@trigger all
+@model models/props/switch001.mdl
+
+#Source: https://www.youtube.com/watch?v=e2GruHbmCxk
+
+
+runOnTick(1)
+
+## Important Note, Make sure you have my sound folder in your sounds folder on garrysmod.
+
+#models/props/turret_01.mdl
+E = entity()
+O = owner()
+
+if(first()){
+propSpawnEffect(0)
+
+hint("Made By FailCake",7)
+
+### Settings
+
+OwnerOnly = 1
+MinDist = 40
+MaxTur = 9
+Hei = 100
+Speed = 0.5
+Debug = 0
+SpawnTime = 1400
+SpawnRate = 700
+MaxCube = 10
+BBlack = 1
+
+### Settings
+#Made By FailCake
+
+holoCreate(1)
+holoModel(1,"hqsphere")
+holoScaleUnits(1,vec(2,2,2))
+holoPos(1,E:toWorld(vec(1.5,0,44.5)))
+holoColor(1,vec(255,0,0))
+holoMaterial(1,"models/debug/debugwhite")
+holoParent(1,E)
+
+holoCreate(0)
+holoModel(0,"cube")
+holoPos(0,E:toWorld(vec(0,0,50)))
+holoAlpha(0,0)
+holoParent(0,E)
+
+## Black Background
+
+if(BBlack){
+holoCreate(-1)
+holoModel(-1,"cube")
+holoPos(-1,E:toWorld(vec(0,0,120)))
+holoColor(-1,vec(1,1,1))
+holoScale(-1,vec(-40,-40,-20))
+holoMaterial(-1,"models/debug/debugwhite")
+holoParent(-1,E)  
+holoAlpha(-1,0)  
+}
+
+
+setName("FailCake Portal Regular Button [Off]")
+
+PM = 0 
+Done = 0
+Up = -70
+On = 0
+P = 3
+Turr = -1
+L = Hei
+Jump = 0
+Ups = -40
+Gravity=vec(0,0,9.015)
+}
+
+if(On == 0){
+
+if(OwnerOnly == 0){   
+findByClass("player")
+Ply = findToArray()
+
+for(I=1,Ply:count()){
+if(Ply[I,entity]:pos():distance(E:pos()) <= MinDist & Ply[I,entity]:aimEntity() == E & Ply[I,entity]:keyUse()){
+On = 1
+E:soundPlay(100,100,"buttons/button15.wav") 
+}    
+}
+    
+}else{
+if(O:pos():distance(E:pos()) <= MinDist & O:aimEntity() == E & O:keyUse()){
+On = 1
+E:soundPlay(100,100,"buttons/button15.wav")    
+}
+}
+}
+
+## The Turning On!
+
+if(On){
+holoAlpha(-1,255)     
+setName("FailCake Portal Regular Button [On]")
+    
+if(Debug){
+Timerss+=1
+if(O:keyUse()& Timeout == 0){
+Timeout = 1
+print(Timerss)    
+}
+
+if(Timeout){
+timer("waits2",600)
+if(clk("waits2")){
+Timeout = 0
+stoptimer("waits2")    
+}    
+}
+   
+}
+
+
+    
+    
+holoColor(1,vec(0,255,0))  
+
+if(Sound == 0){
+Sound = 1
+E:soundPlay(104,100,"cakee2/failcake_turret_sing.mp3")
+}
+  
+## The Dancing! ##
+#Made By FailCake
+## Turret 1 ##
+Timer += 1
+
+if(Part == 1){
+if(Up <= 40){
+Up+=0.2
+}
+
+holoCreate(2)
+holoModel(2,"models/props/turret_01.mdl")
+holoPos(2,E:toWorld(vec(-100,0,Up)))
+holoParent(2,E)
+}
+
+## Start Dancing ##
+
+if(Timer == 1){
+Part = 1   
+}
+if(Timer == 694){
+Part = 2   
+}
+
+if(Timer == 3523){
+Delete = 1    
+}
+
+if(Part == 2){
+T+=Speed
+Cos = cos(T)*Hei
+Sin = sin(T)*Hei
+
+holoPos(2,E:toWorld(vec(-Cos,Sin,Up)))  
+
+for(FF=1,MaxTur+1){
+holoAng(FF,(holoEntity(FF):pos()-holoEntity(0):pos()):toAngle()+ang(0,-180,0))    
+}
+
+timer("spawn",SpawnTime)
+if(clk("spawn")){
+
+if(P <= MaxTur){
+P+=1
+}
+
+if(Turr <= MaxTur){
+Turr+=1     
+}else{
+Reached = 1
+}
+
+T2[P,number] = 0 
+
+holoCreate(P)
+holoModel(P,"models/props/turret_01.mdl")
+holoPos(P,E:toWorld(vec(-100,0,40)))
+holoParent(P,E)
+holoEntity(P):setSkin(1)
+holoAng(P,(holoEntity(P):pos()-holoEntity(0):pos()):toAngle()+ang(0,-180,0))
+
+
+}
+
+for(P2=0,Turr){
+
+if(Cos2[P2+1,number] == -180){
+T2[P2+1,number] = 0
+}else{
+T2[P2+1,number] = T2[P2+1,number] + Speed
+}
+Cos2[P2+1,number] = cos(T2[P2+1,number])*Hei
+Sin2[P2+1,number] = sin(T2[P2+1,number])*Hei 
+holoPos(P2+3,E:toWorld(vec(-Cos2[P2,number],Sin2[P2,number],40)))
+}
+ 
+}
+
+if(Reached){
+Gd += 0.1
+if(Gd >= 9){
+Gd = 0
+Reached = 0
+Part = 3    
+}    
+}
+}
+
+
+if(Part == 3){   
+
+Time+=0.1  
+ 
+if(Time >= 63){
+for(Fd = 2,MaxTur+1){
+holoDelete(Fd)    
+}
+Done = 1   
+}
+
+## Cube Spawning ##
+
+timer("spawnCube",SpawnRate)
+
+if(clk("spawnCube")){
+if(Cubes:count() <= MaxCube){
+R = randint(1,2)
+
+X = random(-200,200)
+Y = random(-200,200)
+
+Cube = propSpawn("models/props/metal_box.mdl",E:toWorld(vec(X,Y,200)),ang(0,0,0),0)
+Cube:setSkin(R)
+Cube:setMass(1)
+Cubes:pushEntity(Cube)    
+}
+
+}
+
+## Cube Gravity ##
+if(Jump == 0){
+    
+if(Cubes:count() >= MaxCube){
+Tss+=0.1
+}
+
+for(PF=1,Cubes:count()){    
+Cubes[PF,entity]:applyForce((Gravity-Cubes[PF,entity]:vel()/1000)*Cubes[PF,entity]:mass())        
+}
+}
+
+if(Tss >= 20){
+Jump = 1    
+}
+
+## Going Down ##
+if(Done == 0){ 
+for(Fd = 2,MaxTur+1){
+
+holoPos(Fd,holoEntity(Fd):pos() + -holoEntity(Fd):up()/6)
+holoAng(Fd,(holoEntity(Fd):pos()-holoEntity(0):pos()):toAngle()+ang(0,-180,0))
+    
+} 
+   
+}
+}
+
+## Cube Jumping ##
+if(Jump){
+timer("jump",2000)
+Part = 4
+if(clk("jump")){
+for(Ss = 1,Cubes:count()){
+Cubes[Ss,entity]:applyForce((vec(0,0,100)*3))  
+}    
+}
+}
+
+if(Part == 4){
+    
+if(PM == 0){
+PM = 1
+Base = propSpawn("models/props_bts/metal_block.mdl",E:toWorld(vec(-100,0,-40)),ang(0,0,0),1)  
+
+holoCreate(4)
+holoModel(4,"models/props/cake/cake.mdl")
+holoPos(4,Base:toWorld(vec(0,0,35)))
+holoParent(4,Base)
+
+holoCreate(6)
+holoModel(6,"models/props/turret_01.mdl")
+holoPos(6,Base:toWorld(vec(0,-50,0)))
+holoParent(6,Base)
+
+holoCreate(5)
+holoModel(5,"models/props/turret_01.mdl")
+holoPos(5,Base:toWorld(vec(0,50,0)))
+holoParent(5,Base)
+
+}
+
+if(PM == 1){
+Angs+=0.5
+
+holoAng(4,ang(0,Angs,0))
+    
+if(Ups<=0){
+Ups+=0.05
+Base:setPos(E:toWorld(vec(-100,0,Ups)))
+}
+   
+}
+
+}
+
+if(Delete){
+    
+Base:propDelete()
+holoDeleteAll()
+
+for(Sa=1,Cubes:count()){
+Cubes[Sa,entity]:propDelete()    
+}  
+
+if(Sa >= Cubes:count()){
+reset()    
+}
+  
+}
+#Made By FailCake

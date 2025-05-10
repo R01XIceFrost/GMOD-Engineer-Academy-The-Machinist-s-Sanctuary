@@ -1,0 +1,628 @@
+@name Heavy Weapon Suit
+@inputs [SeatLink GunLink PressureGuageLink PressureNeedleLink GrabberLink]:wirelink W A S D Space Mouse1 Mouse2 Alt Shift [Bullets Shells Melons]:array
+@inputs Dam_Type:string Dam_Force:vector Dam_Victim:entity Dam_Pos:vector
+@outputs [C_pos C_dir]:vector C_parent:entity Smoke SpawnBullet SpawnShell SpawnMelon ShootEffect
+@outputs Dam_Enable Kill Angle Grab GrabStrength
+@persist [Prop Seat Gun PressureGuage PressureNeedle Grabber]:entity Driver:entity BodyDirection:vector Count Init Jumping HeightMod JumpDir OnGround
+@persist JumpPowering JumpPower JumpAir LShells LBullets LMelons LShotTime Health Jetpack JetPower DisableWalking
+@trigger Space Bullets Shells Mouse1 Dam_Force Alt Shift
+
+
+#[
+SOURCE:https://youtu.be/lnTZDvVZUrs?si=clQavyGcmi4RzXgy
+
+INFO: 
+
+DESCRIPTION
+This is a steam-punk styled heavy weapon combat suit designed complete with a melon launcher, propane launcher, and jetpack. It is a general combat suit capable of combat with both ground and air units.
+
+The suits take damage through a wiremod damage detector, and therefore you can battle eachother with these suits on any server even if it has no combat system. The pressure gauge on the gun indicates the current health of suit. To try and make it a bit more fair, I made it so that when you are flying it can take 2 hits before dying, while on the ground it can take 5 hits.
+
+The prop construction of the suit probably took around 4 hours of development, going through a few versions. The E2 development probably took about 12 hours of work in total with all the versions and testing. A large part of the E2 development time was spent tweaking all the sound effects and special effects to be perfect. The two weapons (the melon launcher and propane lancher) are just wire prop spawners combined with E2 apply force code.
+
+CONTROLS
+General Controls
+
+    Mouse1: Fire watermelon
+    Mouse2: Fire propane canister
+    Shift: Toggle grabbing the aimed at prop
+    The pressure guage dial indicates your health. If you run out of pressure, your suit kills you.
+
+
+
+Walking Controls
+
+    W,A,S,D: Walks around.
+    Space: Jump, the longer you hold it, the higher the suit will jump. If you press it while walking forwards, it will jump forwards.
+    Alt: Pressing this turns on the jetpack.
+
+
+
+Jetpack Controls
+
+    W,A,S,D: Controls pitch and roll.
+    Space: Increases the thrust. You do not need to hold this down, just hold this down when you need more thrust.
+    Mouse: Controls the yaw. ie. looking around will turn the suit to where you are looking.
+    
+    CREDITS
+
+Players:
+soda can man: Suit pilot
+Lolztheman: Suit pilot and failplane pilot (see my channel page for the failplane dupe)
+XArchitectX: Suit pilot
+longbyte1: Suit pilot
+Necro: failcannon victim
+Jesus: Fail hovercraft pilot victim
+
+Servers:
+Nodex: Video recording and some of the building
+Ascension: A large part of the building
+
+Music:
+10 Miles High by Nine Inch Nails (Version remixed by Keith Hillebrandt)
+The remix is available here: Remix - remix.nin.com
+
+REQUIREMENTS
+This should work on almost any server, it requires:
+
+    Wiremod
+    Weight tool (I changed the weights of some props from their defaults)
+    The server must have HL2:Ep2 props enabled
+
+
+
+ADV. DUPE
+Download the filed below and save it to:
+C:\Program Files\Steam\steamapps\<username>\garrysmod\garrysm od\data\adv_duplicator
+
+combat_suit.txt: The full version of the dupe.
+combat_suit_props_removed.txt: Has the props from TF2 and the HL2 expansions removed. Only use this if you get errors with the other dupe.
+
+]#
+
+if( first() | duped() ){
+    Health = 100
+    timer("init",4000)
+    exit()
+}elseif( ( clk("init") | dupefinished() ) )
+{
+    Dam_Enable = 1
+    Prop = entity():isWeldedTo(1)
+    Prop:setMass(20000)
+    runOnTick(1)
+    
+    rangerReset()
+    rangerPersist(1)
+    rangerHitEntities(0)
+    
+    Seat = SeatLink:entity()
+    Gun = GunLink:entity()
+    PressureNeedle = PressureNeedleLink:entity()
+    PressureGuage = PressureGuageLink:entity()
+    Grabber = GrabberLink:entity()
+    Init = 0
+    HeightMod = 0
+    JetPower = 0
+    Jetpack = 0
+    LShotTime = 0
+    JumpPowering = 0
+    GrabMode = 0
+    
+    # Set the initial left foot position
+    LFootPos = Prop:massCenter()-vec(0,0,75)
+    
+    # Set the filter entities
+    Ranger = rangerOffset(200,Prop:massCenter(),-Prop:forward())
+    while( Ranger:hit() & Ranger:entity() )
+    {
+        rangerFilter( Ranger:entity() )
+        Ranger = rangerOffset(200,Prop:massCenter(),-Prop:forward())
+    }
+    
+    # Set the camera up
+    C_pos = Seat:massCenter()+Seat:up()*22
+    C_dir = Seat:right()
+    C_parent = Seat
+    
+}
+
+if( clk("engine") )
+{
+    if( Init )
+    {
+        if( Jetpack )
+        {
+            Prop:soundPlay(3,0,"ambient/machines/pump_loop_1.wav")
+            soundVolume(3,100)
+            timer("engine",10000)
+        }else{
+            Prop:soundPlay(3,4080,"npc/ministrider/hunter_angry1.wav")
+            soundVolume(3,0.5)
+            timer("engine",4080)
+        }
+    }
+}elseif( clk("thump") )
+{
+    Prop:soundPlay(1,500,"npc/advisor/advisor_blast6.wav")
+}elseif( clk("smokeOff") )
+{
+    Smoke = 0
+}elseif( clk("leapJump") )
+{
+    # Leap into the air sound
+    HeightMod = -15
+    Prop:soundPlay(5, 654, "npc/dog/dog_pneumatic2.wav")
+    Smoke = 1
+    timer("leapFinish",600)
+}elseif( clk("leapFinish") )
+{
+    # Bang sound as he leaps
+    Smoke = 0
+    HeightMod = 0
+    Prop:soundPlay(5, 654, "npc/env_headcrabcanister/launch.wav")
+    Jetpack = 1
+    OnGround = 0
+}elseif( clk("toggleJetpack") )
+{
+    # Leap into the air sound
+    
+    # Toggle jetpack
+    Jetpack = !Jetpack
+}elseif( clk("hintControls1") )
+{
+    Seat:hintDriver("-- GENERAL CONTROLS ---",7)
+    Seat:hintDriver("Mouse1: Fire watermelon",7)
+    Seat:hintDriver("Mouse2: Fire propane",7)
+    Seat:hintDriver("Shift: Toggles grabber",7)
+    Seat:hintDriver("(Pressure guage inicates health)",7)
+    timer("hintControls2",7000)
+}elseif( clk("hintControls2") )
+{
+    Seat:hintDriver("-- GROUND CONTROLS ---",7)
+    Seat:hintDriver("W,A,S,D: Walk around",7)
+    Seat:hintDriver("Space: Press or hold to jump",7)
+    Seat:hintDriver("Alt: Toggles jetpack",7)
+    timer("hintControls3",7000)
+}elseif( clk("hintControls3") )
+{
+    Seat:hintDriver("-- JETPACK CONTROLS ---",7)
+    Seat:hintDriver("W,A,S,D: Controls pitch and roll",7)
+    Seat:hintDriver("Space: Increase thrust",7)
+    Seat:hintDriver("Mouse: Controls yaw",7)
+}elseif( clk("physgunOn") )
+{
+    if( Grab )
+    {
+        Grabber:soundPlay( 8, 0, "ambient/machines/body_drag_01.wav" )
+        timer("physgunOn",8918)
+    }else{
+        soundStop( 8 )
+    }
+}elseif( clk("enableWalking") )
+{
+    DisableWalking = 0
+}
+
+Count = Count + 1
+
+###########################################
+### New driver initialization
+###########################################
+if( !Init & Seat:driver() )
+{
+    # Initialization code to run when someone gets in the seat
+    GrabStrength = 100000
+    Init = 1
+    Driver = Seat:driver()
+    BodyDirection = vec(Driver:eye():dot(Seat:right()),Driver:eye():do  t(-Seat:forward()),Driver:eye():dot(Seat:up()))
+    Prop:soundPlay(0,2000,"npc/manhack/gib.wav")
+    JumpPowering = 0
+    JumpPower = 0
+    JumpAir = 0
+    GrabMode = 0
+    
+    # Display controls
+    Seat:hintDriver("Heavy Weapon Suit v1",7)
+    Seat:hintDriver("by Paper Clip",7)
+    timer("hintControls1",7000)
+    
+    timer("engine",1000)
+}elseif( !Seat:driver() )
+{
+    # Code for when someone is not in the seat
+    if( Init == 1 )
+    {
+        soundPlay(0,0,"npc/dog/dog_straining3.wav")
+    }
+    Init = 0
+    Driver = noentity()
+}
+
+###########################################
+### Health and damage detection
+###########################################
+if( Health <= 0 ) { exit() }
+
+if( ~Dam_Force )
+{
+    # This could be damage to the suit, check the details
+    if( ( Dam_Type == "Crush" | Dam_Type == "Explosive" ) & Dam_Victim )
+    {
+        # Check if the damage is being dealt near us
+        if( (Dam_Pos-Prop:massCenter()):length() < 500 )
+        {
+            # Reduce health
+            if( OnGround )
+            {
+                Health = Health - 20
+            }else{
+                Health = Health - 50
+            }
+            
+            # Check if we are dead
+            if( Health <= 0 )
+            {
+                # Play death sound
+                soundPurge()
+                Prop:soundPlay(15,2400,"npc/dog/dog_destroy_door1.wav")
+                Kill = 1
+                Smoke = 1
+            }else{
+                # Play hurt sound
+                Prop:soundPlay(15,2400,"npc/dog/dog_disappointed.wav")
+                soundPitch(15,130)
+                Smoke = 1
+                timer("smokeOff",200)
+            }
+        }
+    }
+    
+}
+
+###########################################
+### Health guage
+###########################################
+
+# Calculate the desired health yaw
+DesAngle = -(Health/100*(130+110)-130) # Full health -> -110, No health -> 130
+Angle = atan(PressureNeedle:forward():dot( PressureGuage:up() ), PressureNeedle:forward():dot( PressureGuage:right() ) )+DesAngle
+PressureNeedle:applyAngForce(ang(0,5*Angle - PressureNeedle:angVel():yaw()*0.5,0))
+
+###########################################
+### Control grabber
+###########################################
+if( ~Shift & Shift )
+{
+    # Toggle grab mode
+    if( Grab )
+    {
+        # Deactivate the grab
+        Grab = 0
+        soundStop( 8 )
+        Grabber:soundPlay(8,0,"weapons/slam/mine_mode.wav")
+        
+    }else{
+        Grab = 0
+        # Perform a ranger check to see if we are grabbing an entity
+		rangerHitEntities(1)
+        Ranger = rangerOffset(5000,Grabber:massCenter()+Grabber:up(  )*10,Grabber:up())
+		rangerHitEntities(0)
+    
+        if( Ranger:entity() )
+        {
+            # We are about to grab an entity, good
+            Grab = 1
+            
+            # Play a sound
+            Grabber:soundPlay(8,0,"ambient/machines/p1_drag_intro_01.wav")
+            timer("physgunOn",4551)
+        }else{
+            # We cannot grab the world
+            Grab = 0
+            
+            # Play a sound
+            Grabber:soundPlay(8,0,"weapons/slam/mine_mode.wav")
+        }
+    }
+}
+
+
+###########################################
+### Control gun firing and shell ejection
+###########################################
+if( (Mouse1 | Mouse2) & curtime() > LShotTime + 0.5 )
+{
+    if( Mouse1 )
+    {
+        SpawnMelon = 1
+        LShotTime = curtime()
+    }else{
+        SpawnBullet = 1
+        LShotTime = curtime() + 0.3
+    }
+    SpawnShell = 1
+    ShootEffect = 5
+    
+}
+
+if( ShootEffect > 0 )
+{
+    ShootEffect = ShootEffect - 1
+}
+
+if( Melons:count() > LMelons )
+{
+    SpawnMelon = 0
+    Melons[1,entity]:applyForce(Melons[1,entity]:right()*50000)
+    Melons[1,entity]:setTrails(40,20,5,"trails/smoke",vec(150,150,150),250)
+}
+LMelons = Melons:count()
+
+if( Shells:count() > LShells )
+{
+    #Prop:soundPlay(5,0,"weapons/mortar/mortar_fire1.wav")
+    Prop:soundPlay(5,0,"weapons/pan/pan_impact_world1.wav")
+    #Prop:soundPlay(5,0,"npc/env_headcrabcanister/launch.wav")
+    SpawnShell = 0
+    Shells[1,entity]:applyForce(vec(0,0,1):cross(BodyDirection)*1000)
+    Shells[1,entity]:setMaterial("models/props_pipes/GutterMetal01a")
+}
+LShells = Shells:count()
+
+if( Bullets:count() > LBullets )
+{
+    SpawnBullet = 0
+    Bullets[1,entity]:applyForce(Bullets[1,entity]:up()*10000)
+    Bullets[1,entity]:setMaterial("models/props_pipes/GutterMetal01a")
+    Bullets[1,entity]:setTrails(40,20,5,"trails/smoke",vec(150,150,150),250)
+}
+LBullets = Bullets:count()
+
+if( mod(Count,10 ) == 0 )
+{
+    # Apply force to existing shells
+    I = 1
+    while( I <= Bullets:count() )
+    {
+        Bullet = Bullets[I,entity]
+        Bullet:applyForce(Bullet:up()*10000)
+        Bullet:applyAngForce(-10*Bullet:angVel())
+        I = I + 1
+    }
+}
+
+
+###########################################
+### Load the weapon suit directions
+###########################################
+AimDirection = vec(Driver:eye():dot(Seat:right()),Driver:eye():do  t(Seat:forward()),Driver:eye():dot(Seat:up()))
+C_dir = AimDirection
+
+# Decide on whether the body needs to be rotated
+DifYaw = atan((AimDirection:setZ(0)-BodyDirection:setZ(0)):length(),BodyDirection:setZ  (0):dot(AimDirection:setZ(0)))
+if( abs(DifYaw) > 45 )
+{
+    # Turn the body
+    BodyDirection = AimDirection
+    
+    if( OnGround & !DisableWalking )
+    {
+        Prop:soundPlay(1,500,"npc/advisor/advisor_blast6.wav")
+        timer("thump",200)
+    }
+}
+
+###########################################
+### Jetpack mode
+###########################################
+if( ~Alt & Alt )
+{
+    # Change jetpack mode
+    soundPurge()
+    if( Jetpack )
+    {
+        timer("toggleJetpack",2500)
+    }else{
+        timer("leapJump",2400)
+    }
+    JetPower = 60
+    
+    # Play the jetpack mode change sound
+    Prop:soundPlay(55,2400,"npc/dog/dog_rollover_servos1.wav")
+    
+    # Disable walking for 2 seconds
+    DisableWalking = 1
+    timer("enableWalking",2000)    
+}
+
+if( Jetpack )
+{
+    # We are in jetpack mode
+    
+    # Verify we are still in jetpack mode
+    Ranger = rangerOffset(55,Prop:massCenter(),vec(0,0,-1))
+    if( Ranger:hit() )
+    {
+        # Exit jetpack mode
+        Jetpack = 0
+        soundPurge()
+        Prop:soundPlay(55,2400,"npc/dog/dog_rollover_servos1.wav")
+        exit()
+    }
+    
+    # Control thrust
+    JetPower = clamp(JetPower - 0.25 + Space*0.5, 10, 100)
+    soundPitch( 3, JetPower*1.6+45 )
+    
+    # Apply force
+    #DifYaw = atan( Prop:up():setZ(0):dot(AimDirection:cross(vec(0,0,1  )):setZ(0)),Prop:up():setZ(0):dot(AimDirection:set  Z(0)) )
+    #if( !abs(Prop:up():setZ(0):dot(AimDirection:setZ(0):no  rmalized()) < Prop:up():setZ(0):length() - 0.2) )
+    #{
+    #    DifYaw = 0
+    #}
+    
+    Eye = AimDirection
+    DesiredDirection = vec(0,0,1)
+    DesiredDirectionRight = -Eye:cross(vec(0,0,1))
+    LocalDifference1 = vec(Prop:forward():dot(DesiredDirection),Prop:righ  t():dot(DesiredDirection),Prop:up():dot(DesiredDir  ection))
+    LocalDifference2 = vec(Prop:forward():dot(DesiredDirectionRight),Prop  :right():dot(DesiredDirectionRight),Prop:up():dot(  DesiredDirectionRight))
+    DifAngle = angnorm(ang( LocalDifference1:toAngle():pitch(), LocalDifference1:toAngle():yaw(), LocalDifference2:toAngle():pitch() ))
+    
+    Prop:applyForce( Prop:forward()*JetPower*15000 - vec(1000,1000,1000)*Prop:vel() - vec(0,0,80000) )
+    Prop:applyAngForce( ang((S-W)*6000000,(D-A)*6000000-500000,DifAngle:roll()*200000) - 50000*Prop:angVel() )
+    
+}else{
+    # We are in walking mode
+    
+    ###########################################
+    ### Control the movement of the suit
+    ###########################################
+    if( ( W | S | A | D ) & !Jumping & OnGround & !Space & !DisableWalking )
+    {
+        Prop:applyForce(AimDirection:setZ(0)*(W-S)*100000+AimDirection:setZ(0):cross(vec(0,0,1))*(  D-A)*100000)
+        BodyDirection = AimDirection
+        
+        # Create sound effects
+        if( mod( Count, 20 ) == 0 )
+        {
+            Prop:soundPlay(1,500,"npc/advisor/advisor_blast6.wav")
+            LFootPos = Prop:massCenter() - vec(0,0,60) + BodyDirection:setZ(0)*30 - BodyDirection:setZ(0):cross(vec(0,0,1))*15
+        }
+    }
+    
+    ###########################################
+    ### Control the jumping of the suit
+    ###########################################
+    if( ~Space & Space & Jumping <= 0 & OnGround & !DisableWalking )
+    {
+        JumpPowering = 1
+        JumpPower = 0
+        
+        # Play the leap prepare sound
+        Prop:soundPlay(5, 654, "npc/dog/dog_pneumatic2.wav")
+        Prop:soundPlay(6, 0, "npc/env_headcrabcanister/hiss.wav")
+        soundPitch(6,200)
+        
+        timer("leap",640)
+        JumpDir = W - S
+        HeightMod = -15
+        Smoke = 1
+    }elseif( clk("leap") )
+    {
+        if( !Space | JumpPower > 39 )
+        {
+            # Load the direction again if W or S is down
+            if( W | S )
+            {
+                JumpDir = W - S
+            }
+            
+            # Play the leap sound
+            soundStop(6)
+            Prop:soundPlay(5, 654, "npc/env_headcrabcanister/launch.wav")
+            
+            # Set the jump variables
+            JumpPowering = 0
+            HeightMod = 0
+            Smoke = 0
+            Jumping = round(30+JumpPower/3)
+        }else{
+            # Continue jump powerup
+            timer("leap",100)
+        }
+    }
+    
+    if( Jumping > 0 ){
+        Prop:applyForce(vec(0,0,1)*100000*Jumping-JumpPower/3)
+        Jumping = Jumping - 1
+        JumpAir = 1
+    }
+    
+    if( JumpAir )
+    {
+        # Continue to apply forward velocity in our jump until we hit the ground
+        if( OnGround )
+        {
+            JumpAir = 0
+        }else{
+            Prop:applyForce(AimDirection:setZ(0)*800000*JumpDi  r)
+        }
+    }
+    
+    if( Space & JumpPowering )
+    {
+        JumpPower = clamp(JumpPower + 0.6,0,40)
+        HeightMod = -15 - JumpPower*0.25
+        soundPitch(6,200-4*JumpPower)
+    }
+    
+    ###########################################
+    ### SUIT: CONTROL PITCH AND ROLL
+    ###########################################
+    if( Health > 0 )
+    {
+        # Perform the accurate angle calculation
+        Eye = BodyDirection
+        DesiredDirection = vec(0,0,1)
+        DesiredDirectionRight = -Eye:cross(vec(0,0,1))
+        LocalDifference1 = vec(Prop:forward():dot(DesiredDirection),Prop:righ  t():dot(DesiredDirection),Prop:up():dot(DesiredDir  ection))
+        LocalDifference2 = vec(Prop:forward():dot(DesiredDirectionRight),Prop  :right():dot(DesiredDirectionRight),Prop:up():dot(  DesiredDirectionRight))
+        DifAngle = angnorm(ang( LocalDifference1:toAngle():pitch(), LocalDifference1:toAngle():yaw(), LocalDifference2:toAngle():pitch() ))
+        
+        # Apply force
+        Prop:applyAngForce(-ang(-2260225.5823808*DifAngle:pitch() + 57765.942802611*Prop:angVel():pitch(),2702147.6948  737*DifAngle:yaw() + 38250.094772276*Prop:angVel():yaw(),0))
+        
+        ### SUIT: CONTROL YAW
+        if( Seat:driver() )
+        {
+            Prop:applyAngForce(-ang(0,0,-103612.60800778*DifAngle:roll() + 10377.771387961*Prop:angVel():roll()))
+        }
+        Prop:applyAngForce(-ang(0,0,3000*Prop:angVel():roll()))
+    }
+    
+    ###########################################
+    ### SUIT: CONTROL POSITION
+    ###########################################
+    if( Health > 0 )
+    {
+        Ranger = rangerOffset(80+HeightMod,Prop:massCenter(),vec(0,  0,-1))
+        OnGround = Ranger:hit()
+        
+        if( Ranger:hit() & Jumping <= 0 )
+        {
+            # Apply force
+            DesPos = Ranger:pos()+vec(0,0,75+HeightMod) # Change this to the desired psotion of the prop
+            DifPos = Prop:massCenter()-DesPos
+            Prop:applyForce( -1743152.20964586*DifPos:setX(0):setY(0)-25673.247170307*Prop:vel():setX(0):setY(0) )
+        }
+        
+        # Apply some friction
+        Prop:applyForce(-1000*Prop:vel())
+        
+        if( !OnGround )
+        {
+            Prop:applyForce(-vec(0,0,1000000))
+        }
+    }
+}
+
+###########################################
+### GUN: CONTROL PITCH AND YAW
+###########################################
+if( Health > 0 )
+{
+    if( Init )
+    {
+        DesiredDirection = AimDirection
+    }else{
+        DesiredDirection = Prop:up()
+    }
+    
+    DesiredDirectionRight = AimDirection:cross(vec(0,0,1))
+    LocalDifference1 = vec(Gun:forward():dot(DesiredDirection),Gun:right(  ):dot(DesiredDirection),Gun:up():dot(DesiredDirect  ion))
+    LocalDifference2 = vec(Gun:forward():dot(DesiredDirectionRight),Gun:r  ight():dot(DesiredDirectionRight),Gun:up():dot(Des  iredDirectionRight))
+    DifAngle = angnorm(ang( LocalDifference1:toAngle():pitch(), LocalDifference1:toAngle():yaw(), LocalDifference2:toAngle():pitch() ))
+    
+    # Apply Force
+    Gun:applyAngForce(-ang(-300000*DifAngle:pitch() + 30000*Gun:angVel():pitch(),30000*DifAngle:yaw() + 5000*Gun:angVel():yaw(),0))
+}

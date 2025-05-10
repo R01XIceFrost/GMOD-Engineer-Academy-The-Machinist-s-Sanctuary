@@ -1,0 +1,275 @@
+@name FailCake DuelMelon v1
+@outputs Ply:entity Duel Said Acc Begin Timer Ready AllOk Once2 WIN
+@outputs Players:array Hold Melon:entity R WPl OS Reset
+@persist [Chat Chat2]:array
+@trigger all
+
+#Source: https://youtu.be/CNCbUwAccPE?si=f-nu-uf9_MmVl5r7
+
+#[
+
+INFO:
+
+The Melon Duel! :
+
+Questions :
+
+Q:What is this?
+A:Its a minigame based on css shot4shot.
+
+Q:How can i play it?
+A:Simple, just place the e2 and say "-duel <playername>" , once he accepts and hes ready just say "-start" to start the game. To fire use the physgun and mouse2.
+
+
+]#
+
+
+runOnTick(1)
+runOnChat(1)
+
+
+O = owner()
+E = entity()
+
+if(first()){
+Hold = 0
+propSpawnEffect(0)
+E:setMaterial("models/wireframe")
+
+holoCreate(1)
+holoModel(1,"hq_stube_thin")
+holoMaterial(1,"models/debug/debugwhite")
+holoScaleUnits(1,vec(300,500,1))
+holoParent(1,E) 
+holoAlpha(1,0)  
+holoColor(1,vec(0,255,0))
+holoPos(1,E:toWorld(vec(500,0,0)))
+
+holoCreate(2)
+holoModel(2,"hq_stube_thin")
+holoMaterial(2,"models/debug/debugwhite")
+holoScaleUnits(2,vec(300,500,1))
+holoParent(2,E) 
+holoAlpha(2,0)  
+holoColor(2,vec(255,0,0))
+holoPos(2,E:toWorld(vec(-500,0,0)))
+
+holoCreate(3)
+holoModel(3,"cube")
+holoMaterial(3,"models/debug/debugwhite")
+holoScaleUnits(3,vec(4,4,4))  
+holoAlpha(3,0)
+holoPos(3,E:toWorld(vec(0,0,80)))
+
+## Arena 1
+
+holoCreate(4)
+holoModel(4,"cube")
+holoMaterial(4,"models/debug/debugwhite")
+holoScaleUnits(4,vec(289,489,4.5))  
+holoMaterial(4,"models/wireframe")
+holoColor(4,vec(255,0,0))
+holoAlpha(4,0)
+holoPos(4,E:toWorld(vec(-500,0,0)))
+
+hint("Made by FailCake",7)
+
+## Arena 2
+
+holoCreate(5)
+holoModel(5,"cube")
+holoMaterial(5,"models/debug/debugwhite")
+holoScaleUnits(5,vec(289,489,4.5))  
+holoMaterial(5,"models/wireframe")
+holoAlpha(5,0)
+holoColor(5,vec(0,255,0))
+holoPos(5,E:toWorld(vec(500,0,0)))
+}
+
+Chat = O:lastSaid():explode(" ")
+
+if(chatClk(O)){
+ 
+if(Chat[1,string] == "!duel" & Begin == 0 & Ready== 0){
+ 
+Ply=findPlayerByName(Chat[2,string])
+
+if(Ply:isPlayer() & Ply != O){
+Duel = 1
+holoParent(3,Ply) 
+holoPos(3,Ply:toWorld(vec(0,0,80)))  
+}else{
+hint("Invalid Player!",7)
+}
+
+}
+
+if(Chat[1,string] == "!start" & Begin == 1 & AllOk == 1){
+    
+Ready = 1
+Begin = 0
+    
+}
+    
+}
+
+if(Duel){
+    
+if(Said == 0){
+    
+timer("wait",800)
+if(clk("wait")){
+Said = 1
+holoEntity(3):soundPlay(100,100,"ui/duel_challenge_with_restriction.wav")
+concmd("say " + Ply:name() + ". " + O:name() + " Has Challenged you to a Melon Duel!")
+} 
+
+}
+
+if(Said == 1){
+ 
+   
+timer("wait2",800)
+if(clk("wait2")){
+Said = 2
+Acc = 1
+concmd("say Say !accept to Accept it!")
+} 
+
+} 
+ 
+if(Acc){
+
+Chat2 = Ply:lastSaid():explode(" ")
+
+if(chatClk(Ply)){
+ 
+if(Chat2[1,string] == "!accept"){
+Acc = 0
+Duel = 0
+Begin = 1 
+
+Players[1,entity] = owner()
+Players[2,entity] = Ply 
+  
+holoEntity(3):soundPlay(100,100,"ui/duel_challenge_accepted_with_restriction.wav")    
+}
+    
+}
+
+}
+
+}
+
+if(Begin){
+Timer+=1    
+  
+if(Timer == 30){
+concmd("say " + Ply:name() + " stand on the Red Line and " + O:name() + " stand on the green line.")    
+E:soundPlay(200,2000,"ui/gamestartup8.mp3")
+holoAlpha(1,255)
+holoAlpha(2,255)
+holoAlpha(4,255)
+holoAlpha(5,255)
+}
+
+if(Timer == 80){
+concmd("say [Rules] To Play, each user fires once while the other trys to dodge it.")    
+}
+ 
+if(Timer == 150){
+concmd("say [Rules] You cannot Leave your Area. If you do you lose..")    
+}
+
+if(Timer == 210){
+concmd("say [Rules] To Shoot the Melon Use the Physgun and press MouseKey2.")    
+}
+
+if(Timer == 280){
+concmd("say [Information] Once you guys are ready, Onwer say !start")    
+AllOk = 1
+} 
+
+}
+
+
+if(Ready){    
+
+if(Once2 == 0){
+timer("Say",600)
+if(clk("Say")){
+Once2 = 1  
+R = randint(1,2)   
+concmd("say [Information] " + Players[R,entity]:name() + " is the First one to Shoot.") 
+E:soundPlay(32,23,"vo/announcer_am_roundstart01.wav")
+}
+}
+
+for(OS = 1,Players:count()){
+
+if(Players[OS,entity]:health() <= 0){
+WIN = 1  
+Players:remove(OS)
+
+if(OS == 1){
+WPl = 2
+}elseif(OS == 2){
+WPl = 1
+}
+
+}
+    
+}
+
+if(Players[R,entity]:keyAttack2() & Players[R,entity]:weapon():type() == "weapon_physgun" & Hold == 0){
+Hold = 1  
+Melon:propDelete()
+Melon = propSpawn("models/props_junk/watermelon01.mdl",0)
+Melon:setPos(((Players[R,entity]:pos() + vec(0,0,40)+ Players[R,entity]:eye()*15)))
+Melon:setMass(100)
+Melon:applyForce((Players[R,entity]:eye())*14^5)
+Melon:setTrails(10,10,3,"trails/physbeam",vec(255,255,255),255)
+Melon:soundPlay(444,444,"ui/trade_changed.wav")
+}
+
+if(Hold){
+timer("timeout",1400)
+if(clk("timeout")){
+
+Hold = 0
+
+if(R == 1){
+R = 2  
+holoEntity(4):soundPlay(555,555,"buttons/blip1.wav") 
+}elseif(R == 2){
+R = 1
+O:soundPlay(555,555,"buttons/blip1.wav")
+}
+    
+}    
+}
+
+}
+
+if(WIN){
+timer("SayWho",600)
+if(clk("SayWho")){
+concmd("say [MelonDuel]"+ Players[WPl,entity]:name() + " wins the Duel!")  
+E:soundPlay(100,100,"")
+Melon:propDelete() 
+Ready = 0
+WIN = 0
+E:soundPlay(100,100,"misc/happy_birthday.wav")
+
+Reset = 1
+}    
+}
+
+if(Reset){
+    
+timer("wass",1300)
+if(clk("wass")){
+reset()     
+}
+
+}

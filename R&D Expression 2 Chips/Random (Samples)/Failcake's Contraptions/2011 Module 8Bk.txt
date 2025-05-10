@@ -1,0 +1,425 @@
+@name FailCake Module 8Bk
+@outputs On Ready Sin T P [EP1 EP2 Razn]:vector WeldSpeed CopySpeed SpawnSpeed Fase FaseT InOk M M2 B3 X Total Continue2 B1 Timeout InNo Percent B4 Continue
+@persist [Pos Ang Props Entry Inside Material Weld TProp Freeze]:array EP:vector
+@trigger all
+@model models/props_lab/tpplug.mdl
+runOnTick(1)
+runOnLast(1)
+
+#Source: https://www.youtube.com/watch?v=m02leeKqQEA
+#https://web.archive.org/web/20151019074929/http://www.wiremod.com/forum/finished-contraptions/25487-expression-2-fun-usefull-pack.html
+#[
+
+INFO:
+
+The Module 8Bk(Requires PropCore On!)
+
+Questions :
+
+Q:What does it do ?
+A:It cuts and pastes your building, so you can move it to another location.
+
+Q:Whats the difference about this one and the Adv.Dup?
+A:The Adv.Dup copy and pastes, mine cuts (deletes the object copyed) and pastes it , while the adv.dup still keeps the other one.
+
+Q:What are its bugs?
+A:So far it cant :
+- Weld
+- Paste Wiremod Stuff
+- Restore Color
+- Crashes ween finishing pasting a huge building.
+
+It Can :
+
+- Paste
+- Restore Texture
+- Restore Freezing
+
+Q:Why did you make this?
+A: Just to have fun and i was quite bored, so i started this small project =).
+
+]#
+
+
+### Made BY Failcake
+### Pos Fixing by Foton =)
+
+E = entity()
+O = owner()
+propSpawnEffect(0)
+
+### Settings ###
+SpawnSpeed = 500
+CopySpeed = 200
+WeldSpeed = 100
+### Settings ###
+
+
+if(Timeout){
+timer("mhh",1000)
+if(clk("mhh")){
+Timeout = 0
+soundStop(100)
+stoptimer("mhh")  
+setName("FailCake Module 8Bk [Ready]")  
+holoColor(1,vec())
+}    
+    
+}
+
+if(first() | duped()){
+ 
+hint("Made By FailCake",7)
+
+B4 = 0   
+On = 0
+Ready = 1
+InOk = 0
+Total = 0
+Timeout = 0
+M = 0
+
+if(E:angles() == ang(360,0,0)){
+    
+E:setAng(ang(-90,0,0))    
+E:setPos(E:pos()+vec(0,0,-4)) 
+E:soundPlay(100,100,"weapons/c4/c4_plant.wav")
+E:soundPlay(110,1010,"buttons/combine_button5.wav")   
+
+}
+### Made BY Failcake
+setName("FailCake Module 8Bk [Ready]")
+Percent = 0
+
+holoCreate(1)
+holoModel(1,"hq_torus_thin")
+holoScaleUnits(1,vec(7,7,7))
+holoAng(1,ang(-90,0,0))
+holoParent(1,E)
+holoPos(1,E:toWorld(vec(11,0,0)))
+
+
+holoCreate(4)
+holoModel(4,"hq_torus_thin")
+holoScaleUnits(4,vec(9,9,9))
+holoAng(4,ang(-90,0,0))
+holoParent(4,E)
+holoPos(4,E:toWorld(vec(11,0,0)))
+
+holoCreate(6)
+holoModel(6,"hq_torus_thin")
+holoScaleUnits(6,vec(8,8,8))
+holoAng(6,ang(-90,0,0))
+holoParent(6,E)
+holoPos(6,E:toWorld(vec(11,0,0)))
+
+holoCreate(10)
+holoModel(10,"cube")
+holoScaleUnits(10,vec(15,15,0.1))
+holoAng(10,ang(0,0,0))
+holoParent(10,E)
+holoAlpha(10,0)
+holoPos(10,E:toWorld(vec(30,0,-0.2)))
+holoMaterial(10,"phoenix_storms/lag_sign")
+
+
+holoCreate(2)
+holoModel(2,"cube")
+holoScaleUnits(2,vec(3,3,3))
+holoAng(2,ang(0,0,0))
+holoParent(2,E)
+holoPos(2,E:toWorld(vec(0,0,0)))
+holoAlpha(2,0)
+
+holoCreate(3)
+holoModel(3,"cube")
+holoScaleUnits(3,vec(8,8,8))
+holoAng(3,ang(0,0,0))
+holoParent(3,E)
+holoPos(3,E:toWorld(vec(0,0,0)))
+holoAlpha(3,0)
+
+X = 0
+InNo = 0
+
+holoCreate(5)
+holoModel(5,"hq_torus_thin")
+holoAng(5,ang(90,0,0))
+holoScale(5,vec(80,80,70))
+holoParent(5,E)
+holoColor(5,vec(255,0,0))
+holoPos(5,E:toWorld(vec(-10,0,0)))
+holoAlpha(5,150)
+holoMaterial(5,"models/debug/debugwhite")
+
+
+holoCreate(11)
+holoModel(11,"hq_torus_thin")
+holoAng(11,ang(90,0,0))
+holoScale(11,vec(80,80,80))
+holoParent(11,E)
+holoColor(11,vec(255,0,0))
+holoPos(11,E:toWorld(vec(-10,0,0)))
+holoAlpha(11,255)
+holoMaterial(11,"models/shadertest/predator")
+}
+
+
+timer("del",100)
+if(clk("del") & On != 2 & InNo == 0){
+
+findExcludeEntity(E)
+findIncludePlayerProps(owner())
+findByClass("prop_physics")
+Props = findToArray()
+
+for(M=0,Props:count()){
+if(Props[M,entity]:pos():distance(E:pos()) <= 500){
+Props[M,entity]:setAlpha(200)
+Props[M,entity]:setColor(255,0,0)   
+Entry[M,entity] = Props[M,entity]
+}else{
+Props[M,entity]:setAlpha(255) 
+Props[M,entity]:setColor(255,255,255)  
+Entry:remove(M)
+}
+}
+}
+### Made BY Failcake
+if(Ready & Timeout == 0){
+holoColor(1,vec(0,255,0))  
+holoColor(6,vec(0,255,0))  
+holoColor(4,vec(0,255,0))     
+}else{
+holoColor(1,vec(255,0,0))
+holoColor(6,vec(255,0,0))  
+holoColor(4,vec(255,0,0))
+}
+
+
+
+if(O:pos():distance(E:pos()) <= 100  & O:keyUse() & O:aimEntity() == E & On == 0 & Ready == 1){
+
+if(InOk == 0 & M > 0){
+On = 1
+Ready = 0
+E:soundPlay(100,200,"buttons/button24.wav")
+setName("FailCake Module 8Bk [Starting]")
+E:soundPlay(1000,1000,"ambient/computer_working.wav")
+}
+
+if(M == 0 & Timeout == 0 & InOk == 0){
+Timeout = 1
+InNo = 0
+M2 = 0
+E:soundPlay(100,200,"buttons/button11.wav")
+setName("FailCake Module 8Bk [No Props Found]")   
+holoColor(1,vec(255,0,0))
+holoColor(6,vec(255,0,0))  
+holoColor(4,vec(255,0,0))
+}
+
+if(InOk == 1){
+On = 2
+Ready = 0
+E:soundPlay(1000,1000,"ambient/computer_tape.wav")
+setName("FailCake Module 8Bk [Pasting]")
+E:soundPlay(100,200,"buttons/button6.wav")
+}
+
+holoEntity(2):setTrails(10,10,3,"trails/physbeam",vec(255,255,255),255)
+holoEntity(3):setTrails(10,10,3,"trails/physbeam",vec(255,255,255),255)
+}
+### Made BY Failcake
+T+=1
+Sin = sin(T)*20 
+Cos = cos(T)*20 
+
+
+holoAng(4,ang(Cos,0,Sin))
+holoAng(1,ang(-Cos,0,-Sin))
+holoAng(6,ang(-Cos,0,Sin))
+holoAng(10,ang(-90,T,0))
+
+holoAng(7,ang(90,T+Cos,0))
+if(On){
+
+E:propFreeze(1)
+  
+holoPos(2,E:toWorld(vec(30,Cos,Sin)))
+holoPos(3,E:toWorld(vec(30,-Cos,-Sin)))    
+
+if(On == 1){
+    
+timer("inserts",CopySpeed)
+Fase = 1
+FaseT = 2
+if(clk("inserts")){
+
+if(M2<Entry:count()){
+M2+=1
+InNo = 1
+if(Entry[M2,entity]:isFrozen()){
+Freeze[M2,number] = 1 
+}else{
+Freeze[M2,number] = 0
+}
+
+EP1=E:pos()
+Weld[M2,entity] = Entry[M2,entity]:isWeldedTo()
+Pos[M2,vector] = Entry[M2,entity]:pos()
+Material[M2,string] = Entry[M2,entity]:getMaterial() 
+Ang[M2,angle] = Entry[M2,entity]:angles() 
+Entry[M2,entity]:setColor(0,255,0)
+Inside[M2,string] = Entry[M2,entity]:model()
+Entry[M2,entity]:propFreeze(1)
+
+Percent = round(M2*100/Entry:count())
+holoAlpha(10,255)
+holoAlpha(12,255)
+setName("FailCake Module 8Bk [Inserting]["+Percent+"%][Fase "+Fase+"/"+FaseT+"]")
+
+
+}else{
+timer("delete",1000)
+}
+}
+
+
+if(clk("delete") & M2 >= Entry:count()){
+Delete = 1
+InNo = 0
+}
+
+if(Delete){
+Fase = 2
+FaseT = 2    
+for(M=0,Entry:count()){
+Entry[M,entity]:propDelete()
+setName("FailCake Module 8Bk [Deleting][Fase "+Fase+"/"+FaseT+"]")
+
+holoAlpha(10,0)
+holoAlpha(12,0)
+Entry[M,entity]:soundPlay(22,22,"ambient/machines/machine1_hit1.wav")
+} 
+
+if(M2 >= Entry:count()){
+hint("Total Props Inside = " + Inside:count(),7)
+setName("FailCake Module 8Bk [Ready]")
+Delete = 0
+On = 0
+Ready = 1
+InOk = 1 
+InNo = 0
+soundStop(1000)
+holoAlpha(3,0)
+holoAlpha(2,0)   
+holoEntity(3):removeTrails()
+holoEntity(2):removeTrails()
+holoColor(5,vec(0,255,0))
+E:soundPlay(100,100,"buttons/bell1.wav")
+}   
+}
+
+}
+
+if(On == 2){
+Fase = 1
+FaseT = 2
+timer("paster",SpawnSpeed)
+setName("FailCake Module 8Bk [Pasting]["+Percent+"%][Fase "+Fase+"/"+FaseT+"]")
+holoAlpha(10,255)
+holoAlpha(12,255)
+Percent = round(X*100/Inside:count())
+
+if(clk("paster") & X < Inside:count()){
+X+=1    
+EP2=E:pos()
+Razn=(EP2==EP1?vec() :(EP2-EP1))
+Prop = propSpawn(Inside[X,string],Pos[X,vector]+Razn,Ang[X,angle],1)
+Prop:setMaterial(Material[X,string])
+Prop:soundPlay(22,22,"buttons/blip1.wav")
+TProp:pushEntity(Prop)
+Total += 1
+}
+
+if(X >= Inside:count()){
+B3 = Total
+timer("sa",1000)   
+if(clk("sa")){
+Continue = 1   
+}
+}
+
+if(Continue){
+Fase = 2
+FaseT = 2
+timer("weld",WeldSpeed)
+if(clk("weld")){
+B3+=1
+if(B3 > 2){
+B4+=1   
+}
+TProp[B3,entity]:parentTo(Weld[B4,entity]) 
+
+TProp[B3,entity]:setColor(0,0,255)
+Weld[B4,entity]:setColor(255,255,0)
+
+}
+
+Percent = round(B4*100/TProp:count())       
+setName("FailCake Module 8Bk [Welding]["+Percent+"%][Fase "+Fase+"/"+FaseT+"]")  
+
+if(B4 >= TProp:count()){
+Continue2 = 1    
+}
+
+}
+
+if(Continue2){  
+    
+for(B=0,Entry:count()){
+TProp[B,entity]:propFreeze(Freeze[B,number]) 
+}
+    
+On = 0
+hint("Total Props Pasted = " + Total,7)
+InOk = 0
+Delete = 0
+holoAlpha(10,0)
+holoAlpha(12,0)
+Ready = 1
+Total = 0
+X = 0
+M2 = 0
+Continue = 0
+Continue2 = 0
+B4 = 0
+stoptimer("sa")
+Percent = 0
+holoAlpha(3,0)
+holoAlpha(2,0)  
+holoEntity(3):removeTrails()
+holoEntity(2):removeTrails()
+holoColor(5,vec(255,0,0))
+setName("FailCake Module 8Bk [Ready]")
+E:soundPlay(100,100,"buttons/bell1.wav")
+soundStop(1000)
+}    
+}
+}
+
+
+### Made BY Failcake
+
+if(duped()){
+selfDestructAll()   
+}
+### Made BY Failcake
+
+if(last()){
+for(M = 0,Entry:count()){
+Entry[M,entity]:setAlpha(255) 
+Entry[M,entity]:setColor(255,255,255) 
+}   
+}

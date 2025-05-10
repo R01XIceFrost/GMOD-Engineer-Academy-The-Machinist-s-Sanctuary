@@ -1,0 +1,148 @@
+@name Big Gun Expression
+@inputs Enable EntId Plus Minus
+@outputs Fire1 Fire2 MulL MulT MulR MulB L:vector T:vector B:vector R:vector H_en H_rad H_mag
+@persist HovDist OwnerLoaded This:entity Owner:entity LstBear LstElev LstRoll LstPos:vector
+
+#[
+#SOURCE: https://youtu.be/dxkJapRtN0s?si=zHcIT2Yj_Rg7wGx4
+ORGINAL INFO FROM WIREMOD FOURMS 2010: 
+
+Inspiration from Neonvyper
+Thanks to Neonvyper and his personal healing and assistance drone for the inspiration for this project:
+http://www.wiremod.com/forum/contrap...nce-drone.html
+
+Description
+This is a big gun that floats right in front of you and aims where you aim. It is built using E2, vector thrusters, and a gravity controller. It has two stargate staff weapons mounted to the front. To fire, just crouch.
+
+Required Addons
+LS3
+Stargate
+Gravity Controller
+Phenoix Storms
+
+Video
+Direct Link (I can't figure out how to embed it):
+[ame=http://ca.youtube.com/watch?v=dxkJapRtN0s]Garrys Mod - Personal Floating Gun[/ame]
+
+Expression Code
+I know this could be made simpler, but I think I did a good job performance wise. Here is a quick summary of what the variables are:
+
+Inputs
+Enable: The enable button on the front.
+EntId: The entity output from the ranger, used to load the entity id of the person who pressed the button.
+Plus: Plus numpad, makes it orbit you at a further distance.
+Minus: Minus numpad, makes it orbet you at a closer distance.
+
+Outputs
+Fire1,Fire2: The fire signal to the stargate staff weapons
+MulL,MulT,MulR,MulB: Multiplier for vector thrusters on the left, top, right and bottom.
+L,T,R,B: Vector direction for vector thrusters on the left, top, right and bottom.
+H_en: Enable for health radiator.
+H_rad: Radius for health radiator.
+H_mag: Magnitude for health radiator.
+
+Persists
+HovDist: The distance from you at which to hover.
+OwnerLoaded: Whether the entity of the person who pressed the button is loaded yet.
+This: The expression entity.
+Owner: The owner person entity.
+LstBear,LstElev,LstRoll,LstPos: The last value. This is used to calculate the delta used in dampening the thrust outputs.
+
+
+]#
+
+if( first() )
+{
+    This = entity()
+    Owner = This:owner()
+    interval( 25 )
+    OwnerLoaded = 0
+    HovDist = 50
+}
+if( clk() )
+{
+    interval( 25 )
+    
+    if( Enable )
+    {
+        if( !OwnerLoaded  )
+        {
+            if( EntId > 0 )
+            {
+                Owner = entity(EntId)
+                OwnerLoaded = 1
+            }
+        } else {
+            if( Plus )
+            {
+                HovDist = HovDist + 5
+            }
+            if( Minus )
+            {
+                HovDist = HovDist - 5
+            }
+        
+            if( Owner:isCrouch() )
+            {
+                Fire1 = !Fire1
+                Fire2 = !Fire1
+            }else{
+                Fire1 = 0
+                Fire2 = 0
+            }
+            SS = 4
+            H_en = 1
+            H_rad = 200
+            H_mag = 100
+            L = vec(0,0,0)
+            R = vec(0,0,0)
+            T = vec(0,0,0)
+            B = vec(0,0,0)
+            DesBear = Owner:eye():toAngle():yaw()
+            DesElev = Owner:eye():toAngle():pitch()
+            ErrBear = angnorm( This:forward():toAngle():yaw() - Owner:eye():toAngle():yaw() )
+            ErrElev = angnorm( This:forward():toAngle():pitch() - Owner:eye():toAngle():pitch() )
+            ErrRoll = This:angles():roll()
+            DifRoll = ErrRoll - LstRoll
+            DifElev = ErrElev - LstElev
+            DifBear = ErrBear - LstBear
+            LstRoll = ErrRoll
+            LstBear = ErrBear
+            LstElev = ErrElev
+            
+            L = L - (1*ErrBear+3*DifBear)*SS*This:forward()
+            R = R + (1*ErrBear+3*DifBear)*SS*This:forward()
+            
+            T = T + (1*ErrElev+5*DifElev)*SS*This:forward()
+            B = B - (1*ErrElev+5*DifElev)*SS*This:forward()
+            
+            L = L + (1*ErrRoll+3*DifRoll)*1.5*This:up()
+            R = R - (1*ErrRoll+3*DifRoll)*1.5*This:up()
+            
+            DesPos = Owner:shootPos() + HovDist * Owner:eye()
+            ErrPos = This:pos() - DesPos
+            DifPos = ErrPos - LstPos
+            LstPos = ErrPos
+            
+            L = L + (0.1*SS*ErrPos+1.5*SS*DifPos)
+            R = R + (0.1*SS*ErrPos+1.5*SS*DifPos)
+            T = T + (0.1*SS*ErrPos+1.5*SS*DifPos)
+            B = B + (0.1*SS*ErrPos+1.5*SS*DifPos)
+    
+            MulL = L:length()
+            MulT = T:length()
+            MulR = R:length()
+            MulB = B:length()
+        }
+    }else{
+        OwnerLoaded = 0
+        H_en = 1
+        L = vec(0,0,0)
+        R = vec(0,0,0)
+        T = vec(0,0,0)
+        B = vec(0,0,0)
+    }
+    
+}
+
+

@@ -1,0 +1,98 @@
+@name FailCake Hide Box V1
+@persist Timer Alert
+@trigger all
+
+#Source: https://youtu.be/GcF8sQwhKHQ?si=8d3WH5mu37hV-sVq
+#Press CTRL to activate
+
+
+runOnTick(1)
+O = owner()
+Ow = owner()
+
+if(first()){
+hint("MADE BY [CG]FailCake",100)   
+}
+
+if(Ow:keyUse()){
+Alert+= 0.1
+
+
+holoCreate(3)
+holoModel(3,"cube")
+holoPos(3,O:pos()+vec(0,0,100))  
+holoScaleUnits(3,vec(3,3,13))
+holoAlpha(3,200)
+holoColor(3,vec(255,0,0))
+holoMaterial(3,"")
+
+holoCreate(4)
+holoModel(4,"cube")
+holoPos(4,O:pos()+vec(0,0,87))  
+holoScaleUnits(4,vec(3,3,3))
+holoAlpha(4,200)
+holoColor(4,vec(255,0,0))
+holoMaterial(4,"")
+
+if(Alert == 1){
+holoEntity(3):soundPlay(100,100,"ambient/alarms/klaxon1.wav")  
+}
+
+}else{
+Alert = 0
+soundStop(100)
+holoDelete(3)
+holoDelete(4)
+}
+
+if(Ow:isCrouch()){
+Timer+=0.1
+owner():weapon():setAlpha(0)
+owner():weapon():setColor(255,255,255,0)
+
+holoCreate(1)
+holoModel(1,"cube")
+holoPos(1,O:pos()+vec(0,0,23.5))  
+holoScale(1,vec(-4,-4,-4))
+holoColor(1,vec(255,255,255))
+holoAlpha(1,240)
+holoMaterial(1,"models/props_wasteland/wood_fence01a")
+holoParent(1,2)
+
+holoCreate(2)
+holoModel(2,"cube")
+holoPos(2,O:pos()+vec(0,0,23.5))  
+holoScale(2,vec(4,4,4))
+holoColor(2,vec(255,255,255))
+holoMaterial(2,"models/props_wasteland/wood_fence01a")
+holoParent(2,1)
+holoAlpha(2,255)
+
+if(Timer == 1){
+holoEntity(1):soundPlay(1000,1000,"weapons/c4/c4_disarm.wav")    
+holoEntity(2):soundPlay(2000,2000,"weapons/c4/c4_disarm.wav")    
+}
+
+if(Timer == 5){
+#owner():soundPlay(3000,3000,"music/vlvx_song28.mp3")    
+#owner():soundPlay(4000,4000,"music/vlvx_song28.mp3")   
+}
+
+owner():setColor(255,255,255,0)
+
+}else{
+soundStop(1000)
+soundStop(2000)
+soundStop(3000)
+soundStop(4000)
+holoDelete(1)
+owner():setColor(255,255,255,255)
+Timer = 0
+holoDelete(2)
+}
+
+
+if(duped()){selfDestructAll()}
+if(duped()){selfDestructAll()}
+
+## Based on Solid Snake <3 ##

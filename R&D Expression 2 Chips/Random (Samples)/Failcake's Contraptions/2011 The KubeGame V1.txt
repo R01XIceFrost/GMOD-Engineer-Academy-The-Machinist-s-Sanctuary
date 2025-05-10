@@ -1,0 +1,279 @@
+@name The KubeGame V1
+@outputs InicialSpawn Level PlayerSc:wirelink Start Done Ready RR Onces2
+@persist [Pos Colors Textures Music Prosp ObsTot TotalKubes]:array Z V P I L Ps N F E:entity Level Start RC
+@trigger all
+@model models/hunter/blocks/cube025x025x025.mdl
+
+#Source: https://www.youtube.com/watch?v=cr4cW_0H-Z4
+
+#[
+INFO:
+
+The Kubes Game (Old Minigame) ! (Requires PropCore On!)
+
+B]Questions :[/B]
+
+Q:What is it ?
+A:Its a minigame, all you have to do is stay on the plate that the holo Says so (check by color).
+
+Q:What are the Commands?
+A: /start to start the minigame , /reset to reset the E2 , /stop to Stop the Minigame and reload it, /remove to remove the E2 and the Props
+
+
+
+]#
+
+
+
+
+if(first() | dupefinished())
+{
+    entity():setColor(0,0,255)
+    Start = 0
+    Level = 1
+    Z = 9
+    runOnTick(1)
+    runOnChat(1)
+    propSpawnEffect(0)
+    hint("Made By FailCake and Jack =)",7)
+    holoCreate(1)
+    holoModel(1,"cube")
+    holoScale(1,vec(1,15,15))
+    holoMaterial(1,"models/debug/debugwhite")
+    holoAlpha(1,0)
+
+    for(X=1,3)
+    {   
+        for(Y=1,3)
+        {
+            I++
+            Pos[I,vector2]=vec2(X,Y)   
+        }     
+    }  
+
+    InicialSpawn = 1  
+    E = entity()
+    
+    Textures = array("models/effects/comball_sphere",
+                    "models/wireframe",
+                    "models/alyx/emptool_glow",
+                    "phoenix_storms/metalfence004a")
+                    
+    Music = array("music/hl2_song16",
+                    "music/hl2_song14",
+                    "music/hl2_song20_submix4",
+                    "music/hl2_song29",
+                    "music/hl1_song15",
+                    "ui/gamestartup2.mp3",
+                    "ui/gamestartup10.mp3"
+                    )
+    
+    Prosp = array(vec(-180,0,78),vec(180,0,78),vec(0,180,78),vec(0,-180,78))
+    
+    Colors = array(vec(255,0,0),vec(0,255,0),vec(0,0,255),
+                    vec(0,255,255),vec(255,0,255),vec(255,255,0),
+                    vec(255,255,255),vec(0,0,0),vec(90,90,90))
+}
+
+if(InicialSpawn)
+{
+    if(N < 9)
+    {
+        timer("Spawn",500)
+    }
+
+    if(clk("Spawn"))
+    {
+        if(N < 9)
+        {
+            N++
+            Kubes = propSpawn("models/hunter/blocks/cube6x6x025.mdl",(E:toWorld(vec(0,0,300)))+(vec(Pos[N,vector2])*305),1)  
+            Kubes:setMaterial("phoenix_storms/gear")
+            Kubes:setColor(Colors[N,vector])
+            TotalKubes:pushEntity(Kubes)
+        }
+        if(N>= 9){
+     Ready = 1         
+    } 
+    }
+    holoPos(1,TotalKubes[2,entity]:pos()+vec(-300,0,200))
+    if(TotalKubes:count() == 9) {InicialSpawn = 0 
+        
+    hint("All Done Spawning!",7)
+    hint("######### Commands #########",7)
+    hint("/start to Start a new round",7)
+    hint("/stop to Stop The round",7)
+    hint("/reset to Reset the Expression2",7)
+    hint("/remove to Remove the Expression2 and the Props",7)
+    hint("############################",7)
+    }
+}
+
+if(chatClk(owner()))
+{
+    if(lastSaid():lower() == "/start" & Ready == 1)
+    {
+        hideChat(1)
+        Start = 1
+        hint("Starting a new Round!",7)
+    }elseif(lastSaid():lower() == "/stop")
+    {
+        P++
+        hideChat(1)
+        Start = 0
+        TotalKubes:propDelete()
+        ObsTot:propDelete()
+        soundStop(P)
+        reset()
+        hint("Stoping!",7)
+    }
+    elseif(lastSaid():lower() == "/remove")
+    {
+        F++
+        hideChat(1)
+        TotalKubes:propDelete()
+        ObsTot:propDelete()
+        soundStop(F)
+        selfDestruct()
+        hint("Removed!",7)
+    }
+    elseif(lastSaid():lower() == "/reset")
+    {
+        hideChat(1)
+        TotalKubes:propDelete()
+        ObsTot:propDelete()
+        reset()
+        hint("Expression2 Reseted!",7)    
+    }
+}
+
+if(Start)
+{
+    RR = randint(1,7)
+    
+    for(P=1,TotalKubes:count()){
+    TotalKubes[P,entity]:soundPlay(1444+P,10050,Music[RR,string]+".mp3")
+    }
+
+    if(Level == 1) {timer("RandomColor",5000) timer("next",20000)}
+    elseif(Level == 2) {timer("RandomColor",3500) timer("next",20000)}
+    elseif(Level == 3) {timer("RandomColor",5000) timer("next",60000)}
+    elseif(Level == 4) {timer("RandomColor",3200) timer("next",60000)}
+    elseif(Level == 5) {timer("RandomColor",3200) timer("next",60000)}
+    elseif(Level == 6) {timer("RandomColor",3200) timer("next",60000)}
+    elseif(Level == 7) {timer("RandomColor",3200) timer("next",60000)}
+    elseif(Level == 8) {
+        
+             F++
+        hideChat(1)
+        TotalKubes:propDelete()
+        ObsTot:propDelete()
+        soundStop(F)
+        selfDestruct()
+        hint("New Game",7)
+        }
+    if(clk("RandomColor"))
+    {
+        for(I = 1,TotalKubes:count())
+        {
+            
+            TotalKubes[I,entity]:propNotSolid(0)
+            ObsTot[I,entity]:setAlpha(255)
+            
+            if(Level == 6){
+            TotalKubes[I,entity]:setAlpha(70)        
+            }else{
+           TotalKubes[I,entity]:setAlpha(255) 
+            }
+            
+            ObsTot[I,entity]:propNotSolid(0)
+
+        }
+        RC = randint(1,9)
+        holoColor(1,Colors[RC,vector])
+        holoAlpha(1,255)
+        if(Level == 1 | Level == 3) {timer("wait",4000)}
+        elseif(Level == 2 | Level == 4 | Level == 5 | Level == 6 ) {timer("wait",2500)}
+    }
+    
+    if(clk("wait")) 
+    {
+        for(I = 1,TotalKubes:count())
+        {
+            if(TotalKubes[I,entity]:getColor() != Colors[RC,vector])
+            {
+                TotalKubes[I,entity]:setAlpha(0)
+                TotalKubes[I,entity]:propNotSolid(1)
+                ObsTot[I,entity]:setAlpha(0)
+                ObsTot[I,entity]:propNotSolid(1)
+            }
+        }
+    }
+        
+    if(Level == 3 | Level == 4)
+    { 
+        
+    if(Onces2 == 0){
+        for(L=1,Prosp:count()){
+        Obs = propSpawn("models/hunter/blocks/cube1x3x1.mdl",TotalKubes[5,entity]:toWorld(Prosp[L,vector]),ang(0,0,90),1)
+        ObsTot:pushEntity(Obs)
+        Obs:setColor(255,255,255)
+        Obs:setMaterial("phoenix_storms/stripes")
+}
+    if(L >= Prosp:count() ){
+    Onces2 = 1
+}
+    }
+    
+        timer("RandomText",7500)
+        if(clk("RandomText"))
+        {
+            R = randint(1,4)
+            for(O = 1,TotalKubes:count())
+            {
+                TotalKubes[O,entity]:setMaterial(Textures[R,string])  
+            }    
+        }
+    }
+    
+    
+
+if(changed(Level) & Level == 5)
+{
+    for(I = 1,TotalKubes:count())
+    {
+        RR = randint(1,7)
+        TotalKubes[I,entity]:soundPlay(I,9324234,Music[RR,string]+".mp3")
+        TotalKubes[I,entity]:setColor(Colors[TotalKubes:count()+1 - I,vector])   
+    }
+}    
+
+    
+    if(changed(Level) & Level == 6)
+    {
+        for(Ps = 1,TotalKubes:count())
+        {
+            TotalKubes[Ps,entity]:setMaterial("debug/env_cubemap_model")
+            TotalKubes[Ps,entity]:setAlpha(70)
+        }
+    } 
+   
+
+    
+if(Level == 7){
+TotalKubes:propDelete()   
+ObsTot:propDelete()
+reset()       
+}
+    
+    if(clk("next")) {
+    Level++ 
+    hint("New Level! Level = "+Level+"!",7)
+
+}
+}
+if(duped()){selfDestructAll()}
+
+##################################################  #########################
+## Do not rename the E2 or remove the hint("Made by Failcake and Jack",7)##
+##################################################  #########################

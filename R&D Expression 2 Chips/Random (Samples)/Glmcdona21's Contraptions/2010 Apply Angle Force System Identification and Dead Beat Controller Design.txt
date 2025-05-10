@@ -1,0 +1,559 @@
+@name Paper System Identification 2
+@trigger none
+@outputs Gain_pitch:vector2 Gain_yaw:vector2 Gain_roll:vector2
+@outputs Gain_pitch2:vector2 Gain_yaw2:vector2 Gain_roll2:vector2
+@outputs Gain_pitch3:vector2 Gain_yaw3:vector2 Gain_roll3:vector2
+@outputs Gain_pos:vector2
+@outputs A_pitch:matrix2 B_pitch:vector2 C_pitch:matrix2
+@outputs A_yaw:matrix2 B_yaw:vector2 C_yaw:matrix2
+@outputs A_roll:matrix2 B_roll:vector2 C_roll:matrix2
+@outputs A_pos:matrix2 B_pos:vector2 C_pos:matrix2
+@persist InitAng:angle InitAngVel:angle InitDirF:vector InitDirR:vector
+@persist InitPos:vector InitVel:vector DesPos:vector
+@persist StateMatrixPitch1:matrix2 StateMatrixPitch2:matrix2
+@persist StateMatrixYaw1:matrix2 StateMatrixYaw2:matrix2
+@persist StateMatrixRoll1:matrix2 StateMatrixRoll2:matrix2
+@persist StateMatrixPos1:matrix2 StateMatrixPos2:matrix2
+@persist Test Run N LT Impulse:angle ImpPos Prop:entity Interval Mass RaiseFactor StartTime
+@persist LogPos:string LogAng:string Count
+
+#[
+SOURCE:https://youtu.be/dftycqtjepI?si=Es0rueRMZiVFRbr1 & https://youtu.be/Ja58hnd3slI?si=9DTHEKTCyppaeeuZ
+
+INFO: 
+
+Automatic, fastest possible, applyForce and applyAngForce code generating e2
+
+    What This Does
+    Automatically generates the FASTEST POSSIBLE applyForce and appyAngForce code for a specific prop. It achieves this through some advanced control systems techniques as follows:
+
+        Generates a state-space model of the angle physics through a simple system identification technique.
+        Generates a dead-beat state feedback system for a specified interval, which works even when aiming straight up or down.
+        Prints simple E2 file to the console with the control system, for easy use in your contraption.
+        Outputs performance plots to e2files\positions.txt and e2files\angles.txt
+
+
+    Instructions
+    This works on either single props, or parented contraptions. To use this chip to design a perfect applyForce and applyAngForce , perform these steps:
+
+        1.Spawn the prop to generate the apply force for.
+        2.(optional) Edit the E2 options to pick the interval you desire. An interval of ~50 is good.
+        3.Place the E2 chip on the prop.
+        4.After a couple seconds, check your console for designed apply force chip. Copy and paste this code into a new e2.
+
+
+]#
+
+
+
+######################
+### SETTINGS:       ##
+######################
+Interval = 50   # This is the intrerval at which the design will
+                # be made for. DO NOT SET BELOW 15. An interval
+                # of around 50 is good for lag and performance.
+				
+Mass = 50000    # This is the mass of the prop to be designed for.
+				# It is recommended to leave this at 50000, making it
+				# too small will cause problems by limiting the amount
+				# of force that can be applied to it.
+				
+RaiseFactor = 1.5 # Change this number to control how high the code will
+				# lift the prop off the ground to make the measurement.
+				# A factor of 2 means it will lift it off the ground by
+				# 2*maximum size of prop.
+				
+CreateMeasurementFile = 1	# If set to 1, this will perform a test of the
+							# designed control systems, by outputting the
+							# error in angle and position to a sharp change.
+							# The results of the test will be output to both
+							# the console and saved to files as follows:
+							# e2data\position.txt -> Position test results
+							# e2data\angles.txt -> Angle test results
+							# You can then plot the response versus time to
+							# analyze the response.
+######################
+######################
+######################
+if( first() | duped() )
+{
+    print("Made by Paper Clip")
+    StateMatrixRoll1 = matrix2()
+    StateMatrixRoll2 = matrix2()
+    StateMatrixYaw1 = matrix2()
+    StateMatrixYaw2 = matrix2()
+    StateMatrixPitch1 = matrix2()
+    StateMatrixPitch2 = matrix2()
+    StateMatrixPos1 = matrix2()
+    StateMatrixPos2 = matrix2()
+    
+    A_pitch = matrix2()
+    
+    
+    timer("startTest",1000)
+}
+
+if( clk("startTest") )
+{
+    # Prepare the start the test
+    Prop = entity():isWeldedTo(1)
+    Prop:setMass(Mass)
+	
+    # Wait for the prop to become unfrozen
+    if( !Prop:isFrozen() )
+    { timer("positionSystemIdentification",1000) }
+    else{ timer("startTest",100) }
+}elseif( clk("positionSystemIdentification") ){
+    # Begin the system id test
+    print("Starting position system id test.")
+    ImpulseMag = Prop:mass()*5*1/Interval
+    ImpPos = ImpulseMag*2000
+    InitPos = Prop:pos()
+    InitVel = Prop:vel()
+    DesPos = Prop:pos() + vec(0,0,RaiseFactor*max(Prop:boxSize():x(),Prop:boxSize():y(),Prop:boxSize():z()))
+    
+    # Send the impulse
+    Prop:applyForce(vec(0,0,ImpPos))
+    
+    # Schedule the first measurement
+    interval(Interval)
+    N = 0
+    Test = 2
+    Run = 0 
+}elseif( clk("angleSystemIdentification") )
+{
+    # Begin the system id test
+    print("Starting angle system id test.")
+    
+    # Apply our impulse in each direction
+    ImpulseMag = Prop:mass()*5*1/Interval
+    ImpPitch = (Prop:boxSize():x()/2)^2+(Prop:boxSize():z()/2)^2
+    ImpYaw = (Prop:boxSize():x()/2)^2+(Prop:boxSize():y()/2)^2
+    ImpRoll = (Prop:boxSize():y()/2)^2+(Prop:boxSize():z()/2)^2
+    Impulse = ImpulseMag*ang(ImpPitch,ImpYaw,ImpRoll)
+    InitAng = Prop:angles()
+    InitAngVel = Prop:angVel()
+    InitDirF = Prop:forward()
+    InitDirR = Prop:right()
+	
+    
+    Prop:applyAngForce(Impulse)
+    
+    # Run on tick
+    interval(Interval)
+    N = 0
+    Test = 1
+    Run = 0  
+}elseif( Test == 2 )
+{
+    ### POSITION SYSTEM ID
+
+    # Calculate the difference in position and angle
+    DifPos = Prop:pos() - InitPos
+    DifVel = Prop:vel() - InitVel
+    if( N == 0 )
+    {
+        print("POSITION: first measurement")
+        # First measurement
+        StateMatrixPos1=StateMatrixPos1:setRow(1,DifPos:z(),DifVel:z())
+        N++
+        
+        # Schedule the next measurement
+        interval(Interval)
+        
+    }elseif( N == 1 )
+    {
+        print("POSITION: second measurement")
+        # Second measurement
+        StateMatrixPos1=StateMatrixPos1:setRow(2,DifPos:z(),DifVel:z())
+        StateMatrixPos2=StateMatrixPos2:setRow(1,DifPos:z(),DifVel:z())
+        N++
+        
+        # Schedule the next measurement
+        interval(Interval)
+    }elseif( N == 2 )
+    {
+        print("POSITION: third measurement")
+        # Third and last measurement
+        StateMatrixPos2=StateMatrixPos2:setRow(2,DifPos:z(),DifVel:z())
+        N++
+        
+        # Perform the system identification calculation
+        #B
+        B_pos = StateMatrixPos1:row(1)/ImpPos
+        #A
+        A_pos = transpose(StateMatrixPos1^-1 * StateMatrixPos2)
+        #C
+        C_pos = matrix2(1,0,0,1) # identity
+        
+        # Perform the deadbeat control design
+        # Pole placement at 0,0 => A^2
+        Gain_pos = (matrix2(B_pos,A_pos*B_pos)^-1*A_pos^2):row(2)
+        
+        # Finished
+        print("POSITION: System identification complete and dead-beat controller designed.")
+        interval(Interval)
+    }elseif( N == 3 )
+    {
+        # Control the prop position
+        DifPos = Prop:pos()-DesPos
+        Prop:applyForce( -Gain_pos:x()*DifPos-Gain_pos:y()*Prop:vel() )
+        
+        # Position the prop, then start the angle test
+        if( Prop:pos():distance(DesPos) < 50 & Prop:vel():length() < 50 )
+        {
+            # Start the angle system id test
+            Test = 0
+            timer("angleSystemIdentification",10)
+        }else{
+            interval(Interval)
+        }
+    }
+}elseif( Test == 1 )
+{
+    ### ANGLE SYSTEM ID
+    
+    # Control the prop position
+    DifPos = Prop:pos()-DesPos
+    Prop:applyForce( -Gain_pos:x()*DifPos-Gain_pos:y()*Prop:vel() )
+
+    # Determine states with respect to initial state
+    #Ang = angnorm(Prop:angles()-InitAng)
+    AngVel = Prop:angVel()-InitAngVel
+    
+    # Calculate the difference in angle with respect to the initial angles of prop
+    DesiredDirection = InitDirF
+    DesiredDirectionRight = InitDirR
+    LocalDifference1 = vec(Prop:forward():dot(DesiredDirection),Prop:right():dot(DesiredDirection),Prop:up():dot(DesiredDirection))
+    LocalDifference2 = vec(Prop:forward():dot(DesiredDirectionRight),Prop:right():dot(DesiredDirectionRight),Prop:up():dot(DesiredDirectionRight))
+    Ang = angnorm(ang( LocalDifference1:toAngle():pitch(), LocalDifference1:toAngle():yaw(), LocalDifference2:toAngle():pitch() ))
+    
+    if( N == 0 )
+    {
+        # First measurement
+        StateMatrixPitch1=StateMatrixPitch1:setRow(1,Ang:pitch(),AngVel:pitch())
+        StateMatrixYaw1=StateMatrixYaw1:setRow(1,Ang:yaw(),AngVel:yaw())
+        StateMatrixRoll1=StateMatrixRoll1:setRow(1,Ang:roll(),AngVel:roll())
+        N++
+        
+        # Schedule the next measurement
+        interval(Interval)
+        print("first measurement2")
+    }elseif( N == 1 )
+    {
+        print("second measurement")
+        # Second measurement
+        StateMatrixPitch1=StateMatrixPitch1:setRow(2,Ang:pitch(),AngVel:pitch())
+        StateMatrixYaw1=StateMatrixYaw1:setRow(2,Ang:yaw(),AngVel:yaw())
+        StateMatrixRoll1=StateMatrixRoll1:setRow(2,Ang:roll(),AngVel:roll())
+        StateMatrixPitch2=StateMatrixPitch2:setRow(1,Ang:pitch(),AngVel:pitch())
+        StateMatrixYaw2=StateMatrixYaw2:setRow(1,Ang:yaw(),AngVel:yaw())
+        StateMatrixRoll2=StateMatrixRoll2:setRow(1,Ang:roll(),AngVel:roll())
+        N++
+        
+        # Schedule the next measurement
+        interval(Interval)
+    }elseif( N == 2 )
+    {
+        print("last measurement")
+        # Third and last measurement
+        StateMatrixPitch2=StateMatrixPitch2:setRow(2,Ang:pitch(),AngVel:pitch())
+        StateMatrixYaw2=StateMatrixYaw2:setRow(2,Ang:yaw(),AngVel:yaw())
+        StateMatrixRoll2=StateMatrixRoll2:setRow(2,Ang:roll(),AngVel:roll())
+        N++
+        
+        # Perform the system identification calculation
+        #B
+        B_pitch = StateMatrixPitch1:row(1)/Impulse:pitch()
+        B_yaw = StateMatrixYaw1:row(1)/Impulse:yaw()
+        B_roll = StateMatrixRoll1:row(1)/Impulse:roll()
+        #A
+        A_pitch = transpose(StateMatrixPitch1^-1 * StateMatrixPitch2)
+        A_yaw = transpose(StateMatrixYaw1^-1 * StateMatrixYaw2)
+        A_roll = transpose(StateMatrixRoll1^-1 * StateMatrixRoll2)
+        #C
+        C_pitch = C_yaw = C_roll = matrix2(1,0,0,1) # identity
+        
+        # Perform the deadbeat control design
+        # Pole placement at 0,0 => A^2
+        Gain_pitch = (matrix2(B_pitch,A_pitch*B_pitch)^-1*A_pitch^2):row(2)
+        Gain_yaw = (matrix2(B_yaw,A_yaw*B_yaw)^-1*A_yaw^2):row(2)
+        Gain_roll = (matrix2(B_roll,A_roll*B_roll)^-1*A_roll^2):row(2)
+	
+        # Finished
+        print("System identification complete and dead-beat controller designed.")
+        
+        # Print the results
+        if( CreateMeasurementFile == 1 )
+        {
+            # Perform a system test
+            Test = 3
+            N = 0
+            interval(Interval)
+        }else{
+            # We are done
+            timer("print1",100)
+            N = 0
+            Test = 0
+            Run = 1
+        }
+    }
+}elseif( Test == 3 )
+{
+    ### System performance test
+    # This saves the performance measurements to a file
+    # and prints the critical results to the user.
+    if( N == 0 )
+    {
+        # Position and angle the prop properly first
+        DesiredDirection = vec(0,0,1)
+        DesiredDirectionRight = owner():eye():cross(vec(0,0,1))
+        LocalDifference1 = vec(Prop:forward():dot(DesiredDirection),Prop:right():dot(DesiredDirection),Prop:up():dot(DesiredDirection))
+        LocalDifference2 = vec(Prop:forward():dot(DesiredDirectionRight),Prop:right():dot(DesiredDirectionRight),Prop:up():dot(DesiredDirectionRight))
+        DifAngle = angnorm(ang( LocalDifference1:toAngle():pitch(), LocalDifference1:toAngle():yaw(), LocalDifference2:toAngle():pitch() ))
+        DifPos = Prop:pos()-DesPos
+        DesPosTmp = DesPos
+        
+        if( vec(DifAngle):length() < 3 & DifPos:length() < 10 )
+        {
+            # Finished positioning it properly
+            print("TESTING: Starting system test.")
+            
+            # Set the column headers
+            LogPos = "Time,X,Y,Z"
+            LogAng = "Time,Pitch,Yaw,Roll"
+            
+            StartTime = curtime()
+            N++
+            Count = 0
+        }
+    }
+    if( N == 1 ){
+        # Set the desired angle and position
+        DesiredDirection = vec(-1,-1,-1)
+        DesiredDirectionRight = owner():eye():cross(vec(0,0,1))
+        DesPosTmp = DesPos+vec(100,100,100)
+        
+        # Calculate the errors
+        ErrorPos = Prop:pos()-DesPosTmp
+        LocalDifference1 = vec(Prop:forward():dot(DesiredDirection),Prop:right():dot(DesiredDirection),Prop:up():dot(DesiredDirection))
+        LocalDifference2 = vec(Prop:forward():dot(DesiredDirectionRight),Prop:right():dot(DesiredDirectionRight),Prop:up():dot(DesiredDirectionRight))
+        ErrorAng = angnorm(ang( LocalDifference1:toAngle():pitch(), LocalDifference1:toAngle():yaw(), LocalDifference2:toAngle():pitch() ))
+        Time = curtime()-StartTime
+        
+        # Save the errors to our log arrays
+        LogPos = LogPos + "\n" + Time:toString() + "," + ErrorPos:x():toString() + "," + ErrorPos:y():toString() + "," + ErrorPos:z():toString()
+        LogAng = LogAng + "\n" + Time:toString() + "," + ErrorAng:pitch():toString() + "," + ErrorAng:yaw():toString() + "," + ErrorAng:roll():toString()
+        
+        # Check if our test is done
+        Count++
+        if( Count > 30 )
+        {
+            print("TESTING: Finished system test and saving test measurements to e2data/positions.txt and e2data/angles.txt")
+            # Finished recording
+            fileWrite("positions.txt",LogPos)
+            fileWrite("angles.txt",LogAng)
+            timer("print1",100)
+            N = 0
+            Test = 0
+            Run = 1
+        }
+    }
+    	
+    	
+    # Apply the designed deadbeat controller
+    interval(Interval)
+    
+    # Perform the accurate angle calculation
+    LocalDifference1 = vec(Prop:forward():dot(DesiredDirection),Prop:right():dot(DesiredDirection),Prop:up():dot(DesiredDirection))
+    LocalDifference2 = vec(Prop:forward():dot(DesiredDirectionRight),Prop:right():dot(DesiredDirectionRight),Prop:up():dot(DesiredDirectionRight))
+    DifAngle = angnorm(ang( LocalDifference1:toAngle():pitch(), LocalDifference1:toAngle():yaw(), LocalDifference2:toAngle():pitch() ))
+    
+    Prop:applyAngForce(-ang(Gain_pitch:x()*DifAngle:pitch() + Gain_pitch:y()*Prop:angVel():pitch(),Gain_yaw:x()*DifAngle:yaw() + Gain_yaw:y()*Prop:angVel():yaw(),Gain_roll:x()*DifAngle:roll() + Gain_roll:y()*Prop:angVel():roll()))
+    	 
+    # Control the prop position
+    DifPos = Prop:pos()-DesPosTmp
+    Prop:applyForce( -Gain_pos:x()*DifPos-Gain_pos:y()*Prop:vel() )
+}elseif( clk("print1") ){
+    # Print the start of the control system
+    print("---SIMPLIFIED E2 CODE IMPLEMENTATION---")
+    print("---(Does not work aiming straight up or down)---")
+    timer("print2",1)
+}elseif( clk("print2") ){
+    print("@persist Prop:entity")
+    print("if( first() | duped() ){")
+    print("   Prop = entity():isWeldedTo(1)")
+    print("   Prop:setMass(" + Prop:mass() + ")" )
+    print("}")
+    print("interval(" + Interval + ")")
+    print("###CONTROL ANGLE")
+    print("DesiredAngle = owner():eye():toAngle()")
+    print("DifAngle = angnorm( Prop:angles() - DesiredAngle )")
+    print("#DEADBEAT CONTROL: (FASTEST POSSIBLE)")
+    print("Prop:applyAngForce(-ang("+Gain_pitch:x()+"*DifAngle:pitch() + "+Gain_pitch:y()+"*Prop:angVel():pitch(),"+Gain_yaw:x()+"*DifAngle:yaw() + "+Gain_yaw:y()+"*Prop:angVel():yaw(),"+Gain_roll:x()+"*DifAngle:roll() + "+Gain_roll:y()+"*Prop:angVel():roll()))")
+    print(" ")
+    print("###CONTROL POSITION")
+    print("Prop:applyForce( -" + Gain_pos:x():toString() + "*DifPos-" + Gain_pos:y():toString() + "*Prop:vel() )")
+    print("---USE CONSOLE TO VIEW E2 CODE---")
+    
+    timer("print3",1)
+}elseif( clk("print3")){
+    print(" ")
+    print("---ADVANCED E2 CODE IMPLEMENTATION---")
+    print("---(Works aiming straight up and down)---")
+    print("@persist Prop:entity")
+    print("if( first() | duped() ){")
+    print("   Prop = entity():isWeldedTo(1)")
+    print("   Prop:setMass(" + Prop:mass() + ")" )
+    print("}")
+    print("interval(" + Interval + ")")
+    print("###CONTROL ANGLE")
+    print("# Perform the accurate angle calculation")
+    print("DesiredDirection = owner():eye()")
+    print("DesiredDirectionRight = owner():eye():cross(vec(0,0,1))")
+    print("LocalDifference1 = vec(Prop:forward():dot(DesiredDirection),Prop:right():dot(DesiredDirection),Prop:up():dot(DesiredDirection))")
+    print("LocalDifference2 = vec(Prop:forward():dot(DesiredDirectionRight),Prop:right():dot(DesiredDirectionRight),Prop:up():dot(DesiredDirectionRight))")
+    print("DifAngle = angnorm(ang( LocalDifference1:toAngle():pitch(), LocalDifference1:toAngle():yaw(), LocalDifference2:toAngle():pitch() ))")
+    print(" ")
+    print("# Apply force")
+    print("Prop:applyAngForce(-ang("+Gain_pitch:x()+"*DifAngle:pitch() + "+Gain_pitch:y()+"*Prop:angVel():pitch(),"+Gain_yaw:x()+"*DifAngle:yaw() + "+Gain_yaw:y()+"*Prop:angVel():yaw(),"+Gain_roll:x()+"*DifAngle:roll() + "+Gain_roll:y()+"*Prop:angVel():roll()))")
+    print(" ")
+    print("###CONTROL POSITION")
+    print("Prop:applyForce( -" + Gain_pos:x():toString() + "*DifPos-" + Gain_pos:y():toString() + "*Prop:vel() )")
+    print("---USE CONSOLE TO VIEW E2 CODE---")
+    
+    interval(Interval)
+}elseif( Run == 1 )
+{
+    # Apply the designed deadbeat controller
+    interval(Interval)
+    
+    # Perform the accurate angle calculation
+    DesiredDirection = owner():eye()
+    DesiredDirectionRight = owner():eye():cross(vec(0,0,1))
+    LocalDifference1 = vec(Prop:forward():dot(DesiredDirection),Prop:right():dot(DesiredDirection),Prop:up():dot(DesiredDirection))
+    LocalDifference2 = vec(Prop:forward():dot(DesiredDirectionRight),Prop:right():dot(DesiredDirectionRight),Prop:up():dot(DesiredDirectionRight))
+    DifAngle = angnorm(ang( LocalDifference1:toAngle():pitch(), LocalDifference1:toAngle():yaw(), LocalDifference2:toAngle():pitch() ))
+
+    Prop:applyAngForce(-ang(Gain_pitch:x()*DifAngle:pitch() + Gain_pitch:y()*Prop:angVel():pitch(),Gain_yaw:x()*DifAngle:yaw() + Gain_yaw:y()*Prop:angVel():yaw(),Gain_roll:x()*DifAngle:roll() + Gain_roll:y()*Prop:angVel():roll()))
+	
+    # Control the prop position
+    DifPos = Prop:pos()-DesPos
+    Prop:applyForce( -Gain_pos:x()*DifPos-Gain_pos:y()*Prop:vel() )
+	
+    #Prop:applyAngForce(-ang(Gain_pitch2:x()*DifAngle:pitch() + Gain_pitch2:y()*Prop:angVel():pitch(),Gain_yaw2:x()*DifAngle:yaw() + Gain_yaw2:y()*Prop:angVel():yaw(),Gain_roll2:x()*DifAngle:roll() + Gain_roll2:y()*Prop:angVel():roll()))
+    #Prop:applyAngForce(-ang(Gain_pitch3:x()*DifAngle:pitch() + Gain_pitch3:y()*Prop:angVel():pitch(),Gain_yaw3:x()*DifAngle:yaw() + Gain_yaw3:y()*Prop:angVel():yaw(),Gain_roll3:x()*DifAngle:roll() + Gain_roll3:y()*Prop:angVel():roll()))
+}
+
+#[
+ADDITONAL INFO:
+
+Example Output Control Design
+When this expression is applied to a Pop Can, it outputs the following to the console. People who use apply force may be interested in the difference between the code which works for looking straight up and down versus not working for straight up and down. If anyone is interested, I can try to explain the fix in more details.
+Code:
+
+---SIMPLIFIED E2 CODE IMPLEMENTATION---
+---(Does not work aiming straight up or down)---
+@persist Prop:entity
+if( first() | duped() ){
+   Prop = entity():isWeldedTo(1)
+   Prop:setMass(50000)
+}
+interval(50)
+DesiredAngle = owner():eye():toAngle()
+DifAngle = angnorm( Prop:angles() - DesiredAngle )
+#DEADBEAT CONTROL: (FASTEST POSSIBLE)
+Prop:applyAngForce(-ang(-16221632.593187*DifAngle:pitch() + 1477385.8142291*Prop:angVel():pitch(),13292629.967066*DifAngle:yaw() + 1135966.3028234*Prop:angVel():yaw(),-19832326.302666*DifAngle:roll() + 1462763.7101441*Prop:angVel():roll()))
+---USE CONSOLE TO VIEW E2 CODE---
+ 
+---ADVANCED E2 CODE IMPLEMENTATION---
+---(Works aiming straight up and down)---
+@persist Prop:entity
+if( first() | duped() ){
+   Prop = entity():isWeldedTo(1)
+   Prop:setMass(50000)
+}
+interval(50)
+# Perform the accurate angle calculation
+DesiredDirection = owner():eye()
+DesiredDirectionRight = owner():eye():cross(vec(0,0,1))
+LocalDifference1 = vec(Prop:forward():dot(DesiredDirection),Prop:right():dot(DesiredDirection),Prop:up():dot(DesiredDirection))
+LocalDifference2 = vec(Prop:forward():dot(DesiredDirectionRight),Prop:right():dot(DesiredDirectionRight),Prop:up():dot(DesiredDirectionRight))
+DifAngle = angnorm(ang( LocalDifference1:toAngle():pitch(), LocalDifference1:toAngle():yaw(), LocalDifference2:toAngle():pitch() ))
+ 
+# Apply for force
+Prop:applyAngForce(-ang(-16221632.593187*DifAngle:pitch() + 1477385.8142291*Prop:angVel():pitch(),13292629.967066*DifAngle:yaw() + 1135966.3028234*Prop:angVel():yaw(),-19832326.302666*DifAngle:roll() + 1462763.7101441*Prop:angVel():roll()))
+---USE CONSOLE TO VIEW E2 CODE---
+
+Example Spaceship Flight System
+The carrier flight system featured in the video used the designed applyAngForce as follows: (my parent prop was rotated in a weird way with respect to my ship forwards, so I had to make some changes)
+Code:
+
+@name Paper Carrier Flight System
+@inputs Seat:entity W A S D
+@outputs CamEnable CamPos:vector CamDir:vector
+@persist Prop:entity
+@trigger 
+
+if( first() | duped() ){
+   Prop = entity():isWeldedTo(1)
+   Prop:setMass(50000)
+}
+interval(50)
+
+if( Seat:driver() )
+{
+    ### ADDED cam-controller settings
+    CamEnable = 1
+    CamPos = Seat:pos() + 25*Seat:right() # View from 50 units forward, and 50 units up from the seat
+    CamDir = Seat:right()*1000
+    
+    # Perform the accurate angle calculation
+    EyeVector = vec(Seat:forward():dot(Seat:driver():eye()),-Seat:right():dot(Seat:driver():eye()),Seat:up():dot(Seat:driver():eye()))
+    DesiredDirectionRight = EyeVector:cross(vec(0,0,1)) ####<--- Changed to:###
+    DesiredDirection = EyeVector:cross(DesiredDirectionRight)
+    
+  
+    LocalDifference1 = vec(Prop:forward():dot(DesiredDirection),Prop:right():dot(DesiredDirection),Prop:up():dot(DesiredDirection))
+    LocalDifference2 = vec(Prop:forward():dot(DesiredDirectionRight),Prop:right():dot(DesiredDirectionRight),Prop:up():dot(DesiredDirectionRight))
+    DifAngle = angnorm(ang( LocalDifference1:toAngle():pitch(), LocalDifference1:toAngle():yaw(), LocalDifference2:toAngle():pitch() ))
+    
+    # Apply angular force
+    Prop:applyAngForce(-ang(-25294650.909335*DifAngle:pitch() + 1470277.0417309*Prop:angVel():pitch(),19412328.545875*DifAngle:yaw() + 1143146.4811801*Prop:angVel():yaw(),-24924383.24183*DifAngle:roll() + 1466070.9603029*Prop:angVel():roll()))
+    
+    # Apply positional force
+    Force = (W-S)*90000000*Prop:up() + (D-A)*90000000*Prop:right() - 50000*Prop:vel()
+    Prop:applyForce(Force)
+}else{
+    CamEnable = 0
+    
+    # Cancel all angular velocity
+    DifAngle = ang(0,0,0)
+    Prop:applyAngForce(-ang(-25294650.909335*DifAngle:pitch() + 1470277.0417309*Prop:angVel():pitch(),19412328.545875*DifAngle:yaw() + 1143146.4811801*Prop:angVel():yaw(),-24924383.24183*DifAngle:roll() + 1466070.9603029*Prop:angVel():roll()))
+    Force = -50000*Prop:vel()
+    Prop:applyForce(Force)
+}
+
+How it Works
+This expression is based on some more complex state-space control system theories, but I will try and provide the general idea of how it works. If these topics really interest you, I encourage you to study electrical or mechanical engineering control system theory.
+
+1. System Identification
+When applying angular force to a prop, all props act differently. This behaviour is related to the objects mass, size in each direction, and welded/parented props. This behaviour can be represented as a state space system. It is assumed that we have a second order state space system for each angular direction such as:
+
+Pitch [Next Time Interval] = SomeFactor*Pitch [Last Interval] + SomeFactor*Velocity[Last Interval] + SomeFactor*applyAngForce[Last Interval]
+Pitch Velocity[Next Time Interval] = SomeFactor*Velocity[Last Interval] + SomeFactor*applyAngForce[Last Interval]
+
+Through applying some force, and measuring the pitch and angular velocity, these factors are determined for the prop based on some simple derivations I constructed.
+
+2. Dead-beat Control Design
+Once a discrete-time state space model has been identified for the prop, we can derive an optimal applyAngForce which will set the angle to be exactly where we want it in 1 time interval. This optimal applyAngForce is called a Dead-beat controller. To achieve this deadbeat controller, all three poles of the state-space model are placed at the origin through an eigenvalue placement method using state-feedback. For more information regarding this, refer to continuous-time state feedback for details (though in this case it is discrete time).
+
+Performance Plots on Parented Carrier
+The chip outputs the performance of the error of the angle and position versus time to the files data/e2files/positions.txt and angles.txt
+
+When applied to my carrier ship as seen in the video, it generated the following performance data: (running at interval 50, each point represents one tick)
+
+It can be seen that the position is taking between 1 and 2 server ticks to converge, while the angle controller takes around 4 ticks to converge mostly. These deviations from the dead-beat controller design of 1 tick to converge are as a result of the carrier not being completely parented, causing non-linearities not accounted for in the system identification.
+
+]#
+

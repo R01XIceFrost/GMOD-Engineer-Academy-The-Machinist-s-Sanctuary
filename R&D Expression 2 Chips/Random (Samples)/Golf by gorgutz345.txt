@@ -1,0 +1,690 @@
+@name golf
+@inputs Numpadwirelink Camwirelink Ballentity
+@outputs Power
+@persist Switchup Switchdown Club Anim Swing Vvector Dist ClubPowersarray Swingpowervector
+@persist DPower I2Power I5Power I8Power WPower PPower V2vector Placeflag Placegreen Power Dist2
+@persist Dropfield Place Hit Help
+@trigger 
+
+#SOURCE httpsyoutu.be7SnZwOQlJCYsi=qF1bHET_kaFVemCN
+
+
+
+#[
+
+INFO
+
+
+its basically golf in gmod. theres 6 different types of clubs to use (driver, 2 iron, 5 iron, 8 iron, pitch wedge and putter) plus i made a flag and a course maker (to make a playable golf field, though for now it uses gas canisters).
+
+here's a little video of it with the driver and putter in action
+
+
+sorry if there's any bad gramma in this text. english is not my primary language.
+
+comments and sluggestion of improvements are welcome.
+
+i hope its fairly easy to set it up, but heres some instructions
+wire Numpad to a wired numpad, Cam to a camera controller, Ball to an entity marker and wire a hud indicator to Power.
+
+]#
+
+runOnTick(1)
+runOnChat(1)
+
+#sets the arrow above your ball
+Colour=vec(0,255,0)
+
+Switchup=Numpad[7,number]
+Switchdown=Numpad[4,number]
+Swingup=Numpad[5,number]
+Swingdown=Numpad[8,number]
+Dropfield=Numpad[0,number]
+DFremove=Numpad[1,number]
+
+Place=Numpad[2,number]
+
+BallsetMass(5)
+
+#what sound set to use. 1=normal 2=scout sounds
+Sound=2
+
+Help=Numpad[-,number]
+
+Cam[Angle,angle]=entity()toWorld(ang(0,owner()eyeAngles()yaw()+90,0))
+Cam[Position,vector]=Ballpos()+vec(cos(owner()eyeAngles()yaw()+90)-50,sin(owner()eyeAngles()yaw()+90)-50,10)
+
+if (Numpad[enter,number]) {
+    Cam[Activated,number]=1
+}
+else {
+    Cam[Activated,number]=0
+}
+
+Swing=owner()keyReload()
+
+if (first()  duped()) {
+    hint(you can get help by pressing numpad -,10)
+    
+    holoCreate(1,entity()pos(),vec(1,1,0.3),ang(0,0,0),vec(0,0,0),hqcylinder2)
+    holoCreate(2,entity()pos()+vec(0,0,55),vec(1,1,1),ang(0,0,0),vec(0,0,0),hqicosphere2)
+    
+    #putter
+    holoCreate(3,entity()pos()+vec(-20,5,25),vec(0.1,0.1,4),ang(15,0,0),vec(255,255,255),hqcylinder2)
+    holoCreate(4,entity()pos()+vec(-30,5,2),vec(1,0.3,0.3),ang(0,0,0),vec(100,100,100),cube)
+    #put direction
+    holoCreate(5,entity()pos()+vec(-30,-20,0),vec(1,1,1),ang(0,0,90),vec(0,255,0),cone)
+    holoAng(5,holoEntity(4)toWorld(ang(0,0,90)))
+    
+    #wedge
+    holoCreate(6,entity()pos()+vec(-25,5,25),vec(0.1,0.1,4),ang(25,0,0),vec(255,255,255),hqcylinder2)
+    holoCreate(7,entity()pos()+vec(-40,3,2),vec(1,0.1,0.4),ang(0,0,-55),vec(255,255,255),cube)
+    #swing direction
+    holoCreate(8,entity()pos()+vec(-40,-20,35),vec(1,1,1),ang(0,0,60),vec(0,255,0),cone)
+    holoAng(8,holoEntity(7)toWorld(ang(0,0,90)))
+    
+    #8 iron
+    holoCreate(9,entity()pos()+vec(-27,5,25),vec(0.1,0.1,4.1),ang(29,0,0),vec(255,255,255),hqcylinder2)
+    holoCreate(10,entity()pos()+vec(-43,3.5,2),vec(1,0.1,0.4),ang(0,0,-35),vec(255,255,255),cube)
+    #swing direction
+    holoCreate(11,entity()pos()+vec(-43,-20,20),vec(1,1,1),ang(0,0,70),vec(0,255,0),cone)
+    holoAng(11,holoEntity(10)toWorld(ang(0,0,90)))
+    
+    #5 iron
+    holoCreate(12,entity()pos()+vec(-28,5,25),vec(0.1,0.1,4.1),ang(29,0,0),vec(255,255,255),hqcylinder2)
+    holoCreate(13,entity()pos()+vec(-45,4,2),vec(1,0.1,0.4),ang(0,0,-25),vec(255,255,255),cube)
+    #swing direction
+    holoCreate(14,entity()pos()+vec(-45,-20,12),vec(1,1,1),ang(0,0,75),vec(0,255,0),cone)
+    holoAng(14,holoEntity(13)toWorld(ang(0,0,90)))
+    
+    #2 iron
+    holoCreate(15,entity()pos()+vec(-29,5,25),vec(0.1,0.1,4.1),ang(32,0,0),vec(255,255,255),hqcylinder2)
+    holoCreate(16,entity()pos()+vec(-47,4.3,2),vec(1,0.1,0.4),ang(0,0,-20),vec(255,255,255),cube)
+    #swing direction
+    holoCreate(17,entity()pos()+vec(-47,-20,10),vec(1,1,1),ang(0,0,80),vec(0,255,0),cone)
+    holoAng(17,holoEntity(16)toWorld(ang(0,0,90)))
+    
+    #driver
+    holoCreate(18,entity()pos()+vec(-32,5,25),vec(0.1,0.1,4.4),ang(35,0,0),vec(255,255,255),hqcylinder2)
+    holoCreate(19,entity()pos()+vec(-51,3.5,2),vec(0.9,0.6,1),ang(0,0,-120),vec(50,50,50),dome)
+    #swing direction
+    holoCreate(20,entity()pos()+vec(-51,-20,15),vec(1,1,1),ang(0,0,85),vec(0,255,0),cone)
+    holoAng(20,holoEntity(19)toWorld(ang(0,0,180)))
+    
+    holoCreate(21,Ballpos()+vec(0,0,100),vec(2,2,2),ang(0,0,180),Colour,cone)    
+    
+    holoCreate(22,Ballpos(),vec(2,20,20),ang(0,0,0),vec(0,255,0),dome)    
+    holoAng(22,entity()toWorld(ang(0,owner()eyeAngles()yaw(),90)))
+     
+    #parenting
+    holoParent(2,1)
+    
+    #putter
+    holoParent(3,2)
+    holoParent(4,3)
+    holoParent(5,1)
+    #wedge
+    holoParent(6,2)
+    holoParent(7,6)
+    holoParent(8,1)
+    
+    #8 iron
+    holoParent(9,2)
+    holoParent(10,9)
+    holoParent(11,1)
+    
+    #5 iron
+    holoParent(12,2)
+    holoParent(13,12)
+    holoParent(14,1)
+    
+    #2 iron
+    holoParent(15,2)
+    holoParent(16,15)
+    holoParent(17,1)
+    
+    #driver
+    holoParent(18,2)
+    holoParent(19,18)
+    holoParent(20,1)
+    
+    #materialiseing
+    holoMaterial(3,phoenix_stormsgear)
+    holoMaterial(4,phoenix_stormsgear)
+    holoMaterial(6,phoenix_stormsgear)
+    holoMaterial(7,phoenix_stormsgear)
+    holoMaterial(9,phoenix_stormsgear)
+    holoMaterial(10,phoenix_stormsgear)
+    holoMaterial(12,phoenix_stormsgear)
+    holoMaterial(13,phoenix_stormsgear)
+    holoMaterial(15,phoenix_stormsgear)
+    holoMaterial(16,phoenix_stormsgear)
+    holoMaterial(18,phoenix_stormsgear)
+    holoMaterial(19,phoenix_stormsgear)
+    
+    holoAlpha(1,0)
+    holoAlpha(2,0)
+    holoAlpha(22,0)
+}
+
+BallsetMaterial(phoenix_stormsfender_white)
+
+holoPos(1,owner()pos())
+holoPos(21,Ballpos()+vec(0,0,100))
+holoAng(1,entity()toWorld(ang(0,owner()eyeAngles()yaw()+180,0)))
+
+holoColor(5,vec(0+Power2,255,0))
+holoColor(8,vec(0+Power2,255,0))
+holoColor(11,vec(0+Power2,255,0))
+holoColor(14,vec(0+Power2,255,0))
+holoColor(17,vec(0+Power2,255,0))
+holoColor(20,vec(0+Power2,255,0))
+
+if (Help & $Help) {
+    hint(welcome to the help menu. im jona.fibiger. im gonna teach you how to use my golf set.,10)
+    timer(help1,6500)
+}
+if (clk(help1)) {
+    hint(to shoot the ball, you must first swing the club back with numpad 5.,10)
+    timer(help2,6500)
+}
+if (clk(help2)) {
+    hint(the further you swing back the club, the further the ball will fly.,10)
+    timer(help3,6500)
+}
+if (clk(help3)) {
+    hint(you can see how much power you swing with in the bar called 'swing power' at the top left of your screen.,10)
+    timer(help4,6500)
+}
+if (clk(help4)) {
+    hint(if theres too much power, you can swing it a little back with numpad 8.,10)
+    timer(help5,6500)
+}
+if (clk(help5)) {
+    hint(when you think theres enough power, swing the club by pressing reload.,10)
+    timer(help6,6500)
+}
+if (clk(help6)) {
+    hint(to change club, you must press either numpad 7 or 4. this will cycle through the avaivable clubs.,10)
+    timer(help7,6500)
+}
+if (clk(help7)) {
+    hint(if you want to place your ball, press numpad 2 while aiming where you want the ball.,10)
+    timer(help8,6500)
+}
+if (clk(help8)) {
+    hint(when you do that, the ball will be placed where your aiming for you for when you cant find it.,10)
+    timer(help9,6500)
+}
+if (clk(help9)) {
+    hint(note that this is the only way to move the golf ball, other than shooting it of course.,10)
+    timer(help10,6500)
+}
+if (clk(help10)) {
+    hint(there is some time when you need to 'drop' your ball. to do this, you need to spawn the 'drop field'.,10)
+    timer(help11,6500)
+}
+if (clk(help11)) {
+    hint(this field will appear when you press numpad 0 and will dissapear if you press numpad 1.,10)
+    timer(help12,6500)
+}
+if (clk(help12)) {
+    hint(you can also watch the ball in the forward direction for a more precise aiming by pressing numpad Enter.,10)
+    timer(help13,6500)
+}
+if (clk(help13)) {
+    hint(hope this helped you. im jona.fibiger. have a nice day.,10)
+}
+
+if (Dropfield) {
+    holoAlpha(22,100)
+    holoPos(22,Ballpos())
+    holoAng(22,entity()toWorld(ang(-90,owner()eyeAngles()yaw(),0)))
+    holoParent(22,Ball)
+}
+if (Dropfield==0 & $Dropfield) {
+    holoUnparent(22)
+}
+if (DFremove) {
+    BallpropFreeze(1)
+    holoAlpha(22,0)
+}
+
+if (Switchup & $Switchup) {
+    Club-=1
+}
+elseif (Switchdown & $Switchdown) {
+    Club+=1
+}
+else {
+    Club+=0
+}
+if (Club==6) {
+    if (Club & $Club) {
+        hint(driver,2)
+    }
+    #putter
+    holoAlpha(3,0)
+    holoAlpha(4,0)
+    holoAlpha(5,0)
+    
+    #wedge
+    holoAlpha(6,0)
+    holoAlpha(7,0)
+    holoAlpha(8,0)
+    
+    #8 iron
+    holoAlpha(9,0)
+    holoAlpha(10,0)
+    holoAlpha(11,0)
+    
+    #5 iron
+    holoAlpha(12,0)
+    holoAlpha(13,0)
+    holoAlpha(14,0)
+    
+    #2 iron
+    holoAlpha(15,0)
+    holoAlpha(16,0)
+    holoAlpha(17,0)
+    
+    #driver
+    holoAlpha(18,255)
+    holoAlpha(19,255)
+    holoAlpha(20,100)
+    
+    if (Anim60) {
+        Anim=60
+    }
+    elseif (Anim-60) {
+        Anim=-60
+    }
+    
+    Swingpower=vec(-100,-100,-8)
+    
+    holoAng(2,entity()toWorld(ang(0,owner()eyeAngles()yaw()+180,Anim2)))
+}
+
+elseif (Club==5) {
+    if (Club & $Club) {
+        hint(2 iron,2)
+    }
+    #putter
+    holoAlpha(3,0)
+    holoAlpha(4,0)
+    holoAlpha(5,0)
+    
+    #wedge
+    holoAlpha(6,0)
+    holoAlpha(7,0)
+    holoAlpha(8,0)
+    
+    #8 iron
+    holoAlpha(9,0)
+    holoAlpha(10,0)
+    holoAlpha(11,0)
+    
+    #5 iron
+    holoAlpha(12,0)
+    holoAlpha(13,0)
+    holoAlpha(14,0)
+    
+    #2 iron
+    holoAlpha(15,255)
+    holoAlpha(16,255)
+    holoAlpha(17,100)
+    
+    #driver
+    holoAlpha(18,0)
+    holoAlpha(19,0)
+    holoAlpha(20,0)
+    
+    if (Anim60) {
+        Anim=60
+    }
+    elseif (Anim-60) {
+        Anim=-60
+    }
+    
+    Swingpower=vec(-50,-50,-8)
+    
+    holoAng(2,entity()toWorld(ang(0,owner()eyeAngles()yaw()+180,Anim2)))
+}
+
+elseif (Club==4) {
+    if (Club & $Club) {
+        hint(5 iron,2)
+    }
+    #putter
+    holoAlpha(3,0)
+    holoAlpha(4,0)
+    holoAlpha(5,0)
+    
+    #wedge
+    holoAlpha(6,0)
+    holoAlpha(7,0)
+    holoAlpha(8,0)
+    
+    #8 iron
+    holoAlpha(9,0)
+    holoAlpha(10,0)
+    holoAlpha(11,0)
+    
+    #5 iron
+    holoAlpha(12,255)
+    holoAlpha(13,255)
+    holoAlpha(14,100)
+    
+    #2 iron
+    holoAlpha(15,0)
+    holoAlpha(16,0)
+    holoAlpha(17,0)
+    
+    #driver
+    holoAlpha(18,0)
+    holoAlpha(19,0)
+    holoAlpha(20,0)
+    
+    if (Anim60) {
+        Anim=60
+    }
+    elseif (Anim-60) {
+        Anim=-60
+    }
+    
+    Swingpower=vec(-50,-50,-8)
+    
+    holoAng(2,entity()toWorld(ang(0,owner()eyeAngles()yaw()+180,Anim2)))
+}
+
+elseif (Club==3) {
+    if (Club & $Club) {
+        hint(8 iron,2)
+    }
+    #putter
+    holoAlpha(3,0)
+    holoAlpha(4,0)
+    holoAlpha(5,0)
+    
+    #wedge
+    holoAlpha(6,0)
+    holoAlpha(7,0)
+    holoAlpha(8,0)
+    
+    #8 iron
+    holoAlpha(9,255)
+    holoAlpha(10,255)
+    holoAlpha(11,100)
+    
+    #5 iron
+    holoAlpha(12,0)
+    holoAlpha(13,0)
+    holoAlpha(14,0)
+    
+    #2 iron
+    holoAlpha(15,0)
+    holoAlpha(16,0)
+    holoAlpha(17,0)
+    
+    #driver
+    holoAlpha(18,0)
+    holoAlpha(19,0)
+    holoAlpha(20,0)
+    
+    if (Anim60) {
+        Anim=60
+    }
+    elseif (Anim-60) {
+        Anim=-60
+    }
+    
+    Swingpower=vec(-12,-12,-10)
+    
+    holoAng(2,entity()toWorld(ang(0,owner()eyeAngles()yaw()+180,Anim2)))
+}
+
+elseif (Club==2) {
+    if (Club & $Club) {
+        hint(pitch wedge,2)
+    }
+    #putter
+    holoAlpha(3,0)
+    holoAlpha(4,0)
+    holoAlpha(5,0)
+    
+    #wedge
+    holoAlpha(6,255)
+    holoAlpha(7,255)
+    holoAlpha(8,100)
+    
+    #8 iron
+    holoAlpha(9,0)
+    holoAlpha(10,0)
+    holoAlpha(11,0)
+    
+    #5 iron
+    holoAlpha(12,0)
+    holoAlpha(13,0)
+    holoAlpha(14,0)
+    
+    #2 iron
+    holoAlpha(15,0)
+    holoAlpha(16,0)
+    holoAlpha(17,0)
+    
+    #driver
+    holoAlpha(18,0)
+    holoAlpha(19,0)
+    holoAlpha(20,0)
+    
+    if (Anim60) {
+        Anim=60
+    }
+    elseif (Anim-60) {
+        Anim=-60
+    }
+    
+    Swingpower=vec(-5,-5,-30)
+    
+    holoAng(2,entity()toWorld(ang(0,owner()eyeAngles()yaw()+180,Anim2)))
+}
+
+elseif (Club==1) {
+    if (Club & $Club) {
+        hint(putter,2)
+    }
+    #putter
+    holoAlpha(3,255)
+    holoAlpha(4,255)
+    holoAlpha(5,100)
+    
+    #wedge
+    holoAlpha(6,0)
+    holoAlpha(7,0)
+    holoAlpha(8,0)
+    
+    #8 iron
+    holoAlpha(9,0)
+    holoAlpha(10,0)
+    holoAlpha(11,0)
+    
+    #5 iron
+    holoAlpha(12,0)
+    holoAlpha(13,0)
+    holoAlpha(14,0)
+    
+    #2 iron
+    holoAlpha(15,0)
+    holoAlpha(16,0)
+    holoAlpha(17,0)
+    
+    #driver
+    holoAlpha(18,0)
+    holoAlpha(19,0)
+    holoAlpha(20,0)
+    
+    if (Anim45) {
+        Anim=45
+    }
+    elseif (Anim-45) {
+        Anim=-45
+    }
+    
+    Swingpower=vec(-5,-5,-1)
+    
+    holoAng(2,entity()toWorld(ang(0,owner()eyeAngles()yaw()+180,Anim)))
+}
+
+if (Club6) {
+    Club=1
+    if (Club & $Club) {
+        hint(putter,2)
+    }
+}
+elseif (Club1) {
+    Club=6
+    if (Club & $Club) {
+        hint(driver,2)
+    }
+}
+
+if (Swingup) {
+    Anim+=0.5
+    Power+=0.9
+    if (Power100) {
+        Power=100
+    }
+}
+elseif (Swingdown) {
+    Anim-=0.5
+    Power-=0.9
+    if (Power0) {
+        Power=0
+    }
+}
+
+else {
+    Anim+=0
+    Power-=0
+}
+
+if (Swing) {
+    Anim-=6
+    timer(animreset,2000)
+}
+
+if (Ballvel()length()50) {
+    BallpropFreeze(1)
+}
+        
+if (clk(animreset)) {
+    Anim=0
+}
+
+
+
+if (Club==1) {
+    Dist=Ballpos()distance(holoEntity(4)pos())
+    Arrow=holoEntity(4)
+    Way=Arrowright()Power20
+    if (Sound==1) {
+        Swingsound=
+        Hitsound=weaponsbaseball_hitworld+randint(1,3)+.wav
+    }
+    else {
+        Swingsound=
+        Hitsound=voscout_beingshotinvincible22.wav
+    }
+}
+elseif (Club==2) {
+    Dist=Ballpos()distance(holoEntity(7)pos())
+    Arrow=holoEntity(7)
+    Way=Arrowright()Power50
+    if (Sound==1) {
+        Swingsound=weaponsdemo_sword_swing+randint(1,3)+.wav
+        Hitsound=weaponsbat_baseball_hit+randint(1,2)+.wav
+    }
+    else {
+        Swingsound=voscout_beingshotinvincible28.wav
+        Hitsound=voscout_triplejump0+randint(1,3)+.wav
+    }
+}
+elseif (Club==3) {
+    Dist=Ballpos()distance(holoEntity(10)pos())
+    Arrow=holoEntity(10)
+    Way=Arrowright()Power60
+    if (Sound==1) {
+        Swingsound=weaponsdemo_sword_swing+randint(1,3)+.wav
+        Hitsound=weaponsbat_baseball_hit+randint(1,2)+.wav
+    }
+    else {
+        Swingsound=voscout_beingshotinvincible28.wav
+        Hitsound=voscout_beingshotinvincible23.wav
+    }
+}
+elseif (Club==4) {
+    Dist=Ballpos()distance(holoEntity(13)pos())
+    Arrow=holoEntity(13)
+    Way=Arrowright()Power100
+    if (Sound==1) {
+        Swingsound=weaponsdemo_sword_swing+randint(1,3)+.wav
+        Hitsound=weaponsbat_baseball_hit+randint(1,2)+.wav
+    }
+    else {
+        Swingsound=voscout_beingshotinvincible28.wav
+        Hitsound=voscout_beingshotinvincible23.wav
+    }
+}
+elseif (Club==5) {
+    Dist=Ballpos()distance(holoEntity(16)pos())
+    Arrow=holoEntity(16)
+    Way=Arrowright()Power130
+    if (Sound==1) {
+        Swingsound=weaponsdemo_sword_swing+randint(1,3)+.wav
+        Hitsound=weaponsbat_baseball_hit+randint(1,2)+.wav
+    }
+    else {
+        Swingsound=voscout_beingshotinvincible28.wav
+        Hitsound=voscout_award12.wav
+    }
+}
+elseif (Club==6) {
+    Dist=Ballpos()distance(holoEntity(19)pos())
+    Arrow=holoEntity(19)
+    Way=-Arrowup()Power200
+    if (Sound==1) {
+        Swingsound=weaponsdemo_sword_swing+randint(1,3)+.wav
+        Hitsound=weaponsbat_hit.wav
+    }
+    else {
+        Swingsound=voscout_beingshotinvincible28.wav
+        Hitsound=voscout_specialcompleted0+randint(2,3)+.wav
+    }
+}
+
+#the ball flying
+
+if (Swing & $Swing) {
+    ArrowsoundPlay(swing,1,Swingsound)
+    timer(reset,200)
+}
+if (clk(reset)) {
+    Power=0
+}
+
+Hit=Dist20
+
+if (Hit & $Hit & Swing & Power0) {
+    WindOn=0
+    BallpropFreeze(0)
+    BallapplyForce(Way)
+    if (Hit & $Hit) {
+        ArrowsoundPlay(hit,2,Hitsound)
+        WindOn=1
+    }
+}
+
+if (Place & $Place) {
+    BallsetPos(owner()aimPos()+vec(0,0,5))
+    BallpropFreeze(1)
+}

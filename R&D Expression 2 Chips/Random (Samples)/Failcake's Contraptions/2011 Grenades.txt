@@ -1,0 +1,407 @@
+@name FailCake Grenades
+@outputs [O E Wep]:entity HasIt Force CurVel Ks Col Stop MaxHolo Distance AimPos:vector
+@outputs Mode:string Trow Vel I Smo Find MaxFlash MBOMB Ply:array Holo Max MaxTo Go Alpha Sound
+@trigger all
+
+#Source: https://youtu.be/u_M-TxRtJH0?si=dKvfhdWic3cfMbax
+
+#[
+
+INFO:
+
+FailCake Grenades!
+
+
+PROPCORE NEEDED!
+
+What does it do?
+It includes the 3 cs:s grenades!
+The flashbang(may be buggy).
+The Smoke grenade.
+The HE Grenande.
+
+How to use it?
+
+    Just spawn the expression2 and a laserpointer!
+    Then press mouse2 with the laserpointer on to launch the grenade.
+    The more you press, more strenght you do.
+    To change Modes, press USE.
+
+
+Known Bugs:
+
+Somethimes the flashbang can be "stuck" in a player.
+]#
+
+if(first() | duped()){
+propSpawnEffect(0)
+runOnTick(1)
+
+O = owner()
+E = entity()    
+HasIt = 0
+Force = 0
+Trow = 0
+Ks = 1500
+Stop = 0
+Alpha = 255
+
+Holo = 0
+
+MaxTo = 20
+Max = 30
+MaxHolo = 20
+MaxFlash = 200
+MBOMB = 5
+
+Mode = "Explosive"    
+setName("FailCake Grenades [" + Mode + "]")
+hint("* Made By FailCake *",7)
+
+holoCreate(1)
+holoModel(1,"models/weapons/w_eq_fraggrenade.mdl")
+holoPos(1,O:attachmentPos("anim_attachment_RH"))
+holoAng(1,O:attachmentAng("anim_attachment_RH"))
+holoParentAttachment(1,O,"anim_attachment_RH")
+holoPos(1,holoEntity(1):toWorld(vec(0,0,1)))
+holoAng(1,holoEntity(1):toWorld(ang(0,0,0)))
+holoAlpha(1,0)
+
+}
+
+if(HasIt == 0){
+if(O:weapon():type() == "weapon_crowbar" || O:weapon():type() == "weapon_blank_grenade" ){
+holoAlpha(1,255)
+
+if(Mode == "Explosive"){
+holoModel(1,"models/weapons/w_eq_fraggrenade_thrown.mdl")    
+}
+
+if(Mode == "FlashBang"){
+holoModel(1,"models/weapons/w_eq_flashbang_thrown.mdl")    
+}
+
+if(Mode == "Smoke"){
+holoModel(1,"models/weapons/w_eq_smokegrenade_thrown.mdl")    
+}
+
+
+if(O:keyAttack2() & Force <= 600){
+Trow = 1 
+Force+=10  
+}else{
+
+if(Force >= MaxTo){
+Trow = -1
+}
+
+}
+
+
+if(Trow == -1){
+Trow = 0
+HasIt = 1
+
+if(Mode == "Explosive"){
+Wep = propSpawn("models/weapons/w_eq_fraggrenade_thrown.mdl",0seif(Mode == "FlashBang"){
+Wep = propSpawn("models/weapons/w_eq_flashbang_thrown.mdl",0seif(Mode == "Smoke"){
+Wep = propSpawn("models/weapons/w_eq_smokegrenade_thrown.mdl",0ep:setPos(((holoEntity(1):pos() + vec(15,0,0) + O:eye()*2)))
+Wep:setTrails(1,1,3,"trails/laser",vec(255,0,0),255)
+Wep:applyForce(((O:eye())*Force-Wep:vel())*Wep:mass())  
+Force = 0
+    
+}
+
+}else{
+holoAlpha(1,0)
+}
+}else{
+holoAlpha(1,0)
+}
+# Made by Failcake
+
+
+
+if(HasIt){
+    
+rangerFilter(Wep)
+rangerFilter(O)
+Range = rangerOffset(4,Wep:pos(),-Wep:up())    
+
+if(Range:hit() & Wep:vel():length()/2 >= 6){
+    
+if(Mode == "Explosive"){
+Wep:soundPlay(1,0,"weapons/hegrenade/he_bounce-1.wav") 
+}elseif(Mode == "FlashBang"){
+Wep:soundPlay(1,0,"weapons/flashbang/grenade_hit1.wav")
+}elseif(Mode == "Smoke"){
+Wep:soundPlay(1,0,"weapons/smokegrenade/grenade_hit1.wav")
+}
+   
+}
+# Made by Failcake
+
+timer("Expl",Ks)
+if(clk("Expl") & Stop == 0){
+Ks -= 300
+
+if(Col == 1){
+Col = 0
+Wep:setColor(255,0,0)
+}elseif(Col == 0){
+Col = 1
+Wep:setColor(255,255,255)
+}
+Wep:soundPlay(2,0,"weapons/grenade/tick1.wav")
+timer("Expl",Ks)
+}
+
+## EXPLOSVE
+
+if(Mode == "Explosive"){
+    
+if(Ks <= 0){
+stoptimer("Expl")
+Col = 0
+Wep:soundPlay(4,0,"weapons/hegrenade/explode"+randint(3,5)+".wav")  
+
+for(GG = 0,MBOMB){
+Bum = propSpawn("models/props_phx/misc/potato_launcher_explosive.mdl",Wep:pos()+vec(randint(-Max,Max),randint(-Max,Max),2),ang(0,0,0),1:setAlpha(0)
+Bum:propNotSolid(1)
+Bum:propBreak()
+}
+
+
+Wep:propDelete()
+if(GG >= MBOMB){
+Ks = 1500
+HasIt = 0
+O:soundPlay(6,0,"items/ammo_pickup.wav")
+}
+}
+  
+## SMOKE
+ 
+}
+
+
+if(Mode == "Smoke"){
+
+if(Ks <= 0){
+stoptimer("Expl")
+Col = 0
+
+if(Stop == 0){
+
+for(P=3,MaxHolo){
+
+holoCreate(P)
+holoModel(P,"cube")  
+holoScaleUnits(P,vec(1,1,1))
+holoColor(P,vec(1,1,1))
+holoParent(P,Wep)
+holoAlpha(P,0)
+holoEntity(P):setTrails(699,1,100,"trails/smoke",vec(90,90,90),255)  
+    
+}
+# Made by Failcake
+if(P >= MaxHolo){
+Stop = 1
+Smo = 0    
+Wep:setAlpha(0)
+Wep:propFreeze(1)
+Wep:propNotSolid(1)
+Wep:soundPlay(5,0,"weapons/smokegrenade/sg_explode.wav")
+}
+}
+
+
+timer("stopsom",300)
+
+if(clk("stopsom")){
+Smo = 1
+stoptimer("stopsom")
+}
+
+if(Smo == 0){
+for(I=3,MaxHolo){
+holoPos(I,Wep:toWorld(randvec(-200,200)))
+}
+}
+
+
+
+
+timer("kill",10000)
+
+if(clk("kill")){
+for(I=3,MaxHolo){
+holoEntity(I):removeTrails()
+holoPos(I,E:toWorld(vec(0,0,0)))    
+
+if(I >= MaxHolo){
+Ks = 1500
+HasIt = 0
+Stop = 0
+Smo = 0
+stoptimer("kill")
+Wep:propDelete()
+O:soundPlay(6,0,"items/ammo_pickup.wav")    
+}
+
+}
+    
+}
+
+}
+
+
+
+
+
+
+}
+
+
+if(Mode == "FlashBang"){
+
+if(Ks <= 0){
+stoptimer("Expl")
+Col = 0
+
+if(Stop == 0){
+
+for(P=3,MaxHolo){
+holoEntity(P):removeTrails()     
+}
+# Made by Failcake
+if(P >= MaxHolo){
+Stop = 1  
+Holo = 0
+Wep:setAlpha(0)
+Wep:propFreeze(1)
+Wep:propNotSolid(1)
+Go = 0
+
+holoCreate(2)
+holoModel(2,"hqicosphere")  
+holoScale(2,vec(30,30,30))
+holoColor(2,vec(1,1,1))
+holoParent(2,Wep)
+holoPos(2,Wep:toWorld(vec(0,0,0)))
+holoEntity(2):removeTrails()
+holoAlpha(2,0)
+
+Alpha = 255
+Sound = 0
+Wep:soundPlay(5,0,"weapons/flashbang/flashbang_explode"+randint(1,2)+".wav")
+
+}
+
+}
+
+
+if(Stop == 1){
+findByClass("player")
+findInSphere(Wep:pos(),MaxFlash)   
+Ply=findToArray()
+    
+}
+
+if(Holo == 0 & Ply:count() > 0){
+    
+for(S = 0,Ply:count()){
+
+Distance = Ply[S,entity]:shootPos():distance(holoEntity(2):pos())
+AimPos = Ply[S,entity]:shootPos()+Ply[S,entity]:eye()*Distance
+
+if(AimPos:distance(holoEntity(2):pos()) < MaxFlash){
+  
+holoCreate(S+3)
+holoModel(S+3,"hqicosphere")
+holoScale(S+3,vec(-5,-5,-5)) 
+holoAlpha(S+3,255)  
+holoPos(S+3,Ply[S,entity]:toWorld(vec(0,0,60))) 
+holoParentAttachment(S+3,Ply[S,entity],"eyes")
+holoMaterial(S+3,"models/debug/debugwhite")
+holoColor(S+3,vec(255,255,255)) 
+
+} 
+
+if(S >= Ply:count()){
+Holo = 1  
+timer("remove",1000)  
+}
+
+}
+
+}
+
+if(Holo == 1){
+ 
+if(Sound == 0){
+for(JJ = 3,Ply:count()){
+holoEntity(JJ):soundPlay(JJ+10,0,"synth/triangle_1760.wav")
+soundPitch(JJ+10,200)
+soundVolume(JJ+10,0.5)
+soundStop(JJ+10,20)
+
+if(JJ >= Ply:count()){
+Sound = 1    
+}
+
+}
+
+}
+  
+for(S = 0,Ply:count()){
+    
+if(Alpha > 0){
+Alpha -= 0.1  
+}    
+
+holoAlpha(S+3,Alpha) 
+}
+# Made by Failcake
+if(Alpha <= 0){
+Alpha = 255
+Ply:clear()
+Go = 0
+Wep:propDelete()
+Holo = 0
+stoptimer("remove")
+Stop = 0
+Sound = 0
+soundPurge()
+O:soundPlay(6,0,"items/ammo_pickup.wav")  
+Ks = 1500
+HasIt = 0    
+}
+  
+}
+
+}
+
+} 
+
+   
+}
+
+
+
+if(changed(O:keyReload()) & O:keyReload()){
+if(HasIt == 0){
+
+if(Mode == "Explosive"){
+Mode = "FlashBang"    
+}elseif(Mode == "FlashBang"){
+Mode = "Smoke"  
+}elseif(Mode == "Smoke"){
+Mode = "Explosive"  
+}
+
+hint("Mode = " + Mode,7)
+setName("FailCake Grenades [" + Mode + "]")    
+}
+}
+# Made by Failcake

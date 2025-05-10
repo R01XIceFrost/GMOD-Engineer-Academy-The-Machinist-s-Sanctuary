@@ -1,0 +1,533 @@
+@name Portal Gun
+#///////// CUSTOM WEAPON ////////
+@persist Weapon Move Crouch CurT Visible
+#///////// MAIN ///////////
+@persist [Portal_1 Portal_2 Gun_Light]:vector [E O]:entity Balls:array
+#///////// PORTALS ///////
+@persist [P1 P2]:entity Switch [ArSave1 ArSave2 Entitys_1 Entitys_2]:array
+@persist Size1 Size2
+interval(10)
+
+#Source: https://youtu.be/yDnk22RWljQ?si=ObmOxlcYp9J49JX5
+
+#O  =  owner()
+
+
+propSpawnEffect(0)
+Shoot1 = O:keyAttack1()
+Shoot2 = O:keyAttack2()
+
+if(first()){
+    Portal_1 = vec(0,200,255)
+    Portal_2 = vec(255,100,0)
+    
+    Gun_Light = vec(255)
+    E = propSpawn("models/props_junk/garbage_plasticbottle003a.mdl",entity():toWorld(vec(0,0,44)),entity():toWorld(ang(90,0,0)),1) E:setAlpha(0)
+    propSpawn("models/props/pedestal_center_reference.mdl",entity():toWorld(vec(0,0,-4)),1):propNotSolid(1)
+    I = 0 holoCreate(I) holoPos(I,E:pos() + vec(-8.7,0,-1.2)) holoAng(I,ang(4,0,90)) holoScale(I,vec(0.25,0.25,0.05)) holoColor(I,vec(40)) holoAlpha(I,255) holoMaterial(I,"") holoModel(I,"hq_stube") holoParent(I,E)
+    I = 1 holoCreate(I) holoPos(I,E:pos() + vec(1,0,-0.1)) holoAng(I,ang(93,0,0)) holoScale(I,vec(0.1,0.10,0.5)) holoColor(I,vec(0,0,255)) holoParent(I,0) holoAlpha(I,255) holoMaterial(I,"lights/white") holoModel(I,"hqcylinder")
+    I = 2 holoCreate(I) holoPos(I,E:pos() + vec(-4.5,0,-0.8)) holoAng(I,ang(93,0,0)) holoScale(I,vec(0.45,0.45,0.6)) holoColor(I,vec(40)) holoParent(I,0) holoAlpha(I,255) holoMaterial(I,"") holoModel(I,"hqcylinder") 
+    I = 3 holoCreate(I) holoPos(I,E:pos() + vec(1,0,-1.1)) holoAng(I,ang(93,0,0)) holoScale(I,vec(0.35,0.35,0.5)) holoColor(I,vec(40)) holoParent(I,0) holoAlpha(I,255) holoMaterial(I,"") holoModel(I,"hqcylinder") 
+    holoClipEnabled(I,1,1) holoClip(I,1,vec(-0.6,0,0),vec(1,0,0),0) 
+    I = 4 holoCreate(I) holoPos(I,E:pos() + vec(1,0,-0.6)) holoAng(I,ang(-87,0,0)) holoScale(I,vec(0,0.35,0.5)) holoColor(I,vec(40)) holoParent(I,0) holoAlpha(I,255) holoMaterial(I,"") holoModel(I,"cube") 
+    holoClipEnabled(I,1,1) holoClip(I,1,vec(-0.5,0,0),vec(1,0,0),0) 
+    I = 5 holoCreate(I) holoPos(I,E:pos() + vec(-5,0,-0.4)) holoAng(I,ang(88,0,0)) holoScale(I,vec(0.6,0.6,1.1)) holoColor(I,vec(255)) holoParent(I,0) holoAlpha(I,255) holoMaterial(I,"models/shiny") holoModel(I,"hqsphere") 
+    holoClipEnabled(I,1,1) holoClip(I,1,vec(3.7,0,0),vec(-1,0,-1),0) 
+    holoClipEnabled(I,2,1) holoClip(I,2,vec(2.4,0,0),vec(-1,0,0),0) 
+    holoClipEnabled(I,3,1) holoClip(I,3,vec(0,0,-6),vec(-1,0,1),0) 
+    I = 6 holoCreate(I) holoPos(I,E:pos() + vec(-5,0,-0.4)) holoAng(I,ang(-2,0,90)) holoScale(I,vec(1.11,0.61,0.01)) holoColor(I,vec(0,0,0)) holoParent(I,0) holoAlpha(I,255) holoMaterial(I,"") holoModel(I,"hqcylinder") 
+    holoClipEnabled(I,1,1) holoClip(I,1,vec(0,2,0),vec(0,1,0),0) 
+    I = 7 holoCreate(I) holoPos(I,E:pos() + vec(-3.97,0,3.15)) holoAng(I,ang(3,0,0)) holoScale(I,vec(0.1,0.1,0.01)) holoColor(I,vec(0,0,0)) holoParent(I,0) holoAlpha(I,255) holoMaterial(I,"") holoModel(I,"hqcylinder") 
+    I = 8 holoCreate(I) holoPos(I,E:pos() + vec(-3.97,0,3.15)) holoAng(I,ang(3,0,0)) holoScale(I,vec(0.09,0.09,0.013)) holoColor(I,vec(0,0,255)) holoParent(I,0) holoAlpha(I,255) holoMaterial(I,"lights/white") holoModel(I,"hqcylinder") 
+    I = 9 holoCreate(I) holoPos(I,E:pos() + vec(-5,0,-0.4)) holoAng(I,ang(88,0,0)) holoScale(I,vec(-0.6,-0.6,-1.1)) holoColor(I,vec(40)) holoParent(I,0) holoAlpha(I,255) holoMaterial(I,"") holoModel(I,"hqsphere") 
+    holoClipEnabled(I,1,1) holoClip(I,1,vec(3.7,0,0),vec(-1,0,-1),0) 
+    holoClipEnabled(I,2,1) holoClip(I,2,vec(2.4,0,0),vec(-1,0,0),0) 
+    holoClipEnabled(I,3,1) holoClip(I,3,vec(0,0,-6),vec(-1,0,1),0) 
+    I = 10 holoCreate(I) holoPos(I,E:pos() + vec(5,0,-0.2)) holoAng(I,ang(93,0,0)) holoScale(I,vec(0.33,0.33,0.1)) holoColor(I,vec(40)) holoParent(I,0) holoAlpha(I,255) holoMaterial(I,"") holoModel(I,"hqcylinder") 
+    I = 11 holoCreate(I) holoPos(I,E:pos() + vec(2.7,0,-0.1)) holoAng(I,ang(-87,0,0)) holoScale(I,vec(0.33,0.33,0.3)) holoColor(I,vec(40)) holoParent(I,0) holoAlpha(I,255) holoMaterial(I,"") holoModel(I,"hqcone") 
+    holoClipEnabled(I,1,1) holoClip(I,1,vec(0,0,-0.9),vec(0,0,-1),0) 
+    I = 12 holoCreate(I) holoPos(I,E:pos() + vec(4.2,0,-0.17)) holoAng(I,ang(93,0,0)) holoScale(I,vec(0.247,0.245,0.1)) holoColor(I,vec(40)) holoParent(I,0) holoAlpha(I,255) holoMaterial(I,"") holoModel(I,"hqcylinder") 
+    I = 13 holoCreate(I) holoPos(I,E:pos() + vec(6.2,0,-0.3)) holoAng(I,ang(93,0,0)) holoScale(I,vec(0.3,0.3,0.1)) holoColor(I,vec(40)) holoParent(I,0) holoAlpha(I,255) holoMaterial(I,"") holoModel(I,"hexagon") 
+    I = 14 holoCreate(I) holoPos(I,E:pos() + vec(7.7,0,-0.45)) holoAng(I,ang(93,0,0)) holoScale(I,vec(0.28,0.28,0.1)) holoColor(I,vec(40)) holoParent(I,0) holoAlpha(I,255) holoMaterial(I,"") holoModel(I,"hexagon") 
+    I = 15 holoCreate(I) holoPos(I,E:pos() + vec(10.5,0,-0.7)) holoAng(I,ang(93,0,0)) holoScale(I,vec(0.27,0.27,0.3)) holoColor(I,vec(40)) holoParent(I,0) holoAlpha(I,255) holoMaterial(I,"") holoModel(I,"hqcone") 
+    holoClipEnabled(I,1,1) holoClip(I,1,vec(0,0,-1.3),vec(0,0,-1),0) 
+    I = 16 holoCreate(I) holoPos(I,E:pos() + vec(6.22,0,-0.48)) holoAng(I,ang(93,0,0)) holoScale(I,vec(0.235,0.23,0.5)) holoColor(I,vec(40)) holoParent(I,0) holoAlpha(I,255) holoMaterial(I,"") holoModel(I,"hq_tube") 
+    I = 17 holoCreate(I) holoPos(I,E:pos() + vec(5,0,-1.8)) holoAng(I,ang(-10,0,0)) holoScale(I,vec(1,0.5,0.5)) holoColor(I,vec(255)) holoParent(I,0) holoAlpha(I,255) holoMaterial(I,"models/shiny") holoModel(I,"hqsphere") 
+    holoClipEnabled(I,1,1) holoClip(I,1,vec(2.5,0,0),vec(-2,0,-1),0) 
+    holoClipEnabled(I,2,1) holoClip(I,2,vec(0,0,2),vec(1,0,-2),0) 
+    holoClipEnabled(I,3,1) holoClip(I,3,vec(-3.6,0,0),vec(1,0,-0.5),0) 
+    holoClipEnabled(I,4,1) holoClip(I,4,vec(0,0,2),vec(-0.3,0,-1),0) 
+    I = 18 holoCreate(I) holoPos(I,E:pos() + vec(5,0,-1.8)) holoAng(I,ang(-10,0,0)) holoScale(I,vec(-1,-0.5,-0.5)) holoColor(I,vec(255)) holoParent(I,0) holoAlpha(I,255) holoMaterial(I,"models/shiny") holoModel(I,"hqsphere") 
+    holoClipEnabled(I,2,1) holoClip(I,2,vec(0,0,2),vec(1,0,-2),0) 
+    holoClipEnabled(I,3,1) holoClip(I,3,vec(-3.6,0,2),vec(1,0,-0.25),0) 
+    holoClipEnabled(I,4,1) holoClip(I,4,vec(0,0,2),vec(-0.3,0,-1),0) 
+    holoClipEnabled(I,5,1) holoClip(I,5,vec(1.3,0,0),vec(-1,0,-1),0) 
+    I = 19 holoCreate(I) holoPos(I,E:pos() + vec(4.5,0,-2.2)) holoAng(I,ang(-10,0,0)) holoScale(I,vec(0.5,0.48,0.35)) holoColor(I,vec(0,0,0)) holoParent(I,0) holoAlpha(I,255) holoMaterial(I,"") holoModel(I,"hqsphere") 
+    I = 20 holoCreate(I) holoPos(I,E:pos() + vec(5.4,0,2.3)) holoAng(I,ang(0,0,0)) holoScale(I,vec(0.05,0.05,0.15)) holoColor(I,vec(40)) holoParent(I,0) holoAlpha(I,255) holoMaterial(I,"") holoModel(I,"") 
+    I = 21 holoCreate(I) holoPos(I,E:pos() + vec(6.4,0,3.2)) holoAng(I,ang(47,0,0)) holoScale(I,vec(0.03,0.01,0.23)) holoColor(I,vec(40)) holoParent(I,0) holoAlpha(I,255) holoMaterial(I,"") holoModel(I,"") 
+    I = 22 holoCreate(I) holoPos(I,E:pos() + vec(9,0,4.2)) holoAng(I,ang(88,0,0)) holoScale(I,vec(0.02,0.01,0.3)) holoColor(I,vec(40)) holoParent(I,0) holoAlpha(I,255) holoMaterial(I,"") holoModel(I,"") 
+    I = 23 holoCreate(I) holoPos(I,E:pos() + vec(11,0,4)) holoAng(I,ang(140,0,0)) holoScale(I,vec(0.02,0.04,0.18)) holoColor(I,vec(40)) holoParent(I,0) holoAlpha(I,255) holoMaterial(I,"") holoModel(I,"") 
+    I = 24 holoCreate(I) holoPos(I,E:pos() + vec(5,3.3,-2.8)) holoAng(I,ang(10,20,60)) holoScale(I,vec(0.05,0.05,0.13)) holoColor(I,vec(40)) holoParent(I,0) holoAlpha(I,255) holoMaterial(I,"") holoModel(I,"") 
+    I = 25 holoCreate(I) holoPos(I,E:pos() + vec(0,0,0)) holoAng(I,ang(0,0,0)) holoScale(I,vec(0,0,0)) holoColor(I,vec(0,0,0)) holoParent(I,0) holoAlpha(I,0) holoMaterial(I,"") holoModel(I,"") 
+    I = 26 holoCreate(I) holoPos(I,E:pos() + vec(6,4.3,-3.4)) holoAng(I,ang(-20,-45,70)) holoScale(I,vec(0.03,0.01,0.23)) holoColor(I,vec(40)) holoParent(I,0) holoAlpha(I,255) holoMaterial(I,"") holoModel(I,"") 
+    I = 27 holoCreate(I) holoPos(I,E:pos() + vec(6,-4.3,-3.4)) holoAng(I,ang(-20,45,-70)) holoScale(I,vec(0.03,0.01,0.23)) holoColor(I,vec(40)) holoParent(I,0) holoAlpha(I,255) holoMaterial(I,"") holoModel(I,"") 
+    I = 28 holoCreate(I) holoPos(I,E:pos() + vec(8.7,5.2,-3.95)) holoAng(I,ang(30,100,96)) holoScale(I,vec(0.02,0.01,0.3)) holoColor(I,vec(40)) holoParent(I,0) holoAlpha(I,255) holoMaterial(I,"") holoModel(I,"") 
+    I = 29 holoCreate(I) holoPos(I,E:pos() + vec(8.7,-5.2,-3.95)) holoAng(I,ang(30,-100,-96)) holoScale(I,vec(0.02,0.01,0.3)) holoColor(I,vec(40)) holoParent(I,0) holoAlpha(I,255) holoMaterial(I,"") holoModel(I,"") 
+    I = 30 holoCreate(I) holoPos(I,E:pos() + vec(11,5,-4)) holoAng(I,ang(20,40,72)) holoScale(I,vec(0.02,0.04,0.18)) holoColor(I,vec(40)) holoParent(I,0) holoAlpha(I,255) holoMaterial(I,"") holoModel(I,"") 
+    I = 31 holoCreate(I) holoPos(I,E:pos() + vec(5,-3.3,-2.8)) holoAng(I,ang(10,-20,-60)) holoScale(I,vec(0.05,0.05,0.13)) holoColor(I,vec(40)) holoParent(I,0) holoAlpha(I,255) holoMaterial(I,"") holoModel(I,"") 
+    I = 32 holoCreate(I) holoPos(I,E:pos() + vec(11,-5,-4)) holoAng(I,ang(20,-40,-72)) holoScale(I,vec(0.02,0.04,0.18)) holoColor(I,vec(40)) holoParent(I,0) holoAlpha(I,255) holoMaterial(I,"") holoModel(I,"") 
+    I = 33 holoCreate(I) holoPos(I,E:pos() + vec(1,0,-0.1)) holoAng(I,ang(93,0,0)) holoScale(I,vec(0.2,0.2,0.5)) holoColor(I,vec(255)) holoParent(I,0) holoAlpha(I,50) holoMaterial(I,"models/shiny") holoModel(I,"hqcylinder")
+    I = 34 holoCreate(I) holoPos(I,E:pos() + vec(8.3,0,-0.6)) holoAng(I,ang(93,0,0)) holoScale(I,vec(0.2,0.2,0)) holoColor(I,vec(0,0,255)) holoParent(I,0) holoAlpha(I,255) holoMaterial(I,"lights/white") holoModel(I,"cylinder")
+}
+
+#/////////////// PORTAL GUN ////////////////
+
+if(IU){O = E:inUseBy() E:propNotSolid(1) for(I = 0,34){holoVisible(I,players(),0)}}
+if(IU | O:weapon():type() != "" & !Weapon){runLua("Entity(" +O:id()+ "):Give('weapon_stunstick')") Weapon = 1}
+if(O:weapon():type() == "weapon_stunstick" & Weapon){O:weapon():remove() Weapon = 0}
+
+WeapAnim = "CROSSBOW"
+
+if(O:weapon():type() == "" & !Weapon & O:isExist())
+{
+    holoPos(0,O:attachmentPos("anim_attachment_rh"))
+    holoAng(0,O:attachmentAng("anim_attachment_rh"))
+    holoAng(0,holoEntity(0):toWorld(ang(-13,-10,90)))
+    holoParentAttachment(0,O,"anim_attachment_rh")
+
+    if(O:vel():length()){
+        if(!Move){Move = 1 CurT = curtime()
+            }
+            }else{
+                if(Move){
+                    Move = 0 CurT = curtime()
+                }
+            }
+    if(O:isCrouch()){
+        if(!Crouch){
+            Crouch = 1 CurT = curtime()
+        }
+    }else{
+        if(Crouch){
+            Crouch = 0 CurT = curtime()
+        }
+    }
+    if(!O:vel():length()){
+        if(O:isCrouch()){
+            runLua("Entity(" +O:id()+ "):DoAnimationEvent( ACT_HL2MP_IDLE_CROUCH_" +WeapAnim+ " )")
+        }
+        else{
+            runLua("Entity(" +O:id()+ "):DoAnimationEvent( ACT_HL2MP_IDLE_" +WeapAnim+ " )")
+        }
+    }elseif(keyPress("Walk")){
+    
+    if(O:isCrouch()){
+        if(curtime() > (CurT + 1)){CurT = curtime()}
+        if(CurT == curtime()){runLua("Entity("+O:id()+"):DoAnimationEvent( ACT_HL2MP_WALK_CROUCH_" +WeapAnim+ " )")}
+    }else{
+        if(curtime() > (CurT + 0.8)){CurT = curtime()}
+        if(CurT == curtime()){runLua("Entity(" +O:id()+ "):DoAnimationEvent( ACT_HL2MP_WALK_" +WeapAnim+ ")")}}
+    }
+    
+    else{
+        if(O:isCrouch()){
+            if(curtime() > (CurT + 1)){CurT = curtime()}
+            if(CurT == curtime()){runLua("Entity(" +O:id()+ "):DoAnimationEvent( ACT_HL2MP_WALK_CROUCH_" +WeapAnim+ " )")}
+        }else{
+            if(curtime() > (CurT + 0.6)){CurT = curtime()}
+        if(CurT == curtime()){runLua("Entity(" +O:id()+ "):DoAnimationEvent( ACT_HL2MP_RUN_" +WeapAnim+ " )")}}
+    }
+if(!Visible){Visible = 1 for(I = 0,34){holoVisible(I,players(),1)}}
+
+#////////////////// SHOOT ///////////////////
+SP = holoEntity(34):pos() + holoEntity(34):up() * 5
+    if(changed(Shoot1) & Shoot1){
+        Shoot = 1 
+        Gun_Light = Portal_1
+        soundPlayWorld("weapons/portalgun/wpn_portal_gun_fire_blue_0" +randint(1,3)+ ".wav",SP,70,100,1)
+        DS_M = drawSprite("sprites/light_glow02_add",SP,Portal_1,255,50,50) Balls[Balls:count() + 1,entity] = DS_M DS_M:setVarNum("Color",1)
+        DS = drawSprite("sprites/light_glow02_add",SP,Portal_1,255,25,25) DS:setTrails(1,20,1,"trails/laser",Portal_1,255) DS:removeOnDelete(DS_M) DS_M:setVar("Tn1",DS)
+        DS = drawSprite("sprites/light_glow02_add",SP,Portal_1,255,25,25) DS:setTrails(1,20,1,"trails/laser",Portal_1,255) DS:removeOnDelete(DS_M) DS_M:setVar("Tn2",DS)
+        DS_M:setVar("Vn",(O:aimPos() - SP):normalized())
+    }
+    
+    if(changed(Shoot2) & Shoot2){
+        Shoot = 1
+        Gun_Light = Portal_2
+        soundPlayWorld("weapons/portalgun/wpn_portal_gun_fire_red_0" +randint(1,3)+ ".wav",SP,70,100,1)
+
+        DS_M = drawSprite("sprites/light_glow02_add",SP,Portal_2,255,50,50) Balls[Balls:count() + 1,entity] = DS_M DS_M:setVarNum("Color",2)
+        DS = drawSprite("sprites/light_glow02_add",SP,Portal_2,255,25,25) DS:setTrails(1,20,1,"trails/laser",Portal_2,255) DS:removeOnDelete(DS_M) DS_M:setVar("Tn1",DS)
+        DS = drawSprite("sprites/light_glow02_add",SP,Portal_2,255,25,25) DS:setTrails(1,20,1,"trails/laser",Portal_2,255) DS:removeOnDelete(DS_M) DS_M:setVar("Tn2",DS)
+        DS_M:setVar("Vn",(O:aimPos() - SP):normalized())
+}
+
+}else{if(Visible){Visible = 0 for(I = 0,34){holoVisible(I,players(),0)}}}
+#Speed = 0
+Time = curtime() * 1000
+for(I = 1,Balls:count()){
+    En = Balls[I,entity]
+    Tn1 = En:getVar("Tn1"):entity(1)
+    Tn2 = En:getVar("Tn2"):entity(1)
+    Vn = En:getVar("Vn"):vector(1)
+    Speed = En:getVarNum("Speed")
+    
+    rangerFilter(players())
+    rangerHitWater(1)
+    RH = rangerOffset(Speed,En:pos(),Vn)
+    while(RH:matType() == "grate"){rangerFilter(RH:entity()) RH = rangerOffset(Speed,En:pos(),Vn)}
+
+    Tn1:setPos(En:pos() + vec(cos(Time),sin(Time),0):rotate(Vn:toAngle() + ang(90,0,0)) * 4)
+    Tn2:setPos(En:pos() - vec(cos(Time),sin(Time),0):rotate(Vn:toAngle() + ang(90,0,0)) * 4)
+    if(RH:hit() & !En:getVarNum("Exist")){
+        if(RH:matType() == "concrete" | RH:matType() == "dirt" | RH:matType() == "tile"){
+            En:setVarNum("Exist",1)
+            En:remove(1.2) En:setAlpha(0) Tn1:setAlpha(0) Tn2:setAlpha(0)
+    
+            PP = RH:position()
+            PN = RH:hitNormal()
+            I = 48 if(!holoEntity(I)){holoCreate(I) holoScaleUnits(I,vec())}
+            holoAng(I,PN:toAngle() + ang(90,0,0)) #holoAng(I,holoEntity(I):toWorld(ang(0,0,180)))
+    
+            Normal = vec()
+            for(Ang = 1,8){
+                Vec = vec(cos(Ang * (360 / 8)) * 53,sin(Ang * (360 / 8))* 30,0):rotate(holoEntity(I):angles())
+                Leng = Vec:length()
+                
+                RC_1 = rangerOffset(Leng,PP,Vec)
+                
+                if(!RC_1:hit()){
+                    RC_2 = rangerOffset(0.1,RC_1:position(),-PN)
+                    if(RC_2:hit()){
+                        RCN = RC_2:hitNormal()
+                        if(Normal == vec()){Normal = RCN}
+                        if(RCN != Normal){break Cansel = 1}
+                    }else{
+                        RC_3 = rangerOffset(Leng,RC_2:position(),-Vec)
+                        if(RC_3:hit()){PP = PP - Vec:normalized() * RC_3:distance()}
+                    }
+                }else{
+                    PP = PP - Vec:normalized() * (Leng - RC_1:distance())
+                }
+            }
+            for(Ang = 1,8){
+                Vec = vec(cos(Ang * (360 / 8)) * 53,sin(Ang * (360 / 8))* 30,0):rotate(holoEntity(I):angles())
+                Leng = Vec:length()
+                
+                RC_1 = rangerOffset(Leng,PP,Vec)
+                
+                if(!RC_1:hit()){
+                    RC_2 = rangerOffset(1,RC_1:position(),-PN)
+                    if(!RC_2:hit()){
+                        Cansel = 1 break
+                    }
+                }else{
+                    Cansel = 1 break
+                }
+            }
+            
+            if(En:getVarNum("Color") == 1){
+                if(!Cansel){
+                    Size1 = 0
+                    holoEntity(39):removeTrails()
+                    holoEntity(40):removeTrails()
+                    soundPlayWorld("weapons/portalgun/portal_open_blue_0" + randint(1,2) + ".wav",PP,70,100,1)
+                    I = 35 if(!holoEntity(I)){holoCreate(I) holoEntity(I):soundPlay(2,0,"weapons/portalgun/portal_ambient_loop1.wav") holoModel(I,"hq_torus") holoColor(I,Portal_1) holoMaterial(I,"models/props_combine/stasisfield_beam") holoScaleUnits(I,vec(106,59,0) * 1.12) holoDisableShading(I,1)} holoPos(I,PP) holoAng(I,PN:toAngle() + ang(90,0,0))
+                    if(abs(PN):z() == 1){holoAng(I,holoEntity(I):toWorld(ang(0,O:eyeAngles():yaw() - holoEntity(I):angles():yaw() + min(0,-PN:z()) * 180,0) * PN:z()))}
+                    if(RH:entity():isExist()){holoParent(I,RH:entity())}
+
+                    P1 = holoEntity(35)
+                    I = 36 holoCreate(I) holoPos(I,P1:pos()) holoScaleUnits(I,vec(106,59,0.1)) holoDisableShading(I,1) holoAng(I,P1:angles()) holoModel(I,"hqcylinder") holoColor(I,Portal_1) holoMaterial(I,"") holoParent(I,35)
+                    I = 37 holoCreate(I) holoPos(I,P1:pos()) holoScaleUnits(I,vec(106,59,0.1)) holoDisableShading(I,1) holoAng(I,P1:angles()) holoModel(I,"hqcylinder") holoColor(I,Portal_1) holoMaterial(I,"models/shadertest/predator") holoParent(I,35)
+                    I = 38 holoCreate(I) holoPos(I,P1:pos()) holoScaleUnits(I,vec(106,59,0.11)) holoDisableShading(I,1) holoAng(I,P1:angles()) holoModel(I,"hqcylinder") holoColor(I,Portal_1) holoMaterial(I,"models/props/cs_office/clouds") holoParent(I,35)
+    
+                    I = 39 holoCreate(I) holoPos(I,P1:pos()) holoScale(I,vec()) holoParent(I,35) holoEntity(I):setTrails(0,20,1,"effects/beam_generic01",Portal_1,255)
+                    I = 40 holoCreate(I) holoPos(I,P1:pos()) holoScale(I,vec()) holoParent(I,35) holoEntity(I):setTrails(0,20,1,"effects/beam_generic01",Portal_1,255)
+    
+                    if(!P2:isExist()){
+                        S = 2
+                        P_ST = holoEntity(35)
+                        P_P = P_ST:pos()
+                        P_S = 20 * S
+                        P_Sp = 15
+                        for(I = 1,18){
+                            P_V = vec(cos(I * (360 / 18)) * 2,sin(I * (360 / 18)),0):rotate(P_ST:angles()) * P_Sp * S
+                            P_R = random(360)
+                            particleGravity(vec()) 
+                            particle(18 / (P_Sp * 2),P_S * 4,0,"sprites/light_glow02_add",Gun_Light,P_P,P_V * 2,P_R,0)
+                        }
+                    }
+                }else{soundPlayWorld("weapons/portalgun/portal_invalid_surface_0" +randint(1,4)+ ".wav",PP,70,100,1)}
+            }
+            if(En:getVarNum("Color") == 2){
+                if(!Cansel){
+                    Size2 = 0
+                    holoEntity(45):removeTrails()
+                    holoEntity(46):removeTrails()
+                    soundPlayWorld("weapons/portalgun/portal_open_red_0" + randint(1,2) + ".wav",PP,70,100,1)
+                    I = 41 if(!holoEntity(I)){holoCreate(I) holoEntity(I):soundPlay(2,0,"weapons/portalgun/portal_ambient_loop1.wav") holoModel(I,"hq_torus") holoColor(I,Portal_2) holoMaterial(I,"models/props_combine/stasisfield_beam") holoScaleUnits(I,vec(106,59,0) * 1.12) holoDisableShading(I,1)} holoPos(I,PP) holoAng(I,PN:toAngle() + ang(90,0,0)) holoAng(I,holoEntity(I):toWorld(ang(0,0,180)))
+                    if(abs(PN):z() == 1){holoAng(I,holoEntity(I):toWorld(ang(0,O:eyeAngles():yaw() - holoEntity(I):angles():yaw() + min(0,-PN:z()) * 180,0) * -PN:z()))}
+                    if(RH:entity():isExist()){holoParent(I,RH:entity())}
+    
+                    P2 = holoEntity(41)
+                    I = 42 holoCreate(I) holoPos(I,P2:pos()) holoScaleUnits(I,vec(106,59,0.1)) holoDisableShading(I,1) holoAng(I,P2:angles()) holoModel(I,"hqcylinder") holoColor(I,Portal_2) holoMaterial(I,"") holoParent(I,41)
+                    I = 43 holoCreate(I) holoPos(I,P2:pos()) holoScaleUnits(I,vec(106,59,0.1)) holoDisableShading(I,1) holoAng(I,P2:angles()) holoModel(I,"hqcylinder") holoColor(I,Portal_2) holoMaterial(I,"models/shadertest/predator") holoParent(I,41)
+                    I = 44 holoCreate(I) holoPos(I,P2:pos()) holoScaleUnits(I,vec(106,59,0.11)) holoDisableShading(I,1) holoAng(I,P2:angles()) holoModel(I,"hqcylinder") holoColor(I,Portal_2) holoMaterial(I,"models/props/cs_office/clouds") holoParent(I,41)
+    
+                    I = 45 holoCreate(I) holoPos(I,P2:pos()) holoScale(I,vec()) holoParent(I,41) holoEntity(I):setTrails(0,20,1,"effects/beam_generic01",Portal_2,255)
+                    I = 46 holoCreate(I) holoPos(I,P2:pos()) holoScale(I,vec()) holoParent(I,41) holoEntity(I):setTrails(0,20,1,"effects/beam_generic01",Portal_2,255)
+    
+                    if(!P1:isExist()){
+                        S = 2
+                        P_ST = holoEntity(41)
+                        P_P = P_ST:pos()
+                        P_S = 20 * S
+                        P_Sp = 15
+                        for(I = 1,18){
+                            P_V = vec(cos(I * (360 / 18)) * 2,sin(I * (360 / 18)),0):rotate(P_ST:angles()) * P_Sp * S
+                            P_R = random(360)
+                            particleGravity(vec()) 
+                            particle(18 / (P_Sp * 2),P_S * 4,0,"sprites/light_glow02_add",Gun_Light,P_P,P_V * 2,P_R,0)
+                        }
+                    }
+                }else{soundPlayWorld("weapons/portalgun/portal_invalid_surface_0" +randint(1,4)+ ".wav",PP,70,100,1)}
+            }
+        }else{Cansel = 1}
+    }
+    if(En:getVarNum("Speed") == 1){En:setVarNum("Speed",100)}
+    if(!En:getVarNum("Speed")){En:setVarNum("Speed",1)}
+    if(!En:isExist() | RH:hit()){
+        if(En:isExist()){
+            En:setPos(RH:position())
+            if(Cansel){
+              En:remove(1.2) En:setAlpha(0) Tn1:setAlpha(0) Tn2:setAlpha(0)
+                for(PRT = 1,10){
+                    particleGravity(vec(0,0,-200))
+                    particle(1,10 + random(20),0,"sprites/light_glow02_add",Gun_Light,RH:position(),(RH:hitNormal() + randvec(1,-1) + vec(0,0,random(1) + 0.5)) * 50,0,0)
+                }
+            }
+        }
+        Balls:remove(I)
+    }else{En:setPos(En:pos() + Vn * Speed)}
+}
+if(Size1 < 1){Size1 += Size1 / 100 + 0.01}else{Size1 = 1}
+if(Size2 < 1){Size2 += Size2 / 100 + 0.01}else{Size2 = 1}
+
+holoScaleUnits(35,vec(106,59,0) * 1.12 * Size1)
+holoScaleUnits(36,vec(106,59,0.1) * Size1)
+holoScaleUnits(37,vec(106,59,0.1) * Size1)
+holoScaleUnits(38,vec(106,59,0.11) * Size1)
+
+holoScaleUnits(41,vec(106,59,0) * 1.12 * Size2)
+holoScaleUnits(42,vec(106,59,0.1) * Size2)
+holoScaleUnits(43,vec(106,59,0.1) * Size2)
+holoScaleUnits(44,vec(106,59,0.11) * Size2)
+
+R = random(360)
+if(P1:isExist() & Size1 == 1){
+    particleGravity(vec(cos(R - 200) * 53,sin(R - 200) * 30,10):rotate(P1:angles()) * Size1) particle(2,10,0,"sprites/light_glow02_add",Portal_1 + vec(0,random(55),0),P1:pos() + vec(cos(R) * 53,sin(R) * 30,0):rotate(P1:angles()),vec(cos(R - 90) * 53,sin(R - 90) * 30,0):rotate(P1:angles()) * Size1,0,0,0,255)
+    holoPos(39,P1:pos() + vec(cos(curtime() * 400) * 53,sin(curtime() * 400) * 30,0):rotate(P1:angles()) * Size1)
+    holoPos(40,P1:pos() - vec(cos(curtime() * 400) * 53,sin(curtime() * 400) * 30,0):rotate(P1:angles()) * Size1)
+}
+if(P2:isExist() & Size2 == 1){
+    particleGravity(vec(cos(R - 200) * 53,sin(R - 200) * 30,-10):rotate(P2:angles()) * Size2) particle(2,10,0,"sprites/light_glow02_add",Portal_2 + vec(0,random(55),0),P2:pos() + vec(cos(R) * 53,sin(R) * 30,0):rotate(P2:angles()),vec(cos(R - 90) * 53,sin(R - 90) * 30,0):rotate(P2:angles()) * Size2,0,0,0,255)
+    holoPos(45,P2:pos() + vec(cos(curtime() * 400) * 53,sin(curtime() * 400) * 30,0):rotate(P2:angles()) * Size2)
+    holoPos(46,P2:pos() - vec(cos(curtime() * 400) * 53,sin(curtime() * 400) * 30,0):rotate(P2:angles()) * Size2)
+}
+timer("Switch",50) if(clk("Switch")){
+    if(Switch){Switch = 0 findInSphere(P2:pos(),53)}else{Switch = 1 findInSphere(P1:pos(),53)}
+}
+if(P1:isExist() & P2:isExist()){
+    holoMaterial(36,"debug/env_cubemap_model") holoAlpha(37,0) holoAlpha(38,0) holoColor(36,vec(255))
+    holoMaterial(42,"debug/env_cubemap_model") holoAlpha(43,0) holoAlpha(44,0) holoColor(42,vec(255))
+    if(Switch){
+        Ar = findToArray()
+        STR = ""
+
+        for(I = 1,Ar:count()){
+            En = Ar[I,entity]
+            if(En:mass() & !En:isFrozen() | En:isAlive()){
+                STR = STR + En:toString() + " "
+                if(!En:getVarNum("Solid") & !En:isFrozen() & En:mass()){En:setVarNum("Solid",1) if(Size1 < 1){En:applyForce(-P1:up() * En:mass() * 50)} En:propNotSolid(1)
+                    soundPlayWorld("weapons/portalgun/portal_enter_0" + randint(1,3) + ".wav",P1:pos(),70,100,1)
+                }
+
+                Ents = Entitys_1[I,entity]
+                if(!Ents:isExist() & En:mass()){
+                    Prop = propSpawn(En:model(),1) Prop:propNotSolid(1) findExcludeEntity(Prop) Prop:removeOnDelete(En) Entitys_1[I,entity] = Prop
+                }else{
+                    Ents:setPos(P2:toWorld(P1:toLocal(En:pos())))
+                    Ents:setAng(P2:toWorld(P1:toLocal(En:angles())))
+                }
+                if(Ents:model() != En:model()){Ents:remove()}
+                
+                if(En:isAlive()){
+                    if(!En:getVar("Vel"):vector(1)){
+                        En:setVar("Vel",En:vel())
+                        soundPlayWorld("weapons/portalgun/portal_enter_0" + randint(1,3) + ".wav",P1:pos(),70,100,1)
+                    }else{
+                        En:setVar("Vel",(En:getVar("Vel"):vector(1) + vec(0,0,-max(0,P1:up():z())) * 5))
+                        En:setPos(En:pos() + En:getVar("Vel"):vector(1) / 10)
+                    }
+                }
+            
+            }else{findExcludeEntity(En)}
+        }
+        if(Ar:count() != ArSave1:count() | P1:toLocal(En:pos()):z() <= -10 & En:mass()){
+            for(I = 1,ArSave1:count()){
+                En = ArSave1[I,entity]
+                if(P1:toLocal(En:pos()):z() <= -1){
+                    if(En:mass() & !En:isFrozen() | En:isAlive()){
+
+                        En:setVel((((P2:toWorld(P1:toLocal(P1:pos() + En:vel() + En:getVar("Vel"):vector(1)))) - P2:pos())))
+                        En:tele(P2:toWorld(P1:toLocal(En:pos())) + vec(0,0,En:isPlayer() * 2))
+
+                        soundPlayWorld("weapons/portalgun/portal_exit_0" + randint(1,2) + ".wav",P2:pos(),70,100,1)
+                        if(En:isPlayer()){
+                            setOwner(En) setEyeAngles(P2:toWorld(P1:toLocal(En:eyeAngles())):forward():toAngle()) setOwner(O)
+                        }
+                        else{En:setAng(P2:toWorld(P1:toLocal(En:angles())))}
+                    }
+                }
+                if(!STR:find(En:toString()) & En:isExist()){
+                    if(En:getVarNum("Solid")){En:setVarNum("Solid",0) En:propNotSolid(0) Entitys_1[I,entity]:remove()}
+                    if(En:getVar("Vel"):vector(1)){En:setVar("Vel",vec())}
+                }
+            }
+        }
+        ArSave1 = Ar
+    }else{
+        Ar = findToArray()
+        STR = ""
+
+        for(I = 1,Ar:count()){
+            En = Ar[I,entity]
+            if(En:mass() & !En:isFrozen() | En:isAlive()){
+                STR = STR + En:toString() + " "
+                if(!En:getVarNum("Solid") & En:mass() & !En:isFrozen()){En:setVarNum("Solid",1) if(Size2 < 1){En:applyForce(-P2:up() * En:mass() * 50)} En:propNotSolid(1)
+                    soundPlayWorld("weapons/portalgun/portal_enter_0" + randint(1,3) + ".wav",P2:pos(),70,100,1)
+                }
+
+                Ents = Entitys_2[I,entity]
+                if(!Ents:isExist() & En:mass()){
+                    Prop = propSpawn(En:model(),1) Prop:propNotSolid(1) Prop:removeOnDelete(En) findExcludeEntity(Prop) Entitys_2[I,entity] = Prop
+                }else{
+                    Ents:setPos(P1:toWorld(P2:toLocal(En:pos())))
+                    Ents:setAng(P1:toWorld(P2:toLocal(En:angles())))
+                }
+                if(Ents:model() != En:model()){Ents:remove()}
+                
+                if(En:isAlive()){
+                    if(!En:getVar("Vel"):vector(1)){
+                        En:setVar("Vel",O:vel())
+                        soundPlayWorld("weapons/portalgun/portal_enter_0" + randint(1,3) + ".wav",P2:pos(),60,100,1)
+                    }else{
+                        En:setVar("Vel",(En:getVar("Vel"):vector(1) + vec(0,0,min(0,P2:up():z())) * 5))
+                        En:setPos(En:pos() + En:getVar("Vel"):vector(1) / 10)
+                    }
+                }
+            }else{findExcludeEntity(En)}
+        }
+        if(Ar:count() != ArSave2:count() | -P2:toLocal(En:pos()):z() <= -10 & En:mass()){
+            for(I = 1,ArSave2:count()){
+                En = ArSave2[I,entity]
+                if(-P2:toLocal(En:pos()):z() <= -1){
+                    if(En:mass() & !En:isFrozen() | En:isAlive()){
+
+                        En:setVel(((P1:toWorld(P2:toLocal(P2:pos() + En:vel() + En:getVar("Vel"):vector(1)))) - P1:pos()))
+                        En:tele(P1:toWorld(P2:toLocal(En:pos())) + vec(0,0,En:isPlayer() * 2))
+                        En:setAng(P1:toWorld(P2:toLocal(En:angles())))
+
+                        soundPlayWorld("weapons/portalgun/portal_exit_0" + randint(1,2) + ".wav",P1:pos(),60,100,1)
+                        if(En:isPlayer()){
+                            setOwner(En) setEyeAngles(P1:toWorld(P2:toLocal(En:eyeAngles())):forward():toAngle()) setOwner(O)
+                        }
+                    }
+                }
+                if(!STR:find(En:toString()) & En:isExist()){
+                    if(En:getVarNum("Solid")){En:setVarNum("Solid",0) En:propNotSolid(0) Entitys_2[I,entity]:remove()}
+                    if(En:getVar("Vel"):vector(1)){En:setVar("Vel",vec())}
+                }
+            }
+        }
+        ArSave2 = Ar
+    }
+}
+
+if(Shoot){
+    S = 1
+    P_ST = holoEntity(34)
+    P_P = P_ST:pos() + P_ST:up() * 5
+    P_S = 5 * S
+    P_Sp = 10
+
+    for(I2 = 1,10)
+    {    
+        P_V = vec(0,0,1):rotate(P_ST:angles()) * I2 * P_Sp * 2 * S
+        P_R = random(360)
+        particleGravity(vec()) 
+        particle((6 - I2) / P_Sp,P_S * 8,0,"sprites/light_glow02_add",Gun_Light,P_P,P_V,P_R,0)
+    }
+    P_Sp = 2.5
+    for(I = 1,3)
+    {
+        for(I2 = 1,10)
+        {    
+            P_V = vec(cos(I * (360 / 3)),sin(I * (360 / 3)),0):rotate(P_ST:angles()) * I2 * P_Sp * S
+            P_R = random(360)
+            particleGravity(vec()) 
+            particle((6 - I2) / (P_Sp * 2),P_S * 4 ,0,"sprites/light_glow02_add",Gun_Light,P_P,P_V * 2,P_R,0)
+        }
+    }
+}
+holoColor(1,Gun_Light)
+holoColor(8,Gun_Light)
+holoColor(34,Gun_Light)
+
+#[
+@persist [P1 P2 Ent]:entity
+@trigger 
+interval(10)
+E = entity()
+Model = "models/props_docks/channelmarker_gib04.mdl"
+if(first()){
+    P1 = propSpawn("models/hunter/plates/plate1x1.mdl",1) P1:setAlpha(0) P1:setdLight(vec(0,200,255),5,50)
+    P2 = propSpawn("models/hunter/plates/plate1x1.mdl",1) P2:setAlpha(0) P2:setdLight(vec(255,100,0),5,50)
+    Ent = propSpawn("models/hunter/blocks/cube025x025x025.mdl",1) Ent:setAlpha(0) Ent:noCollideAll(1)
+    I = 1 holoCreate(I) holoModel(I,"cube") holoAng(I,P1:angles()) holoPos(I,P1:pos()) holoMaterial(I,"lights/white") holoScale(I,vec(4,4,0.2)) holoParent(I,P1) holoColor(I,vec(0,200,255))
+    I = 2 holoCreate(I) holoModel(I,"cube") holoAng(I,P2:angles()) holoPos(I,P2:pos()) holoMaterial(I,"lights/white") holoScale(I,vec(4,4,0.2)) holoParent(I,P2) holoColor(I,vec(255,100,0))
+    
+    I = 3 holoCreate(I) holoModel(I,Model) holoAng(I,Ent:angles()) holoPos(I,Ent:pos()) holoParent(I,Ent) holoClipEnabled(I,1)
+    I = 4 holoCreate(I) holoModel(I,Model) holoParent(I,E) holoClipEnabled(I,1)
+
+    I = 5 holoCreate(I) holoModel(I,"cube") holoAng(I,P1:angles()) holoPos(I,P1:toWorld(vec(20,0,0))) holoMaterial(I,"lights/white") holoScale(I,vec(0.5)) holoParent(I,P1)
+    I = 6 holoCreate(I) holoModel(I,"cube") holoAng(I,P2:angles()) holoPos(I,P2:toWorld(vec(20,0,0))) holoMaterial(I,"lights/white") holoScale(I,vec(0.5)) holoParent(I,P2)
+}
+P = P1:toLocal(Ent:pos()) holoPos(4,P2:toWorld(vec(P:x(),-P:y(),-P:z())))
+A = P1:toLocal(Ent:angles()) holoAng(4,P2:toWorld(ang(A:pitch(),-A:yaw(),A:roll() + 180)))
+holoClip(3,P1:pos(),P1:up(),1)
+holoClip(4,P2:pos(),P2:up(),1)
+
+if(changed(owner():keyPressed("B")) & owner():keyPressed("B")){P1:setPos(owner():aimPos()) P1:setAng(owner():aimNormal():toAngle() + ang(90,0,0))}
+if(changed(owner():keyPressed("N")) & owner():keyPressed("N")){P2:setPos(owner():aimPos()) P2:setAng(owner():aimNormal():toAngle() + ang(90,0,0))}
+
+#[
+Color = vec(255,125,0)
+#Color = vec(0,200,255)
+E = entity()
+if(first()){
+    #I = 1 holoCreate(I) holoScaleUnits(I,vec(106,59,0.1)) holoModel(I,"hq_tube_thin") holoColor(I,Color) holoMaterial(I,"models/alyx/emptool_glow")
+    #I = 2 holoCreate(I) holoScaleUnits(I,vec(106,59,0.1) * 1.1) holoModel(I,"hq_tube") holoColor(I,Color,0.4) holoMaterial(I,"models/props_combine/portalball001_sheet")
+    I = 1 holoCreate(I) holoScaleUnits(I,vec(106,59,0) * 1.12) holoDisableShading(I,1) holoAng(I,E:toWorld(ang(0,0,180))) holoModel(I,"hq_torus") holoColor(I,Color) holoMaterial(I,"models/props_combine/stasisfield_beam")
+    I = 2 holoCreate(I) holoScaleUnits(I,vec(106,59,0.1)) holoDisableShading(I,1) holoModel(I,"hqcylinder") holoColor(I,Color) holoMaterial(I,"")
+    I = 3 holoCreate(I) holoScaleUnits(I,vec(106,59,0.1)) holoDisableShading(I,1) holoModel(I,"hqcylinder") holoColor(I,Color) holoMaterial(I,"models/shadertest/predator")
+    I = 4 holoCreate(I) holoScaleUnits(I,vec(106,59,0.11)) holoDisableShading(I,1) holoModel(I,"hqcylinder") holoColor(I,Color) holoMaterial(I,"models/props/cs_office/clouds")
+
+    I = 5 holoCreate(I) holoScale(I,vec()) holoParent(I,E) holoEntity(I):setTrails(0,20,1,"effects/beam_generic01",Color,255)
+    I = 6 holoCreate(I) holoScale(I,vec()) holoParent(I,E) holoEntity(I):setTrails(0,20,1,"effects/beam_generic01",Color,255)
+}
+R = random(360)
+particleGravity(vec(cos(R - 200) * 53,sin(R - 200) * 30,10):rotate(E:angles())) particle(2,10,0,"sprites/light_glow02_add",Color + vec(0,random(55),0),E:pos() + vec(cos(R) * 53,sin(R) * 30,0):rotate(E:angles()),vec(cos(R - 90) * 53,sin(R - 90) * 30,0):rotate(E:angles()),0,0,0,255)
+holoPos(5,E:pos() + vec(cos(curtime() * 400) * 53,sin(curtime() * 400) * 30,0):rotate(E:angles()))
+holoPos(6,E:pos() - vec(cos(curtime() * 400) * 53,sin(curtime() * 400) * 30,0):rotate(E:angles()))
+

@@ -1,0 +1,784 @@
+@name Paper Clip Mingebag Version 2
+@inputs 
+@outputs 
+@persist Count Dir:vector Player:entity Follow Channel Sounds:array AmbientSound
+@persist Ambient:array Materials:array HoloIndex Hold ChangeDirection RepeatBuild Theta
+@persist BuildPosition:vector ContraptionProps:array ContraptionStart:array ContraptionLength:array WeldCount IntYaw PosCount NewPos:vector
+@persist BuildFrequency SpeakFrequency TurnFrequency WalkSpeed ContraptionIndex ContraptionPropIndex Entity:entity Entities:array MainEntity:entity
+@persist HoloCount PhysgunHoloIndex IsMaster CountMaster Players:array PlayerHolos:array CRight:vector CForward:vector ForceSound WeldEntity:entity
+@persist ForceDir ForceYaw ForceForward
+@model models/kleiner.mdl
+@trigger 
+
+template
+
+#[
+SOURCE: https://youtu.be/HrGXtXybOcs?si=uC3MQ8-KlZ0XIkgi
+
+INFO: The Fricken Mingebag Invasion! (E2 invasion chip, war of the servers inspired)
+
+    VERSION 2 - (Requires propcore)
+    This new version requires the propcore E2 extension be installed on the server, which is probably ~50% of servers. If you receive an error "xxx function not found", then the server is missing propcore.
+
+    Description
+    The fricken mingebags made real and taking over a server near you.
+
+    Mingebag Contraption Artists
+    Myself: Telephone pole with dead babies.
+    The Magic Muffin Burglar: Fountain with bathtubs.
+    AnDrEw: Large cargo crate gate.
+    AnDrEw: Killer robot.
+    BigT44 & Myself: Crate car.
+    AnDrEw: Messy desk.
+    AnDrEw: Mingebag war of the servers machine.
+    Myself: Mingebag missile launcher.
+
+    Video
+
+
+    Code
+    This code is too large to copy and paste. Please download this file, Attachment 7468 mingebag_v2.txt, and save it to:
+    Steam\steamapps\<username>\garrysmod\garrysmod\dat a\Expression2
+    When you spawn the chip, you need to use your physgun to unfreeze him, just physgun near his feet.
+
+
+]#
+
+#@model models/zombie/poison.mdl
+#@model models/weapons/v_superphyscannon.mdl
+if( first() | duped() )
+{
+    #########################################
+    ############### SETTINGS ################
+    #########################################
+    HoloCount = 12 # The maximum nubmer of holos each mingebag will create
+    BuildFrequency = 70 # It will build something every ~30th execution. (6 seconds)
+    SpeakFrequency = 10 # It will say something every ~30th execution. (6 seconds)
+    TurnFrequency = 30 # It will turn every %5 of executions. (6 seconds)
+    WalkSpeed = 1.3 # 1 is normal speed, 1.5 is faster, 0.5 is slower.
+    AmbientSound = 1 # 1 enables ambient sound, 0 disables ambient sound.
+    #########################################
+    #########################################
+    #########################################
+   
+    # Create the mock gravgun
+    holoCreate(31,entity():pos()+vec(0,0,35)+entity():forward()*8,vec(0.6,0.6,1.1),entity():angles()+ang(90,0,0),vec(100,100,100),"hqcylinder")
+    holoCreate(32,entity():pos()+vec(0,0,35)+entity():forward()*8-entity():forward()*6-entity():up()*3,vec(0.5,0.5,0.9),ang(90,90,0),vec(100,100,100),"hqcylinder")
+    holoCreate(33,entity():pos()+vec(0,0,35)+entity():forward()*8+entity():forward()*6,vec(0.8,0.8,0.2),entity():angles()+ang(90,0,0),vec(100,100,100),"hqcylinder")
+    holoCreate(34,entity():pos()+vec(0,0,35)+entity():forward()*8+entity():forward()*7,vec(0.45,0.45,0.2),entity():angles()+ang(90,0,0),vec(100,100,100),"hqcylinder")
+    holoCreate(35,entity():pos()+vec(0,0,35)+entity():forward()*8+entity():forward()*10,vec(0.8,0.8,0.8),entity():angles()+ang(90,0,0),vec(255,255,255),"hqsphere")
+    holoCreate(36,entity():pos()+vec(0,0,35)+entity():forward()*8-entity():forward()*8-entity():up()*3,vec(1,0.4,0.4),entity():angles()+ang(-30,0,0),vec(100,100,100),"cube")
+    holoMaterial(35,"models/wireframe")
+    Index = 31
+    while( Index <= 36 )
+    {
+        holoParent(Index,entity())
+        Index++
+    }
+
+    PhysgunHoloIndex = 1
+    HoloIndex = 3
+    
+    print("Made by Paper Clip")
+    #entity():unFreeze()
+    entity():setMass(5000)
+    Channel = randint(1,100000)
+    Sounds[1,string] = "vo/k_lab/kl_ahhhh.wav"
+    Sounds[2,string] = "vo/k_lab/kl_almostforgot.wav"
+    Sounds[3,string] = "vo/k_lab/kl_barneyhonor.wav"
+    Sounds[4,string] = "vo/k_lab/kl_barneysturn.wav"
+    Sounds[5,string] = "vo/k_lab/kl_besokind.wav"
+    Sounds[6,string] = "vo/k_lab/kl_blast.wav"
+    Sounds[7,string] = "vo/k_lab/kl_bonvoyage.wav"
+    Sounds[8,string] = "vo/k_lab/kl_cantcontinue.wav"
+    Sounds[9,string] = "vo/k_lab/kl_cantwade.wav"
+    Sounds[10,string] = "vo/k_lab/kl_careful.wav"
+    Sounds[11,string] = "vo/k_lab/kl_charger01.wav"
+    Sounds[12,string] = "vo/k_lab/kl_charger02.wav"
+    Sounds[13,string] = "vo/k_lab/kl_coaxherout.wav"
+    Sounds[14,string] = "vo/k_lab/kl_comeout.wav"
+    Sounds[15,string] = "vo/k_lab/kl_credit.wav"
+    Sounds[16,string] = "vo/k_lab/kl_dearme.wav"
+    Sounds[17,string] = "vo/k_lab/kl_debeaked.wav"
+    Sounds[18,string] = "vo/k_lab/kl_delaydanger.wav"
+    Sounds[19,string] = "vo/k_lab/kl_diditwork.wav"
+    Sounds[20,string] = "vo/k_lab/kl_ensconced.wav"
+    Sounds[21,string] = "vo/k_lab/kl_excellent.wav"
+    Sounds[22,string] = "vo/k_lab/kl_fewmoments01.wav"
+    Sounds[23,string] = "vo/k_lab/kl_fewmoments02.wav"
+    Sounds[24,string] = "vo/k_lab/kl_fiddlesticks.wav"
+    Sounds[25,string] = "vo/k_lab/kl_finalsequence.wav"
+    Sounds[26,string] = "vo/k_lab/kl_finalsequence02.wav"
+    Sounds[27,string] = "vo/k_lab/kl_fitglove01.wav"
+    Sounds[28,string] = "vo/k_lab/kl_fitglove02.wav"
+    Sounds[29,string] = "vo/k_lab/kl_fruitlessly.wav"
+    Sounds[30,string] = "vo/k_lab/kl_getinposition.wav"
+    Sounds[31,string] = "vo/k_lab/kl_getoutrun01.wav"
+    Sounds[32,string] = "vo/k_lab/kl_getoutrun02.wav"
+    Sounds[33,string] = "vo/k_lab/kl_getoutrun03.wav"
+    Sounds[34,string] = "vo/k_lab/kl_gordongo.wav"
+    Sounds[35,string] = "vo/k_lab/kl_gordonthrow.wav"
+    Sounds[36,string] = "vo/k_lab/kl_hedyno01.wav"
+    Sounds[37,string] = "vo/k_lab/kl_hedyno02.wav"
+    Sounds[38,string] = "vo/k_lab/kl_hedyno03.wav"
+    Sounds[39,string] = "vo/k_lab/kl_helloalyx01.wav"
+    Sounds[40,string] = "vo/k_lab/kl_helloalyx02.wav"
+    Sounds[41,string] = "vo/k_lab/kl_heremypet01.wav"
+    Sounds[42,string] = "vo/k_lab/kl_heremypet02.wav"
+    Sounds[43,string] = "vo/k_lab/kl_hesnotthere.wav"
+    Sounds[44,string] = "vo/k_lab/kl_holdup01.wav"
+    Sounds[45,string] = "vo/k_lab/kl_holdup02.wav"
+    
+    # Setup the contraption array
+    Index = 1
+    CIndex = 1
+    
+    # Poles with babies and spikes
+    ContraptionStart[CIndex,number]=Index
+    ContraptionProps[Index,string] = "models/props_docks/dock01_polecluster01d_256.mdl", Index++
+    ContraptionProps[Index,vector] = vec(-75.274047851563,74.963470458984,124.46967434883) , Index++
+    ContraptionProps[Index,angle] = ang(-10.477889060974,-121.19274902344,-1.0406188964844) , Index++
+    ContraptionProps[Index,string] = "models/props_c17/doll01.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(8.38037109375,9.6735382080078,53.585721254349) , Index++
+    ContraptionProps[Index,angle] = ang(6.7008118629456,-4.4109973907471,96.699142456055) , Index++
+    ContraptionProps[Index,string] = "models/props_c17/doll01.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(9.9498291015625,30.004791259766,103.69992184639) , Index++
+    ContraptionProps[Index,angle] = ang(13.826231002808,58.583148956299,90.387100219727) , Index++
+    ContraptionProps[Index,string] = "models/props_mining/railroad_spike01.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-161.5390625,137.52465820313,33.641541719437) , Index++
+    ContraptionProps[Index,angle] = ang(4.0405893325806,-69.133857727051,111.87353515625) , Index++
+    ContraptionProps[Index,string] = "models/props_mining/railroad_spike01.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(16.346923828125,7.6977233886719,54.816483736038) , Index++
+    ContraptionProps[Index,angle] = ang(4.0298380851746,170.70556640625,111.80338287354) , Index++
+    ContraptionProps[Index,string] = "models/props_mining/railroad_spike01.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(13.478881835938,34.07551574707,102.36293148994) , Index++
+    ContraptionProps[Index,angle] = ang(-23.130643844604,-142.02041625977,-130.87590026855) , Index++
+    ContraptionProps[Index,string] = "models/props_c17/doll01.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-155.81311035156,128.82465362549,52.23153424263) , Index++
+    ContraptionProps[Index,angle] = ang(29.51743888855,89.702209472656,43.645275115967) , Index++
+    ContraptionProps[Index,string] = "models/props_mining/railroad_spike01.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-160.41149902344,135.89577484131,51.208520174026) , Index++
+    ContraptionProps[Index,angle] = ang(-1.7439596652985,-56.300277709961,-66.924407958984) , Index++
+    ContraptionProps[Index,string] = "models/props_c17/doll01.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-161.73986816406,127.30555725098,35.868851900101) , Index++
+    ContraptionProps[Index,angle] = ang(-23.22145652771,69.076309204102,166.2497253418) , Index++
+    ContraptionLength[CIndex,number]=9
+    CIndex++
+
+    # The Magic Muffin Burglar - Fountain with bathtub
+    ContraptionStart[CIndex,number]=Index
+    ContraptionProps[Index,string] = "models/props_c17/fountain_01.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(6.3623046875,86.719970703125,-1.8295059204102) , Index++
+    ContraptionProps[Index,angle] = ang(-0.37829715013504,-91.577735900879,-0.26675415039063) , Index++
+    ContraptionProps[Index,string] = "models/props_c17/furniturebathtub001a.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(24.954345703125,55.749267578125,50.546936035156) , Index++
+    ContraptionProps[Index,angle] = ang(-0.29167503118515,-13.942336082458,-3.6614379882813) , Index++
+    ContraptionProps[Index,string] = "models/props_c17/furniturebathtub001a.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(64.263549804688,57.822509765625,23.208312988281) , Index++
+    ContraptionProps[Index,angle] = ang(0.12400359660387,-16.34423828125,-2.857177734375) , Index++
+    ContraptionProps[Index,string] = "models/props_c17/furniturebathtub001a.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-4.478271484375,107.44116210938,157.29667663574) , Index++
+    ContraptionProps[Index,angle] = ang(-0.24508817493916,-159.07881164551,11.312384605408) , Index++
+    ContraptionProps[Index,string] = "models/props_c17/furniturebathtub001a.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-44.606811523438,67.719970703125,22.207244873047) , Index++
+    ContraptionProps[Index,angle] = ang(-0.46350422501564,-59.533531188965,-0.49838256835938) , Index++
+    ContraptionProps[Index,string] = "models/props_c17/furniturebathtub001a.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(39.85400390625,44.853515625,139.4612121582) , Index++
+    ContraptionProps[Index,angle] = ang(-0.099754072725773,-21.091268539429,-0.32000732421875) , Index++
+    ContraptionProps[Index,string] = "models/props_c17/furniturebathtub001a.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-19.253051757813,103.50268554688,40.656936645508) , Index++
+    ContraptionProps[Index,angle] = ang(-2.3110964298248,-167.11477661133,-13.257080078125) , Index++
+    ContraptionProps[Index,string] = "models/props_c17/furniturebathtub001a.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(16.076904296875,65.599365234375,88.070220947266) , Index++
+    ContraptionProps[Index,angle] = ang(-1.053530216217,-3.7126178741455,-22.395446777344) , Index++
+    ContraptionProps[Index,string] = "models/props_c17/furniturebathtub001a.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-37.099609375,56.63330078125,138.85928344727) , Index++
+    ContraptionProps[Index,angle] = ang(-0.87147402763367,-101.70720672607,-0.19607543945313) , Index++
+    ContraptionLength[CIndex,number]=9
+    CIndex++
+    
+    # Boxes and chair by AnDrEw
+    ContraptionStart[CIndex,number]=Index
+    ContraptionProps[Index,string] = "models/props_wasteland/cargo_container01b.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-45.581176757813,189.64794921875,58.070470571518) , Index++
+    ContraptionProps[Index,angle] = ang(-0.012241216376424,-164.56466674805,0.010348196141422) , Index++
+    ContraptionProps[Index,string] = "models/props_lab/frame002a.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(471.7724609375,272.79760742188,59.390004873276) , Index++
+    ContraptionProps[Index,angle] = ang(-6.2439408302307,18.175930023193,-24.525787353516) , Index++
+    ContraptionProps[Index,string] = "models/props_wasteland/cargo_container01b.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(194.73071289063,197.51220703125,509.35916304588) , Index++
+    ContraptionProps[Index,angle] = ang(2.5689480304718,-74.265953063965,-20.321075439453) , Index++
+    ContraptionProps[Index,string] = "models/props_wasteland/cargo_container01b.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-53.070434570313,194.21850585938,318.44821333885) , Index++
+    ContraptionProps[Index,angle] = ang(-0.0067532043904066,-81.587539672852,89.245834350586) , Index++
+    ContraptionProps[Index,string] = "models/props_wasteland/cargo_container01c.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(403.89013671875,258.43041992188,192.30032515526) , Index++
+    ContraptionProps[Index,angle] = ang(0.041352029889822,14.576957702637,-89.999969482422) , Index++
+    ContraptionProps[Index,string] = "models/props_trainstation/tracksign10.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-23.220825195313,142.58935546875,295.35223555565) , Index++
+    ContraptionProps[Index,angle] = ang(0.058795284479856,-81.72191619873,6.7798180580139) , Index++
+    ContraptionProps[Index,string] = "models/props_c17/bench01a.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(34.221801757813,181.51977539063,17.998534917831) , Index++
+    ContraptionProps[Index,angle] = ang(5.6743841171265,15.434228897095,0) , Index++
+    ContraptionProps[Index,string] = "models/props_c17/streetsign005b.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(23.467529296875,183.5615234375,79.648462057114) , Index++
+    ContraptionProps[Index,angle] = ang(0.0013865004293621,-74.597526550293,0.13550043106079) , Index++
+    ContraptionProps[Index,string] = "models/props_combine/breenglobe.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(324.8076171875,231.00610351563,115.80609297752) , Index++
+    ContraptionProps[Index,angle] = ang(84.179374694824,21.98533821106,-173.1153717041) , Index++
+    ContraptionProps[Index,string] = "models/props_trainstation/trashcan_indoor001b.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(168.56994628906,225.10791015625,17.428138494492) , Index++
+    ContraptionProps[Index,angle] = ang(0.22148089110851,-81.957153320313,0.53466212749481) , Index++
+    ContraptionLength[CIndex,number]=10
+    CIndex++
+    
+    # Killer robot by AnDrEw
+    ContraptionStart[CIndex,number]=Index
+    ContraptionProps[Index,string] = "models/props_c17/chair_stool01a.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-0.5784912109375,6.6634521484375,-5.2298784255981) , Index++
+    ContraptionProps[Index,angle] = ang(3.5407764911652,-90.782936096191,4.1086602210999) , Index++
+    ContraptionProps[Index,string] = "models/props_c17/cashregister01a.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(25.712036132813,-0.0906982421875,110.70984387398) , Index++
+    ContraptionProps[Index,angle] = ang(7.7316031455994,-82.049674987793,1.9269794225693) , Index++
+    ContraptionProps[Index,string] = "models/props_c17/chair_office01a.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-18.84521484375,-6.39697265625,119.24142956734) , Index++
+    ContraptionProps[Index,angle] = ang(83.794509887695,154.56686401367,-24.947723388672) , Index++
+    ContraptionProps[Index,string] = "models/props_c17/doll01.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(20.830200195313,3.787109375,191.05652356148) , Index++
+    ContraptionProps[Index,angle] = ang(-4.1138706207275,-110.39014434814,6.13898229599) , Index++
+    ContraptionProps[Index,string] = "models/props_c17/chair_stool01a.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-56.018188476563,-34.061401367188,123.18156170845) , Index++
+    ContraptionProps[Index,angle] = ang(-64.54460144043,173.60578918457,84.749404907227) , Index++
+    ContraptionProps[Index,string] = "models/props_c17/chair_stool01a.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(70.82568359375,2.2725830078125,-6.2726631164551) , Index++
+    ContraptionProps[Index,angle] = ang(0.34628185629845,-99.84056854248,0.50337892770767) , Index++
+    ContraptionProps[Index,string] = "models/props_c17/furniturewashingmachine001a.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(28.145141601563,-3.4815673828125,83.586453676224) , Index++
+    ContraptionProps[Index,angle] = ang(7.6499271392822,-79.819725036621,-87.734497070313) , Index++
+    ContraptionProps[Index,string] = "models/props_c17/chair_stool01a.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(97.748901367188,-26.973022460938,121.66967511177) , Index++
+    ContraptionProps[Index,angle] = ang(-69.764846801758,-171.90115356445,88.543281555176) , Index++
+    ContraptionProps[Index,string] = "models/props_c17/chair_office01a.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-6.4259033203125,4.9403076171875,30.750996828079) , Index++
+    ContraptionProps[Index,angle] = ang(3.9274506568909,-174.08729553223,-2.7758178710938) , Index++
+    ContraptionProps[Index,string] = "models/props_c17/chair_office01a.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(59.045288085938,3.5965576171875,120.57285809517) , Index++
+    ContraptionProps[Index,angle] = ang(-85.385734558105,-168.31848144531,-16.633544921875) , Index++
+    ContraptionProps[Index,string] = "models/props_c17/chair_office01a.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(69.378173828125,0.3092041015625,30.084058046341) , Index++
+    ContraptionProps[Index,angle] = ang(0.83163213729858,176.05569458008,0.36748576164246) , Index++
+    ContraptionProps[Index,string] = "models/props_c17/playground_teetertoter_seat.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(36.25927734375,0.1209716796875,56.726865053177) , Index++
+    ContraptionProps[Index,angle] = ang(4.3537702560425,-91.265594482422,-0.33587646484375) , Index++
+    ContraptionProps[Index,string] = "models/props_c17/consolebox01a.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(30.649658203125,-1.123046875,58.755715608597) , Index++
+    ContraptionProps[Index,angle] = ang(8.8399000167847,-93.839645385742,0.14202795922756) , Index++
+    ContraptionProps[Index,string] = "models/props_c17/chair_kleiner03a.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(22.90576171875,-7.34912109375,139.58231091499) , Index++
+    ContraptionProps[Index,angle] = ang(-4.2826137542725,92.384399414063,-1.0391845703125) , Index++
+    ContraptionProps[Index,string] = "models/props_interiors/furniture_couch01a.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(21.245239257813,-3.653564453125,118.34557080269) , Index++
+    ContraptionProps[Index,angle] = ang(-4.2266087532043,90.364166259766,179.24230957031) , Index++
+    ContraptionLength[CIndex,number]=15
+    CIndex++
+
+    # Box car and babies by BigT44
+    ContraptionStart[CIndex,number]=Index
+    ContraptionProps[Index,string] = "models/props_junk/sawblade001a.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(0.707275390625,-0.44140625,16.085914611816) , Index++
+    ContraptionProps[Index,angle] = ang(89.99967956543,0.10736347734928,180) , Index++
+    ContraptionProps[Index,string] = "models/props_junk/wood_crate002a.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(22.520263671875,-32.05419921875,32.660556793213) , Index++
+    ContraptionProps[Index,angle] = ang(0.00031673084595241,-179.89263916016,0.00018343862029724) , Index++
+    ContraptionProps[Index,string] = "models/props_junk/sawblade001a.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(44.341064453125,-62.4892578125,15.631046295166) , Index++
+    ContraptionProps[Index,angle] = ang(89.999664306641,-179.89263916016,180) , Index++
+    ContraptionProps[Index,string] = "models/props_mining/railroad_spike01.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(26.05908203125,-74.697265625,34.356388092041) , Index++
+    ContraptionProps[Index,angle] = ang(3.7981202602386,91.887283325195,-96.485229492188) , Index++
+    ContraptionProps[Index,string] = "models/nova/chair_office02.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(22.0693359375,-42.7099609375,52.313587188721) , Index++
+    ContraptionProps[Index,angle] = ang(0.012900992296636,159.69131469727,-0.06591796875) , Index++
+    ContraptionProps[Index,string] = "models/props_c17/doll01.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(22.35595703125,-68.46923828125,34.591991424561) , Index++
+    ContraptionProps[Index,angle] = ang(40.382656097412,-105.73069000244,65.038192749023) , Index++
+    ContraptionProps[Index,string] = "models/props_junk/sawblade001a.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(0.82470703125,-62.88525390625,15.835224151611) , Index++
+    ContraptionProps[Index,angle] = ang(89.999687194824,0.10736272484064,180) , Index++
+    ContraptionProps[Index,string] = "models/props_mining/railroad_spike01.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(18.712646484375,13.51025390625,38.49979019165) , Index++
+    ContraptionProps[Index,angle] = ang(2.7901999950409,-111.82270050049,75.830848693848) , Index++
+    ContraptionProps[Index,string] = "models/props_c17/doll01.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(17.07470703125,6.30078125,38.543605804443) , Index++
+    ContraptionProps[Index,angle] = ang(-41.308387756348,92.518478393555,82.465950012207) , Index++
+    ContraptionProps[Index,string] = "models/props_junk/sawblade001a.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(44.22509765625,-0.59521484375,15.710739135742) , Index++
+    ContraptionProps[Index,angle] = ang(89.999687194824,-179.89263916016,180) , Index++
+    ContraptionLength[CIndex,number]=10
+    CIndex++
+
+    # Office by AnDrEw
+    ContraptionStart[CIndex,number]=Index
+    ContraptionProps[Index,string] = "models/props_combine/breendesk.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-45.090759277344,23.60107421875,-0.93528869748116) , Index++
+    ContraptionProps[Index,angle] = ang(0,86.953605651855,0.0043197819031775) , Index++
+    ContraptionProps[Index,string] = "models/props_c17/clock01.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-49.064880371094,0.4267578125,31.793306142092) , Index++
+    ContraptionProps[Index,angle] = ang(57.071311950684,-108.58797454834,-13.196807861328) , Index++
+    ContraptionProps[Index,string] = "models/props_c17/consolebox03a.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-81.481811523438,11.62841796875,41.799691945314) , Index++
+    ContraptionProps[Index,angle] = ang(-0.74728399515152,-87.442489624023,0.26591345667839) , Index++
+    ContraptionProps[Index,string] = "models/props_lab/plotter.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-10.158447265625,19.89599609375,0.45741209387779) , Index++
+    ContraptionProps[Index,angle] = ang(0.28076505661011,177.7133026123,-0.00750732421875) , Index++
+    ContraptionProps[Index,string] = "models/props_c17/computer01_keyboard.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-90.666748046875,25.61083984375,17.61595132947) , Index++
+    ContraptionProps[Index,angle] = ang(75.667663574219,-141.35359191895,42.579303741455) , Index++
+    ContraptionProps[Index,string] = "models/props_c17/consolebox01a.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-79.238342285156,23.04541015625,30.521110326052) , Index++
+    ContraptionProps[Index,angle] = ang(-0.13781595230103,-97.469413757324,0.021654892712831) , Index++
+    ContraptionProps[Index,string] = "models/props_lab/monitor01a.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-46.06396484375,33.6328125,44.141965657473) , Index++
+    ContraptionProps[Index,angle] = ang(5.36536693573,88.957534790039,-0.088043212890625) , Index++
+    ContraptionProps[Index,string] = "models/props_c17/consolebox05a.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-74.715911865234,16.17724609375,52.863954335451) , Index++
+    ContraptionProps[Index,angle] = ang(7.8790302276611,171.33160400391,-1.5869750976563) , Index++
+    ContraptionProps[Index,string] = "models/props_c17/doll01.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-42.342926025391,15.60498046875,15.798881322145) , Index++
+    ContraptionProps[Index,angle] = ang(-2.971629858017,-100.08155059814,12.415196418762) , Index++
+    ContraptionProps[Index,string] = "models/props_c17/chair_stool01a.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-48.597991943359,-29.041015625,-3.1943213641644) , Index++
+    ContraptionProps[Index,angle] = ang(-0.0085126869380474,-106.61933898926,-0.49130249023438) , Index++
+    ContraptionProps[Index,string] = "models/props_combine/breenbust.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-49.256896972656,33.36376953125,69.240766316652) , Index++
+    ContraptionProps[Index,angle] = ang(-7.0185499191284,113.68925476074,-2.6468811035156) , Index++
+    ContraptionProps[Index,string] = "models/props_c17/cashregister01a.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-48.119567871094,12.2333984375,42.748189717531) , Index++
+    ContraptionProps[Index,angle] = ang(0.10894673317671,-179.90344238281,0.42142316699028) , Index++
+    ContraptionProps[Index,string] = "models/props_junk/plasticcrate01a.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-17.870758056641,19.7890625,49.386728078127) , Index++
+    ContraptionProps[Index,angle] = ang(-3.8374593257904,85.767997741699,-176.32797241211) , Index++
+    ContraptionProps[Index,string] = "models/props_lab/desklamp01.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-78.314025878906,33.19580078125,50.998109608889) , Index++
+    ContraptionProps[Index,angle] = ang(0.33968341350555,92.760375976563,-0.13760375976563) , Index++
+    ContraptionProps[Index,string] = "models/props_lab/reciever01d.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-8.0189819335938,35.3154296875,32.671609669924) , Index++
+    ContraptionProps[Index,angle] = ang(-3.8072574138641,88.352447509766,0.41965201497078) , Index++
+    ContraptionProps[Index,string] = "models/props_lab/blastdoor001c.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-39.360137939453,52.3046875,97.729589253664) , Index++
+    ContraptionProps[Index,angle] = ang(82.53401184082,-115.47594451904,-26.702423095703) , Index++
+    ContraptionProps[Index,string] = "models/props_lab/jar01a.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-26.625518798828,3.1904296875,37.884805470705) , Index++
+    ContraptionProps[Index,angle] = ang(-0.3428538441658,-90.350471496582,-0.31674194335938) , Index++
+    ContraptionProps[Index,string] = "models/props_lab/cactus.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-17.877258300781,18.775390625,47.03764513135) , Index++
+    ContraptionProps[Index,angle] = ang(-2.6015243530273,-163.84867858887,-12.873016357422) , Index++
+    ContraptionLength[CIndex,number]=18
+    CIndex++
+
+    ContraptionStart[CIndex,number]=Index
+    ContraptionProps[Index,string] = "models/props_wasteland/wheel02a.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(16.57666015625,2.65087890625,87.097476959229) , Index++
+    ContraptionProps[Index,angle] = ang(89.978019714355,-89.999542236328,180) , Index++
+    ContraptionProps[Index,string] = "models/props_wasteland/prison_lamp001c.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-78.9892578125,142.998046875,622.43051528931) , Index++
+    ContraptionProps[Index,angle] = ang(-89.999603271484,-89.999794006348,180) , Index++
+    ContraptionProps[Index,string] = "models/props_rooftop/attic_window.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-233.71728515625,163.29345703125,707.70004653931) , Index++
+    ContraptionProps[Index,angle] = ang(78.208938598633,120.55194854736,164.76327514648) , Index++
+    ContraptionProps[Index,string] = "models/props_docks/dock01_pole01a_256.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-129.9111328125,2.4306640625,257.4614906311) , Index++
+    ContraptionProps[Index,angle] = ang(-89.999900817871,-179.76800537109,180) , Index++
+    ContraptionProps[Index,string] = "models/props_rooftop/attic_window.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-136.67138671875,210.2724609375,713.36825942993) , Index++
+    ContraptionProps[Index,angle] = ang(76.704887390137,83.920570373535,173.82763671875) , Index++
+    ContraptionProps[Index,string] = "models/props_rooftop/attic_window.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(2.4169921875,71.28857421875,706.45682144165) , Index++
+    ContraptionProps[Index,angle] = ang(78.99861907959,-6.5929346084595,174.09523010254) , Index++
+    ContraptionProps[Index,string] = "models/props_wasteland/wheel03b.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-53.5908203125,-272.90771484375,76.948505401611) , Index++
+    ContraptionProps[Index,angle] = ang(0.086420997977257,-89.69229888916,-0.25698852539063) , Index++
+    ContraptionProps[Index,string] = "models/props_rooftop/attic_window.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-39.6474609375,170.90380859375,709.96622085571) , Index++
+    ContraptionProps[Index,angle] = ang(77.56266784668,57.010173797607,-171.87135314941) , Index++
+    ContraptionProps[Index,string] = "models/props_wasteland/cargo_container01b.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-133.49267578125,-37.45947265625,572.75253677368) , Index++
+    ContraptionProps[Index,angle] = ang(0,179.16900634766,0) , Index++
+    ContraptionProps[Index,string] = "models/props_wasteland/cargo_container01.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-129.986328125,-119.6708984375,181.12749099731) , Index++
+    ContraptionProps[Index,angle] = ang(-0.22785998880863,-179.33799743652,-20.105010986328) , Index++
+    ContraptionProps[Index,string] = "models/props_wasteland/wheel03b.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-203.7255859375,-269.85302734375,72.216495513916) , Index++
+    ContraptionProps[Index,angle] = ang(-0.10674700140953,90.468002319336,-0.0830078125) , Index++
+    ContraptionProps[Index,string] = "models/props_docks/dock01_pole01a_256.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-8.5498046875,3.2373046875,134.60950088501) , Index++
+    ContraptionProps[Index,angle] = ang(0,134.89599609375,0) , Index++
+    ContraptionProps[Index,string] = "models/props_wasteland/cargo_container01.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-132.21484375,-35.6376953125,319.96451187134) , Index++
+    ContraptionProps[Index,angle] = ang(0,179.80700683594,-90) , Index++
+    ContraptionProps[Index,string] = "models/props_docks/dock01_pole01a_256.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-249.10205078125,2.61962890625,135.45749282837) , Index++
+    ContraptionProps[Index,angle] = ang(0,89.996200561523,0.00012078490544809) , Index++
+    ContraptionProps[Index,string] = "models/props_rooftop/attic_window.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-269.53076171875,65.35302734375,706.98312759399) , Index++
+    ContraptionProps[Index,angle] = ang(78.507225036621,-177.83514404297,-179.93310546875) , Index++
+    ContraptionProps[Index,string] = "models/weapons/w_crossbow.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-135.11083984375,199.10693359375,702.27548599243) , Index++
+    ContraptionProps[Index,angle] = ang(18.229061126709,91.512359619141,0.87690103054047) , Index++
+    ContraptionProps[Index,string] = "models/props_wasteland/prison_lamp001c.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-182.42822265625,146.26025390625,622.71249771118) , Index++
+    ContraptionProps[Index,angle] = ang(-90,-90.000495910645,180) , Index++
+    ContraptionProps[Index,string] = "models/props_wasteland/wheel02a.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-273.90673828125,-1.13525390625,88.458499908447) , Index++
+    ContraptionProps[Index,angle] = ang(-45.008201599121,90.158897399902,0.01574370265007) , Index++
+    ContraptionLength[CIndex,number]=18
+    CIndex++
+    
+    
+    # Mignebag missile launcher
+    ContraptionStart[CIndex,number]=Index
+    ContraptionProps[Index,string] = "models/props_vehicles/tire001c_car.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-2.716796875,-3.69970703125,12.75390625) , Index++
+    ContraptionProps[Index,angle] = ang(-0.54467213153839,-89.622138977051,-3.9417419433594) , Index++
+    ContraptionProps[Index,string] = "models/props_vehicles/tire001c_car.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-4.89501953125,-40.58740234375,12.8427734375) , Index++
+    ContraptionProps[Index,angle] = ang(0.12827385962009,90.265914916992,0) , Index++
+    ContraptionProps[Index,string] = "models/props_phx/mk-82.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-28.078125,-20.5068359375,11.9150390625) , Index++
+    ContraptionProps[Index,angle] = ang(-10.56551361084,-4.2823166847229,-0.1109619140625) , Index++
+    ContraptionProps[Index,string] = "models/props_debris/rebar004c_64.mdl" , Index++
+    ContraptionProps[Index,vector] = vec(-0.771484375,-20.2158203125,16.8984375) , Index++
+    ContraptionProps[Index,angle] = ang(0.79791593551636,-8.8475751876831,-93.443267822266) , Index++
+    ContraptionLength[CIndex,number]=4
+    CIndex++
+
+
+    
+    # Setup the prop spawn material list
+    #Materials[1,string] = "phoenix_storms/lag_sign"
+    Materials[1,string] = "phoenix_storms/dome_side"
+    #Materials[2,string] = "models/effects/slimebubble_sheet"
+    
+    # Setup the ambient sound list played by the master mingebag
+    Ambient[1,string] = "ambient/wind/wind_moan4.wav"
+    Ambient[2,number] = 8014
+    Ambient[3,string] = "ambient/wind/wind_moan2.wav"
+    Ambient[4,number] = 5947
+    Ambient[5,string] = "ambient/wind/wind_moan1.wav"
+    Ambient[6,number] = 5016
+    Ambient[7,string] = "ambient/wind/wind_hit1.wav"
+    Ambient[8,number] = 2392
+    Ambient[9,string] = "ambient/wind/wind_hit2.wav"
+    Ambient[10,number] = 2206
+}
+
+if( clk("ambient") )
+{
+    CountMaster++
+    if( mod(CountMaster,1) == 0 )
+    {
+        # Reload the player list
+        PlayerCount = findByClass("player")
+        if( PlayerCount != Players:count() )
+        {
+            # update the holo array
+            Players = findToArray()
+            Index = 1
+            while( Index <= PlayerHolos:count() )
+            {
+                PlayerHolos:remove(Index)
+                Index++
+            }
+            Index = 1
+            while( Index <= Players:count() )
+            {
+                holoCreate(50+HoloCount+Index,Players[Index,entity]:shootPos(),vec(0,0,0))
+                holoAlpha(50+HoloCount+Index,0)
+                holoParentAttachment(50+HoloCount+Index,Players[Index,entity],"eyes")
+                PlayerHolos[Index,number] = 50+HoloCount+Index
+                Index++
+            }
+        }
+        
+    }
+    
+    # Play an ambient sound on all players
+    AmbientIndex = randint(1,Ambient:count()/2)
+    Index = 1
+    while( Index <= PlayerHolos:count() )
+    {
+        if( AmbientSound == 1 )
+        { holoEntity(PlayerHolos[Index,number]):soundPlay(Channel+1+Index,0,Ambient[AmbientIndex*2-1,string]) }
+        Index++
+        if( randint(1,100) == 1 )
+        {
+            # A random zombie sound
+            holoEntity(PlayerHolos[Index,number]):soundPlay(Channel+1+Index+30,0,"npc/fast_zombie/fz_scream1.wav")
+        }
+    }
+    timer("ambient",Ambient[AmbientIndex*2,number])
+}else{
+    Count++
+    
+    if( mod(Count,25) == 0 )
+    {
+        # Check to see if the master mingebag is still alive
+        Master = gGetEnt("masterMingebag")
+        if( !Master )
+        {
+            # This chip will be the master mingebag
+            IsMaster = 1
+            print("Master Mingebag Set")
+            gSetEnt("masterMingebag",entity())
+            if( AmbientSound > 0 )
+            {timer("ambient",500)}
+        }
+    }
+    
+    if( clk("chargeStart") )
+    {
+        holoDelete(PhysgunHoloIndex)
+        Hold = 1
+        entity():soundPlay(Channel,3.275,"weapons/physcannon/superphys_chargeup.wav")
+        
+        # Face towards the prop to be spawned
+        TmpIndex = ContraptionStart[ContraptionIndex,number]+ContraptionPropIndex*3
+        DifPos = ContraptionProps[TmpIndex+1,vector]+BuildPosition-entity():pos()
+        ForceYaw = DifPos:toAngle():yaw()
+        
+        # Create the crotch ball
+        holoCreate(PhysgunHoloIndex+1,entity():pos()+entity():up()*34+entity():forward()*20,vec(1.2,1.2,1.2),entity():angles(),vec(255,255,255))
+        holoModel(PhysgunHoloIndex+1,"hqicosphere")
+        holoMaterial(PhysgunHoloIndex+1,"models/alyx/emptool_glow")
+        holoParent(PhysgunHoloIndex+1,entity())
+        
+        timer("chargeDone",2000)
+        exit()
+    }elseif( clk("chargeDone") )
+    {
+        # Place the current prop
+        TmpIndex = ContraptionStart[ContraptionIndex,number]+ContraptionPropIndex*3
+        Entity=propSpawn(ContraptionProps[TmpIndex,string],ContraptionProps[TmpIndex+1,vector]+BuildPosition,ContraptionProps[TmpIndex+2,angle],1)
+        Entities[Entities:count() + 1,entity] = Entity
+        ContraptionPropIndex++
+        DifPos = Entity:pos()-entity():pos()
+        ForceYaw = DifPos:toAngle():yaw()
+        
+        # Create the physgun
+        SourcePosition = entity():pos()+entity():up()*34+entity():forward()*20
+        DestinationPosition = Entity:massCenter()
+        DifPosition = (DestinationPosition-SourcePosition)
+        holoCreate(PhysgunHoloIndex,DifPosition/2+SourcePosition,vec(DifPosition:length(),0.5,0.5),DifPosition:toAngle(),vec(255,255,255))
+        holoScaleUnits(PhysgunHoloIndex,vec(DifPosition:length(),5,5))
+        holoModel(PhysgunHoloIndex,"cylinder")
+        holoMaterial(PhysgunHoloIndex,"models/alyx/emptool_glow")
+        holoParent(PhysgunHoloIndex,entity())
+        
+        entity():soundPlay(Channel,2,"weapons/physcannon/hold_loop.wav")
+        timer("physDone",2000)
+        exit()
+    }elseif( clk("physDone") )
+    {
+        # Delete the physgun
+        holoDelete(PhysgunHoloIndex)
+        holoDelete(PhysgunHoloIndex+1)
+        #print(ContraptionLength[ContraptionIndex,number]:toString())
+        if( ContraptionPropIndex < ContraptionLength[ContraptionIndex,number] )
+        {
+            if( ContraptionPropIndex != 1 )
+            {
+                # Perform a weld
+                timer("faceEntityThenStart",100)
+                WeldCount = clamp(randint(1,5),1,Entities:count()-1)
+            }else{
+                timer("chargeStart",100)
+                MainEntity = Entity
+                ForceSound = 1
+            }
+        }else{
+            holoDelete(PhysgunHoloIndex)
+            holoDelete(PhysgunHoloIndex+1)
+            ChangeDirection = 2
+            Hold = 0
+        }
+        exit()
+    }elseif( clk("weldStart") ){
+        WeldCount--
+        Entity:soundPlay(Channel,0,"weapons/airboat/airboat_gun_lastshot1.wav")
+        entity():soundPlay(Channel+1,0,"weapons/airboat/airboat_gun_lastshot1.wav")
+        
+        # Create the weld effect
+        SourcePosition = entity():pos()+entity():up()*34+entity():forward()*20
+        DestinationPosition = Entity:massCenter()
+        DifPosition = (DestinationPosition-SourcePosition)
+        holoCreate(PhysgunHoloIndex,DifPosition/2+SourcePosition,vec(DifPosition:length(),0.5,0.5),DifPosition:toAngle(),vec(0,255,0))
+        holoScaleUnits(PhysgunHoloIndex,vec(DifPosition:length(),5,5))
+        holoModel(PhysgunHoloIndex,"cylinder")
+        holoMaterial(PhysgunHoloIndex,"models/alyx/emptool_glow")
+        holoParent(PhysgunHoloIndex,entity())
+        WeldEntity = Entities[randint(1,Entities:count()-1),entity]
+        
+        timer("faceEntityThenEnd",500)
+        exit()
+    }elseif( clk("changePositionsThenStart") ){
+        # Calculate the yaw to the new position
+        holoDelete(PhysgunHoloIndex)
+        DifPos = NewPos-entity():pos()
+        ForceYaw = DifPos:toAngle():yaw()
+        DifAng = angnorm(entity():angles()-ang(0,ForceYaw,0))
+        if( DifPos:length() < 100 | PosCount > 30 )
+        {
+            ForceForward = 0
+            timer("chargeStart",50)
+        }else{
+            ForceForward = 1
+            timer("changePositionsThenStart",100)
+        }
+        PosCount++
+        exit()
+    }elseif( clk("faceEntityThenStart") ){
+        # Calculate the yaw to the entity
+        holoDelete(PhysgunHoloIndex)
+        DifPos = Entity:pos()-entity():pos()
+        ForceYaw = DifPos:toAngle():yaw()
+        DifAng = angnorm(entity():angles()-ang(0,ForceYaw,0))
+        if( abs(DifAng:yaw()) < 10 )
+        {
+            timer("weldStart",50)
+        }else{
+            timer("faceEntityThenStart",200)
+        }
+        exit()
+    }elseif( clk("faceEntityThenEnd") ){
+        # Calculate the yaw to the entity
+        holoDelete(PhysgunHoloIndex)
+        DifPos = WeldEntity:pos()-entity():pos()
+        ForceYaw = DifPos:toAngle():yaw()
+        #Yaw=atan(entity():forward():cross(entity():up()):dot(DifPos),entity():forward():dot(DifPos))
+        DifAng = angnorm(entity():angles()-ang(0,ForceYaw,0))
+        if( abs(DifAng:yaw()) < 10 )
+        {
+            timer("weldEnd",50)
+        }else{
+            timer("faceEntityThenEnd",200)
+        }
+        exit()
+    }elseif( clk("weldEnd") ){
+        WeldEntity:soundPlay(Channel,0,"weapons/airboat/airboat_gun_lastshot1.wav")
+        entity():soundPlay(Channel+1,0,"weapons/airboat/airboat_gun_lastshot1.wav")
+        # Create the weld effect
+        SourcePosition = entity():pos()+entity():up()*34+entity():forward()*20
+        DestinationPosition = WeldEntity:massCenter()
+        DifPosition = (DestinationPosition-SourcePosition)
+        holoCreate(PhysgunHoloIndex,DifPosition/2+SourcePosition,vec(DifPosition:length(),0.5,0.5),DifPosition:toAngle(),vec(0,255,0))
+        holoScaleUnits(PhysgunHoloIndex,vec(DifPosition:length(),5,5))
+        holoModel(PhysgunHoloIndex,"cylinder")
+        holoMaterial(PhysgunHoloIndex,"models/alyx/emptool_glow")
+        holoParent(PhysgunHoloIndex,entity())
+        
+        if( WeldCount < 0 )
+        {
+            timer("changePositionsThenStart",700)
+            PosCount = 0
+            TmpIndex = ContraptionStart[ContraptionIndex,number]+ContraptionPropIndex*3
+            ChangeTheta = random(1,6)*random(1,6)*random(1,4)*(randint(0,1)-0.5)*2
+            Theta = mod(Theta+ChangeTheta,360)
+            Radius = random(200,400)
+            NewPos = ContraptionProps[TmpIndex+1,vector] + BuildPosition + Radius*vec(sin(Theta),cos(Theta),0)
+            
+            ForceSound = 1
+        }else{
+            timer("faceEntityThenStart",500)
+        }
+        exit()
+    }
+    
+    if( randint(1,90) == 1 & Hold == 0 )
+    { 
+        # Search for a nearby player
+        findIncludeClass("player")
+        Count = findInSphere(entity():pos(),randint(500,2000))
+        if( Count > 0 )
+        {
+            findSortByDistance(entity():pos())
+            Player = findResult(1)
+            Follow = randint(5,30)
+            #entity():soundPlay(Channel,5,"npc/fast_zombie/fz_scream1.wav")
+        }
+    }
+    
+    if( ( randint(1,SpeakFrequency) == 1 ) | ForceSound )
+    { 
+        # Play random soundfile
+        entity():soundPlay(Channel+20,10,Sounds[randint(1,Sounds:count()),string])
+        soundPitch(Channel+20,200)
+        ForceSound = 0
+    }
+    
+    if( randint(1,BuildFrequency) == 1 & Hold == 0 )
+    { 
+        # Generate a random physgun target
+        SourcePosition = entity():pos()+entity():up()*34
+
+        Ranger = rangerOffset(1000,SourcePosition, entity():forward()-entity():up()/5+entity():right()*random(-1,1) )
+        if( Ranger:hit() & Ranger:distance() > 75 )
+        {
+            # Create the hologram and hold it
+            BuildPosition = Ranger:position()
+            
+            # Decide on a contraption to build
+            ContraptionIndex = randint(1,ContraptionStart:count())
+            ContraptionPropIndex = 0
+            Entities = array()
+            
+            # Generate the prop orientation
+            CForward = BuildPosition-entity():pos()
+            CRight = CForward:cross(vec(0,0,1))
+        
+            # Start building
+            Hold = 1
+            RepeatBuild = -1
+            timer("chargeStart",100)
+        }else{
+            Hold = 0
+            ChangeDirection = 1
+            entity():soundPlay(Channel,5,"weapons/physcannon/physcannon_tooheavy.wav")
+        }
+    }
+    
+    # Decide on a new direction if required
+    if( random(1,100) > 100-TurnFrequency & Hold == 0 ) {ChangeDirection++}
+    if( ChangeDirection & mod(Count,4) == 0 & Hold == 0 )
+    {
+        Dir = vec(random(-1,1),random(-1,1),random(-1,1)):normalized()
+        ChangeDirection--
+    }
+    
+    if( Follow > 0 )
+    {
+        Follow-- 
+        Dir = (Player:shootPos()-entity():pos()):normalized()
+    }
+    
+    # Angle the Kleiner
+    #Roll = (mod(Count,10)-5)/10*5
+    Roll = 0
+    DesAng = Dir:toAngle():setRoll(Roll):setPitch(0)
+    if( Hold ) { DesAng = DesAng:setYaw(ForceYaw) }
+    DifAng = angnorm(entity():angles()-DesAng)
+    IntYaw = clamp(DifAng:yaw()+IntYaw,-200,200)
+    Force = ang(-DifAng:pitch()*70000 - 10000*entity():angVel():pitch(),-DifAng:yaw()*50000 - IntYaw*5000 - 10000*entity():angVel():yaw(),-DifAng:roll()*70000 - 10000*entity():angVel():roll())
+    
+    entity():applyAngForce(Force)
+    
+    # Move the Kleiner
+    ForceV = random(0,600000)*(Dir+vec(0,0,random(0,0.8)^2))
+    if( Follow > 0 | ForceForward ){ ForceV = ForceV * 1.3 }
+    if( ForceForward )
+    { Dir = entity():forward() }
+    if( ( ( Hold == 0 | ForceForward ) & entity():vel():length() < 300 ) )
+    {entity():applyForce(WalkSpeed*ForceV)}
+    
+    interval(200)
+}
+

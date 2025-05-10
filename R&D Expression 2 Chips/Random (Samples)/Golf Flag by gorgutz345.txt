@@ -1,0 +1,170 @@
+@name golf flag
+@inputs 
+@outputs 
+@persist Dist Play Place Entities:array I Rules
+@trigger 
+
+#SOURCE: https://youtu.be/7SnZwOQlJCY?si=qF1bHET_kaFVemCN
+
+
+
+#[
+
+INFO:
+
+
+its basically golf in gmod. theres 6 different types of clubs to use (driver, 2 iron, 5 iron, 8 iron, pitch wedge and putter) plus i made a flag and a course maker (to make a playable golf field, though for now it uses gas canisters).
+
+here's a little video of it with the driver and putter in action:
+
+
+sorry if there's any bad gramma in this text. english is not my primary language.
+
+comments and sluggestion of improvements are welcome.
+
+i hope its fairly easy to set it up, but heres some instructions:
+wire Numpad to a wired numpad, Cam to a camera controller, Ball to an entity marker and wire a hud indicator to Power.
+
+]#
+
+runOnTick(1)
+runOnChat(1)
+
+Place=owner():keyUse()
+
+#what type of flag it is. 1=golf 2=minigolf
+Type=1
+
+if (first()) {
+    propSpawnEffect(0)
+    holoCreate(1,entity():pos(),vec(3,3,0.2),ang(0,0,0),vec(0,0,0),"hqcylinder2")
+    holoCreate(2,entity():pos()+vec(0,0,60),vec(0.2,0.2,10),ang(0,0,0),vec(255,255,255),"hqcylinder2")
+    holoCreate(3,entity():pos()+vec(-18,0,107),vec(3,0.1,2),ang(0,0,0),vec(255,255,255),"cube")
+    holoCreate(4,entity():pos()+vec(0,0,-5),vec(80,80,1),ang(0,0,0),vec(100,255,100),"hqicosphere2")
+    holoCreate(5,entity():pos()+vec(randint(150,-150),randint(150,-150),-5),vec(80,80,1),ang(0,0,0),vec(100,255,100),"hqicosphere2")
+    holoCreate(6,entity():pos()+vec(randint(150,-150),randint(150,-150),-5),vec(80,80,1),ang(0,0,0),vec(100,255,100),"hqicosphere2")
+    holoCreate(7,entity():pos()+vec(randint(150,-150),randint(150,-150),-5),vec(80,80,1),ang(0,0,0),vec(100,255,100),"hqicosphere2")
+    holoCreate(8,entity():pos()+vec(-4,0,98),vec(3,0.1,2),ang(-45,0,0),vec(255,255,255),"cube")
+    holoCreate(9,entity():pos(),vec(3,3,1),ang(0,0,0),vec(255,0,0),"hqicosphere2")
+    holoCreate(10,entity():pos(),vec(3,3,1),ang(0,0,0),vec(255,0,0),"hqicosphere2")
+    
+    if (Type==2) {
+        holoAlpha(4,0)
+        holoAlpha(5,0)
+        holoAlpha(6,0)
+        holoAlpha(7,0)
+        holoAlpha(9,0)
+        holoAlpha(10,0)
+    }
+    else {
+        holoAlpha(4,255)
+        holoAlpha(5,255)
+        holoAlpha(6,255)
+        holoAlpha(7,255)
+        holoAlpha(9,255)
+        holoAlpha(10,255)
+    }
+    
+    holoMaterial(3,"phoenix_storms/pack2/darkblue")
+    holoMaterial(4,"models/props/CS_militia/militiarockb")
+    holoMaterial(5,"models/props/CS_militia/militiarockb")
+    holoMaterial(6,"models/props/CS_militia/militiarockb")
+    holoMaterial(7,"models/props/CS_militia/militiarockb")
+    holoMaterial(8,"phoenix_storms/pack2/darkblue")
+    holoMaterial(9,"models/props/CS_militia/militiarockb")
+    holoMaterial(10,"models/props/CS_militia/militiarockb")
+    
+    holoAlpha(3,0)
+}
+
+if (findCanQuery()) {
+    findByModel("models/weapons/w_models/w_baseball.mdl")
+    Ball=findClosest(holoEntity(1):pos())
+}
+
+Rules=owner():lastSaid()=="rules"
+
+if (Rules & $Rules) {
+    concmd("")
+}
+
+Dist=Ball:pos():distance(holoEntity(1):pos())<20
+
+if (Dist & Play==0 & Ball:vel():length()<500) {
+    holoEntity(1):soundPlay(1,2,"vo/heavy_cheers01.wav")
+    holoEntity(1):soundPlay(2,7.45,"epic sax guy.mp3")
+    concmd("say "+"\""+Ball:owner():name()+"\" got his ball in the hole!")
+    holoAlpha(8,0)
+    holoAlpha(3,255)
+    Play=1
+    timer("reset",3000)
+}
+if (clk("reset")) {
+    holoAlpha(8,255)
+    holoAlpha(3,0)
+    Play=0
+}
+
+if (owner():lastSaid()=="out of bounds" | owner():lastSaid()=="water hazard" | owner():lastSaid()=="tee spot" | owner():lastSaid()=="middle field" | owner():lastSaid()=="start field" | owner():lastSaid()=="field par" | owner():lastSaid()=="ready" | owner():lastSaid()=="clear") {
+    hideChat(1)
+}
+else {
+    hideChat(0)
+}
+
+if (owner():lastSaid()=="out of bounds") {
+    Tool=1
+}
+elseif (owner():lastSaid()=="water hazard") {
+    Tool=2
+}
+elseif (owner():lastSaid()=="tee spot") {
+    Tool=3
+}
+elseif (owner():lastSaid()=="middle field") {
+    Tool=4
+}
+elseif (owner():lastSaid()=="start field") {
+    Tool=5
+}
+
+if (Place & $Place) {
+    if (Tool==1) {
+        E=propSpawn("models/props_c17/canister01a.mdl",owner():aimPos()+vec(0,0,25),entity():angles(),1)
+        E:setMaterial("phoenix_storms/fender_white")
+        E:propNotSolid(1)
+        Entities:pushEntity(E)
+    }
+    elseif (Tool==2) {
+        E=propSpawn("models/props_c17/canister01a.mdl",owner():aimPos()+vec(0,0,25),entity():angles(),1)
+        E:setMaterial("phoenix_storms/pack2/darkblue")
+        E:propNotSolid(1)
+        Entities:pushEntity(E)
+    }
+    elseif (Tool==3) {
+        E=propSpawn("models/props_c17/canister01a.mdl",owner():aimPos()+vec(0,0,25),entity():angles(),1)
+        E:setMaterial("models/props/cs_assault/pylon")
+        E:propNotSolid(1)
+        Entities:pushEntity(E)
+    }
+    elseif (Tool==4) {
+        holoPos(10,owner():aimPos())
+    }
+    elseif (Tool==5) {
+        holoPos(9,owner():aimPos())
+    }
+}
+
+if (owner():lastSaid()=="clear") {
+    Entities[I,entity]:propDelete()
+}
+
+StarttoMiddle=holoEntity(1):pos():distance(holoEntity(9):pos())
+MiddletoHole=holoEntity(9):pos():distance(holoEntity(10):pos())
+
+if (owner():lastSaid()=="field par") {
+    concmd("say the field is "+StarttoMiddle+MiddletoHole+" long")
+}
+if (owner():lastSaid()=="ready") {
+    concmd("say the golf field is now ready")
+}
