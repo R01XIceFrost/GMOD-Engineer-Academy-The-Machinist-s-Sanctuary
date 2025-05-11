@@ -1,0 +1,82 @@
+@name GenericDriveV2.5 (Specifically for CVT)
+@inputs  Active W A S D Shift Engine:entity 
+@outputs Throttle GearOut LgearTC RgearTC Lclutch Rclutch HardBrake Self:entity LBrake RBrake
+@persist Gear Lgear Rgear Speed Active Dualclutch Dualgearbox GEARTIME Rev 
+@persist Brakepower Turnpower Twospeed
+@persist TransferCase ShiftTime
+@inputs Entities:array
+
+
+#Source: https://youtu.be/srQKDWfEIz8?si=xuisgxm_3XTVcjH_
+
+for(I=1,Entities:count()){
+    Entities[I,entity]:propNotSolid(1)    
+}
+
+#@model models/sprops/geometry/t_fdisc_72.mdl
+
+#E2 by MidniteDLite
+
+
+if(first()|dupefinished()){
+Self = entity()
+Self:setColor(vec(255,255,255))
+
+Dualclutch = 0
+Dualgearbox = 1
+TransferCase = 1
+Twospeed = 1
+Turnpower = 15
+Brakepower = 5
+}
+
+interval(100)
+
+ChangeRPM = Engine:acfRedline()*90/100  
+DownChangeRPM = Engine:acfPowerbandMin()
+Throttle=0
+Rclutch=0
+Lclutch=0
+if(Active==0|Rclutch+Lclutch>0){HardBrake=1}else{HardBrake=0}
+
+#if(changed(Active)){reset()}
+if(Active==1){ 
+
+    if(!W&!S&!A&!D&!Shift){Gear=0,Lgear=0,Rgear=0}
+    if(Shift){Gear=0,Lgear=0,Rgear=0}
+    if(Gear==0){GearOut=1}else{GearOut=Gear}
+    if(Lgear==0){LgearOut=1}else{LgearOut=Lgear}
+    if(Rgear==0){RgearOut=1}else{RgearOut=Rgear}
+    if(Engine:acfRPM()<ChangeRPM/4){Gear=0,Lgear=0,Rgear=0}
+    
+    if(Dualclutch==1&TransferCase==0){GEARTIME = GEARTIME - 1
+        if(S&!W&Twospeed){Gear = 2}
+        if(!S&W&Twospeed){Gear = 1}
+        if(W|A|S|D){Throttle=100}
+        if(A&!Shift){Rclutch = Turnpower}else{Rclutch = 0}   
+        if(D&!Shift){Lclutch = Turnpower}else{Lclutch = 0}  
+        if(Shift){Rclutch = Brakepower}   
+        if(Shift){Lclutch = Brakepower} 
+        if(!W&!S&!A&!D&!Shift){Rclutch = Brakepower}
+        if(!W&!S&!A&!D&!Shift){Lclutch = Brakepower}
+        if(!W&!S&!A&!D&!Shift&Rev){Throttle = 100}}
+    if(Dualgearbox==1&TransferCase==1){GEARTIME = GEARTIME - 1
+        if(S&!W){LgearTC=2,RgearTC=2}else{RgearTC=1,LgearTC=1} 
+        if(A&Twospeed&!W&!S){LgearTC=2,RgearTC=1,Lgear=1,Rgear=1}
+        elseif(D&Twospeed&!W&!S){LgearTC=1,RgearTC=2,Lgear=1,Rgear=1}
+        if(Twospeed){
+            if(Engine:acfRPM()>ChangeRPM&Lgear<=1&Rgear<=1&GEARTIME<=0){GEARTIME=ShiftTime,Rgear=Rgear+1,Lgear=Lgear+1}
+            elseif(Engine:acfRPM()<DownChangeRPM&Lgear<=2&Rgear<=2&Rgear>1&Lgear>1&GEARTIME<=0){GEARTIME=ShiftTime,Rgear=Rgear-1,Lgear=Lgear-1}}
+        if(W|A|S|D){Throttle=100}
+        if(D&W|D&S){RBrake = 1 Rclutch = Turnpower}else{RBrake=0}
+        if(A&W|A&S){LBrake = 1 Lclutch = Turnpower}else{LBrake=0}
+        if(Shift){Rclutch = Brakepower Lclutch = Brakepower LBrake = 1 RBrake = 1}   
+        if(!W&!S&!A&!D&!Shift){LBrake = 1 RBrake = 1 Lclutch = Brakepower Rclutch = Brakepower}
+        if(!W&!S&!A&!D&!Shift&Rev){Throttle = 100}}
+    }
+if(Active==0){
+    interval(200)
+        Rclutch = Brakepower
+        Lclutch = Brakepower
+    }
+
