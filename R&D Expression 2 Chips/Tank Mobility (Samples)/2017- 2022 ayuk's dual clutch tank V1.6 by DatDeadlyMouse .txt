@@ -1,0 +1,164 @@
+#[
+    HOW 2 SET UP:
+        For dual clutch gearbox, you will need weld latches, which can be found in Wire > Physics > Constraints. To set them up,
+    you press on one of your sprocket wheels (trainwheels), then on base - defining which props will be welded, then you place the controller.
+    Same goes to sprocket wheel (trainwheel) on other side. After that you weldlatch both trainwheels together and place 3rd controller,
+    i define it as "Center latch".
+        Dual clutch gearbox you can find in acf > mobility > gearboxes > 'X' speed, anything with "transaxial - dual clutch".
+ 
+   
+    HOW 2 WIRE:
+        inputs:
+        -'W', 'A', 'S', 'D', 'Space', 'Alt', 'Active' goes to pod controller;
+        -'Base' goes to your vehicle base plate;
+        -'RPM' to engine 'RPM'
+       
+        outputs:
+        -Wire 'Throttle' from engine to this chip;
+        -Wire 'Active' from each weld latch to 'LeftLatch' and 'RightLatch' to chip, corresponding to latched wheel side, then wire center latch;
+        -Wire 'Gear' from dual clutch gearbox to 'Gear' in chip;
+        -Wire all "Left-" & "Right-" things from your gearbox to chip
+       
+       
+    DON'T FORGET TO EDIT VARIABLES IN "Some Variables" IN ORDER FOR CHIP TO WORK EFFICIENTLY!
+   
+    If new update is out, it will be visible in this Pastebin - https://pastebin.com/7VSCEU04
+ 
+ 
+Changelog:
+    V1    - initial base release
+    V1.1  - added ClutchSpeed for more stable turning at high speeds
+    V1.2  - added gear hold using Alt button
+    V1.3  - added multiple reverse gear capability + minor changes
+    V1.35 - fixed reverse gear switching to gear 0 when revving
+    V1.4  - removed interval(), removed Pod:wirelink and replaced it with analog inputs for sake of optimisation
+    V1.5  - added BrakeMul + minor fixes
+    V1.6  - added ClutchSmoothing
+ 
+### - Made by ayuk - STEAM_0:0:52677056
+ 
+(R) 2017-2019
+ 
+]#
+
+@name ayuk's dual clutch tank movement thing V1.6
+@inputs Base:entity RPM W A S D Space Alt Active
+@outputs Throttle LeftLatch RightLatch CenterLatch Gear LeftClutch RightClutch LeftBrake RightBrake
+@persist ForwardGears:array GearSwitch SpeedUnit:string ReverseGears:array BrakeMul ClutchSmoothing
+
+#Source: https://youtu.be/KzupbHzk9bs?si=D5UTxGuOGVL4VBPB
+
+
+#Some variables:
+
+    #Put desired target RPM at which gearbox will upshift and downshift
+    DownShiftRPM = 3300
+    
+    UpShiftRPM = 5500
+    
+    #forward gears
+    ForwardGears = array(1,2,3,4)
+       
+    #Reverse gears
+    ReverseGears = array(5,6)
+     
+    #Speed after which you start to turn using gearbox clutches and brakes (so you don't tip over when turning at high speeds)
+    ClutchSpeed = 30
+     
+    #What speed unit you want to use for previous variable? ( km/h , m/s , mph , ft/s , knots , mach )
+    SpeedUnit = "km/h"
+     
+    #Multiplier on how hard to turn after surpassing ClutchSpeed
+    BrakeMul = 1.75
+     
+    #Engine RPM at which clutch will engage,
+    #put value little higher than engine's min RPM to rev up a little before touching off (good for low speed turning),
+    #leave 0 for no smoothing (default clutch behavior)
+    ClutchSmoothing = 3500
+ 
+################### - don't edit stuff under here unless you know what you're doing
+ 
+Speed = abs(toUnit(SpeedUnit,Base:vel():length()))
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                            entity():setName("ayuk's dual clutch tank movement thing V1.6")
+if(W|A|S|D){
+    Throttle = 100
+}
+else{
+    Throttle = 0
+}
+ 
+if(Active){
+    RightLatch = 0
+    LeftLatch = 0
+    CenterLatch = 1
+   
+    RightBrake = 0
+    LeftBrake = 0
+    RightClutch = ClutchSmoothing/RPM - 1
+    LeftClutch = ClutchSmoothing/RPM - 1
+   
+    if(!Alt){
+        if(RPM > UpShiftRPM & !A & !D){
+            GearSwitch = clamp(GearSwitch+1,1,ForwardGears:count())
+        }
+ 
+        if(RPM < DownShiftRPM){
+            GearSwitch = clamp(GearSwitch-1,1,ForwardGears:count())
+        }
+    }
+   
+    Gear = ForwardGears[GearSwitch,number]
+   
+    if(Space){
+        RightLatch = 1
+        LeftLatch = 1
+    }
+ 
+    if(A & Speed<ClutchSpeed){
+        LeftLatch = 1
+        CenterLatch = 0
+       
+        RightBrake = 1
+        RightClutch = 1
+    }
+        elseif(A & Speed>ClutchSpeed){
+            LeftLatch = 0
+            CenterLatch = 0
+           
+            RightBrake = BrakeMul
+            RightClutch = 1
+        }
+   
+    if(D & Speed<ClutchSpeed){
+        RightLatch = 1
+        CenterLatch = 0
+       
+        LeftBrake = 1
+        LeftClutch = 1
+    }
+        elseif(D & Speed>ClutchSpeed){
+            RightLatch = 0
+            CenterLatch = 0
+           
+            LeftBrake = BrakeMul
+            LeftClutch = 1
+        }
+   
+    if(S){
+        if(RPM > UpShiftRPM & !A & !D & !Alt){
+            GearSwitch = clamp(GearSwitch+1,1,ReverseGears:count())
+        }
+        
+        if(RPM < DownShiftRPM & !Alt){
+            GearSwitch = clamp(GearSwitch-1,1,ReverseGears:count())
+        }
+       
+        Gear = ReverseGears[GearSwitch,number]
+    }
+}
+else{
+    RightLatch = 1
+    LeftLatch = 1
+}
+ 
+### Made by ayuk - STEAM_0:0:52677056
