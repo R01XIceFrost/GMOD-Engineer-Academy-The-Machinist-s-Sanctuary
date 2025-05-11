@@ -1,0 +1,334 @@
+@name Turret HUD Combo V7
+@inputs  Active NextWeapon PrevWeapon [Cam EGP]:wirelink [Gun Gun2 Base Chair Turret]:entity GunReady Gun2Ready Fuel1 Fuel2 Fuel3 Fuel4
+@outputs Weld AmmoActive1 AmmoActive2
+@persist Elevation Depression Yaw RotateSpeed FOV Speedometer Ammo1 Ammo2 View GunForce AmmoSelect Fuel Con LocalVel
+@persist Rangefinder:ranger [ScreenRes Res]:vector2 CamOffset:vector FCamOffset:vector Gunpos:vector TCamOffset:vector FLIR
+@persist [Inertia Hold]:angle CamL:entity User:entity
+
+#Source: https://youtu.be/KzupbHzk9bs?si=ILkRiNq5XjSjzF9y
+
+if (changed(Active) & Active)
+{   
+    
+    EGP:egpClear() #Clears out HUD in case something in Fancy Shit changes or a new player with a different resolution uses the HUD. 
+}
+# EGP, Cam, and Pod Controller required
+ 
+    #The way Zoom is setup you have a max FOV (zoomed out), a minimum FOV (zoomed in)
+    #and a change amount per scroll. The default for these are Max - 90, Min - 20, Change - 35.
+    #Minimum and maximum is recommended to be between 0 and 90, minimum being zoomed in and max being zoomed out.
+   
+    #You want to all mesh together, in the default example the max is 90 and one scroll click will
+    #subract 35 making the FOV 55, then another click will subract 35 again bringing us to the
+    #minimum of 20. If it was 90 / 20 / 10 you would reach the minimum FOV in 9 clicks.
+    #Whatever the case, your Max minus Change a certain number of times should land you on your Minimum.
+   
+    #Do not forget to change the fov reset value on line 26 as well.
+ 
+    #FOV Control                  These values below are what you change
+if (~PrevWeapon|~NextWeapon) {
+    FOV = clamp(FOV + (NextWeapon - PrevWeapon) * 35,3,90)
+}
+    #FOV reset when entering / exiting
+if (~Active&Active|~Active&!Active) {
+    FOV=90
+}   #   ^^This should be same as Max
+   
+#############################################################################################################################
+ 
+    #Do not touch this
+   
+if(first()||dupefinished())
+{
+    holoCreate(1)
+    holoAlpha(1,0)
+    holoScale(1,vec())
+}
+ 
+elseif ( ~Active & Active ) {
+ 
+#############################################################################################################################
+ 
+    #Stuff you can adjust
+   
+    #Hud Stuff
+ 
+    #HUD Color    (Red,Green,Blue)
+    local Color = vec4(255,255,255,200)
+    #Speedmeter Color  (Red,Green,Blue)
+    local Color2 = vec(0)
+    #Ammo1 Color  (Red,Green,Blue)
+    local Color3 = vec4(200,255,121,200)
+    #Ammo2 Color  (Red,Green,Blue)
+    local Color4 = vec4(5,45,235,200)
+    #Gun Stuff
+   
+    #Elevation (How high the gun aims in degrees)
+    Elevation = 50
+    #Depression (How low the gun aims in degrees)
+    Depression = 10
+    #How far around the gun can left and right in degrees (180 is all the way around, 90 is flush to each side)
+    Yaw = 180
+    #How fast the gun turns, this is an arbitrary number and must be adjusted to your liking, Higher is faster
+    RotateSpeed = 23
+    
+    Speedometer = 1
+    
+    Speed_Unit = ""
+    
+    Ammo1_type ="HEATFS"
+    
+    Ammo2_type ="APDSFS-T"
+    
+ #Don't change them   
+    Con = 1
+    View =1
+    AmmoSelect=1
+    Weld=0
+    
+         
+    #Camera Stuff
+   
+    #How far out the camera is from the pivot point
+    Cam["Distance",number]  = 300 #Forwards/Backwards|Left/Right|Up/Down forwards may be a negative number, experiment and see
+    #Offset of camera from base center |F/B|L/R|U/D|
+        CamOffset  =   vec(0,0,130)
+    #third person pos
+    TCamOffset  =   vec(0,0,130)
+    #first person pos
+    FCamOffset   = vec(21.139, 9.578, 58)
+
+   
+#############################################################################################################################    
+   
+    #Stuff you probably should not touch below
+   
+    #Camera Activation
+    Cam["Activated",number] = 1
+    #Entity the camera originates from
+    Cam["Position",vector]  = Base:toWorld(CamOffset)
+    #Entity the camera parents to
+    Cam["Parent",entity]    = Base
+       
+      #EGP Stuff
+    User = Chair:driver()
+    ScreenRes=egpScrSize(Chair:driver())
+   Screen=egpScrSize(Chair:driver())
+    Res=ScreenRes/2  
+#Crosshair    
+     X=ScreenRes:x()
+     Y=ScreenRes:y()
+    
+     EGP:egpCircleOutline(100,Res,vec2(Y/2.5,Y/2.5)),EGP:egpColor(100,vec()),EGP:egpSize(100,2)
+     EGP:egpLine(1,Res,Res+vec2(X/90,Y/26))
+    EGP:egpLine(2,Res,Res+vec2(-X/90,Y/26)) 
+    EGP:egpLine(3,Res,Res+vec2(0,Y/10)) 
+    EGP:egpLine(86,Res+vec2(300,-250),Res+vec2(-300,-250)) ,EGP:egpColor(86,vec()),EGP:egpSize(86,2)
+#Range    
+    EGP:egpLine(69,Res+vec2(80,110),Res+vec2(200,110))
+    EGP:egpLine(70,Res+vec2(80,70),Res+vec2(100,78))
+    EGP:egpLine(71,Res+vec2(105,80),Res+vec2(125,88))
+    EGP:egpLine(72,Res+vec2(130,90),Res+vec2(150,98))
+    EGP:egpLine(73,Res+vec2(155,100),Res+vec2(200,110))
+    
+     An=1
+        Increment=23   
+         for(I=74,79) { 
+            EGP:egpText(I,"l",Res+vec2(85-An,55-(An/3)))
+            EGP:egpColor(I,vec())
+            EGP:egpAlign(I,1)
+            EGP:egpFont(I, "Marlett",17)
+            An-=Increment
+        }
+        An=1
+        Increment=23   
+         for(I=80,85) { 
+            EGP:egpText(I,toString(4*(I-80)+10),Res+vec2(85-An,45-(An/3)))
+            EGP:egpColor(I,vec())
+            EGP:egpAlign(I,1)
+            EGP:egpFont(I, "Marlett",17)
+            An-=Increment
+        }
+    
+      for(I=69, 73) { 
+            EGP:egpColor(I,vec())
+            EGP:egpSize(I,2)
+}
+    
+     for(I=1, 3) { 
+            EGP:egpColor(I,vec())
+            EGP:egpSize(I,2)
+}
+           An=1
+        Increment=11
+          for(I=4,20) { 
+            if(I%2==0){Epos=0,Epos2=13}else{Epos=0,Epos2=5}
+             if(I%4==0){CrossColor=vec4()}else{CrossColor=vec4(0,0,0,255)}
+            EGP:egpLine(I,Screen/2+vec2(-(13-An),Epos),Screen/2+vec2(-(13-An),Epos2))
+            EGP:egpColor(I,CrossColor)
+            EGP:egpSize(I,1)
+            An-=Increment
+        }
+           An=1
+        Increment=11
+          for(I=44,60) { 
+            if(I%2==0){Epos=0,Epos2=13}else{Epos=0,Epos2=5}
+             if(I%4==0){CrossColor=vec4()}else{CrossColor=vec4(0,0,0,255)}
+             EGP:egpLine(I,Screen/2+vec2(13-An,Epos),Screen/2+vec2(13-An,Epos2))
+            EGP:egpColor(I,CrossColor)
+            EGP:egpSize(I,1)
+            An-=Increment
+        }
+        An=1
+        Increment=44
+#More magic V left      
+        for(I=61,64) { 
+            EGP:egpText(I,"V",Screen/2+vec2(-(57-An),12))
+            EGP:egpAngle(I,180)
+            EGP:egpColor(I,vec())
+            EGP:egpAlign(I,1)
+            EGP:egpFont(I, "Lucida Console",17)
+            An-=Increment
+        }
+#More magic V right   
+        An=1
+        Increment=44     
+         for(I=65,68) { 
+            EGP:egpText(I,"V",Screen/2+vec2(57-An,12))
+            EGP:egpAngle(I,180)
+            EGP:egpColor(I,vec())
+            EGP:egpAlign(I,1)
+            EGP:egpFont(I, "Lucida Console",17)
+            An-=Increment
+        }
+        
+        
+    EGP:egpText(32,"",Res+vec2(0,50))
+    EGP:egpSize(32,17)
+    EGP:egpFont(32, "Lucida Console")
+    EGP:egpAlign(32,1) #Aligning is optional
+    EGP:egpColor(32,Color2) 
+ #Speedmeter   
+        EGP:egpText(33," " + Speed_Unit,Res+vec2(-280,0))
+        EGP:egpFont(33,"Lucida Console",30)  
+        EGP:egpColor(33,Color2)
+        EGP:egpText(34,"0",vec2(-70,0))
+        EGP:egpFont(34,"Lucida Console",30)
+        EGP:egpSize(34,20)
+        EGP:egpColor(34,Color2)
+        EGP:egpParent(34,33)
+        
+#Fuel        
+        EGP:egpText(39,"" + Fuel,Res+vec2(-350,30))
+        EGP:egpFont(39,"Lucida Console",30)
+        EGP:egpSize(39,20) 
+        EGP:egpColor(39,Color2)
+#Ammo
+                
+        EGP:egpText(38,"APHE",Res+vec2(0,380))
+        EGP:egpFont(38,"Lucida Console",30) 
+        EGP:egpAlign(38,1) #Aligning is optional
+        EGP:egpSize(38,20)
+        
+         EGP:egpText(40,"APHE",Res+vec2(300,0))
+        EGP:egpFont(40,"Marlett",30) 
+        EGP:egpAlign(40, 1)
+        EGP:egpSize(40,25)  
+ 
+#Forward Gun Tracker    
+    EGP:egp3DTracker(41,vec(0,0,0))
+    EGP:egpParent(41,holoEntity(1))
+    
+    EGP:egpCircle(42,vec2(0,0),vec2(2,2))
+    EGP:egpSize(42,3)
+    EGP:egpColor(42,vec4(255,255,255,200))
+    EGP:egpParent(42,41)
+    rangerFilter(Gun)
+    rangerFilter(entity():getConstraints())
+    rangerPersist(1)
+   
+    #Gun Stuff
+    Elevation*=-1
+    Inertia = shiftL(ang(Gun:inertia()))
+    Hold = entity():toLocal(Gun:angles())
+   
+    interval( 35 )
+    timer("tracker",100)
+    stoptimer("stop-gun-spinning")
+} elseif ( ~Active & !Active ) {
+    stoptimer("interval")
+    stoptimer("tracker")
+    soundPitch(1,0)
+    timer("stop-gun-spinning",100)
+}   elseif (clk("tracker")) {
+ 
+    #EGP Stuff
+    holoPos(1,rangerOffset(9999999999,Gun:pos()+Gun:forward()*100,Gun:forward()):position())
+   
+    timer("tracker",100)
+} elseif( clk() ) {
+
+    if (changed(Chair:driver():keyPressed("lcontrol"))&Chair:driver():keyPressed("lcontrol")) {View+=1}
+    if (changed(Chair:driver():keyPressed("f"))&Chair:driver():keyPressed("f")) {Con+=1}
+    if (changed(Chair:driver():keyPressed("r"))&Chair:driver():keyPressed("r")) {AmmoSelect+=1,entity():soundPlay(2,0.2,"buttons/button16.wav")}
+    if (View>2) {View=1}
+    if (changed(View)&View==1) {Cam["Position",vector]=Base:toWorld(TCamOffset), Cam["Parent",entity]=Base, Cam["Activated",number]=1,Cam["Distance",number]=300 }
+    if (changed(View)&View==2) {Cam["Position",vector]=Turret:toWorld(FCamOffset), Cam["Parent",entity]=Turret, Cam["Distance",number]=0,  Cam["Activated",number]=1}
+    if (Con>2) {Con=1}
+    if (changed(Con)&Con==1) {Weld=0,GunForce=250,Gun:soundPlay(1,0,"acf_extra/turret/turret_turn_loop_1.wav")}
+    if (changed(Con)&Con==2) {Weld=1,GunForce=0,Gun:soundPlay(1,0,"")}
+    if(AmmoSelect>2){AmmoSelect=1}
+    if(AmmoSelect==1){AmmoActive1=1, EGP:egpText(40,"APFSDS: "+ toString(Gun:acfAmmoCount()),Res+vec2(0,-370))}else{AmmoActive1=0}
+    if(AmmoSelect==2){AmmoActive2=1, EGP:egpText(40,"APHE: "+ toString(Gun:acfAmmoCount()),Res+vec2(0,-370))} else{AmmoActive2=0}
+    #Sound Stuff
+
+    local Angle = Chair:toLocal(User:eyeAngles())
+    local Position = Base:toWorld(CamOffset)
+    local Ranger = rangerOffset(9999999999,Position,Angle:forward())
+    LocalVel=entity():toLocal(Gun:angles()):yaw()
+    soundPitch(1,(abs($LocalVel)>0.3)*100)
+     soundVolume(1,(abs($LocalVel))*1)
+ 
+    #Ang Force Stuff
+    local GunAng = (Ranger:pos() - Gun:pos()):toAngle()
+    local Force = Gun:toWorld(clamp(Gun:toLocal(GunAng),ang(-RotateSpeed),ang(RotateSpeed)))
+    local Clamped = clamp(entity():toLocal(Force),ang(Elevation,-Yaw,-1),ang(Depression,Yaw,1))
+    local LocalToGun = Gun:toLocal(entity():toWorld(Clamped))
+    if(Con==1){
+    Gun:applyAngForce((LocalToGun * GunForce - Gun:angVel() * 47 + Base:angVel() * 47 * (abs(Gun:toLocal(GunAng):yaw())>5)) * Inertia)
+}
+    
+    Rangefinder = rangerOffset(99999999999999,Position + Gun:eye() * 100, Gun:eye())
+   
+    interval( 35 )
+} elseif (clk("stop-gun-spinning")) {
+    Gun:applyAngForce(-Gun:angVel() * 30 * Inertia)
+   
+    if (Gun:angVelVector():length() > 0.1) {
+        timer("stop-gun-spinning",100)
+    }
+}
+    #Camera field of view link
+    Cam["FOV",number]       = FOV
+#Gun Ready
+ if (GunReady) {EGP:egpColor(40,vec(0,0,0))}
+    elseif (GunReady==0) {EGP:egpColor(40,vec(255,0,0))}
+     if (Gun2Ready) {EGP:egpColor(38,vec4(0,0,0,255))}
+    elseif (Gun2Ready==0) {EGP:egpColor(38,vec(255,0,0))}
+#FLIR    
+  if (changed(Chair:driver():keyPressed("n"))&Chair:driver():keyPressed("n"))
+    {
+        FLIR = !FLIR
+        entity():soundPlay(1,0.2,"buttons/button18.wav")
+    }
+Cam["FLIR",number]=FLIR    
+
+
+F = round(toUnit("km/h",Base:vel():length()))
+Fuel= round(Fuel1+Fuel2+Fuel3+Fuel4)
+EGP:egpSetText(38,"MG Ammo: " + toString(Gun2:acfAmmoCount()))
+EGP:egpSetText(34,"KPH: " + toString(F))
+EGP:egpSetText(39,"Gear: " + toString(Fuel))
+EGP:egpText(32,""+floor((Rangefinder:distance()*0.0254)),Res+vec2(0,120))
+if(Active==0){Weld=1}
+https://youtu.be/KzupbHzk9bs?si=2yIZu1_wFy8SW96k
