@@ -1,0 +1,85 @@
+@name The LANBox ACF Tank Controls
+@inputs Wirelink:wirelink RPM1 RPM2 Speed Active
+@outputs LeftBrake RightBrake LeftClutch RightClutch LeftGear RightGear Throttle EngineOn
+@persist Clutch MaxGear Cutoff Shift IdleThrottle Gear PivotResistance
+@persist ShiftUpRPM ShiftDownRPM ShiftWait ShiftDelay BrakeForce TopSpeed PivotSpeed
+
+#Source: https://youtu.be/tXEB35G0VwU?si=MrL1PkWINEtWmYkt
+
+## The LANBox ACF Tank Controls by blaknite ##
+##    Visit http://www.thelanbox.com.au/    ##
+
+## If pivoting is enabled use two single clutch gearboxes of identical configuration.
+## If pivoting is disabled use one dual-clutch gearbox.
+
+runOnTick(1)
+
+if(first()){
+    ## Initialise persistant variables. Do not change ##
+    Gear=1
+    Clutch=0
+    
+    ## Configuration Variables. Change these to suit your set up ##
+    MaxGear=8              # Number of gears. Highest gear is reverse.
+    ShiftDelay=25          # Delay between successive shifts.
+    Cutoff=1500            # Set this to the RPM at the bottom of your engine(s) powerband.
+    ShiftUpRPM=5000        # Engine RPM needed before shifting into a higher gear.
+    ShiftDownRPM=3200      # Engine RPM needed before shifting into a lower gear.
+    BrakeForce=10          # Force applied when in Park or space is held. Shouldn't exceed 10 unless you know what you're doing.
+    IdleThrottle=15        # Throttle at idle. Can be useful for stall converter setups.
+    TopSpeed=300            # Top speed in kph. This is used to decrease brake power while turning at high speed.
+    PivotResistance=0      # Ratio of brake force used decrease pivot angular velocity. Increase this as a ratio from 0 to 1 if you find yourself pivoting too fast.
+    PivotSpeed=-1          # Speed at which the tank will pivot rather than turn if W is not pressed. If -1 pivoting is disabled. Disabling will allow use with a single dual-clutch gearbox.
+}
+
+## The Guts. Don't touch anything below unless you know what you're doing. ##
+W = Wirelink:number("W")
+A = Wirelink:number("A")
+S = Wirelink:number("S")
+D = Wirelink:number("D")
+Space = Wirelink:number("Space")
+
+EngineOn = 1
+
+if ( PivotSpeed < 0 ) { RPM = RPM1 } else { RPM = min(RPM1,RPM2) }
+
+if( W || A || S ||D ) { Throttle = 100 } else { Throttle = IdleThrottle }
+
+Brake = Space*BrakeForce
+
+if ( Shift && ShiftWait <= ShiftDelay ) { ShiftWait++ }
+if ( ShiftWait > ShiftDelay ) { ShiftWait=0, Shift=0 }
+
+Clutch = clamp(((Cutoff*1.4)-RPM)/(min(Cutoff/2,500)),0,1)
+
+if ( RPM > ShiftUpRPM && Gear < (MaxGear-1) && !ShiftWait) { Gear++, Shift=1 }
+if ( RPM < ShiftDownRPM && Gear > 1 && !ShiftWait) { Gear--, Shift=1 }
+
+Turn = (D-A)
+TurnForce = Turn*clamp(BrakeForce*(((TopSpeed*1.2)-Speed)/(TopSpeed*1.2)), BrakeForce*0.2, BrakeForce)
+
+if ( S ) {
+    LeftGear = RightGear = MaxGear
+    LeftClutch = Clutch+Space+clamp(-Turn,0,1)
+    RightClutch = Clutch+Space+clamp(Turn,0,1)
+    LeftBrake = clamp(Brake+clamp(-TurnForce,0,BrakeForce),0,BrakeForce)
+    RightBrake = clamp(Brake+clamp(TurnForce,0,BrakeForce),0,BrakeForce)
+} elseif ( ( A||D ) && !W && Speed < PivotSpeed ) {
+    LeftGear = clamp(-Turn,0,1)*(MaxGear-1)+1
+    RightGear = clamp(Turn,0,1)*(MaxGear-1)+1
+    LeftClutch = Clutch+Space
+    RightClutch = Clutch+Space
+    LeftBrake = clamp(Brake+(BrakeForce*PivotResistance),0,BrakeForce)
+    RightBrake = clamp(Brake+(BrakeForce*PivotResistance),0,BrakeForce)
+} else {
+    LeftGear = RightGear = Gear
+    LeftClutch = Clutch+Space+clamp(-Turn,0,1)
+    RightClutch = Clutch+Space+clamp(Turn,0,1)
+    LeftBrake = clamp(Brake+clamp(-TurnForce,0,BrakeForce),0,BrakeForce)
+    RightBrake = clamp(Brake+clamp(TurnForce,0,BrakeForce),0,BrakeForce)
+}
+
+if( !Active ){
+  LeftBrake = RightBrake = BrakeForce
+  LeftClutch = RightClutch = 1
+}
