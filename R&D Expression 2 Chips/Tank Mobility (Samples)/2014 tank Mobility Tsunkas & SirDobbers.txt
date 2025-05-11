@@ -4,8 +4,8 @@
 @persist 
 @trigger 
 
-#Source: https://youtu.be/FYZuXsCVfZw?si=beM21ZF24yOAkIiP
-#Source 2 (Native English Speaker): https://youtu.be/c21wX9IBIy0?si=s90onzxFFjOitONq
+#Source: https://youtu.be/FYZuXsCVfZw?si=_CwgiuLdGxkuSdu3 by Tsunkas 2016
+#Source 2 (Native English Speaker): https://youtu.be/c21wX9IBIy0?si=VdAKZdTb-Dv2W3pj by SirDobbers 2014
 
 interval(50)
 
