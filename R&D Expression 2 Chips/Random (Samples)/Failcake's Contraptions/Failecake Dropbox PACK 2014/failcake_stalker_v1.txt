@@ -1,0 +1,101 @@
+@name FailCake Stalker V1
+@outputs Person:entity Go
+@persist Goto:array Song
+@trigger all
+
+runOnTick(1)
+
+if(first()){
+entity():setAlpha(0)
+Go = 0
+hint("MADE BY FailCake :D ",100)  
+}
+
+Goto = owner():lastSaid():explode(" ")
+Ee=entity():isWeldedTo()
+
+if(Goto[1,string]=="-stalk")
+{
+    findByClass("player")
+    Ply = findToArray()
+    hideChat(1)
+
+        for(I = 1,Ply:count())
+        {
+            if(Ply[I,entity]:name():lower():find(Goto[2,string]:lower()))
+            {
+            Person = Ply[I,entity]
+            Go = 1
+            break
+            }
+        }
+}else{
+hideChat(1)
+}
+
+
+if(Go){
+# Made By FailCake :D
+Songs=array()
+  
+Songs:setString(1,"music/stingers/hl1_stinger_song28.mp3")
+Songs:setString(2,"music/stingers/hl1_stinger_song27.mp3")
+Songs:setString(3,"ambient/atmosphere/hole_hit5.wav")
+Songs:setString(4,"ambient/machines/thumper_hit.wav")
+Songs:setString(5,"ambient/materials/metal4.wav")
+Songs:setString(6,"ambient/tones/tunnel_wind_loop.wav")
+Songs:setString(7,"ambient/atmosphere/cave_hit5.wav")
+Songs:setString(8,"d3_citadel/stalker_breathing.wav")
+Songs:setString(9,"ambient/voices/playground_memory.wav")
+Songs:setString(10,"music/stingers/industrial_suspense1.wav")
+Songs:setString(11,"vo/halloween_boo1.wav")
+
+Songs:setString(12,")ambient/sawblade_impact1.wav")
+Songs:setString(13,"vo/halloween_scream2.wav")
+Songs:setString(14,"vo/halloween_haunted1.wav")
+Songs:setString(15,"vo/halloween_moan1.wav")
+
+Material = array()
+
+Material:setString(1,"matsys_regressiontest/background")
+
+# Made By FailCake :D
+
+holoCreate(1)
+holoModel(1,"cube")
+holoScaleUnits(1,vec(0.2,50,50))
+holoPos(1,Person:toWorld(vec(-40,0,50)))
+holoColor(1,vec(255,255,255))
+holoAlpha(1,255)
+holoAng(1,Person:angles():setPitch(0):setRoll(0))
+
+
+holoCreate(2)
+holoModel(2,"cube")
+holoScaleUnits(2,vec(0.1,50,50))
+holoPos(2,Person:toWorld(vec(-40.2,0,50)))
+holoAng(2,Person:angles():setPitch(0):setRoll(0))
+holoColor(2,vec(1,1,1))
+holoAlpha(2,255)
+
+
+Song += 0.1
+if(Song == 2){
+R = randint(1,15)
+R2 = randint(1,1)
+holoEntity(1):soundPlay(7331,0,Songs:string(R))
+holoMaterial(1,Material:string(R2))
+holoColor(1,vec(255,255,255))
+}
+
+if(Song >= 30){
+soundStop(7331)
+holoColor(1,vec(1,1,1))
+Song = 0
+}
+
+# Made By FailCake :D
+
+}
+
+# Made By FailCake :D

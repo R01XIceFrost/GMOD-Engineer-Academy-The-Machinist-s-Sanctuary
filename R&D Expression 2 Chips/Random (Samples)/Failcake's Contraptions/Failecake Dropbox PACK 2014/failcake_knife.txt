@@ -1,0 +1,72 @@
+@name FailCake Trowing Knife
+@outputs HasWeapon Version:string Force
+@outputs [Knife O E]:entity Ok
+@trigger all
+
+##################
+#Made By FailCake#
+##################
+#  Based On TTT  #
+#     Weapon     #
+##################
+
+if(first() | duped()){
+runOnTick(1)
+propSpawnEffect(0)
+
+O = owner()
+E = entity()    
+
+HasWeapon = 0
+Force = 800
+
+Version = "v1"
+setName("FailCake Trowing Knife "+Version + " [TTT]")
+
+holoCreate(1)
+holoModel(1,"models/weapons/w_knife_ct.mdl")
+holoPos(1,O:attachmentPos("anim_attachment_RH"))
+holoAng(1,O:attachmentAng("anim_attachment_RH"))
+holoParentAttachment(1,O,"anim_attachment_RH")
+holoPos(1,holoEntity(1):toWorld(vec(-2,0,3)))
+holoAng(1,holoEntity(1):toWorld(ang(0,0,0)))
+holoAlpha(1,0)
+
+Knife = propSpawn("models/weapons/w_knife_ct.mdl",E:toWorld(vec(-10,0,10)),ang(0,0,0),0)
+Knife:setMass(100)
+}
+
+
+if(changed(O:keyUse()) & O:keyUse() & HasWeapon == 0){
+    
+if(O:aimEntity() == Knife & O:pos():distance(Knife:pos()) <= 100){
+HasWeapon = 1  
+E:soundPlay(1,0,"items/ammo_pickup.wav")  
+Knife:propDelete()
+}    
+    
+}
+
+if(O:weapon():type() == "weapon_blank_fists" || O:weapon():type() == "weapon_physgun" && HasWeapon == 1){
+O:weapon():setAlpha(0) 
+holoAlpha(1,255)  
+Ok = 1
+}else{
+Ok = 0
+holoAlpha(1,0)
+}
+
+
+
+if(changed(O:keyAttack2()) & O:keyAttack2()){
+if(HasWeapon == 1 & Ok == 1){
+HasWeapon = 0
+
+Knife = propSpawn("models/weapons/w_knife_ct.mdl",holoEntity(1):pos(),ang(0,0,0),0)
+Knife:setPos(((holoEntity(1):pos() + vec(15,0,0) + O:eye()*10)))
+Knife:setMass(100)
+Knife:applyAngForce(ang(90,0,0)*200)
+Knife:applyForce(((O:eye())*Force-Knife:vel())*Knife:mass())  
+  
+}
+}

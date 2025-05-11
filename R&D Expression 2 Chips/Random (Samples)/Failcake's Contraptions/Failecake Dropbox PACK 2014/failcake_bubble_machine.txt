@@ -1,0 +1,83 @@
+@name FailCake Bubble Machine
+@persist [E O]:entity Active I Actives
+@persist [Y TIME Ho SPEED COS2 SIN2 Life]:array Z
+@trigger all
+interval(100)
+
+if(first() | duped()){
+
+#Made By FailCake :D
+E = entity()
+O = owner()
+Active = 0
+I = 0
+E:setColor(90,90,90)   
+}
+
+if(changed(O:keyUse()) & O:keyUse()){
+if(O:aimEntity() == E & O:pos():distance(E:pos()) <= 100){
+Active = !Active  
+E:soundPlay(1,2,"buttons/button3.wav")
+}
+}
+
+
+
+if(Active){
+E:setColor(255,255,255)
+timer("SpawnB",200)
+
+if(clk("SpawnB")){
+if(I < 50){
+    
+TIME:pushNumber(0)
+SPEED:pushNumber(random(1,2))
+SIN2:pushNumber(random(-1,1))
+COS2:pushNumber(random(-1,1))
+Life:pushNumber(randint(30,40))
+
+I++
+
+R = randint(5,10)
+holoCreate(I)
+holoModel(I,"hqsphere")
+holoScaleUnits(I,vec(R,R,R))
+holoPos(I,E:toWorld(vec(0,0,2)))
+holoAlpha(I,200)
+holoMaterial(I,"models/props_combine/health_charger_glass")
+Ho:pushEntity(holoEntity(I))
+}
+    
+}#Made By FailCake :D 
+   
+for(K = 1,Ho:count())
+{
+TIME[K,number] = TIME[K,number] + 1
+
+if(Life[K,number] > 0){ 
+Life[K,number] = Life[K,number] - 0.2  
+}else{
+holoEntity(K):soundPlay(K,0,"ambient/water/rain_drip1.wav")
+soundPurge()
+holoPos(K,E:toWorld(vec(0,0,2)))
+TIME[K,number] = 0
+SPEED[K,number] = random(0.5,1)
+SIN2[K,number] =random(-1,1)
+COS2[K,number] =random(-1,1)
+Life[K,number] =randint(30,40)
+}#Made By FailCake :D
+
+Z = Ho[K,entity]:pos():z() + SPEED[K,number]
+
+COS = Ho[K,entity]:pos():x() + SIN2[K,number]
+SIN = Ho[K,entity]:pos():y() + COS2[K,number]
+
+holoPos(K,vec(COS,SIN,Z))
+}
+
+
+  
+}else{
+E:setColor(90,90,90) 
+}
+#Made By FailCake :D

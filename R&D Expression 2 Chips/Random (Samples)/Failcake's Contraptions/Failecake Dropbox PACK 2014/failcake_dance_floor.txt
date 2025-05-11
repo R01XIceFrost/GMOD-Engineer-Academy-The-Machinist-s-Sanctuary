@@ -1,0 +1,91 @@
+@name FailCake Dance Floor
+@inputs
+@outputs Once Up P On I2
+@persist I O [Boxes Pos Musics]:array Timer I2 Goto2:array
+@trigger all
+runOnTick(1)
+runOnChat(1)
+
+
+Musics[1,string]="music/hl1_song17.mp3"
+Musics[2,string]="music/hl2_song14.mp3"
+Musics[3,string]="music/hl2_song16.mp3"
+Musics[4,string]="music/hl2_song19.mp3"
+Musics[5,string]="music/hl2_song23_suitsong3.mp3"
+Musics[6,string]="music/hl2_song26.mp3"
+Musics[7,string]="music/hl2_song31.mp3"
+Musics[8,string]="music/hl2_song33.mp3"
+
+Musics[9,string]="music/portal_no_cake_for_you.mp3"
+Musics[10,string]="music/portal_still_alive.mp3"
+Musics[11,string]="music/portal_subject_name_here.mp3"
+Musics[12,string]="music/vlvx_song22.mp3"
+
+Musics[13,string]="music/vlvx_song25.mp3"
+Musics[14,string]="music/vlvx_song4.mp3"
+Musics[15,string]="music/portal_subject_name_here.mp3"
+Musics[16,string]="music/vlvx_song22.mp3"
+
+Goto2 = owner():lastSaid():explode(" ")
+
+if(chatClk(owner())){             
+if(Goto2[1,string]=="-next")
+{      
+I2+=1  
+for(R3=1,Boxes:count()){
+soundStop(1+R3)
+Boxes[R3,entity]:soundPlay(1+R3,100+R3,Musics[I2,string])
+} 
+}
+}
+
+E = entity()
+propSpawnEffect(0)
+if(first() |duped()){
+P = 5
+Up = 1
+
+
+for(X = 1,4){
+    
+for(Y = 1,4){
+      
+I++   
+Pos[I,vector2] = vec2(X,Y)    
+
+}
+    
+}
+   
+}
+
+timer("Spawn",260)
+if(clk("Spawn") & O <= 15){
+O++
+Box = propSpawn("models/hunter/plates/plate1x1.mdl",E:pos() + vec(Pos[O,vector2]*47.5) +vec(0,0,P) ,ang(0,0,0),1)
+Box:setMaterial("models/debug/debugwhite")
+Box:setColor(1,1,1,255)
+Boxes:pushEntity(Box) 
+}
+
+if(O>=15){
+timer("LOL",1)
+
+if(clk("LOL")){
+for(R=1,Boxes:count()){
+Boxes[R,entity]:setColor(randint(1,Timer),randint(1,Timer),randint(1,Timer))
+}
+}
+}
+
+if(On == 0 & Timer < 255){
+Timer+=1
+}else{
+On = 1
+}
+
+if(On == 1 & Timer > 1){
+Timer-=1
+}else{
+On = 0
+}

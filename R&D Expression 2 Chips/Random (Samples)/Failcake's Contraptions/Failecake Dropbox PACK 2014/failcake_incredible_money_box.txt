@@ -1,0 +1,314 @@
+@name FailCake Incredible Cursed Money Box
+@persist Hint Screen
+@trigger all
+
+interval(1000)
+
+
+findIncludeClass("player")
+
+Fsphere = findInSphere(entity():pos(),70)
+if(Fsphere > 0){
+O = findClosest(entity():pos()) 
+Name = O:name() 
+Found = 1
+}
+
+OP = entity()
+UP = 0
+
+if(first() || duped()){
+hint("Made By FailCake",999)
+concmd("say A MAGIC MONEY BOX HAS BEEN SPAWNED! FIND IT!")
+Curse = 0
+Found = 0
+    
+##FloorBox##
+holoCreate(1)
+holoModel(1,"cube")
+holoParent(1, OP)
+holoScale(1,vec(2,2,0.1))
+holoAng(1,ang(0,0,0))
+holoPos(1,OP:pos()+vec(0,0,1+UP))
+holoColor(1,vec(250,250,250))
+holoMaterial(1,"models/props/cs_militia/roofbeams03")
+
+##Box Side 1##
+holoCreate(2)
+holoModel(2,"cube")
+holoParent(2, OP)
+holoScale(2,vec(2,2,0.1))
+holoAng(2,ang(90,0,0))
+holoPos(2,OP:pos()+vec(11.5,0,13+UP))
+holoColor(2,vec(250,250,250))
+holoMaterial(2,"models/props/cs_militia/roofbeams03")
+
+##Box Side 2##
+holoCreate(3)
+holoModel(3,"cube")
+holoParent(3, OP)
+holoScale(3,vec(2,2,0.1))
+holoAng(3,ang(90,0,0))
+holoPos(3,OP:pos()+vec(-11.5,0,13+UP))
+holoColor(3,vec(250,250,250))
+holoMaterial(3,"models/props/cs_militia/roofbeams03")
+
+##Box Side 3##
+holoCreate(4)
+holoModel(4,"cube")
+holoParent(4, OP)
+holoScale(4,vec(2,0.1,2))
+holoAng(4,ang(0,0,0))
+holoPos(4,OP:pos()+vec(0,-11.5,13+UP))
+holoColor(4,vec(250,250,250))
+holoMaterial(4,"models/props/cs_militia/roofbeams03")
+
+##Box Side 4##
+holoCreate(5)
+holoModel(5,"cube")
+holoParent(5, OP)
+holoScale(5,vec(2,0.1,2))
+holoAng(5,ang(0,0,0))
+holoPos(5,OP:pos()+vec(0,11.5,13+UP))
+holoColor(5,vec(250,250,250))
+holoMaterial(5,"models/props/cs_militia/roofbeams03")
+
+##Box Side UP##
+holoCreate(6)
+holoModel(6,"cube")
+holoParent(6, OP)
+holoScale(6,vec(2,2,0.1))
+holoAng(6,ang(120,0,0))
+holoPos(6,OP:pos()+vec(-5.6,0,35+UP))
+holoColor(6,vec(250,250,250))
+holoMaterial(6,"models/props/cs_militia/roofbeams03")
+
+##########
+##MONEY###
+##########
+
+holoCreate(7)
+holoModel(7,"cube")
+holoParent(7, OP)
+holoScale(7,vec(0.8,0.8,0.1))
+holoAng(7,ang(0,0,0))
+holoPos(7,OP:pos()+vec(5,5,2+UP))
+holoColor(7,vec(250,250,250))
+holoMaterial(7,"models/props/cs_assault/Moneytop")
+
+holoCreate(8)
+holoModel(8,"cube")
+holoParent(8, OP)
+holoScale(8,vec(0.8,0.8,0.1))
+holoAng(8,ang(0,0,0))
+holoPos(8,OP:pos()+vec(-5,-5,2+UP))
+holoColor(8,vec(250,250,250))
+holoMaterial(8,"models/props/cs_assault/Moneytop")
+
+holoCreate(9)
+holoModel(9,"cube")
+holoParent(9, OP)
+holoScale(9,vec(0.8,0.8,0.1))
+holoAng(9,ang(0,0,0))
+holoPos(9,OP:pos()+vec(-5,5,2+UP))
+holoColor(9,vec(250,250,250))
+holoMaterial(9,"models/props/cs_assault/Moneytop")
+
+holoCreate(10)
+holoModel(10,"cube")
+holoParent(10, OP)
+holoScale(10,vec(0.8,0.8,0.1))
+holoAng(10,ang(0,0,0))
+holoPos(10,OP:pos()+vec(5,-5,2+UP))
+holoColor(10,vec(250,250,250))
+holoMaterial(10,"models/props/cs_assault/Moneytop")
+
+holoCreate(11)
+holoModel(11,"cube")
+holoParent(11, OP)
+holoScale(11,vec(0.8,0.8,0.1))
+holoAng(11,ang(0,0,0))
+holoPos(11,OP:pos()+vec(5,-5,3+UP))
+holoColor(11,vec(250,250,250))
+holoMaterial(11,"models/props/cs_assault/Moneytop")
+
+holoCreate(12)
+holoModel(12,"cube")
+holoParent(12, OP)
+holoScale(12,vec(0.8,0.8,0.1))
+holoAng(12,ang(0,0,0))
+holoPos(12,OP:pos()+vec(-5,-5,3+UP))
+holoColor(12,vec(250,250,250))
+holoMaterial(12,"models/props/cs_assault/Moneytop")
+
+holoCreate(13)
+holoModel(13,"cube")
+holoParent(13, OP)
+holoScale(13,vec(0.8,0.8,0.1))
+holoAng(13,ang(30,0,0))
+holoPos(13,OP:pos()+vec(-6.5,-5,6+UP))
+holoColor(13,vec(250,250,250))
+holoMaterial(13,"models/props/cs_assault/Moneytop")
+
+
+
+
+holoCreate(14)
+holoModel(14,"cube")
+holoParent(14, OP)
+holoScale(14,vec(0.8,0.8,0.1))
+holoAng(14,ang(0,0,0))
+holoPos(14,OP:pos()+vec(5,-5,4+UP))
+holoColor(14,vec(250,250,250))
+holoMaterial(14,"models/props/cs_assault/Moneytop")
+
+holoCreate(15)
+holoModel(15,"cube")
+holoParent(15, OP)
+holoScale(15,vec(0.8,0.8,0.1))
+holoAng(15,ang(0,0,0))
+holoPos(15,OP:pos()+vec(5,-5,5+UP))
+holoColor(15,vec(250,250,250))
+holoMaterial(15,"models/props/cs_assault/Moneytop")
+
+
+holoCreate(16)
+holoModel(16,"cube")
+holoParent(16, OP)
+holoScale(16,vec(0.8,0.8,0.1))
+holoAng(16,ang(0,0,0))
+holoPos(16,OP:pos()+vec(5,-5,6+UP))
+holoColor(16,vec(250,250,250))
+holoMaterial(16,"models/props/cs_assault/Moneytop")
+
+
+holoCreate(17)
+holoModel(17,"cube")
+holoParent(17, OP)
+holoScale(17,vec(0.8,0.8,0.1))
+holoAng(17,ang(0,0,0))
+holoPos(17,OP:pos()+vec(5,-5,7+UP))
+holoColor(17,vec(250,250,250))
+holoMaterial(17,"models/props/cs_assault/Moneytop")
+
+holoCreate(18)
+holoModel(18,"cube")
+holoParent(18, OP)
+holoScale(18,vec(0.8,0.1,0.8))
+holoAng(18,ang(0,0,-30))
+holoPos(18,OP:pos()+vec(5,8,8+UP))
+holoColor(18,vec(250,250,250))
+holoMaterial(18,"models/props/cs_assault/Moneytop")
+##########
+##MONEY###
+##########
+
+## EYE1 ##
+
+holoCreate(19)
+holoModel(19,"cube")
+holoParent(19, OP)
+holoScale(19,vec(0.5,0.2,0.1))
+holoAng(19,ang(90,0,0))
+holoPos(19,OP:pos()+vec(12,5,18+UP))
+holoColor(19,vec(250,0,0))
+holoMaterial(19,"")
+## EYE2 ##
+
+holoCreate(20)
+holoModel(20,"cube")
+holoParent(20, OP)
+holoScale(20,vec(0.5,0.2,0.1))
+holoAng(20,ang(90,0,0))
+holoPos(20,OP:pos()+vec(12,-5,18+UP))
+holoColor(20,vec(250,0,0))
+holoMaterial(20,"")
+## Mouth ##
+
+holoCreate(21)
+holoModel(21,"cube")
+holoParent(21, OP)
+holoScale(21,vec(0.2,1.5,0.1))
+holoAng(21,ang(90,0,0))
+holoPos(21,OP:pos()+vec(12,0,10+UP))
+holoColor(21,vec(250,0,0))
+holoMaterial(21,"")
+
+}
+
+if(Found == 1){
+holoAlpha(21,255)
+holoAlpha(20,255)
+holoAlpha(19,255)
+Curse = 1
+}else{
+holoAlpha(23,0)
+holoAlpha(21,0)
+holoAlpha(20,0)
+holoAlpha(19,0)
+
+holoAlpha(7,255)
+holoAlpha(8,255)
+holoAlpha(9,255)
+holoAlpha(10,255)
+holoAlpha(11,255)
+holoAlpha(12,255)
+holoAlpha(13,255)
+holoAlpha(14,255)
+holoAlpha(15,255)
+holoAlpha(16,255)
+holoAlpha(17,255)
+holoAlpha(18,255)
+Curse = 0
+}
+
+if(Curse == 1){
+Dommed = Name
+holoAlpha(7,0)
+holoAlpha(8,0)
+holoAlpha(9,0)
+holoAlpha(10,0)
+holoAlpha(11,0)
+holoAlpha(12,0)
+holoAlpha(13,0)
+holoAlpha(14,0)
+holoAlpha(15,0)
+holoAlpha(16,0)
+holoAlpha(17,0)
+holoAlpha(18,0)
+Hint += 1
+if(Hint == 1){
+OP:soundPlay(10000,10000,"ambient/creatures/town_scared_sob1.wav")
+OP:soundPlay(20000,20000,"ambient/creatures/town_scared_sob2.wav")
+OP:soundPlay(30000,30000,"player/heartbeat1.wav")
+OP:soundPlay(40000,40000,"player/breathe1.wav")
+OP:soundPlay(50000,50000,"ambient/voices/playground_memory.wav")
+OP:soundPlay(60000,60000,"Resource/warning.wav")
+OP:soundPlay(70000,70000,"music/Ravenholm_1.mp3")
+holoAlpha(22,255)
+holoAlpha(23,255)
+soundVolume(10000,100)
+soundVolume(20000,100)
+soundVolume(30000,100)
+soundVolume(40000,100)
+soundVolume(50000,100)
+soundVolume(70000,100)
+hint(Dommed+" is Cursed By The Money Box",999)
+}
+}else{
+holoAlpha(22,0)
+soundStop(10000)
+soundStop(20000)
+soundStop(30000)
+soundStop(40000)
+soundStop(70000)
+soundStop(50000)
+Curse = 0
+Hint = 0
+}
+
+if(duped()){selfDestructAll()}
+if(duped()){selfDestructAll()}
+if(duped()){selfDestructAll()}
+if(duped()){selfDestructAll()}
+if(duped()){selfDestructAll()}

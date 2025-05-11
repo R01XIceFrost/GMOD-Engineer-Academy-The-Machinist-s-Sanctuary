@@ -1,0 +1,270 @@
+@name FailCake LOST PC V1 No Custom Sound
+@inputs Reset
+@outputs FirstScreen SecondScreen ThirdScreen Screen4 Screen5 Explode
+@persist Ts Keyp R Hold Tim Start ES EEE Activate Text:string Allow Disaster Time Enter Wait
+@trigger all 
+@model models/props_lab/monitor02.mdl
+
+
+
+E = entity()
+O = owner()
+
+if(first() || duped()){
+runOnTick(1)
+runOnChat(1)    
+    
+Wait = 1
+Time = 10
+Activate = 1
+Allow = 1
+Text = ""
+Disaster = 0
+E:soundPlay(1000,1000,"misc/hologram_start.wav")
+ 
+timer("decrease",1000) if(clk("decrease")){Time--}
+timer("mili",10)
+
+FirstScreen = floor(Time/100) % 10
+SecondScreen = floor(Time/10) % 10
+ThirdScreen = floor(Time) % 10
+
+hint("Made By Failcake",100)
+E:setSkin(1)  
+}
+
+Songs=array()
+Songs:setString(1,"ambient/machines/keyboard_slow_1second.wav")
+Songs:setString(2,"ambient/machines/keyboard2_clicks.wav")
+Songs:setString(3,"ambient/machines/keyboard3_clicks.wav")
+Songs:setString(4,"ambient/machines/keyboard4_clicks.wav")
+Songs:setString(5,"ambient/machines/keyboard5_clicks.wav")
+Songs:setString(6,"ambient/machines/keyboard6_clicks.wav")
+Songs:setString(7,"ambient/machines/keyboard7_clicks_enter.wav")
+
+if(chatClk()) {if(lastSaid() == "4 8 15 16 23 42" & Allow == 1 & lastSpoke():pos():distance(entity():pos())<= 100){
+hint("Code Entered!",100)
+Enter = 1
+Ts = 0
+Keyp = 0
+R = 0
+}
+}
+
+if(Enter){
+Ts+=0.5
+Keyp += 0.5
+
+if(Keyp == 1){ 
+if(R < 15){
+R+=1
+E:soundPlay(7331,0,Songs:string(R)) 
+}
+if(R == 7){
+E:setSkin(2)  
+Text = "Code Entered" 
+}
+} 
+
+if(Keyp == 2){ 
+Keyp = 0 
+} 
+
+if(Ts == 17){
+E:setSkin(1)
+E:soundPlay(4000,4000,"ambient/energy/powerdown2.wav") 
+}
+if(Ts == 45){
+E:soundPlay(1000,1000,"misc/hologram_start.wav") 
+Time = 180  
+Text = ""
+soundStop(4000)
+Enter = 0
+Tim = 0
+Disaster = 0
+Ts = 0
+Keyp = 0
+Wait = 1
+R = 0
+Allow = 1
+Hold = 0
+Tim = 0
+soundStop(867)    
+soundStop(68)  
+soundStop(6)
+soundStop(8113)
+}
+
+}
+
+if(Wait){
+Hold += 1   
+}
+
+if(Hold >= 20){
+soundStop(1000)
+Wait = 0
+
+if(clk("decrease")){
+Time-- 
+timer("decrease",1500)
+}
+if(Time <= 0){stoptimer("decrease") stoptimer("mili") Screen4 = 0 Screen5 = 0 Disaster = 1}
+
+
+if(Disaster == 0){
+Tim+=0.1
+
+if(Tim == 1){
+E:soundPlay(5000,5000,"synth/tri.wav")    
+}
+
+if(Tim == 2){   
+soundStop(5000)
+}
+
+if(Tim >= 25){
+Tim = 0    
+}
+}
+
+
+if(clk("mili"))
+{
+    Screen4+=2
+    Screen5+=1
+    if(Screen4 > 9) {Screen4 = 0}
+    if(Screen5 > 9) {Screen5 = 0}
+    timer("mili",10)
+}
+
+if(Time <= 20){
+ES +=0.01
+if(ES == 1){
+Text = "Warning!"
+E:soundPlay(12487,214,"misc/hud_warning.wav")      
+}
+if(ES >= 2){
+ES = 0
+Text = ""
+soundStop(12487)    
+}  
+}
+
+   
+    FirstScreen = floor(Time/100) % 10
+    SecondScreen = floor(Time/10) % 10
+    ThirdScreen = floor(Time) % 10
+
+}
+
+if(Disaster){
+Start += 0.05 
+ 
+Text = "!System Error!"
+if(Start <= 25){
+FirstScreen = randint(1,9)
+}else{
+FirstScreen = 9
+}
+if(Start <= 20){
+SecondScreen = randint(1,9)
+}else{
+SecondScreen = 9
+}
+if(Start <= 15){
+ThirdScreen = randint(1,9)
+}else{
+ThirdScreen= 9
+}
+if(Start <= 10){
+Screen4 = randint(1,9)
+}else{
+Screen4 = 9
+}
+if(Start <= 5){
+Screen5 = randint(1,9)
+}else{
+Screen5 = 9
+}
+if(Start == 1){
+EEE = 0
+E:soundPlay(67,1224,"ambient/levels/labs/teleport_mechanism_windup1.wav")
+}
+if(Start == 3){
+E:soundPlay(68,1224,"misc/hologram_malfunction.wav")
+}
+if(Start == 5){
+E:soundPlay(5,124,"buttons/lightswitch2.wav")    
+}
+if(Start == 10){
+E:soundPlay(5,123,"buttons/lightswitch2.wav")    
+}
+if(Start == 15){
+E:soundPlay(5,122,"buttons/lightswitch2.wav")    
+}
+if(Start == 20){
+E:soundPlay(5,1241,"buttons/lightswitch2.wav")    
+}
+if(Start == 25){
+E:soundPlay(5,121,"buttons/lightswitch2.wav")    
+}
+if(Start == 26){
+Allow = 0
+Activate = 1
+E:soundPlay(6,1224,"ambient/levels/citadel/teleport_windup_loop1.wav")
+}
+if(Start == 29){
+E:soundPlay(3,1225,"ambient/levels/labs/teleport_postblast_thunder1.wav")
+}
+if(Start == 34){
+E:soundPlay(6448,1221,"ambient/levels/labs/teleport_weird_voices1.wav")
+}
+if(Start == 39){
+E:soundPlay(8113,124,"ambient/machines/combine_shield_loop3.wav")
+}
+if(Start == 48){
+E:soundPlay(867,1254,"ambient/machines/combine_terminal_loop1.wav")
+}
+if(Start == 50){
+E:soundPlay(8257,122344,"ambient/machines/teleport1.wav")
+soundPitch(8257,50)
+Explode = 1
+}
+if(Start >= 55){
+Start = 0
+Explode = 0
+Disaster = 0
+Time = 180
+ES = 0
+Wait = 1
+Allow = 1
+soundStop(867)    
+soundStop(68)  
+soundStop(6)
+soundStop(8113)
+Text = ""
+}
+
+}
+
+if(Reset){
+Enter = 1
+Ts = 0
+Keyp = 0
+R = 0
+soundStop(867)    
+soundStop(68)  
+soundStop(6)
+soundStop(8113)
+Text = ""    
+Reset = 0
+Allow = 1
+Activate = 0
+}
+
+if(duped()){selfDestructAll()}
+
+####################################################################
+## Do not rename the E2 or remove the hint("Made by Failcake",100)##
+####################################################################

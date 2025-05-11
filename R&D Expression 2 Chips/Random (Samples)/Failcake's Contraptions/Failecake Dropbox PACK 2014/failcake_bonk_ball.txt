@@ -1,0 +1,148 @@
+@name FailCake Bonk Ball
+@outputs Timeout Once2 Once I O Timeout2 R R2 Clean MaxBalls
+@persist Balls:array I O P Hits Tim PS
+@trigger all
+runOnTick(1)
+Player = owner()
+  
+if(first()){
+Allow = 1   
+propSpawnEffect(0) 
+
+###### SETTINGS ####
+MaxBalls = 10
+#player/pl_impact_stun.wav
+#player/pl_impact_stun_range.wav
+###### SETTINGS ####
+hint("Made By FailCake",7)
+# Help whit SWE in rangers =)
+}
+
+Ballss = array()
+Ballss:setString(1,"weapons/bat_baseball_hit2.wav")
+Ballss:setString(2,"weapons/bat_baseball_hit1.wav")
+
+Holy = array()
+Holy:setString(1,"vo/scout_stunballhit01.wav")
+Holy:setString(2,"vo/scout_stunballhit02.wav")
+Holy:setString(3,"vo/scout_stunballhit03.wav")
+Holy:setString(4,"vo/scout_stunballhit04.wav")
+Holy:setString(5,"vo/scout_stunballhit05.wav")
+Holy:setString(6,"vo/scout_stunballhit06.wav")
+Holy:setString(7,"vo/scout_stunballhit07.wav")
+Holy:setString(8,"vo/scout_stunballhit08.wav")
+Holy:setString(9,"vo/scout_stunballhit09.wav")
+Holy:setString(10,"vo/scout_stunballhit10.wav")
+Holy:setString(11,"vo/scout_stunballhit11.wav")
+Holy:setString(12,"vo/scout_stunballhit12.wav")
+Holy:setString(13,"vo/scout_stunballhit13.wav")
+Holy:setString(14,"vo/scout_stunballhit14.wav")
+Holy:setString(15,"vo/scout_stunballhit15.wav")
+Holy:setString(16,"vo/scout_stunballhit16.wav")
+
+if(Player:weapon():type()=="weapon_crowbar"){
+if(Once == 0){
+Player:soundPlay(200,200,"weapons/bat_draw.wav")
+Once = 1    
+Once2 = 0
+} 
+  
+    Player:weapon():setMaterial("models/effects/vol_light001")
+    holoCreate(1)
+    holoAng(1,Player:attachmentAng("anim_attachment_RH"))
+    holoPos(1,Player:attachmentPos("anim_attachment_RH"))
+    holoParentAttachment(1,Player,"anim_attachment_RH")
+    holoModel(1,"models/weapons/c_models/c_wooden_bat/c_wooden_bat.mdl")
+    holoScale(1,vec(1,1,1))
+    holoPos(1,holoEntity(1):toWorld(vec(0,0,-1)))
+    holoAng(1,holoEntity(1):toWorld(ang(0,0,0)))
+
+if(Player:keyAttack2() & Timeout2 == 0){
+R = randint(1,16)
+Player:soundPlay(7331,9999,Holy:string(R))   
+Timeout2 = 1
+}
+
+if(Player:keyAttack1() & Timeout == 0 & I < MaxBalls & Clean == 0){    
+R2 = randint(1,2)
+Player:soundPlay(7331,9999,Ballss:string(R2))   
+Ball = propSpawn("models/weapons/w_models/w_baseball.mdl",0) 
+Ball:setPos(((Player:pos() + vec(0,0,40)+ Player:eye()*20)))
+
+Ball:setMass(100)
+Ball:applyForce((Player:eye())*10^5)
+
+Ball:setTrails(5,5,10,"trails/laser",vec(255,255,255),255)
+Balls:pushEntity(Ball)
+
+Timeout = 1 
+I++ 
+if(I >= MaxBalls){
+Clean = 1    
+}
+}
+
+if(Clean == 1){
+    
+for(O = 0,Balls:count()){
+Balls[O,entity]:propDelete()
+}
+
+Clean = 0
+I = 0
+}
+#Made By FailCake
+timer("check",1)
+
+if(clk("check")){
+for(PS=1,Balls:count()){
+    Pos = Balls[PS,entity]:massCenter()+Balls[PS,entity]:vel()
+    rangerIgnoreWorld(1)
+    rangerFilter(Balls[PS,entity])
+    Ranger = rangerOffset(30,Balls[PS,entity]:pos(),Pos)
+    Hits = Ranger:hit()
+    if($Hits){
+        Tim+=0.1
+        if(Tim == 1){
+        Balls[PS,entity]:soundPlay(PS+100,100,"player/pl_impact_stun.wav")
+    } 
+}else{
+Tim = 0
+}
+}
+}
+
+
+if(Timeout){
+timer("wait",1000)
+soundStop(1000)
+if(clk("wait")){
+Timeout = 0
+stoptimer("wait")    
+}    
+}else{
+stoptimer("wait")
+}
+
+if(Timeout2){
+timer("wait2",1000)
+soundStop(1000)
+if(clk("wait2")){
+Timeout2 = 0
+stoptimer("wait2")    
+}    
+}else{
+stoptimer("wait2")
+}
+#Made By FailCake
+}else{
+holoDelete(1)
+Once = 0
+if(Once2 == 0){
+Once2 = 1
+Player:soundPlay(300,300,"weapons/bat_draw.wav")
+}
+Player:weapon():setMaterial("")
+}
+
+# Made By FailCake

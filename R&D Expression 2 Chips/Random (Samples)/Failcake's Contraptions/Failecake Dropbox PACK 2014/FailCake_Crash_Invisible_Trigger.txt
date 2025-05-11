@@ -1,0 +1,128 @@
+@name FailCake Crash Invisible Trigger
+@persist TRIGGER [E]:entity HOLO_INDEX
+@trigger all
+@model models/items/item_item_crate.mdl
+
+if(first() || duped()){
+    
+     function void sendAppear(Spawn:number){
+        
+        findClearBlackList()
+        findClearWhiteList()
+        
+        findInSphere(E:pos(),1000) 
+
+        local FD = findToArray()
+        
+        if(FD:count() > 0){
+                
+            for(I = 0, FD:count()){
+                if(FD[I,entity]:isValid()){
+                    if(FD[I,entity]:type() == E:type() && FD[I,entity]:owner() == E:owner() ){
+                       dsSendDirect("spawnSignal",FD[I,entity],Spawn)
+                    }
+                }
+            }
+                
+        }
+        
+     }
+    
+     function void createHolo(Model:string,Scl:vector,Pos:vector,Ang:angle,Parent:entity, Color:vector){
+        
+        holoCreate(HOLO_INDEX)
+        holoModel(HOLO_INDEX,Model)
+        holoPos(HOLO_INDEX,Parent:toWorld(Pos))
+        holoAng(HOLO_INDEX,Parent:toWorld(Ang))
+        holoScaleUnits(HOLO_INDEX,Scl)
+        holoColor(HOLO_INDEX,Color)
+        holoParent(HOLO_INDEX,Parent)
+        
+        HOLO_INDEX+=1
+    }
+        
+    function void createPoint(){
+        
+        createHolo("cube",vec(2,1,7),vec(17,-1,15),ang(-3,90,0),E,vec(255,200,0))
+        createHolo("cube",vec(2,1,2),vec(17,-0.7,8),ang(0,90,0),E,vec(255,200,0))
+    }
+    
+}
+
+
+
+if(first() || duped()){
+    
+    dsJoinGroup("bombCrashBand_FailCake")
+    propSpawnEffect(0)
+    runOnTick(1)
+    
+    E = entity()
+    
+    E:setMaterial("models/debug/debugwhite")
+    E:setColor(120,120,120)
+    
+    createPoint()
+    
+    
+}
+
+
+if(TRIGGER == 0){
+    
+    findIncludeEntities(players())
+    local Pie = findInBox(E:toWorld(vec(15,-15,25.5)),E:toWorld(vec(-13,13,27.5)))
+    
+    if(Pie){ 
+        
+        TRIGGER = 1
+        E:setColor(70,70,70)
+        E:soundPlay(1,5,"garrysmod/balloon_pop_cute.wav")
+        soundPitch(1,randint(80,100))
+        
+        holoAlpha(1,0)
+        holoAlpha(2,0)
+            
+        timer("send_Appear",700)
+        
+    }
+    
+    if(dsClk("explodeNEAR") || dsClk("explode_NITRO")){
+        local Dist = dsGetVector()
+    
+        if(E:pos():distance(Dist) < 200){
+            TRIGGER = 1
+            E:setColor(70,70,70)
+            E:soundPlay(1,5,"garrysmod/balloon_pop_cute.wav")
+            soundPitch(1,randint(80,100))
+            
+            holoAlpha(1,0)
+            holoAlpha(2,0)
+            
+            timer("send_Appear",300)
+        }
+        
+    }
+    
+}
+
+if(clk("send_Appear")){
+    sendAppear(1)    
+    timer("RESET",7000)
+}
+
+if(clk("RESET")){
+    
+    sendAppear(-1) 
+    
+    holoAlpha(1,255)
+    holoAlpha(2,255)
+    E:setColor(120,120,120)
+    
+    TRIGGER = 0
+    
+}
+
+
+
+

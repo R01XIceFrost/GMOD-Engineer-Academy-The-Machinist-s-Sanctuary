@@ -1,0 +1,509 @@
+@name FailCake Non-Haunted Lantern
+@persist [E Ply Mains Noob Small Bum Giby]:entity On Effect [Plys Chat Sounds]:array Event TargetAng:angle
+@persist Count EVENT_BEHIND EVENT_STALK EVENT_MULT EVENT_SLAP EVENT_KILL Ang:angle Onc RelativePos HoloAng:angle Maxs
+@persist EVENT_EXPLO EVENT_FAKE Rand2 Right OwnerOnly Reset EVENT_SPAWN Gibs:array Gib:array FG
+@trigger all
+@model models/props_2fort/lantern001_off.mdl
+
+## HAPPY HALLOWEEN GUYS! - Failcake ##
+
+function void playSound(Sound:string,Index:number,Pitch:number){
+for(I = 1,Plys:count()){
+
+if(Plys[I,entity] == Ply){    
+Mains = holoEntity(I)
+}
+
+holoEntity(I):soundPlay(I+Index,0,Sound)   
+soundPitch(I+Index,Pitch)
+}    
+}
+
+#Made by Failcake
+if(first() | duped()){
+    
+runOnTick(1)
+runOnChat(1)
+
+propSpawnEffect(0)
+hint("Made by Failcake",7)
+E = entity()
+
+## CONFIG ##
+Reset = 1
+OwnerOnly = 0
+## CONFIG ##
+
+Gib:pushString("models/Gibs/AGIBS.mdl")
+Gib:pushString("models/Gibs/HGIBS_spine.mdl")
+Gib:pushString("models/player/gibs/heavygib004.mdl")
+Gib:pushString("models/player/gibs/snipergib002.mdl")
+Gib:pushString("models/Gibs/HGIBS_rib.mdl")
+Gib:pushString("models/Gibs/HGIBS_scapula.mdl")
+Gib:pushString("models/player/gibs/heavygib001.mdl")
+Gib:pushString("models/player/gibs/heavygib005.mdl")
+Gib:pushString("models/player/gibs/snipergib004.mdl")
+
+FG = 0
+On = 0
+Event = 0
+Onc = 0
+Right = 0
+
+EVENT_BEHIND = 1
+EVENT_STALK = 2
+EVENT_MULT = 3
+EVENT_SLAP = 4
+EVENT_KILL = 5
+EVENT_EXPLO = 6
+EVENT_FAKE = 7
+EVENT_SPAWN = 8
+
+Rand2 = 0
+
+## EVENT 1 SOUNDS
+Sounds:pushString("ambient/atmosphere/cave_hit5.wav")
+Sounds:pushString("ambient/voices/playground_memory.wav")
+Sounds:pushString("music/stingers/hl1_stinger_song28.mp3")
+Sounds:pushString("music/stingers/hl1_stinger_song27.mp3")
+Sounds:pushString("ambient/atmosphere/hole_hit5.wav")
+Sounds:pushString("ambient/machines/thumper_hit.wav")
+Sounds:pushString("ambient/materials/metal4.wav")
+Sounds:pushString("music/stingers/industrial_suspense1.wav")
+Sounds:pushString("music/stingers/hl1_stinger_song8.mp3")
+Sounds:pushString("music/stingers/hl1_stinger_song7.mp3")
+
+#npc/stalker/go_alert2a.wav
+
+## Main Stalker! ##
+holoCreate(30)
+holoModel(30,"models/stalker.mdl")
+holoPos(30,vec(0,0,0))
+holoAlpha(30,0)
+
+setName("FailCake Non-Haunted Lantern")
+
+E:setAlpha(1)
+
+holoCreate(80)
+holoModel(80,"models/props_2fort/lantern001.mdl")
+holoPos(80,E:pos())
+holoParent(80,E)
+
+
+findByClass("player")
+Plys = findToArray()
+Count = Plys:count()
+Ply = noentity()
+
+for(I = 1,Plys:count()){
+holoCreate(I)
+holoModel(I,"cube")
+holoAlpha(I,0)
+holoPos(I,Plys[I,entity]:toWorld(vec(0,0,80)))
+holoParent(I,Plys[I,entity])    
+}
+
+}
+
+#Made by Failcake
+if(On == 0 & Ply == noentity()){
+
+if(chatClk()){
+
+Chat = lastSaid():explode(" ") 
+local PS = lastSpoke()
+
+if(Chat[1,string] == "-summon" & On == 0 & PS:pos():distance(E:pos()) <= 700){
+Ply = PS    
+hint("The Beast has been Summoned!",7)
+setName("FailCake Haunted Lantern [ Summoned ][ "+Ply:name() + " ]")
+playSound("music/radio1.mp3",34,70)
+timer("Stop",8000)
+timer("Waits",10000)     
+}
+  
+}
+
+}
+
+
+
+
+if(clk("Stop")){ 
+soundPurge() 
+}
+
+
+if(clk("Waits")){
+On = 1    
+}
+
+if(On){
+    
+if(chatClk(Ply)){
+Chat = Ply:lastSaid():explode(" ") 
+
+if(Chat[1,string] == "-stop" & On == 1){
+On = 0
+setName("FailCake Non-Haunted Lantern") 
+print("Stoped!")
+timer("Clean",600)
+Small:propDelete() 
+Ply = noentity()  
+reset()
+}
+
+}
+   
+if(Event == 0){
+Rand2 = randint(1,8)  
+if(Rand2 != 1){
+Event = randint(1,8) # RandomEvents
+Onc = 0
+Maxs = randint(3,6)
+timer("dur",randint(10000,15000))
+}elseif(Rand2 == 1){
+Event = -1
+Onc = 0
+timer("Delays",15000)
+Mains:soundPlay(34,0,Sounds[randint(1,Sounds:count()),string])
+}
+
+}
+
+if(clk("Delays")){
+Event = 0
+Onc = 0    
+}
+   
+
+## EVENT BEGIN ##
+if(Event == EVENT_BEHIND){
+
+if(Onc == 0){
+Onc = 1
+soundPurge()
+Mains:soundPlay(34,0,Sounds[randint(1,Sounds:count()),string])
+
+holoAlpha(30,255)
+holoPos(30,Ply:toWorld(vec(-80,0,0))) 
+}
+  
+
+TargetAng = Ply:eyeAngles()
+Ang = (holoEntity(30):pos() - Ply:pos()):toAngle() + ang(0,180,0)
+HoloAng = (holoEntity(30):pos() - Ply:pos()):toAngle()
+RelativePos = TargetAng:forward():y() - HoloAng:forward():y()
+
+if (abs(RelativePos) <= 0.5){
+timer("delay",1000)
+Event = -1
+}
+
+holoAng(30,Ang)
+
+}
+## EVENT END ##
+
+## EVENT BEGIN ##
+
+if(Event == EVENT_STALK){
+    
+if(Onc == 0){
+timer("wait",randint(2000,4000))  
+Onc = 1
+Mains:soundPlay(34,0,"npc/stalker/breathing3.wav")
+}
+#Made by Failcake
+Ang = (holoEntity(30):pos() - Ply:pos()):toAngle() + ang(0,180,0)
+holoAng(30,Ang)
+}
+
+if(clk("wait")){
+holoAlpha(30,255)
+holoPos(30,Ply:toWorld(vec(80,0,0)))
+
+soundPurge()
+Mains:soundPlay(34,0,"npc/stalker/go_alert2a.wav")
+holoEntity(30):soundPlay(33,0,"npc/stalker/go_alert2a.wav")
+timer("delay",1000)
+} 
+
+## EVENT END ##
+
+
+
+
+## EVENT BEGIN ##
+if(Event == EVENT_SLAP){
+
+if(Onc == 0){
+timer("wait2",randint(2000,4000))  
+Onc = 1
+Mains:soundPlay(34,0,"ambient/levels/citadel/strange_talk"+randint(3,11)+".wav")
+holoAlpha(30,0)
+}
+
+holoPos(30,Ply:toWorld(vec(-70,0,0)))
+Ang = (holoEntity(30):pos() - Ply:pos()):toAngle() + ang(0,180,0)
+holoAng(30,Ang)   
+    
+}
+
+if(clk("wait2")){
+Small = propSpawn("models/Gibs/HGIBS.mdl",0)
+Small:setAlpha(0)
+Small:setPos(((holoEntity(30):pos() + holoEntity(30):eye()*15)))
+Small:applyForce((holoEntity(30):eye())*15^3)   
+Small:setMass(100) 
+
+Mains:soundPlay(34,0,"physics/flesh/flesh_impact_hard"+randint(1,6)+".wav")
+
+timer("delay",1000)
+}
+
+## EVENT END ##
+
+
+
+## EVENT BEGIN ##
+
+if(Event == EVENT_KILL){
+
+if(Onc == 0){
+Small:propDelete()
+timer("wait3",randint(2000,4000))  
+Onc = 1
+holoAlpha(30,255)
+Mains:soundPlay(34,0,"npc/stalker/breathing3.wav")
+holoPos(30,Ply:toWorld(vec(-70,0,0)))
+}
+
+Ang = (holoEntity(30):pos() - Ply:pos()):toAngle() + ang(0,180,0)
+holoAng(30,Ang)   
+ 
+TargetAng = Ply:eyeAngles()
+Ang = (holoEntity(30):pos() - Ply:pos()):toAngle() + ang(0,180,0)
+HoloAng = (holoEntity(30):pos() - Ply:pos()):toAngle()
+RelativePos = TargetAng:forward():y() - HoloAng:forward():y()
+
+if (abs(RelativePos) <= 0.5){
+timer("delay",1000)
+stoptimer("wait3")
+Small:propDelete()
+Event = -1
+}
+   
+}
+
+if(clk("wait3")){
+Small = propSpawn("models/Gibs/HGIBS.mdl",0)
+Small:setAlpha(255)
+Small:setPos(((holoEntity(30):pos() + holoEntity(30):eye()*15)))
+Small:applyForce((holoEntity(30):eye())*15^13)   
+Small:setMass(100) 
+
+Mains:soundPlay(34,0,"physics/flesh/flesh_impact_hard"+randint(1,6)+".wav")
+
+timer("delay",1000)
+}
+
+## EVENT END ##
+
+## EVENT BEGIN ##
+if(Event == EVENT_MULT){
+
+if(Onc == 0){
+    
+for(SS = 1,Maxs){  
+holoCreate(SS+30)
+holoModel(SS+30,"models/stalker.mdl")
+holoAlpha(SS+30,255)
+holoPos(SS+30,Ply:toWorld(vec(90,randint(-100,100),0)))   
+}
+
+Onc = 1
+soundPurge()
+Mains:soundPlay(34,0,"ambient/levels/citadel/strange_talk"+randint(3,11)+".wav")
+
+timer("Des",3000) 
+}
+
+for(SS = 1,Maxs){
+Ang = (holoEntity(SS+30):pos() - Ply:pos()):toAngle() + ang(0,180,0)
+holoAng(SS+30,Ang)       
+}
+   
+}
+## EVENT END ##
+#Made by Failcake
+
+## EVENT BEGIN ##
+
+if(Event == EVENT_EXPLO){
+holoPos(30,Ply:toWorld(vec(-40,0,0)))
+    
+if(Onc == 0){
+Onc = 1    
+soundPurge()
+Mains:soundPlay(34,0,"ambient/gas/steam2.wav")
+soundPitch(34,170)
+soundVolume(34,0.3)
+timer("BUM",1000)
+}
+    
+}
+
+if(clk("BUM")){
+soundStop(34)
+Bum = propSpawn("models/props_phx/misc/potato_launcher_explosive.mdl",holoEntity(30):pos(),ang(0,0,0),1)   
+Bum:setAlpha(0)
+Bum:propBreak()
+Event = -1
+timer("Delay",1000)
+}
+
+## EVENT END ##
+
+
+## EVENT START ##
+
+if(Event == EVENT_FAKE){
+    
+if(Onc == 0){
+Onc = 1    
+soundPurge()
+Mains:soundPlay(35,0,"music/hl2_song2.mp3")
+soundVolume(35,0.5)
+timer("Delay",4000)
+holoAlpha(30,255)
+holoPos(30,Ply:toWorld(vec(250,0,0)))
+}    
+
+Ang = (holoEntity(30):pos() - Ply:pos()):toAngle() + ang(0,180,0)
+holoAng(30,Ang) 
+
+if(holoEntity(30):pos():distance(Ply:pos()) > 100){
+holoPos(30,holoEntity(30):pos() + holoEntity(30):forward()/2)   
+}else{
+holoAlpha(30,0)
+stoptimer("Walk")
+Event = -1
+timer("Delay",500)
+}
+
+
+
+timer("Walk",500)
+if(clk("Walk")){
+
+if(Right == 0){
+Right = 1  
+Mains:soundPlay(34,0,"npc/stalker/stalker_footstep_left"+randint(1,2)+".wav")  
+}elseif(Right == 1){
+Right = 0
+Mains:soundPlay(34,0,"npc/stalker/stalker_footstep_right"+randint(1,2)+".wav") 
+}
+    
+}
+
+
+}
+
+## EVENT END ##
+
+
+
+## EVENT BEGIN ##
+
+if(Event == EVENT_SPAWN){
+    
+if(Onc == 0){
+Onc = 1
+timer("Spawn",600)    
+soundPurge()
+Mains:soundPlay(34,0,"ambient/levels/citadel/strange_talk"+randint(3,11)+".wav")
+}
+
+
+if(clk("Spawn")){
+    
+if(FG <= Gib:count()){
+FG += 1
+timer("Spawn",600)
+}else{
+Event = -1
+timer("Clean",600)
+}
+
+Giby = propSpawn(Gib[FG,string],Ply:toWorld(vec(randint(-20,20),randint(-20,20),100)),ang(0,0,0),0)
+Giby:setMass(10)
+Gibs:pushEntity(Giby)
+   
+}
+
+}
+
+
+if(clk("Clean")){
+    #Made by Failcake
+for(I = 0,Gibs:count()){
+Gibs[I,entity]:propDelete() 
+
+if(I >= Gibs:count()){
+Gibs:clear()
+Guby = noentity()
+timer("Delay",1000)    
+break    
+}
+}   
+ 
+}
+## EVENT END ##
+
+
+
+
+
+
+
+if(clk("Des")){
+    
+for(I=1,Maxs){
+holoDelete(I+30)    
+}  
+timer("delay",1000)  
+}
+
+
+if(clk("delay")){
+holoAlpha(30,0)
+Small:propDelete()
+soundStop(35)
+holoPos(30,vec(0,0,0))
+Event = -1
+timer("NextEvent",randint(30000,40000))
+}
+
+
+if(clk("dur")){
+Event = 0    
+}
+
+}
+
+
+if(On == 1 & Reset == 1){
+if(Ply:health() <= 0){
+On = 0
+timer("Clean",600)
+timer("Des",300)
+holoAlpha(30,0)
+Small:propDelete()
+print("Player Died")
+reset()
+}
+}
+
+#Made by Failcake

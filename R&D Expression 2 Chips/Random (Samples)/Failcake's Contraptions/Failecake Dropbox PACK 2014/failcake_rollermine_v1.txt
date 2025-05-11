@@ -1,0 +1,154 @@
+@name FailCake RollerMine V1
+@inputs Cam:wirelink Seat:wirelink Driver:entity
+@outputs Speed Timeout Rand MaxSpeed Onces Timeout2
+@persist Tim Force:vector Angles:angle Player:entity Ar:array
+@trigger all
+@model models/Roller.mdl
+runOnTick(1)
+
+E = entity()
+Speed = E:vel():length()
+
+if(first()){
+hint("Made By FailCake",7) 
+E:setMass(50) 
+findByClass("player")
+Ar=findToArray() 
+}
+
+Die=array()
+Die:setString(1,"npc/roller/mine/rmine_reprogram.wav")
+Die:setString(2,"npc/roller/mine/rmine_chirp_quest1.wav")
+Die:setString(3,"npc/roller/mine/rmine_predetonate.wav")
+Die:setString(4,"npc/roller/mine/rmine_tossed1.wav")
+
+W = Seat:number("W")
+S = Seat:number("S")
+A = Seat:number("A")
+D = Seat:number("D")
+Space = Seat:number("Space")
+Active = Seat:number("Active")
+Bear = Seat:number("Bearing")
+Shift = Seat:number("Shift")
+Attack = Seat:number("Mouse1")
+Beep = Seat:number("Mouse2")
+
+O = Driver:driver()
+
+Angles = O:eyeAngles()
+Force = vec(0,0,0)
+
+Cam:setVector("Position",E:pos())
+Bearing = Seat:number("Bearing")
+Pitch = Seat:number("Elevation")
+
+Cam:setAngle("Angle",ang(-Pitch,Bearing,0))
+
+if(Active){
+Tim+=1
+if(Tim == 2){
+E:soundPlay(1000,1000,"npc/roller/mine/rmine_moveslow_loop1.wav")    
+}  
+soundPitch(1000,Speed/2)
+
+if(Shift == 0){
+MaxSpeed = 300   
+}else{
+MaxSpeed = 450  
+}
+
+if(W){
+Force = Angles:forward()  
+}elseif(S){
+Force = Force - Angles:forward() 
+}elseif(A){
+Force = Force - Angles:right()
+}elseif(D){
+Force = Force + Angles:right()
+}
+
+Force = Force * E:mass()
+
+E:applyOffsetForce(Force, E:pos() + vec( 0, 0, MaxSpeed ) )
+Player = O:aimEntity()
+
+if(Speed > 1){
+Force = Force * 0.25    
+}
+
+if(Space & Timeout == 0){
+E:applyForce((vec(0,0,100)+-E:forward()*5)*150)
+soundStop(1000)
+E:soundPlay(2000,2000,"npc/roller/mine/rmine_blip1.wav")
+Rand = randint(90,110)
+soundPitch(2000,Rand)
+
+Timeout = 1
+}
+
+}else{
+Tim = 0
+soundStop(1000)
+soundStop(2000)
+}
+
+if(Timeout){
+timer("wait",1300)
+if(clk("wait")){
+Timeout = 0
+Tim = 0
+E:setMass(50)
+stoptimer("wait")    
+}    
+}
+
+if(Timeout2){
+timer("wait2",2000)
+if(clk("wait2")){
+Timeout2 = 0
+stoptimer("wait2")    
+}    
+}
+
+Aim = O:aimPos()
+
+for(I=1,Ar:count()){
+Player = Ar[I,entity]  
+if(Attack & Timeout == 0 & Player:pos():distance(E:pos())<=70){
+E:applyForce(((Aim-E:pos())+vec(0,0,10))*2) 
+E:setMass(200)
+RR = randint(100,120)
+E:soundPlay(3000,3000,"npc/roller/mine/rmine_explode_shock1.wav")
+soundStop(1000)
+soundPitch(3000,RR)
+Timeout = 1
+}
+}
+
+if(Beep & Timeout2 == 0){
+Rss = randint(1,4)
+E:soundPlay(1230,1230,Die:string(Rss))   
+Timeout2 = 1 
+}
+
+if(Active & Onces == 0){
+E:soundPlay(5000,5000,"npc/roller/mine/rmine_tossed1.wav") 
+Onces = 1  
+Driver:hintDriver("## Made By FailCake ##",7) 
+Driver:hintDriver("Mouse1 to attack (Near a Player)",7) 
+Driver:hintDriver("Mouse2 to taunt",7) 
+Driver:hintDriver("Space to Jump",7) 
+Driver:hintDriver("Shift to Run",7) 
+Driver:hintDriver("Mouse to Look",7) 
+Driver:hintDriver("######################",7) 
+}
+if(Active == 0){
+Onces = 0    
+}
+
+if(duped()){selfDestructAll()}
+
+
+####################################################################
+## Do not rename the E2 or remove the hint("Made by Failcake & Jack",7)##
+####################################################################

@@ -1,0 +1,346 @@
+@name FailCake Crow
+@inputs Pod:wirelink Camera:wirelink
+@persist [E Bird]:entity
+@persist W A S D Jump Bear Shift PoopEat FlyLand Idle Active FlySpeed FLYUP Jumps CanJump Hovering
+@persist MaxPoop IndexPoop AngleAim Power Flying Falling FallingLand HasLanded FlyDelay IsEating
+@trigger all
+@model models/hunter/blocks/cube025x025x025.mdl
+
+function void updateControls(){
+## Controls ##
+
+W = Pod:number("W")
+S = Pod:number("S")
+A = Pod:number("A")
+D = Pod:number("D")
+Jump = Pod:number("Space")
+Active = Pod:number("Active")
+Shift = Pod:number("Shift")
+PoopEat = Pod:number("Mouse1")
+FlyLand = Pod:number("Mouse2")
+
+Camera:setAngle("Angle",E:angles())   
+Camera:setVector("Position",E:toWorld(vec(-30,0,10)))
+
+}
+#Made By FailCake :D
+
+function void makePoop(){
+  
+if(IndexPoop >= MaxPoop + 2){IndexPoop = 2} 
+
+holoCreate(IndexPoop)
+holoModel(IndexPoop,"hqcylinder")
+IndexPoop+=1
+
+}
+
+
+function void moveForward(Bool:number){
+
+if(changed(Bool)){
+Idle = 1    
+}
+    
+if(Idle){
+    
+if(!Falling && !FallingLand){    
+      
+if(Bool){
+holoAnim(1,2)
+}else{
+holoAnim(1,3)
+}
+
+}
+
+Idle = 0
+}
+
+}
+
+
+# 1 = Ground
+# 0 = Fly
+function void backToIdle(Bool:number){
+Idle = 1
+
+if(!Falling && !FallingLand){  
+    
+if(Bool){
+holoAnim(1,1)   
+}else{
+holoAnim(1,0)
+}
+
+}
+
+  #Made By FailCake :D
+}
+
+
+if(clk("randomsounds")){
+holoEntity(1):soundPlay(34,4,"npc/crow/idle"+randint(1,4)+".wav")
+timer("randomsounds",randint(3000,8500))   
+}
+
+if(chatClk(owner())){
+holoEntity(1):soundPlay(1,4,"npc/crow/idle"+randint(1,4)+".wav")   
+}
+
+# SEAGULL ANIMS #
+
+
+if(first() || duped()){
+runOnTick(1)  
+runOnChat(1)
+  
+E = entity()
+E:setAlpha(0) 
+E:setMass(500)
+hint("Made By FailCake :D",2)
+holoCreate(1)
+#models/seagull.mdl
+#models/Crow.mdl
+holoModel(1,"models/Crow.mdl")
+holoPos(1,E:toWorld(vec(2,0,-6.1)))
+holoAnim(1,1) # Idle Anim
+#holoParent()(1,E)
+holoParent(1,E)
+
+Bird = holoEntity(1)
+
+Pod:entity():setAlpha(0)
+Camera:entity():setAlpha(0)
+#Made By FailCake :D
+
+
+## Variables ##
+Idle = 0
+IndexPoop = 0
+HasLanded = 0
+Power = 0
+Hovering = 0
+IsEating = 0
+FlyDelay = 0
+AngleAim = 0
+Flying = 0
+Falling = 0
+FallingLand = 0
+CanJump = 0
+
+## Settings ##
+MaxPoop = 2
+FlySpeed = 8
+FLYUP = 20
+
+backToIdle(1)
+
+timer("randomsounds",randint(1000,2500)) 
+## Sounds ##
+}
+#Made By FailCake :D
+
+
+
+updateControls()
+
+if(clk("resetjump")){
+Jumps = 0    
+} 
+
+if(clk("jumpdelayanim")){
+Jumps = 3
+holoEntity(1):soundPlay(2,4,"npc/crow/die"+randint(1,2)+".wav") 
+timer("resetjump",700)    
+}
+
+## Controls Stuff
+if(!Flying){ # Flying has different Controls!
+    
+if(changed(Jump) && Jump && !CanJump){
+timer("jumpdelayanim",100)
+holoAnim(1,6)
+CanJump = 1
+}
+ 
+ #Made By FailCake :D   
+if(W || S){
+
+    
+if(Shift){
+moveForward(0) 
+
+if(S){
+Power = -3
+}else{
+Power = 3
+}
+  
+}else{
+
+if(S){
+Power = -1
+}else{
+Power = 1
+}
+  
+moveForward(1)  
+}
+  #Made By FailCake :D
+}elseif(!Idle){
+backToIdle(1)
+Power = 0
+}
+
+}elseif(Flying){
+
+if(W){
+FLYUP += 0.1   
+}elseif(S){
+FLYUP -= 0.1 
+}
+
+if(Shift){
+FlySpeed = 15  
+}else{
+FlySpeed = 8
+}
+
+}
+
+
+if(A){
+AngleAim += 1    
+}elseif(D){
+AngleAim -= 1  
+}
+#Made By FailCake :D
+
+if(clk("JumpCD")){
+CanJump = 0   
+}
+
+if(clk("resetanim")){
+backToIdle(1)    
+}
+
+
+## ApplyForceShit Things
+    
+Ranger = rangerOffset(9,E:pos(),vec(0,0,-1))
+LandRanger = rangerOffset(25,E:pos(),vec(0,0,-1))
+ 
+
+
+if(!Ranger:hit() && !LandRanger:hit()){
+    
+if(!FallingLand){
+FallingLand = 1
+holoAnim(1,0)  
+holoEntity(1):soundPlay(4,0,"npc/crow/flap2.wav")
+}
+ #Made By FailCake :D 
+}elseif(FallingLand){
+FallingLand = 0
+HasLanded = 0
+Falling = 1 
+timer("JumpCD",1000)
+soundStop(4)
+timer("resetanim",1000)
+}
+
+
+
+
+if(LandRanger:hit() && Falling){
+#Fall Down Animation. AKA land
+Falling = 0
+holoAnim(1,8)
+}
+
+
+
+## Always Turn
+V = E:toLocal(rotationVector(quat(ang(0,AngleAim,0))/quat(E))+E:pos())
+E:applyTorque((200*V - 30*E:angVelVector())*E:inertia())
+
+if(!Flying){
+    
+Posi = Ranger:pos() + (E:forward()*Power + vec(0,0,9 + Jumps))
+E:applyForce(((Posi-E:pos())*5-E:vel()/7)*E:mass())   
+
+}else{
+#Made By FailCake :D
+if(!Hovering){
+Posi = Ranger:pos() + (E:forward()*FlySpeed + vec(0,0,FLYUP))
+E:applyForce(((Posi-E:pos())*5-E:vel()/7)*E:mass()) 
+}else{
+Posi = Ranger:pos() + (E:forward() + vec(0,0,FLYUP))
+E:applyForce(((Posi-E:pos())*5-E:vel()/7)*E:mass())  
+}
+
+}
+
+
+
+
+
+## Flying ! ##
+
+if(clk("flytrigger")){
+FlyDelay = 0    
+#Made By FailCake :D
+}
+
+if(changed(FlyLand) && FlyLand && FlyDelay == 0){
+Flying = !Flying 
+Hovering = 0
+
+FlyDelay = 1
+timer("flytrigger",1000)
+Power = 0
+
+if(Flying){
+    
+if(!HasLanded){
+HasLanded = 1
+holoAnim(1,6) 
+}
+
+timer("delay",900)
+holoEntity(1):soundPlay(4,0,"npc/crow/flap2.wav")
+}else{
+FlySpeed = 8
+FLYUP = 20
+}
+
+}
+
+
+if(clk("delay")){
+backToIdle(0)    
+}
+
+
+if(changed(PoopEat) && PoopEat)
+{
+    
+if(Flying)
+{
+Hovering = !Hovering
+#Made By FailCake :D
+}else{
+
+IsEating = !IsEating
+
+if(!IsEating){
+holoAnim(1,4)
+}else{
+#return to normal
+backToIdle(1) 
+}
+
+}
+
+}

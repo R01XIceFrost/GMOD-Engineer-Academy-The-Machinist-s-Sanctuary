@@ -1,0 +1,225 @@
+@name FailCake CreeperBuddy
+@outputs Move T T1 [Pos]:vector Ang:angle Rand Randang Onc Count Bum Ply:array Explode
+@persist Ranger:ranger Scale
+@trigger all
+
+runOnTick(1)
+E = entity()
+
+if(first()){
+E:setAlpha(0)  
+ 
+Move = 1
+
+holoCreate(1)
+holoModel(1,"cube")
+holoScaleUnits(1,vec(2,2,5))
+holoPos(1,E:toWorld(vec(0,0,3)))
+
+## Mover
+
+holoCreate(4)
+holoModel(4,"cube")
+holoScaleUnits(4,vec(1,1,1))
+holoPos(4,E:toWorld(vec(0,-0.8,0.2)))
+holoParent(4,1)
+holoAlpha(4,0)
+
+holoCreate(8)
+holoModel(8,"cube")
+holoScaleUnits(8,vec(1,1,1))
+holoPos(8,E:toWorld(vec(0,-0.8,0.2)))
+holoAlpha(8,0)
+holoParent(8,1)
+
+holoCreate(5)
+holoModel(5,"cube")
+holoScaleUnits(5,vec(1,1,1))
+holoPos(5,E:toWorld(vec(0,0.8,0.2)))
+holoAlpha(5,0)
+holoParent(5,1)
+
+holoCreate(0)
+holoModel(0,"cube")
+holoScaleUnits(0,vec(1,1,1))
+holoPos(0,E:toWorld(vec(0,0.8,0.2)))
+holoAlpha(0,0)
+holoParent(0,1)
+
+## Mover
+
+holoCreate(2)
+holoModel(2,"cube")
+holoScaleUnits(2,vec(1.4,1.4,1.5))
+holoPos(2,E:toWorld(vec(1,0.8,0.2)))
+holoParent(2,5)
+
+holoCreate(3)
+holoModel(3,"cube")
+holoScaleUnits(3,vec(1.4,1.4,1.5))
+holoPos(3,E:toWorld(vec(-1,-0.8,0.2)))
+holoParent(3,8)
+
+holoCreate(6)
+holoModel(6,"cube")
+holoScaleUnits(6,vec(1.4,1.4,1.5))
+holoPos(6,E:toWorld(vec(-1,0.8,0.2)))
+holoParent(6,0)
+
+holoCreate(7)
+holoModel(7,"cube")
+holoScaleUnits(7,vec(1.4,1.4,1.5))
+holoPos(7,E:toWorld(vec(1,-0.8,0.2)))
+holoParent(7,4)
+
+
+## Head
+
+holoCreate(9)
+holoModel(9,"cube")
+holoScaleUnits(9,vec(2.3,2.3,2.3))
+holoPos(9,E:toWorld(vec(0,0,5.7)))
+holoParent(9,1)
+#eye
+
+holoCreate(10)
+holoModel(10,"cube")
+holoScaleUnits(10,vec(0.5,0.4,0.6))
+holoColor(10,vec(1,1,1))
+holoPos(10,E:toWorld(vec(-0.5,-1.05,6.5)))
+holoParent(10,9)
+
+holoCreate(11)
+holoModel(11,"cube")
+holoScaleUnits(11,vec(0.5,0.4,0.6))
+holoColor(11,vec(1,1,1))
+holoPos(11,E:toWorld(vec(0.5,-1.05,6.5)))
+holoParent(11,9)
+
+holoCreate(12)
+holoModel(12,"cube")
+holoScaleUnits(12,vec(0.76,0.4,0.75))
+holoColor(12,vec(1,1,1))
+holoPos(12,E:toWorld(vec(0,-1.05,5.7)))
+holoParent(12,9)
+
+holoCreate(13)
+holoModel(13,"cube")
+holoScaleUnits(13,vec(0.4,0.4,0.8))
+holoColor(13,vec(1,1,1))
+holoPos(13,E:toWorld(vec(0.5,-1.05,5.5)))
+holoParent(13,9)
+
+holoCreate(14)
+holoModel(14,"cube")
+holoScaleUnits(14,vec(0.4,0.4,0.8))
+holoColor(14,vec(1,1,1))
+holoPos(14,E:toWorld(vec(-0.47,-1.05,5.5)))
+holoParent(14,9)
+
+for(I=0,9){
+holoColor(I,vec(114,255,0))    
+}
+
+timer("chosse", 1000)
+timer("ANG", 1000)
+}
+
+rangerFilter(E)
+Ranger = rangerOffset(1000,holoEntity(1):pos(),-holoEntity(1):up())
+
+if(Ranger:hit()){
+Pos = Ranger:position() + vec(0,0,3.5)
+holoPos(1,Pos)
+}
+
+
+## Random Angles()
+
+if(clk("ANG")){
+Randang = randint(-180,180)  
+timer("ANG", Randang) 
+}
+
+if(T <= Randang){
+T++    
+}else{
+T--
+}
+
+holoAng(9,ang(0,T,0))
+
+if(clk("chosse")){
+Rand = randint(1,100)
+timer("chosse", Rand)
+}
+
+if(Rand >= 20 & Rand <= 60){
+Move = 1 
+holoPos(1,holoEntity(1):pos() + holoEntity(9):right())   
+}else{
+Move = 0
+}
+
+
+if(Move){
+T+=1
+T1-=1
+
+Cos = cos(T*6)*15
+Cos1 = cos(T1*6)*15
+
+holoAng(4,ang(0,0,Cos))
+holoAng(5,ang(0,0,-Cos))  
+holoAng(0,ang(0,0,Cos1)) 
+holoAng(8,ang(0,0,-Cos1))  
+}else{
+holoAng(4,ang(0,0,0))
+holoAng(5,ang(0,0,0))
+holoAng(0,ang(0,0,0))
+holoAng(8,ang(0,0,0))
+}
+
+findByClass("player")
+Ply = findToArray()
+
+for(I = 1,Ply:count()){
+    
+if(Ply[I,entity]:pos():distance(holoEntity(1):pos()) <= 40){
+Explode = 1    
+}   
+
+}
+
+
+if(Explode){
+    
+if(Scale <= 1){
+Scale+=0.05 
+holoScaleUnits(1,vec(Scale+2,Scale+2,Scale+5))  
+holoScaleUnits(9,vec(Scale+2.3,Scale+2.3,Scale+2.3)) 
+}else{
+Bum = 1
+}
+
+if(Bum){
+
+if(Onc == 0){
+Onc = 1  
+holoCreate(15)
+holoModel(15,"hqcylinder")
+holoScaleUnits(15,vec(20,20,0.5))
+holoPos(15,holoEntity(1):toWorld(vec(0,0,-3.5))) 
+holoMaterial(15,"models/props_debris/concretefloor020a")
+holoEntity(15):soundPlay(100,100,"ambient/explosions/explode_1.wav")
+for(P=0,14){
+holoDelete(P)    
+} 
+
+
+}
+
+
+}
+
+}

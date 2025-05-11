@@ -1,0 +1,830 @@
+@name FailCake SpaceBike
+@persist [E O Seat Driver Explo]:entity [C, RDists CrashSound ExplodeSound]:array [E2_STATUS]:string
+@persist HOLO_INDEX ENABLE_LAND
+@persist AIRBRAKE AIRBRAKE_YAW HEIGHT BRAKEFORCE ENGINE_OVERHEAT HAS_OVERHEAT
+@persist WHEEL_TURN WING_TIMER SPEED_TIMER SPEED_MULT MAX_SPEED LAST_ANGLE:angle ENGINE_WARNINGS EXPLODE_TIMES FORCE_PARTICLES
+@persist MIN_LAND MAX_LAND Pr:entity
+@trigger all
+
+#models/props_combine/eli_pod_inner.mdl
+
+#print(ops())
+
+## FUNCTIONS ##
+if(first() || duped()){
+# By FailCake :D (edunad) -> http://www.youtube.com/user/edunad  
+    function void createHolo(Model:string,Scl:number,Pos:vector,Ang:angle,Parent:entity){
+        
+        holoCreate(HOLO_INDEX)
+        holoModel(HOLO_INDEX,Model)
+        holoPos(HOLO_INDEX,Parent:toWorld(Pos))
+        holoAng(HOLO_INDEX,Parent:toWorld(Ang))
+        holoScale(HOLO_INDEX,vec(1/Scl,1/Scl,1/Scl))
+        holoParent(HOLO_INDEX,Parent)
+        
+        if(Model == "cube"){ 
+            holoAlpha(HOLO_INDEX,0)
+        }
+        
+        HOLO_INDEX+=1
+    }
+    
+    function void createHolo(Model:string,Scl:vector,Pos:vector,Ang:angle,Parent:entity){
+        
+        holoCreate(HOLO_INDEX)
+        holoModel(HOLO_INDEX,Model)
+        holoPos(HOLO_INDEX,Parent:toWorld(Pos))
+        holoAng(HOLO_INDEX,Parent:toWorld(Ang))
+        holoScaleUnits(HOLO_INDEX,Scl)
+        holoParent(HOLO_INDEX,Parent)
+        
+        if(Model == "cube"){ 
+            holoAlpha(HOLO_INDEX,0)
+        }
+        
+        HOLO_INDEX+=1
+    }
+    
+    function void createSpaceBike_Part_1(){
+        HOLO_INDEX = 0
+ # By FailCake :D (edunad) -> http://www.youtube.com/user/edunad        
+        ## Main Screen ##
+        createHolo("models/props_combine/breenconsole.mdl",1,vec(1.35,23.9,6.36),ang(0,-180,-90),E)
+        ## Bellow Part Combine 1 ##
+        createHolo("models/props_combine/combine_smallmonitor001.mdl",1,vec(0,-18,-7.32),ang(-90,90,180),E)
+        createHolo("models/props_combine/combine_smallmonitor001.mdl",1,vec(0,-35,-7.32),ang(-90,90,180),E)
+        ## ENGINES LIGHTS FRONT ##
+        createHolo("models/props_wasteland/light_spotlight02_lamp.mdl",1,vec(-22.65,20.41,-2.32),ang(0,90,0),E)
+        createHolo("models/props_wasteland/light_spotlight02_lamp.mdl",1,vec(22.65,20.41,-2.32),ang(0,90,0),E)
+        ## ENGINES LIGHTS BACK ##
+        createHolo("models/props_wasteland/light_spotlight01_lamp.mdl",1,vec(0,51.06,0.83),ang(0,90,0),E)
+        ## CHAIR ##
+        createHolo("models/nova/jeep_seat.mdl",1,vec(-0.26,31.9,3.3),ang(0,180,0),E)  
+        holoAlpha(HOLO_INDEX - 1,100)       
+        ## PIPE CHAIR ##         
+        createHolo("models/props_lab/pipesystem03a.mdl",1,vec(0,48,16),ang(0,-180,45),E)           
+        ## Floor Prop ##
+        createHolo("models/props_combine/breenpod_inner.mdl",1,vec(0.11,-18.58,-5),ang(90,-90,180),E)
+        ## Combine Emitters SIDES ##
+        createHolo("models/props_combine/combine_emitter01.mdl",1,vec(5.34,3.67,-1.91),ang(0,-90,-90),E)
+        createHolo("models/props_combine/combine_emitter01.mdl",1,vec(-5.34,3.67,-1.91),ang(0,-90,90),E)
+        ## Combine Emitters BACK ##
+        createHolo("models/props_combine/combine_emitter01.mdl",1,vec(-2.65,45,-3.3),ang(0,90,-135),E)
+        createHolo("models/props_combine/combine_emitter01.mdl",1,vec(2.65,45,-3.3),ang(0,90,135),E)
+        createHolo("models/props_combine/combine_emitter01.mdl",1,vec(0.35,-53.1,0.36),ang(0,-90,0),E)
+        ## ENGINE ##
+        createHolo("models/props_c17/trappropeller_engine.mdl",1,vec(-2,-26.1,7.36),ang(90,90,0),E) 
+        ## Light Combine Sides ##
+        createHolo("models/props_combine/combine_light002a.mdl",1,vec(-6.35,-5,2.36),ang(0,0,90),E)
+        createHolo("models/props_combine/combine_light002a.mdl",1,vec(6.35,-5,2.36),ang(0,180,-90),E)
+        ## Light Combine Bottom ##
+        createHolo("models/props_combine/combine_light002a.mdl",1,vec(-0.18,7.85,-6.01),ang(-90,90,180),E)
+        createHolo("models/props_combine/combine_light002a.mdl",1,vec(-0.18,-35.85,-6.01),ang(-90,90,180),E)
+        ## Barricade FRONT ##
+        createHolo("models/props_combine/combine_barricade_bracket01b.mdl",1,vec(9.29,-59.63,-5.1),ang(0,-90,0),E)
+        createHolo("models/props_combine/combine_barricade_bracket01b.mdl",1,vec(-9.35,-58.77,-1.99),ang(0,-90,-180),E)
+        ## Barricade BACK ##
+        createHolo("models/props_combine/combine_barricade_bracket01b.mdl",1,vec(22.03,-18.48,-7.54),ang(0,0,180),E)
+        createHolo("models/props_combine/combine_barricade_bracket01b.mdl",1,vec(-22.03,-18.48,-7.54),ang(0,-180,0),E)
+        ## HELI HOVER ##
+        createHolo("cube",3,vec(-22.03,-18.48,-7.54),ang(90,65,-90),E)
+        createHolo("models/props_combine/combine_fence01a.mdl",2,vec(0,0,0),ang(0,0,0),holoEntity(HOLO_INDEX - 1))
+        createHolo("cube",3,vec(22.03,-18.48,-7.54),ang(-90,115,90),E)
+        createHolo("models/props_combine/combine_fence01a.mdl",2,vec(0,0,0),ang(0,0,0),holoEntity(HOLO_INDEX - 1))
+        ## WHEEL ##
+        createHolo("cube",2,vec(0,0,18),ang(0,-180,50),E)
+        createHolo("models/props_pipes/valvewheel002.mdl",1,vec(0,0,0),ang(0),holoEntity(HOLO_INDEX - 1))
+        ## WHEEL BACK ##
+        createHolo("models/props_lab/reciever01b.mdl",2,vec(0,0,17),ang(0,180,-50),E)
+        ## WHEEL ENGINE ##
+        createHolo("models/props_vehicles/tire001c_car.mdl",1,vec(0,44,4),ang(0,90,0),E)
+        
+        ### EXECUTE PART 2 ##
+        timer("create_part_2",100)   
+    }
+
+    function void createSpaceBike_part_2(){
+        
+        ## HULA DOOL ##
+        createHolo("models/props_lab/huladoll.mdl",1,vec(-6,-1,20.5),ang(0,50,0),E)
+        ## RADIO THINGY ##
+        createHolo("models/props_lab/reciever01b.mdl",1,vec(0,-0.6,13),ang(-20,90,0),E)
+        ## PANEL  - 33##
+        createHolo("models/props_combine/combine_binocular01.mdl",1,vec(-12,2.6,-8),ang(-20,90,0),E)
+        holoClipEnabled(HOLO_INDEX - 1,1)
+        holoClip(HOLO_INDEX - 1,vec(0,0,5),holoEntity(HOLO_INDEX - 1):up(),0)
+        ## PANEL OVEHEAT ##
+        createHolo("hqicosphere",7,vec(4.6,12.8,2.6),ang(0,0,0),holoEntity(HOLO_INDEX - 2))
+        holoColor(HOLO_INDEX - 1,vec(1,1,1))
+        
+        ## PANEL OVERHEAT - 36##
+        createHolo("models/bull/dynamicbutton.mdl",2,vec(0,17.4,4.1),ang(0,90,90),holoEntity(HOLO_INDEX - 3))
+        createHolo("dome",7,vec(0,17.4,4.1),ang(0,90,90),holoEntity(HOLO_INDEX - 4))
+        holoColor(HOLO_INDEX - 1,vec(1,1,1))    
+        createHolo("pyramid",vec(0.1,0.6,1.2),vec(0.6,0,0.8),ang(90,0,0),holoEntity(36))
+        holoColor(HOLO_INDEX - 1,vec(1,1,1))
+        createHolo("hqcylinder",vec(3,3,0.1),vec(0,0,0.5),ang(0,0,0),holoEntity(35))
+        holoColor(HOLO_INDEX - 1,vec(255,1,1))
+        holoClipEnabled(HOLO_INDEX - 1,1,1)
+        holoClipEnabled(HOLO_INDEX - 1,2,1)
+        holoClip(HOLO_INDEX - 1,1,vec(0,0,0),holoEntity(HOLO_INDEX - 1):right(),0)
+        holoClip(HOLO_INDEX - 1,2,vec(0,0,0),-holoEntity(HOLO_INDEX - 1):forward(),0)
+        
+        ## PANEL SHIFTING - 39##
+        createHolo("models/bull/dynamicbutton.mdl",3.5,vec(0.4,16.46,1.46),ang(0,90,90),holoEntity(32))
+        holoColor(HOLO_INDEX - 1,vec(1,1,1))
+        
+        ## PANEL WING - 40 ##
+        createHolo("models/bull/dynamicbutton.mdl",2,vec(0.2,17.44,-1.3),ang(0,90,90),holoEntity(32))
+        createHolo("dome",7,vec(0,0,0),ang(0,0,0),holoEntity(HOLO_INDEX - 1))
+        holoColor(HOLO_INDEX - 1,vec(1,1,1))
+        createHolo("pyramid",vec(0.1,0.6,1.2),vec(0.6,0,0.8),ang(90,0,0),holoEntity(41))
+        holoColor(HOLO_INDEX - 1,vec(1,1,1))
+        createHolo("hqcylinder",vec(3,3,0.1),vec(0,0,0.5),ang(0,0,0),holoEntity(40))
+        holoColor(HOLO_INDEX - 1,vec(1,1,255))
+        holoClipEnabled(HOLO_INDEX - 1,1,1)
+        holoClipEnabled(HOLO_INDEX - 1,2,1)
+        holoClip(HOLO_INDEX - 1,1,vec(0,0,0),holoEntity(HOLO_INDEX - 1):right(),0)
+        holoClip(HOLO_INDEX - 1,2,vec(0,0,0),-holoEntity(HOLO_INDEX - 1):forward(),0)
+        
+        
+        
+        #ifdef lightParent(normal,entity)
+        lightCreate(1,E:toWorld(vec(0,-25,-5)),vec(0,90,170),20,209)
+        lightCreate(2,E:toWorld(vec(0,25,-5)),vec(0,90,170),20,209)
+        lightCreate(3,holoEntity(5):toWorld(vec(20,0,0)),vec(255,255,255),20,209)
+        lightParent(1,E)
+        lightParent(2,E)
+        lightParent(3,holoEntity(5))
+        #endif 
+        
+        E2_STATUS = "WAITING"
+    }
+    
+function normal entity:hover(Height, Cor:array, Airbrake, AirbrakeYaw) { #This is the hot, homosexual, heterosexual hovering function by sandvich :3
+    local Hit = 0 
+    
+    foreach(K,V:vector = Cor) { 
+        rangerFilter(E)
+        rangerFilter(players())
+        rangerHitWater(1)
+        local R = rangerOffsetHull(Height, E:toWorld(V), -This:up(),vec(5,5,1)) 
+        
+        local Dist = max(0, R:distance()) 
+        local Delta = Dist - RDists[K, number]
+# By FailCake :D (edunad) -> http://www.youtube.com/user/edunad         
+        if(R:hit()) {
+            E:applyOffsetForce(This:up() * (Height - (Dist + Delta * 5)) * This:mass() * 0.25, This:toWorld(V))
+            XVel = This:velL():x()
+            YVel = This:velL():y()
+        
+            This:applyForce((This:toWorld(vec(-XVel,-YVel * 2,0)) - This:pos()) * Airbrake)
+            
+            This:applyAngForce(-This:angVel():setPitch(0):setRoll(0) * AirbrakeYaw)
+            
+            Hit = 1 #So lazy
+        }
+        
+        RDists[K, number] = Dist
+    }
+    return Hit 
+}
+
+function array entity:getCorners() {
+    local Size = This:boxSize() / 2
+    local Cor = array()
+    
+    Cor:pushVector(vec(Size:x(), Size:y(), 0))
+    Cor:pushVector(vec(-Size:x(), Size:y(), 0))
+    Cor:pushVector(vec(Size:x(), -Size:y(), 0))
+    Cor:pushVector(vec(-Size:x(), -Size:y(), 0))
+    
+    return Cor
+}
+
+function array entity:getCorners(OffsetX, OffsetY) { 
+    local Size = This:boxSize() / 2
+    local Cor = array()
+    
+    Cor:pushVector(vec(Size:x() + OffsetX, Size:y() + OffsetY, 0))
+    Cor:pushVector(vec(-Size:x() - OffsetX, Size:y() + OffsetY, 0))
+    Cor:pushVector(vec(Size:x() + OffsetX, -Size:y() - OffsetY, 0))
+    Cor:pushVector(vec(-Size:x() - OffsetX, -Size:y() - OffsetY, 0))
+    
+    return Cor
+}
+
+    function void turnLights(On:number){
+     #ifdef lightParent(normal,entity)
+        lightToggle(1,On)
+        lightToggle(2,On)
+        lightToggle(3,On)
+     #endif   
+    }
+
+    function void setWings(Tim:number){
+        
+        local TM = Tim / 1200
+        
+        WING_TIMER = TM
+        
+        if(TM < 0){
+            TM = 0
+            WING_TIMER = 0
+        }elseif(TM > 1){
+            TM = 1
+            WING_TIMER = 1
+        }
+        
+        local Ang_Left = mix(ang(90,65,-90),ang(90,10,-90),TM)
+        local Ang_Right = mix(ang(-90,115,90),ang(-90,170,90),TM)
+        
+        holoAng(23,E:toWorld(Ang_Left))
+        holoAng(25,E:toWorld(Ang_Right))
+    }
+    
+    function void setWingsAuto(Speed:number){
+
+        if(WING_TIMER <= 1 && WING_TIMER >= 0){
+            WING_TIMER += Speed
+        }
+            
+        local Ang_Left = mix(ang(90,65,-90),ang(90,10,-90),WING_TIMER)
+        local Ang_Right = mix(ang(-90,115,90),ang(-90,170,90),WING_TIMER)
+        
+        holoAng(23,E:toWorld(Ang_Left))
+        holoAng(25,E:toWorld(Ang_Right))
+    }
+    
+    function void setWheel(TurnSpeed:number){
+        
+        if(WHEEL_TURN < 40 && WHEEL_TURN > -40){ 
+           WHEEL_TURN += TurnSpeed
+        }
+        
+        if(TurnSpeed == 0){
+        
+            if(WHEEL_TURN < 0){
+             WHEEL_TURN += 2   
+            }elseif(WHEEL_TURN > 0){
+             WHEEL_TURN -= 2 
+            }
+            
+        }
+# By FailCake :D (edunad) -> http://www.youtube.com/user/edunad         
+        local Ang = ang(0,WHEEL_TURN,0)
+        holoAng(28,holoEntity(27):toWorld(Ang))
+    }
+    
+    function void setLand(State:number,Speed:number){
+        
+    if(ENABLE_LAND){   
+        if(!State){
+            if(HEIGHT > MIN_LAND){
+                HEIGHT -= Speed
+            }else{
+                ENABLE_LAND = 0
+                HEIGHT = MIN_LAND
+            }
+        }else{
+            if(HEIGHT < MAX_LAND){
+                HEIGHT += Speed
+            }else{
+                ENABLE_LAND = 0
+                HEIGHT = MAX_LAND
+            }
+        }
+        
+    }
+        
+        
+    }
+    
+    function void entity:setMovement(Force:number){
+        
+        Force = Force * E:mass() * 2
+        This:applyForce(This:right() * Force * AIRBRAKE)
+    
+    }
+    
+    function void entity:setTurning(Force:number){
+
+        Force = Force * E:mass() * 2
+ 
+        if(Force > 0){
+            This:applyOffsetForce(This:forward() , -This:right() * Force)
+        }else{
+            This:applyOffsetForce(-This:forward() , This:right() * Force)
+        }
+    }
+    
+    function number entity:collide(){
+        
+        rangerFilter(E)
+        rangerHitWater(0)
+        Rng = rangerOffsetHull(5,E:toWorld(vec(0,-70,0)),E:right(),vec(10,40,10))
+        
+        local Hit = 0
+        
+        if(changed(Rng:hit()) && Rng:hit()){  
+             
+            local Vl = E:vel():length() / 2
+            if(Vl >= 200){
+                E:soundPlay(99,10,CrashSound[randint(1,CrashSound:count()),string])
+                SPEED_TIMER = 0
+            }
+            
+        }
+        
+        if(Rng:hit()){
+            Hit = 1
+        }
+        
+        return Hit
+    }
+    
+    function entity getSeat(){
+        
+         findIncludePlayerProps(owner())
+         findByClass("prop_vehicle_prisoner_pod")
+         findByModel("models/nova/jeep_seat")
+        
+         local Chrs = findToArray()
+         local I = 0
+        
+         for(I = 0,Chrs:count()){
+           if(Chrs[I,entity]:isVehicle() && Chrs[I,entity]:getAlpha() > 0){
+            print("Found Seat! Parenting It!")
+            return Chrs[I,entity]
+           }  
+         }
+        
+         return noentity()
+    }
+# By FailCake :D (edunad) -> http://www.youtube.com/user/edunad 
+    function void explodeShip(){
+        
+        Explo = propSpawn("models/props_c17/oildrum001_explosive.mdl",E:pos(),ang(0,0,0),0)
+        Explo:parentTo(E)
+        Explo:setAlpha(0)
+        
+        Explo:propBreak()
+        EXPLODED = 1
+        
+    }
+    
+    function void startUp(){  
+          
+        E:soundPlay(1,5,"ambient/machines/thumper_startup1.wav")
+        E:soundPlay(2,0,"thrusters/hover00.wav")
+    
+        soundVolume(2,0.4)
+        soundPitch(2,30)
+        
+        holoEntity(16):soundPlay(10,0,"vehicles/v8/v8_idle_loop1.wav")
+        holoEntity(16):soundPlay(11,0,"vehicles/v8/v8_firstgear_rev_loop1.wav")
+        holoEntity(16):soundPlay(12,0,"vehicles/v8/fourth_cruise_loop2.wav")
+        holoEntity(16):soundPlay(13,0,"ambient/machines/spin_loop.wav")
+            
+        soundVolume(10,0.3)
+        soundVolume(11,0)
+        soundVolume(12,0)
+        soundVolume(13,0)
+        
+    }
+    
+    function void shutDown(){
+        E:soundPlay(1,5,"ambient/machines/thumper_shutdown1.wav")
+        holoEntity(16):soundPlay(10,0,"vehicles/v8/v8_stop1.wav")
+        soundVolume(10,0.3)
+        soundStop(11)
+        soundStop(12)
+        soundStop(2,1)
+    }
+    
+    function void normalizeOverHeat(){
+        
+        if(ENGINE_OVERHEAT > 0){
+             ENGINE_OVERHEAT -= 0.05   
+        }
+        
+        if(ENGINE_OVERHEAT < 10 && ENGINE_WARNINGS == 1){
+             ENGINE_WARNINGS = 0  
+             holoColor(34,vec(1,1,1)) 
+        }
+# By FailCake :D (edunad) -> http://www.youtube.com/user/edunad             
+        if(ENGINE_OVERHEAT > 1){
+            soundVolume(13,0.5)
+            soundPitch(13,60 + (ENGINE_OVERHEAT*200)/10)
+        }elseif(HAS_OVERHEAT){
+            soundVolume(13,0)
+            holoColor(14,vec(255,255,255))
+            HAS_OVERHEAT = 0
+            holoEntity(16):soundPlay(20,10,"ambient/machines/spindown.wav")
+        }
+        
+        holoColor(39,vec(1,1,1))
+    
+    }
+
+    function void startOverHeat(){
+                ### OVERHEAT ###
+        if(ENGINE_OVERHEAT < 13){
+            ENGINE_OVERHEAT += 0.02
+            
+            if(ENGINE_OVERHEAT >= 10 && ENGINE_WARNINGS == 0){
+             ENGINE_WARNINGS = 1  
+             holoColor(34,vec(255,0,0)) 
+            }
+            
+        }else{
+        
+            if(E2_STATUS != "EXPLODING"){
+                
+                E2_STATUS = "EXPLODING"
+                ENGINE_WARNINGS = 0
+                soundPurge()
+                Seat:ejectPod()
+                
+                E:propFreeze(0)
+                E:applyForce(E:up()*700000)
+                E:applyTorque(E:forward()*700000)
+                
+                timer("explode",100)
+                
+            }
+            
+        }
+        
+    holoColor(39,vec(1,255,1))
+    soundVolume(13,0.5)
+    
+    }
+    
+    function void metterController(){
+        
+        local Ang = (ENGINE_OVERHEAT * 360) / 13
+        holoAng(36,holoEntity(35):toWorld(ang(0,-Ang,0)))
+        
+        local Ang_speed = abs((SPEED_TIMER * 360) / 15)
+        holoAng(41,holoEntity(40):toWorld(ang(0,-Ang_speed,0)))
+        
+    }
+
+    function void soundController(){
+        
+    if(E2_STATUS == "ACTIVE" && Seat:isValid()){
+        
+        ## SOUND CONTROLL
+        local Snd = (abs(SPEED_TIMER)*200)/15 + 30
+        soundPitch(11,Snd)
+        soundPitch(12,Snd)
+        
+        local Speed = (E:vel():length() / 2)
+        
+        if(Speed < 50){
+            soundVolume(10,0.3)
+            soundVolume(11,0)
+            soundVolume(12,0)
+            soundVolume(2,0)
+        }elseif(Speed >= 100 && Speed <= 380){
+            soundVolume(12,0)
+            soundVolume(10,0)
+            soundVolume(11,0.3)
+            soundVolume(2,0.6)
+        }else{
+            soundVolume(12,0.3)
+            soundVolume(10,0)
+            soundVolume(11,0)
+        } 
+         
+    }
+# By FailCake :D (edunad) -> http://www.youtube.com/user/edunad     
+    soundPitch(13,60 + (ENGINE_OVERHEAT*200)/10)  
+     
+    }
+
+}
+
+###############
+
+interval(50)
+
+if(first() || duped()){
+
+    hint("Made By FailCake :D (edunad) -> http://www.youtube.com/user/edunad ",7)
+    hint("Spawn a chair (the same that the holo!)",7)
+    hint("If the holos are white, the server doen't have holomodelany =S",7)
+    
+    #ifdef propSpawnEffect(number)
+        E = propSpawn("models/hunter/plates/plate1x2.mdl",entity():pos(),entity():angles(),1)
+        entity():setAlpha(0)
+        entity():propNotSolid(1)
+        print("PropCore Enabled! Building Space Bike")
+    #else
+        print("PropCore Not Found!")
+        selfDestructAll()
+    #endif
+    
+    O = owner()
+    Seat = noentity()
+        
+    E:setAlpha(0)
+    E:setMass(500)
+    
+    ## SETTINGS ##
+    AIRBRAKE = 3
+    BRAKEFORCE = 0.1
+    AIRBRAKE_YAW = 100
+    HEIGHT = 32
+    E2_STATUS = "BUILDING_SHIP"
+    
+    MIN_LAND = 22
+    MAX_LAND = 45
+    FORCE_PARTICLES = 0
+    
+    C = E:getCorners(-5,-5) #So many great corners to explore
+# By FailCake :D (edunad) -> http://www.youtube.com/user/edunad 
+    CrashSound:pushString("vehicles/v8/vehicle_impact_heavy1.wav")
+    CrashSound:pushString("vehicles/v8/vehicle_impact_heavy2.wav")
+    CrashSound:pushString("vehicles/v8/vehicle_impact_heavy3.wav")
+    CrashSound:pushString("vehicles/v8/vehicle_impact_heavy4.wav")
+    
+    createSpaceBike_Part_1()
+}
+
+
+if(Seat == noentity() && E2_STATUS == "WAITING"){
+    
+   Seat = getSeat()
+
+   if( Seat:isValid() ){ 
+         
+    E:propFreeze(1)
+    Seat:propFreeze(1)
+    Seat:setPos(holoEntity(6):pos())
+    Seat:setAng(holoEntity(6):angles())
+    holoAlpha(6,255)
+    timer("parenter",400)
+    timer("particles",50)
+    timer("warning",50) 
+    
+   }
+
+}
+
+## Sounds ##
+# physics/metal/metal_large_debris2.wav
+# thrusters/rocket00.wav
+# ambient/materials/cartrap_explode_impact1.wav -> 2
+# vehicles/v8/vehicle_impact_heavy1.wav -> 4
+# ambient/machines/spin_loop.wav
+# ambient/machines/spindown.wav
+## EXECUTE ##  
+
+if(E2_STATUS != "EXPLODING"){
+    
+Hit = E:hover(HEIGHT, C, AIRBRAKE, AIRBRAKE_YAW)
+Collision = E:collide()
+
+soundController()
+}
+
+metterController()
+
+## EXECUTE ##
+
+if(Seat:isValid() && E2_STATUS != "EXPLODING"){
+    
+ Driver = Seat:driver() 
+
+ if(Driver:isValid() && E2_STATUS != "EXPLODING"){
+    
+  if(E2_STATUS == "READY"){ 
+    
+    E2_STATUS = "TMP_WAIT"
+    timer("hold",500)
+    ENABLE_LAND = 1
+    startUp()
+    turnLights(1)
+    
+  }
+
+    setLand(1,0.6) 
+    
+ }else{
+
+  if(E2_STATUS == "ACTIVE"){
+    
+    E2_STATUS = "READY"
+    ENABLE_LAND = 1
+    SPEED_TIMER = 0
+    shutDown() 
+    turnLights(0)
+    
+  }
+
+    normalizeOverHeat()
+    setWingsAuto(-0.01)
+    setLand(0,0.6) 
+ } 
+
+}elseif(!Seat:isValid() && E2_STATUS != "WAITING" && E2_STATUS != "BUILDING_SHIP"  || !E:isValid()){
+E:propDelete()
+selfDestructAll()
+}
+
+## Driver Controls ##
+
+if(E2_STATUS == "ACTIVE" && Driver:isValid()){
+    
+    local W = Driver:keyPressed("w")
+    local A = Driver:keyPressed("a")
+    local S = Driver:keyPressed("s")
+    local D = Driver:keyPressed("d")
+    
+    local Shift = Driver:keySprint()
+    
+    if(Driver:keyUse()){
+     Seat:ejectPod()
+    }
+# By FailCake :D (edunad) -> http://www.youtube.com/user/edunad     
+    if(changed(Shift) && Shift){
+        holoEntity(16):soundPlay(31,3,"buttons/lever5.wav")
+        HAS_OVERHEAT = 1
+    }
+    
+    if(Shift){
+        
+        # Give speed to fly!
+        SPEED_MULT = 0.1
+        MAX_SPEED = 15
+        setWings(E:vel():length() / 2) 
+        startOverHeat() 
+    
+    }else{
+    
+        MAX_SPEED = 6
+        SPEED_MULT = 0.05
+        setWingsAuto(-0.01)
+        normalizeOverHeat()
+
+    }
+    
+    ## MOVEMENT ##
+
+    if(W && Collision != 1){
+    
+        if(SPEED_TIMER < MAX_SPEED){
+         SPEED_TIMER += SPEED_MULT   
+        }elseif(SPEED_TIMER > MAX_SPEED){
+         SPEED_TIMER -= SPEED_MULT
+        }
+   
+    }elseif(S){
+    
+        if(SPEED_TIMER > -2){
+         SPEED_TIMER -= SPEED_MULT   
+        }   
+    
+    }else{
+    
+        if(SPEED_TIMER > 0){
+            SPEED_TIMER -= BRAKEFORCE
+        }elseif(SPEED_TIMER < 0){
+            SPEED_TIMER += BRAKEFORCE
+        }
+        
+    }
+# By FailCake :D (edunad) -> http://www.youtube.com/user/edunad     
+    E:setMovement(SPEED_TIMER)
+    
+    if(A){
+       E:setTurning(-25)
+       setWheel(2)
+    }elseif(D){
+       E:setTurning(25)
+       setWheel(-2)
+    }else{
+       setWheel(0)
+    }
+    
+}
+
+if(E2_STATUS == "EXPLODING"){
+ Seat:ejectPod()    
+}
+
+if(E2_STATUS == "ACTIVE"){
+    if(!Hit){
+        Ang = (LAST_ANGLE - E:angles())
+        E:applyAngForce(((Ang + $Ang * 2) * E:mass() * 0.4):setYaw(0))
+        E:setMovement(0) 
+        SPEED_TIMER = 0
+    } 
+}
+
+## SAVE ANGLE ##
+if(changed(Hit) && Hit == 0){
+    LAST_ANGLE = E:angles():setRoll(0)  
+}
+
+## CLK ##
+
+if(clk("particles")){
+
+if(E2_STATUS == "ACTIVE" || E2_STATUS == "EXPLODING"){
+    
+if((E:vel():length() / 2) < 100 || FORCE_PARTICLES == 1){
+        
+      #ifdef particleGravity(vector)
+        if(FORCE_PARTICLES != 1){
+           particle(2,5,5,"particle/smokesprites_000" + randint(1,9),vec(130,130,130),holoEntity(16):toWorld(vec(0,-13,15)),vec(randint(1,20),randint(1,20),20))    
+        }else{
+            local I = 0
+            for(I = 0,5){
+               particle(2,5,5,"particle/smokesprites_000" + randint(1,9),vec(1,1,1),holoEntity(16):toWorld(vec(0,-13,15)),vec(randint(1,20),randint(1,20),20)) 
+            }
+        }
+    #endif
+    
+    timer("particles",150)
+    
+}else{
+ # By FailCake :D (edunad) -> http://www.youtube.com/user/edunad    
+     #ifdef particleGravity(vector)
+      local I = 0
+      for(I = 0,5){
+         particle(2,3,3,"sprites/blueglow2",vec(130,130,130),holoEntity(5):pos(),vec(randint(-10,10),randint(-10,10),randint(-10,10))) 
+      }         
+     #endif
+    
+    timer("particles",1)
+}
+
+}else{
+    timer("particles",150)
+}
+
+}
+
+if(clk("create_part_2")){
+createSpaceBike_part_2()    
+}
+
+if(clk("explode")){
+    
+if(EXPLODE_TIMES < 3){
+    
+timer("explode",randint(500,800)) 
+explodeShip() 
+EXPLODE_TIMES+=1
+
+}else{
+
+    EXPLODE_TIMES = 0
+    E:soundPlay(10,0,"ambient/gas/steam2.wav")
+    soundVolume(10,0.5)
+    holoColor(14,vec(1,1,1))
+    timer("restart",10000)
+    FORCE_PARTICLES = 1
+    
+}
+  
+}
+# By FailCake :D (edunad) -> http://www.youtube.com/user/edunad 
+if(clk("restart")){
+soundStop(10,2)  
+E2_STATUS = "ACTIVE"  
+SPEED_TIMER = 0
+ENGINE_OVERHEAT = 0
+FORCE_PARTICLES = 0
+holoColor(14,vec(255,255,255))
+holoColor(39,vec(1,1,1))
+holoColor(34,vec(1,1,1)) 
+}
+
+if(clk("warning")){
+    
+if(ENGINE_WARNINGS){
+ holoEntity(16):soundPlay(26,2,"buttons/button17.wav")   
+}    
+
+timer("warning",1000)
+}
+# By FailCake :D (edunad) -> http://www.youtube.com/user/edunad 
+
+if(clk("hold")){
+E2_STATUS = "ACTIVE"    
+}
+
+if(clk("parenter")){
+ if(Seat != noentity()){
+  Seat:parentTo(E)
+  Seat:propFreeze(0)
+  Seat:setAlpha(0)
+  E:propFreeze(0) 
+  E2_STATUS = "READY"  
+ }   
+}
+# By FailCake :D (edunad) -> http://www.youtube.com/user/edunad 

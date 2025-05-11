@@ -1,0 +1,47 @@
+@name FailCake CrowBar
+@persist I [Player Holy]:array Once
+@trigger all
+# Made By FailCake :D
+runOnTick(1)
+
+findByClass("player")
+Player = findToArray()
+
+if(first() || duped()){
+
+Holy = array()
+Holy:setString(1,"npc/crow/pain2.wav")
+Holy:setString(2,"npc/crow/pain1.wav")
+
+}
+# Made By FailCake :D
+for(I=0,Player:count()){
+if(Player[I,entity]:weapon():type()=="weapon_crowbar"){
+    holoCreate(I)
+    Player[I,entity]:weapon():setMaterial("pheonix_storms/chrome")
+    
+    holoAng(I,Player[I,entity]:attachmentAng("anim_attachment_RH"))
+    holoPos(I,Player[I,entity]:attachmentPos("anim_attachment_RH"))
+    holoParentAttachment(I,Player[I,entity],"anim_attachment_RH")
+    holoModel(I,"models/Crow.mdl")
+    holoScale(I,vec(1,1,1))
+    holoPos(I,holoEntity(I):toWorld(vec(0,0,18)))
+    
+if(Player[I,entity]:keyAttack1() & Once == 0){
+R = randint(1,4)
+holoEntity(I):soundPlay(1+I,9999,Holy:string(R))    
+Once=1 
+}
+    
+if(Once == 1){
+timer("out",200)
+if(clk("out")){
+Once = 0   
+} 
+}    
+  # Made By FailCake :D  
+}else{
+holoDelete(I)
+}
+}
+# Made By FailCake :D

@@ -1,0 +1,123 @@
+@name FailCake Hide Box V2
+@persist Timer Alert Tim Tim2
+@outputs Debug
+@trigger all
+runOnTick(1)
+O = owner()
+Vel = owner():vel():length()/2
+
+if(first()){
+hint("MADE BY [CG]FailCake",100)  
+Debug = 0 
+}
+
+if(O:keyUse()){
+Alert+= 0.1
+
+
+holoCreate(5)
+holoModel(5,"cube")
+holoPos(5,O:pos()+vec(0,0,100))  
+holoScaleUnits(5,vec(3,3,13))
+holoAlpha(5,200)
+holoColor(5,vec(255,0,0))
+holoMaterial(5,"")
+
+holoCreate(4)
+holoModel(4,"cube")
+holoPos(4,O:pos()+vec(0,0,87))  
+holoScaleUnits(4,vec(3,3,3))
+holoAlpha(4,200)
+holoColor(4,vec(255,0,0))
+holoMaterial(4,"")
+
+if(Alert == 1){
+holoEntity(5):soundPlay(100,100,"ambient/alarms/klaxon1.wav")  
+}
+
+}else{
+Alert = 0
+soundStop(100)
+holoDelete(5)
+holoDelete(4)
+}
+
+if(O:isCrouch() | Debug == 1){
+Timer+=0.1
+owner():weapon():setAlpha(0)
+owner():weapon():setColor(255,255,255,0)
+
+holoCreate(1)
+holoModel(1,"cube")
+holoPos(1,O:pos()+vec(0,0,23.5))  
+holoScale(1,vec(-4,-4,-4))
+holoColor(1,vec(255,255,255))
+holoAlpha(1,100)
+holoMaterial(1,"models/props_wasteland/wood_fence01a")
+
+
+holoCreate(2)
+holoModel(2,"cube")
+holoPos(2,O:pos()+vec(0,0,23.5))  
+holoScale(2,vec(4,4,4))
+holoColor(2,vec(255,255,255))
+holoMaterial(2,"models/props_wasteland/wood_fence01a")
+holoAlpha(2,255)
+
+holoCreate(3)
+holoModel(3,"cube")
+holoPos(3,O:pos()+vec(0,0,40))  
+holoScaleUnits(3,vec(3,3,3))
+holoColor(3,vec(255,255,255))
+holoAlpha(3,0)
+holoParent(3,O)
+
+if(Timer == 1){
+holoEntity(1):soundPlay(1000,1000,"weapons/c4/c4_disarm.wav")    
+holoEntity(2):soundPlay(2000,2000,"weapons/c4/c4_disarm.wav")    
+}
+
+if(Vel == 0){
+Tim+=0.01
+if(Tim == 1){
+O:soundPlay(1,100,"ui/gamestartup10.mp3")    
+}  
+if(Tim == 5){
+Tim = 0
+soundStop(1)
+}  
+}else{
+Tim= 0
+soundStop(1)
+}
+if(Vel > 0){
+Tim2+=0.1
+if(Tim2 == 1){
+O:soundPlay(2,100,"ui/gamestartup5.mp3")    
+}    
+}else{
+Tim2= 0
+soundStop(2)
+}
+owner():setColor(255,255,255,0)
+
+}else{
+soundStop(1)
+Tim = 0
+soundStop(1000)
+soundStop(2000)
+soundStop(3000)
+soundStop(4000)
+soundStop(2)
+holoDelete(1)
+owner():setColor(255,255,255,255)
+Timer = 0
+holoDelete(2)
+}
+
+
+
+
+
+if(duped()){selfDestructAll()}
+if(duped()){selfDestructAll()}

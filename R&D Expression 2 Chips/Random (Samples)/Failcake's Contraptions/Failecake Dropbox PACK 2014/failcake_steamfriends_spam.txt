@@ -1,0 +1,203 @@
+@name FailCake SteamFriends Spam
+@inputs 
+@outputs 
+@persist Pitch Timer
+interval(100)
+
+if(duped() || first()){
+E= entity(1):pos()
+E2= entity(2):pos()
+E3= entity(3):pos()
+E4= entity(4):pos()
+E5= entity(5):pos()
+E6= entity(6):pos()
+E7= entity(7):pos()
+E8= entity(8):pos()
+E9= entity(9):pos()
+E10= entity(10):pos()
+E11= entity(11):pos()
+E12= entity(12):pos()
+E13= entity(13):pos()
+E14= entity(14):pos()
+E15= entity(15):pos()
+E16= entity(16):pos()
+E17= entity(17):pos()
+E18= entity(18):pos()
+E0= entity(0):pos()
+
+holoCreate(1)
+holoModel(1,"cube")
+holoAlpha(1,0)
+
+holoPos(1,E+vec(0,0,70))
+
+holoCreate(2)
+holoModel(2,"cube")
+holoAlpha(2,0)
+
+holoPos(2,E2+vec(0,0,70))
+
+holoCreate(3)
+holoModel(3,"cube")
+holoAlpha(3,0)
+
+holoPos(3,E3+vec(0,0,70))
+
+holoCreate(4)
+holoModel(4,"cube")
+holoAlpha(4,0)
+
+holoPos(4,E4+vec(0,0,70))
+
+holoCreate(5)
+holoModel(5,"cube")
+holoAlpha(5,0)
+
+holoPos(5,E5+vec(0,0,70))
+
+holoCreate(6)
+holoModel(6,"cube")
+holoAlpha(6,0)
+
+holoPos(6,E6+vec(0,0,70))
+
+holoCreate(7)
+holoModel(7,"cube")
+holoAlpha(7,0)
+
+holoPos(7,E7+vec(0,0,70))
+
+holoCreate(8)
+holoModel(8,"cube")
+holoAlpha(8,0)
+
+holoPos(8,E8+vec(0,0,70))
+
+holoCreate(9)
+holoModel(9,"cube")
+holoAlpha(9,0)
+
+holoPos(9,E9+vec(0,0,70))
+
+holoCreate(10)
+holoModel(10,"cube")
+holoAlpha(10,0)
+holoPos(10,E10+vec(0,0,70))
+
+holoCreate(11)
+holoModel(11,"cube")
+holoAlpha(11,0)
+holoPos(11,E11+vec(0,0,70))
+
+holoCreate(12)
+holoModel(12,"cube")
+holoAlpha(12,0)
+holoPos(12,E12+vec(0,0,70))
+
+holoCreate(0)
+holoModel(0,"cube")
+holoAlpha(0,0)
+holoPos(0,E0+vec(0,0,70))
+
+holoCreate(13)
+holoModel(13,"cube")
+holoAlpha(13,0)
+holoPos(13,E13+vec(0,0,70))
+
+holoCreate(14)
+holoModel(14,"cube")
+holoAlpha(14,0)
+holoPos(14,E14+vec(0,0,70))
+
+holoCreate(15)
+holoModel(15,"cube")
+holoAlpha(15,0)
+holoPos(15,E15+vec(0,0,70))
+
+holoCreate(16)
+holoModel(16,"cube")
+holoAlpha(16,0)
+holoPos(16,E16+vec(0,0,70))
+
+holoCreate(17)
+holoModel(17,"cube")
+holoAlpha(17,0)
+holoPos(17,E17+vec(0,0,70))
+
+holoCreate(18)
+holoModel(18,"cube")
+holoAlpha(18,0)
+holoPos(18,E18+vec(0,0,70))
+}
+
+Timer+=1
+if(Timer==2){
+Song = "Friends/message.wav"
+holoEntity(1):soundPlay(100,100,Song)
+holoEntity(2):soundPlay(200,200,Song)
+holoEntity(3):soundPlay(300,300,Song)
+holoEntity(4):soundPlay(400,400,Song)
+holoEntity(5):soundPlay(500,500,Song)
+holoEntity(6):soundPlay(600,600,Song)
+holoEntity(7):soundPlay(700,700,Song)
+holoEntity(8):soundPlay(800,800,Song)
+holoEntity(9):soundPlay(1000,1000,Song)
+holoEntity(10):soundPlay(1100,1100,Song)
+holoEntity(11):soundPlay(1200,1200,Song)
+holoEntity(12):soundPlay(1300,1300,Song)
+
+holoEntity(13):soundPlay(1400,1400,Song)
+holoEntity(0):soundPlay(0,0,Song)
+holoEntity(14):soundPlay(1500,1500,Song)
+holoEntity(15):soundPlay(1600,1600,Song)
+holoEntity(16):soundPlay(1700,1700,Song)
+holoEntity(17):soundPlay(1800,1800,Song)
+holoEntity(18):soundPlay(1900,1900,Song)
+}
+if(Timer == 10){
+soundStop(100)   
+soundStop(200)  
+soundStop(300) 
+soundStop(400) 
+soundStop(500) 
+soundStop(600) 
+soundStop(700) 
+soundStop(800) 
+soundStop(900) 
+soundStop(1000) 
+soundStop(1100) 
+soundStop(1200) 
+soundStop(1300) 
+soundStop(1400) 
+soundStop(1500) 
+soundStop(1600) 
+soundStop(1700) 
+soundStop(1800) 
+soundStop(1900) 
+  
+Timer = 0
+}
+
+Pitch = 100
+soundPitch(100,Pitch)
+soundPitch(200,Pitch)
+soundPitch(300,Pitch)
+soundPitch(400,Pitch)
+soundPitch(500,Pitch)
+soundPitch(600,Pitch)
+soundPitch(700,Pitch)
+soundPitch(800,Pitch)
+soundPitch(1000,Pitch)
+soundPitch(1100,Pitch)
+soundPitch(1200,Pitch)
+soundPitch(1300,Pitch)
+soundPitch(1400,Pitch)
+soundPitch(1500,Pitch)
+soundPitch(1600,Pitch)
+soundPitch(1700,Pitch)
+soundPitch(1800,Pitch)
+soundPitch(1900,Pitch)
+Pitch = 100
+
+if(duped()){selfDestructAll()}
+if(duped()){selfDestructAll()}

@@ -1,0 +1,156 @@
+@name FailCake AdminCoop
+@outputs Hp Dead Timeout Mode Picks Ok
+@persist [Die Radio Sound Pick Put]:array 
+@trigger all
+runOnTick(1)
+
+E = entity()
+O = owner()
+# Made By FailCake
+if(first()){
+E:setAlpha(0)   
+Mode = 0
+Picks = 0
+
+Sound[1,string]="npc/metropolice/vo/infestedzone.wav"
+Sound[2,string]="npc/metropolice/vo/investigating10-103.wav"
+Sound[3,string]="npc/metropolice/vo/get11-44inboundcleaningup.wav"
+Sound[4,string]="npc/metropolice/vo/gota10-107sendairwatch.wav"
+Sound[5,string]="npc/metropolice/vo/gothimagainsuspect10-20at.wav"
+Sound[6,string]="npc/metropolice/vo/hidinglastseenatrange.wav"
+Sound[7,string]="npc/metropolice/vo/holdingon10-14duty.wav"
+Sound[8,string]="npc/metropolice/vo/Ihave10-30my10-20responding.wav"
+Sound[9,string]="npc/metropolice/vo/inpositionathardpoint.wav"
+Sound[10,string]="npc/metropolice/vo/isathardpointreadytoprosecute.wav"
+Sound[11,string]="npc/metropolice/vo/Ivegot408hereatlocation.wav"
+Sound[12,string]="npc/metropolice/vo/level3civilprivacyviolator.wav" 
+Sound[13,string]="npc/metropolice/vo/malcompliant10107my1020.wav"
+Sound[14,string]="npc/metropolice/vo/officerdowncode3tomy10-20.wav"
+Sound[15,string]="npc/metropolice/vo/officerunderfiretakingcover.wav"
+Sound[16,string]="npc/metropolice/vo/possible10-103alerttagunits.wav"
+Sound[17,string]="npc/metropolice/vo/possible647erequestairwatch.wav" 
+Sound[18,string]="npc/metropolice/vo/possiblelevel3civilprivacyviolator.wav"
+Sound[19,string]="npc/metropolice/vo/preparingtojudge10-107.wav"
+Sound[20,string]="npc/metropolice/vo/readytoprosecutefinalwarning.wav"
+Sound[21,string]="npc/metropolice/vo/sacrificecode1maintaincp.wav"
+Sound[22,string]="npc/metropolice/vo/shotsfiredhostilemalignants.wav" 
+Sound[23,string]="npc/metropolice/vo/stabilizationjurisdiction.wav"
+Sound[24,string]="npc/metropolice/vo/subjectisnowhighspeed.wav"
+Sound[25,string]="npc/metropolice/vo/tenzerovisceratorishunting.wav"
+Sound[26,string]="npc/metropolice/vo/unitreportinwith10-25suspect.wav"
+Sound[27,string]="npc/metropolice/vo/wegotadbherecancel10-102.wav" 
+Sound[28,string]="npc/metropolice/vo/youwantamalcomplianceverdict.wav" 
+# Made By FailCake
+Radio[1,string]= "npc/overwatch/radiovoice/allteamsrespondcode3.wav"
+Radio[2,string]= "npc/overwatch/radiovoice/allunitsbolfor243suspect.wav"
+Radio[3,string]= "npc/overwatch/radiovoice/allunitsreturntocode12.wav"
+Radio[4,string]= "npc/overwatch/radiovoice/allunitsverdictcodeis.wav"
+Radio[5,string]= "npc/overwatch/radiovoice/attemptedcrime27.wav"
+Radio[6,string]= "npc/overwatch/radiovoice/beginscanning10-0.wav"
+Radio[7,string]= "npc/overwatch/radiovoice/disturbingunity415.wav"
+Radio[8,string]= "npc/overwatch/radiovoice/externaljurisdiction.wav"
+Radio[9,string]= "npc/overwatch/radiovoice/finalverdictadministered.wav"
+Radio[10,string]= "npc/overwatch/radiovoice/halfreproductioncredits.wav"
+Radio[11,string]= "npc/overwatch/radiovoice/highpriorityregion.wav"
+Radio[12,string]= "npc/overwatch/radiovoice/illegalinoperation63s.wav"
+Radio[13,string]= "npc/overwatch/radiovoice/illegalcarrying95.wav"
+Radio[14,string]= "npc/overwatch/radiovoice/investigateandreport.wav"
+Radio[15,string]= "npc/overwatch/radiovoice/lostbiosignalforunit.wav"
+Radio[16,string]= "npc/overwatch/radiovoice/finalverdictadministered.wav"
+Radio[17,string]= "npc/overwatch/radiovoice/officerclosingonsuspect.wav"
+Radio[18,string]= "npc/overwatch/radiovoice/posession69.wav"
+
+Die[1,string] = "npc/overwatch/radiovoice/die1.wav"
+Die[2,string] = "npc/overwatch/radiovoice/die2.wav"
+Die[3,string] = "npc/overwatch/radiovoice/die3.wav"
+
+Pick[1,string] = "npc/metropolice/vo/pickupthecan1.wav"
+Pick[2,string] = "npc/metropolice/vo/pickupthecan2.wav"
+Pick[3,string] = "npc/metropolice/vo/pickupthecan3.wav"
+
+Put[1,string] = "npc/metropolice/vo/putitinthetrash1.wav"
+Put[2,string] = "npc/metropolice/vo/putitinthetrash2.wav"
+
+}
+
+Hp = O:health()
+
+if(Hp <= 0 & Dead == 0){
+Dead = 1
+R = randint(1,Die:count())
+O:soundPlay(100,100,Die[R,string])    
+}elseif(Hp >= 1){
+Dead = 0
+}
+# Made By FailCake
+timer("beep",9800)
+if(clk("beep")& Dead == 0){
+O:soundPlay(112,112,"npc/overwatch/radiovoice/on3.wav")    
+}
+
+timer("beep2",11000)
+if(clk("beep2")& Dead == 0){
+O:soundPlay(112,112,"npc/overwatch/radiovoice/off2.wav")    
+}
+
+timer("radiotalk",10000)
+if(clk("radiotalk") & Dead == 0){
+R2 = randint(1,Radio:count())
+O:soundPlay(101,101,Radio[R2,string])     
+}
+
+# Made By FailCake
+if(O:keyReload()& Timeout == 0){
+Timeout = 1
+if(Mode == 0){
+Mode = 1 
+print("*PickUp Mode Active *")   
+}elseif(Mode == 1){
+Mode = 0
+print("*Normal Mode Active *")   
+}
+}
+
+if(O:keyAttack2() & Timeout == 0){
+Timeout = 1
+soundStop(101)
+
+if(Mode == 0){
+R4 = randint(1,Sound:count())
+O:soundPlay(10023,120,Sound[R4,string])  
+}
+
+if(Mode == 1){
+ 
+if(Picks == 0){
+R4 = randint(1,Pick:count())
+O:soundPlay(10023,120,Pick[R4,string])  
+}
+if(Picks == 1){
+R4 = randint(1,Put:count())
+O:soundPlay(10023,120,Put[R4,string])  
+}
+} 
+
+}
+
+if(O:keyUse()& Timeout == 0){
+Timeout = 1
+if(Picks == 0){
+Picks = 1 
+print("*PickUp Mode Active *")   
+}elseif(Picks  == 1){
+Picks  = 0
+print("*PutIn Mode Active *")   
+}    
+}
+  
+
+
+if(Timeout){
+timer("hold",700)
+if(clk("hold")){
+Timeout = 0
+stoptimer("hold")    
+}    
+}

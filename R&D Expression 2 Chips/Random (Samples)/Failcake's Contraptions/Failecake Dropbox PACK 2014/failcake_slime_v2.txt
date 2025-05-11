@@ -1,0 +1,68 @@
+@name FailCake Slime V2
+@persist Vec:vector
+@persist AngDir:vector Ang:angle TPos:vector Target:entity
+@trigger all
+@model models/hunter/blocks/cube05x05x05.mdl
+runOnTick(1)
+
+E=entity()
+if(first()){
+On = 1
+hint("Made by Failcake",100)
+Angry = 0
+E:setColor(0,90,0,250)    
+E:setMaterial("models/debug/debugwhite")
+
+holoCreate(1)
+holoModel(1,"cube")
+holoColor(1,vec(0,0,0))
+holoScaleUnits(1,vec(1,6,6))
+holoPos(1,E:toWorld(vec(-12,6,3)))
+holoParent(1,E)
+holoAlpha(1,255)
+holoMaterial(1,"models/debug/debugwhite")
+
+holoCreate(2)
+holoModel(2,"cube")
+holoColor(2,vec(0,0,0))
+holoScaleUnits(2,vec(1,6,6))
+holoPos(2,E:toWorld(vec(-12,-6,3)))
+holoParent(2,E)
+holoAlpha(2,255)
+holoMaterial(2,"models/debug/debugwhite")
+
+holoCreate(3)
+holoModel(3,"cube")
+holoColor(3,vec(0,0,0))
+holoScaleUnits(3,vec(1,3,3))
+holoPos(3,E:toWorld(vec(-12,-1,-4)))
+holoParent(3,E)
+holoAlpha(3,255)
+holoMaterial(3,"models/debug/debugwhite")
+}
+
+    
+findByClass("player")
+Target = findClosest(entity():pos())    
+
+rangerHitWater(1)
+rangerFilter(entity())
+Range = rangerOffset(6,entity():pos(),vec(0,0,-2))   
+Range2 = rangerOffset(8,entity():pos(),vec(sinr(curtime()*1000),cosr(curtime()*1000),0))
+
+Vec = Vec-vec(0,0,0.2)
+
+if(Range:hit()){Vec = vec(-1,0,3) E:soundPlay(100,100,"ambient/levels/canals/toxic_slime_gurgle5.wav")}
+    
+    if(Range2:hit())
+    {
+        Vec=Vec*vec(-1.5,-1.5,1)
+    }
+    
+TPos = Target:pos()
+Ang = (entity():pos()-TPos):toAngle():setPitch(0)
+
+E:setPos(E:toWorld(Vec))
+E:setAng(Ang)
+
+

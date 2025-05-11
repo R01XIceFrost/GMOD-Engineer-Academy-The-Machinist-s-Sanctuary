@@ -1,0 +1,382 @@
+@name FailCake AutoTurret
+@persist On Power In:entity Cos Once Dead Bb Onc4 L Stop Ons Attack Waste Sd:entity Del Onc2 H Ply:entity
+@persist Ups Distance Bullet:entity Percent Wait
+@persist T [Battery Bpwr]:array
+@trigger all
+@model models/props_combine/combine_mine01.mdl
+runOnTick(1)
+
+#Turret = models/props_combine/bunker_gun01.mdl
+#
+E = entity()
+
+if(first() | duped()){
+On = 0
+Power = 0
+L = 255
+Attack = 0
+Wait = 0
+Bb = 1
+
+hint("Made By FailCake",7)
+hint("Version 1",7)
+## HoloAnyChecker by FailCake
+   
+print("Checking if the Server Has HoloModelAny!")
+holoCreate(0)
+holoModel(0,"models/props_junk/popcan01a.mdl")
+holoPos(0,E:pos()+vec(0,0,30))
+
+Models = "models/props_junk/popcan01a.mdl"
+
+if(holoEntity(0):model() == Models){
+hint("[NOTE] HoloModelAny Detected!",7)
+holoDelete(0)
+}else{
+hint("[WARNING] No HoloModelAny Detected! E2 Deleting...",7)
+holoDelete(0)
+selfDestructAll()
+} 
+print("Done!")    
+
+propSpawnEffect(0)
+
+E:setPos(E:toWorld(vec(0,0,-10)))
+holoCreate(1)
+holoModel(1,"models/props_combine/combine_emitter01.mdl")
+holoPos(1,E:toWorld(vec(-5,0,30)))
+holoAng(1,ang(90,0,0))
+holoParent(1,E)
+
+holoCreate(2)
+holoModel(2,"models/props_combine/breenlight.mdl")
+holoPos(2,E:toWorld(vec(-5,0,30)))
+holoAng(2,ang(90,0,0))
+holoParent(2,E)
+holoMaterial(2,"models/props_combine/metal_combinebridge001")
+
+holoCreate(3)
+holoModel(3,"models/props_combine/breenlight.mdl")
+holoPos(3,E:toWorld(vec(-5,0,43)))
+holoAng(3,ang(90,0,0))
+holoParent(3,E)
+holoMaterial(3,"models/props_combine/metal_combinebridge001")
+
+## GUN
+
+holoCreate(4)
+holoModel(4,"models/props_combine/bunker_gun01.mdl")
+holoPos(4,E:toWorld(vec(0,0,37)))
+holoAng(4,ang(5,0,0))
+holoParent(4,E)
+
+## GUN
+
+holoCreate(5)
+holoModel(5,"models/Items/combine_rifle_ammo01.mdl")
+holoPos(5,E:toWorld(vec(1,0,53)))
+holoAng(5,ang(90,0,0))
+holoParent(5,4)
+
+holoCreate(6)
+holoModel(6,"models/props_combine/combine_barricade_bracket01b.mdl")
+holoPos(6,E:toWorld(vec(0,-1.5,20)))
+holoAng(6,ang(-90,-90,0))
+holoParent(6,E)
+
+holoCreate(7)
+holoModel(7,"models/props_combine/breenlight.mdl")
+holoPos(7,E:toWorld(vec(-3,0,40)))
+holoAng(7,ang(0,0,0))
+holoParent(7,E)
+holoMaterial(7,"models/props_combine/metal_combinebridge001")
+
+holoCreate(8)
+holoModel(8,"models/props_combine/combine_light002a.mdl")
+holoPos(8,E:toWorld(vec(-1,0,10)))
+holoAng(8,ang(0,180,0))
+holoScale(8,vec(0.5,0.5,0.5))
+holoParent(8,E)
+
+## Weapon Fire ##
+
+holoCreate(9)
+holoModel(9,"models/props_combine/breentp_rings.mdl")
+holoPos(9,E:toWorld(vec(25,0,53.3)))
+holoAng(9,ang(90,0,0))
+holoAlpha(9,0)
+holoScaleUnits(9,vec(10,10,10))
+holoParent(9,4)
+
+## Fake Power Cell ##
+
+holoCreate(10)
+holoModel(10,"models/Items/battery.mdl")
+holoPos(10,E:toWorld(vec(-10,0,31)))
+holoAng(10,ang(0,180,0))
+holoParent(10,E)
+holoAlpha(10,0)
+
+## FIELD ##
+
+holoCreate(11)
+holoModel(11,"hqcylinder")
+holoPos(11,E:toWorld(vec(0,0,2.5)))
+holoAng(11,ang(0,0,0))
+holoScale(11,vec(80,80,0.1))
+holoParent(11,E)
+holoAlpha(11,0)
+holoColor(11,vec(70,70,70))
+
+## Tracer
+
+holoCreate(13)
+holoModel(13,"cube")
+holoPos(13,E:toWorld(vec(0,0,2.5)))
+holoAng(13,ang(0,0,0))
+holoScale(13,vec(0.5,0.5,0.5))
+holoParent(13,E)
+holoAlpha(13,0)
+holoColor(13,vec(0,155,255))
+
+holoCreate(12)
+holoModel(12,"cube")
+holoPos(12,E:toWorld(vec(240,0,2.5)))
+holoAng(12,ang(0,-90,90))
+holoScale(12,vec(0.1,0.1,40))
+holoParent(12,13)
+holoAlpha(12,0)
+holoColor(12,vec(255,0,0))
+
+
+}
+
+if(Power == 0){
+
+findExcludeEntity(holoEntity(10))
+findIncludePlayerProps(owner())
+findByModel("models/Items/battery.mdl")
+Battery = findToArray()
+   
+for(I=0,Battery:count()){
+    
+if(Battery[I,entity]:pos():distance(holoEntity(10):pos()) <= 10){
+In = Battery[I,entity]  
+Battery[I,entity]:propDelete()
+Bpwr[I,number] = 255
+E:soundPlay(100,100,"buttons/button5.wav")
+E:soundPlay(104,104,"ambient/machines/thumper_startup1.wav")
+Power = 1
+On = 1
+}
+    
+}   
+    
+}
+
+
+if(On){
+
+if(Stop == 0){
+T+=0.5
+}
+
+rangerHitWater(1)
+rangerIgnoreWorld(1)
+
+rangerFilter(owner())
+rangerFilter(E)
+rangerFilter(holoEntity(4))
+rangerFilter(holoEntity(9))
+Ranger = rangerOffset(800,holoEntity(4):pos(),holoEntity(4):forward())
+
+if(Ranger:hit() & Ranger:entity():isPlayer() | Ranger:entity():isNPC() & Attack == 0){   
+Ply = Ranger:entity()
+Stop = 1
+Attack = 1
+Dead = 0
+}
+
+### ATTACK ###
+
+if(Attack){
+
+holoAlpha(12,0) 
+holoAlpha(11,0)  
+holoAlpha(10,0) 
+
+if(Dead){
+timer("wait",1000) 
+if(clk("wait")){
+Attack = 0
+Stop = 0
+Onc4 = 0
+Onc2 = 0
+Wait = 0
+Dead = 0
+holoAlpha(9,0) 
+Ply = noentity()
+soundStop(123)
+Bullet:propDelete()     
+}   
+}
+
+Distance = holoEntity(4):pos():distance(Ply:pos())
+
+if(Distance <= 800){
+
+if(Bb){    
+timer("reload",500)
+if(clk("reload")&Ons == 0){
+Ons = 1
+E:soundPlay(125,125,"npc/sniper/reload1.wav")   
+}
+timer("spawn",1500)
+if(clk("spawn")){
+soundStop(123) 
+Bb = 0   
+}
+}
+
+holoAlpha(11,0)
+holoAlpha(12,0)
+
+if(Ply:health() <= 0){
+Dead = 1   
+}
+
+if(Wait){
+timer("effec",200)
+if(clk("effec")){
+holoAlpha(9,0) 
+Wait = 0   
+}      
+}
+
+if(Bb == 0 &Dead == 0){
+Wait = 1
+Bb = 1
+
+Bullet:propDelete()
+Bullet = propSpawn("models/hunter/plates/plate.mdl",holoEntity(7):pos(),ang(0,0,0),0)   
+Bullet:applyForce((Ply:pos() - holoEntity(7):pos()) * 10)
+Bullet:setMass(300)
+Bullet:setTrails(10,10,10,"trails/physbeam",vec(255,255,255),255)
+Bullet:setColor(1,1,1)
+Bullet:setMaterial("models/debug/debugwhite")
+
+holoAlpha(9,255)
+soundStop(125)
+Ons = 0
+L-=3
+
+E:soundPlay(123,123,"npc/sniper/sniper1.wav")
+}
+    
+}else{
+Dead = 1
+}
+
+
+holoAng(4,(holoEntity(4):pos()-Ply:pos()):toAngle() +ang(15,180,0)) 
+
+if(Onc4 == 0 & Dead == 0){
+Onc4 = 1
+E:soundPlay(105,10005,"ambient/alarms/klaxon1.wav")  
+ 
+} 
+
+}
+
+### ATTACK ###
+
+if(Onc2 == 0){
+Onc2 = 1
+E:soundPlay(105,105,"ambient/machines/combine_shield_loop3.wav")
+}
+
+if(Stop == 0){
+    
+Cos = cos(T)*180
+
+holoAng(13,ang(0,Cos,90))
+holoAng(4,ang(5,Cos,0))
+holoAlpha(12,100) 
+holoAlpha(11,50)  
+holoAlpha(10,255) 
+}
+
+if(Cos >= 180 | Cos <= -180 & Once == 0 & Attack == 0){
+Once = 1
+E:soundPlay(100,100,"buttons/blip1.wav")    
+}else{
+Once = 0
+}
+
+## POWER 
+        
+timer("waste",700)  
+if(clk("waste")){   
+L-=2
+Percent = round(L*100/200)
+
+if(Percent > 0){
+setName("FailCake AutoTurret [Power = "+Percent+"%]")
+}else{
+Percent = 0
+setName("FailCake AutoTurret [Power = "+Percent+"%]")
+}
+
+holoColor(10,vec(L,L,L))   
+
+if(L <= 0){
+Waste = 1
+On = 0
+}
+
+}
+
+}else{
+Attack = 0
+Stop = 0
+Onc4 = 0
+Onc2 = 0
+soundStop(123)
+Bullet:propDelete() 
+holoAlpha(12,0)
+holoAlpha(11,0)
+soundStop(105)
+holoAlpha(9,0) 
+Wait = 0 
+}
+
+
+if(Waste){
+Sd = propSpawn("models/Items/battery.mdl",holoEntity(10):pos(),ang(0,180,0),0)   
+Sd:applyForce(vec(randint(-20,-30),randint(-30,30),0)*20)
+Sd:setColor(1,1,1,255)
+E:soundPlay(100,100,"buttons/button2.wav") 
+E:soundPlay(104,104,"ambient/machines/thumper_shutdown1.wav") 
+holoAlpha(10,0) 
+Waste = 0
+Del = 1
+L = 255
+}
+
+if(Del){
+
+timer("kill",2000)
+
+if(clk("kill")){
+Sd:propDelete()   
+Del = 0
+Power = 0 
+}
+
+}else{
+stoptimer("kill")
+}
+
+if(duped()){
+selfDestructAll()    
+}

@@ -1,0 +1,69 @@
+@name FailCake GoodBye =(
+@inputs 
+@outputs Item Timeout Ready
+@persist ON Up
+@trigger all
+@model models/props_c17/BriefCase001a.mdl
+runOnTick(1)
+
+#goodbye/zipup.wav
+#goodbye/farwell.mp3
+E = entity()
+E:setMass(50)
+if(first()){
+Item = 0
+}
+
+
+findByClass("prop_physics")
+findIncludePlayerProps(owner())
+C = findClosest(entity():pos())
+Distance = round(entity():pos():distance(C:pos()))
+
+if(Distance <= 30 & Item <= 4 & Timeout == 0 & Ready == 0){
+C:propDelete()
+Item += 1
+E:soundPlay(1000,100,"garrysmod/content_downloaded.wav")
+Timeout = 1
+}else{
+soundStop(100)
+if(Item >= 4){
+Ready = 1
+}
+}
+
+if(Timeout){
+timer("Clean",1000)
+if(clk("Clean")){
+Timeout = 0    
+}    
+}else{
+stoptimer("Clean")
+}
+
+if(Ready){
+ON+=0.1
+if(ON == 2){
+E:soundPlay(1000,1000,"music/hl2_song23_suitsong3.mp3")
+soundPitch(1000,130)
+holoCreate(1)
+holoModel(1,"hqcylinder")
+holoPos(1,E:toWorld(vec(0,0,23)))
+holoParent(1,E)
+holoScaleUnits(1,vec(1,1,40))
+holoMaterial(1,"")
+Ballon = propSpawn("models/balloons/balloon_classicheart.mdl",E:pos()+vec(0,0,43),0)
+Ballon:setColor(255,0,216)
+Ballon:setMass(1)
+Ballon:parentTo(E)
+}
+Up+=0.0005
+E:setAng(ang(0,0,360))
+E:setPos(E:pos()+vec(0,0,Up))
+Ballon:setAng(ang(0,0,360))
+Ballon:setPos(Ballon:pos()+vec(0,0,Up))
+if(Up >= 70){
+selfDestruct()    
+}
+}
+

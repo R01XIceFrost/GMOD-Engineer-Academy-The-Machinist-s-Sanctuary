@@ -1,0 +1,130 @@
+@name FailCake E2 Thinking
+@outputs Hold Ok MaxThink P F MaxHei R Speed Oncs
+@persist [Pos Alpha Ang Text Cos T]:array StPos:vector
+@trigger all
+runOnTick(1)
+
+O = owner()
+E = entity()
+
+
+if(first()){
+Ok = 0
+Hold = 0
+MaxThink = 10
+MaxHei = 25
+Speed = 700
+
+# Made By FailCake
+
+hint("Made By FailCake",7)
+
+Text[1,string] = "matsys_regressiontest/background"
+Text[2,string] = "perftest/gman/gman_face1"
+Text[3,string] = "phoenix_storms/lag_sign"
+Text[4,string] = "models/shadertest/shader5"
+Text[5,string] = "models/props_lab/warp_sheet"
+Text[6,string] = "models/screenspace"
+Text[7,string] = "models/flesh"
+Text[8,string] = "effects/breenscreen_static01_"
+Text[9,string] = "models/props_combine/masterinterface01c"
+Text[10,string] = "models/alyx/emptool_glow"
+Text[11,string] = "models/props_c17/paper01"
+
+}
+
+if(O:keyAttack2() & O:weapon():type() == "gmod_tool" & Ok == 0){
+Hold = 1  
+StPos = O:aimPos()  
+timer("wait",500)
+}
+
+if(Hold){
+if(StPos == O:aimPos()){  
+
+if(clk("wait")){
+Ok = 1   
+
+if(Oncs == 0){
+Oncs = 1
+O:soundPlay(1000,1000,"ambient/computer_working.wav")    
+}
+# Made By FailCake
+} 
+}else{
+Hold = 0
+Ok = 0
+Oncs= 0
+soundStop(1000)
+}    
+}
+
+if(Ok){
+    
+for(I2 = 1,F){
+    
+T[I2,number] = T[I2,number] + 3
+
+Pos[I2,number] = Pos[I2,number] + 0.3
+Cos[I2,number] = Cos[I2,number] + cos(T[I2,number])
+
+if(Alpha[I2,number] >= 0){
+Alpha[I2,number] = Alpha[I2,number] - 2  
+}else{
+holoDelete(I2)
+Pos[I2,number] = MaxHei
+Alpha[I2,number] = 255
+T[I2,number] = 0
+Cos[I2,number] = 0
+}
+
+Ang[I2,number] = Ang[I2,number] + 2
+# Made By FailCake
+holoPos(I2,O:pos()+vec(Cos[I2,number],Cos[I2,number],Pos[I2,number]*3))
+holoAng(I2,ang(0,Ang[I2,number],Ang[I2,number]))
+holoAlpha(I2,Alpha[I2,number])
+timer("ffs",Speed)
+}
+
+
+
+if(clk("ffs")){
+timer("ffs",Speed)
+if(P <= MaxThink){
+P++
+
+
+if(F <= MaxThink){
+F++
+}
+R = randint(1,Text:count()) 
+holoCreate(P)
+holoModel(P,"cube")
+holoPos(P,O:pos()+vec(0,0,MaxHei*3))    
+holoScale(P,vec(0.01,1,1))
+holoMaterial(P,Text[R,string])    
+
+Pos[P,number] = MaxHei
+Alpha[P,number] = 255
+Cos[P,number] = 0
+T[P,number] = 0
+}else{
+P = 0
+}
+}
+# Made By FailCake
+}else{
+for(D=0,MaxThink){
+holoDelete(D)
+holoAlpha(D,0)
+Pos[D,number]= MaxHei
+Alpha[D,number] = 255   
+Cos[D,number] = 0
+T[D,number] = 0
+}
+}
+
+# Made By FailCake
+#if(duped()){
+#selfDestructAll()    
+#}

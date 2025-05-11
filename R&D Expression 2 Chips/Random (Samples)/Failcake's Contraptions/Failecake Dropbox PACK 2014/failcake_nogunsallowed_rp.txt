@@ -1,0 +1,46 @@
+@name FailCake NoGunsAllowed
+@persist Guns:array I E:entity
+@trigger all
+@model models/props_junk/sawblade001a.mdl
+
+# Made By Failcake ( Just a sign for RP )
+interval(100)
+
+if(first() || duped()){
+E = entity()
+     
+holoCreate(1)
+holoModel(1,"models/props_c17/streetsign004f.mdl")  
+holoPos(1,E:toWorld(vec(0,0,0.5)))  
+holoScaleUnits(1,vec(30,1,30))
+holoAng(1,E:toWorld(ang(0,90,90)))
+holoParent(1,E)
+
+Guns[0,string] = "models/weapons/W_pistol.mdl"
+Guns[1,string] = "models/weapons/W_357.mdl"
+Guns[2,string] = "models/weapons/W_grenade.mdl"
+Guns[3,string] = "models/weapons/w_knife_ct.mdl"
+Guns[4,string] = "models/weapons/w_IRifle.mdl"
+Guns[5,string] = "models/weapons/w_bugbait.mdl"
+Guns[6,string] = "models/weapons/w_eq_fraggrenade.mdl"
+Guns[7,string] = "models/weapons/w_smg1.mdl"
+
+holoCreate(2)
+holoModel(2,Guns[0,string])
+holoPos(2,E:toWorld(vec(0,0,3)))  
+holoAng(2,E:toWorld(ang(0,90,90)))
+holoParent(2,E)
+}
+
+timer("nextwep",1000)
+if(clk("nextwep")){
+    
+if(I <= Guns:count()){   
+I+=1
+}else{
+I=0 
+}
+
+holoModel(2,Guns[I,string])      
+}
+

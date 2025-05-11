@@ -1,0 +1,190 @@
+@name FailCake Motion Camera
+@inputs Used
+@persist Camera:entity [E O Cam Ent]:entity [Chat CamNum]:array Mode:string Ang2:angle
+@persist [CamOp]:table Tempo Ang:angle Play Posi:vector Inx Timing
+@persist [V1 VC1 VC2 V2]:vector Ts
+@trigger all
+interval(100)
+## For Machinima dudes :3 ##
+## PropCore Needed ##
+## Made by FailCake ##
+
+function vector mid( A:vector, B:vector, D:number ){
+    return (B-A)*D + A
+}
+
+function void addCamera(ID:string,Tbl:table){
+    
+T = CamOp[ID,table]
+T:pushTable(Tbl)
+CamOp[ID,table] = Tbl
+
+}
+
+## Made by FailCake ##
+
+if(first() | duped()){
+runOnChat(1)
+propSpawnEffect(0)
+
+E = entity()
+O = owner()    
+Mode = ""
+Tempo = 10
+Inx = 0
+Timing = 0 
+
+Camera:setPos(E:toWorld(vec(0,0,20)))
+Camera:setAng(ang(0,0,0))
+Camera:propFreeze(1)
+}
+
+if(chatClk(O)){
+Chat = O:lastSaid():explode(" ") 
+
+if(Chat[1,string] == "-select" & Mode != "Select"){
+Mode = "Select"
+hint("* Aim at the Main Camera and Press E *",7)      
+}
+
+if(Chat[1,string] == "-normal" & Mode != "Normal"){
+if(CamOp:count() > 1){
+Mode = "Normal" 
+hint("* Cameras Ready to Play *",7)   
+
+Camera:setPos(CamOp[CamNum[1,string],table][2,vector]) # First Camera
+Camera:setAng(CamOp[CamNum[1,string],table][3,angle])
+CamOp[CamNum[1,string],table][1,entity]:setAlpha(20)
+Camera:propFreeze(1)
+
+}    
+}
+## Made by FailCake ##
+if(Chat[1,string] == "-edit" & Mode != "Edit"){
+Mode = "Edit"  
+Camera:propFreeze(1)
+
+hint("Edit Mode!",7)
+CamOp[CamNum[1,string],table][1,entity]:setAlpha(255)  
+Camera:setPos(E:toWorld(vec(0,0,20)))
+Camera:setAng(ang(0,0,0))
+}
+
+if(Chat[1,string] == "-remove"){
+    
+for(I = 1,CamNum:count()){
+CamOp[CamNum[I,string],table][1,entity]:propDelete()   
+if(I >= CamNum:count()){
+reset()
+break    
+} 
+}
+
+}
+
+if(Chat[1,string] == "-time"){
+Tempo = Chat[2,string]:toNumber()
+printColor(vec(255,0,0),"Tempo Set : " + Tempo)    
+}
+
+   
+}
+
+
+if(Mode == "Select"){
+if(changed(O:keyUse()) & O:keyUse()){
+Camera = O:aimEntity()
+Camera:setPos(E:toWorld(vec(0,0,20)))
+Camera:setAng(ang(0,0,0))
+Camera:propFreeze(1)
+Mode = ""    
+}    
+}
+## Made by FailCake ##
+if(Mode == "Edit"){
+    
+if(changed(O:keyReload()) & O:keyReload()){
+Cam = propSpawn("models/dav0r/camera.mdl",O:shootPos(),O:eyeAngles(),1)
+
+Pos = Cam:pos()
+ID = Cam:id():toString()
+Ang = Cam:angles()
+CamNum:pushString(ID)
+
+Cameras = table(Cam,Pos,Ang,Tempo)
+addCamera(ID,Cameras)
+} 
+
+
+if(O:keyAttack1()){
+    
+if(O:aimEntity():model() == "models/dav0r/camera.mdl" & O:aimEntity() != Camera){
+
+ID = O:aimEntity():id():toString()
+Cam = O:aimEntity()
+Pos = Cam:pos()
+Ang = Cam:angles()
+
+if(Cam:isFrozen() == 0){
+Cam:setAlpha(200)
+}else{
+Cam:setAlpha(255)
+}
+
+Cameras = table(Cam,Pos,Ang,Tempo)
+addCamera(ID,Cameras)    
+}
+}
+  ## Made by FailCake ##
+    
+}
+
+
+## PLAY
+if(Mode == "Normal"){
+    
+if(changed(Used) & Used){  
+if(Play == 0){
+Play = 1
+hint("Playing",7)
+}elseif(Play == 1){
+Play = 0
+hint("Stoping",7)
+}
+    
+}
+    
+}
+
+
+if(changed(Play) & Play){
+Inx = 1  
+}
+## Made by FailCake ##
+if(Play){
+Ts+=0.05
+
+V1 = CamOp[CamNum[Inx,string],table][2,vector]   
+V2 = CamOp[CamNum[Inx+1,string],table][2,vector] 
+V1A = CamOp[CamNum[Inx,string],table][3,angle]
+V2A = CamOp[CamNum[Inx+1,string],table][3,angle]
+
+Posi = mix(V2,V1,Ts)
+Ang2 = angnorm(mix(V2A,V1A,Ts))
+
+Camera:setPos(Posi)
+Camera:setAng(Ang2)
+
+if(Ts > 0.95){
+Ts = 0
+
+if(Inx < CamOp:count() - 1){
+Inx++    
+}else{
+Inx = 1
+}
+
+}
+  
+}
+## Made by FailCake ##

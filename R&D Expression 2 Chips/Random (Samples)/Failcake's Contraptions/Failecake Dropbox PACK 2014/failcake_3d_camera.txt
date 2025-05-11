@@ -1,0 +1,236 @@
+@name FailCake 3D Camera
+@inputs Screen:wirelink Camera:wirelink Start
+@outputs Version:string E:entity Y X Dis Max Timeout DisFF Fun Clean Time Count On Ye MaxR Percent MaxSpeed Speed O
+@outputs LastScanCount Music:array Change SPT ToScan Effect LastScan FOV FOVPER Asd ZOOM
+@persist Count Res
+@trigger all
+interval(1)
+        
+if(first() | duped()){
+E = entity()
+    Count=6
+    
+    E:setColor(1,1,1)
+    entity():isWeldedTo():setMaterial("phoenix_storms/metalset_1-2")
+    
+    ## Settings
+    FOV=0.5
+    ZOOM = 0 # -5 <-> 5
+    Res=250
+    MaxR = 800 # 100 -- 2000
+    Fun = 0
+    Effect = 0
+    ## Settings
+    
+    
+    Screen[1048572]=Res # Set Vertical Resolution
+    Screen[1048573]=Res # Set Horizontal Resolution
+    Screen[1048569]=0 # Set Color Mode
+    Screen[1048574]=0  # Hardware Clear screen
+    
+    On = 0
+    X = -1
+    Y = -1
+    
+    Version = "2.0.0"
+    setName("FailCake 3D Camera [BETA][v."+Version+"]") 
+    
+    ## Holo
+    Percent = 0
+    
+    holoCreate(1)
+    holoModel(1,"cube")
+    holoScaleUnits(1,vec(1.5,1.5,1.5))
+    holoMaterial(1,"models/debug/debugwhite")
+    holoParent(1,E)
+    holoColor(1,vec(1,1,1)) 
+     
+    holoCreate(2)
+    holoModel(2,"hq_stube_thin")
+    holoScaleUnits(2,vec(E:boxSize():x()+0.2,E:boxSize():y()+0.2,1.5))
+    holoMaterial(2,"models/debug/debugwhite")
+    holoParent(2,E)
+    holoColor(2,vec(1,1,1)) 
+    
+    holoCreate(3)
+    holoModel(3,"hqicosphere")
+    holoScaleUnits(3,vec(E:boxSize():x()+0.2,E:boxSize():y()+0.2,4))
+    holoMaterial(3,"models/debug/debugwhite")
+
+    holoPos(3,E:toWorld(vec(0,0,-3.5)))
+    holoParent(3,E)
+    holoColor(3,vec(1,1,1)) 
+    
+    Music[1,string]="ambient/music/flamenco.wav"
+    Music[2,string]="ambient/music/latin.wav"
+    Music[3,string]="ambient/music/country_rock_am_radio_loop.wav"
+    Music[4,string]="ambient/music/cubanmusic1.wav"
+    
+    Camera[2] = MaxR
+    Camera[6] = 0
+}
+
+
+if(changed(Start) && Start){
+    
+if(On == 1){
+On = 0
+Timeout = 1  
+E:soundPlay(1,0,"buttons/button14.wav")
+hint("[FailCake Scanner] Turned Off.",7)
+soundStop(4)
+X = 0
+Y = 0
+Camera[0] = 0
+Camera[4] = X
+Camera[5] = Y
+Count = 0
+Asd = 0
+hint("[FailCake Camera]Done Scanning!",7)
+soundStop(4)
+Time = 0
+holoPos(1,E:toWorld(vec(0,0,0.5)))
+holoColor(1,vec(1,1,1)) 
+holoColor(2,vec(1,1,1))
+holoColor(3,vec(1,1,1))
+printColor(vec(255,0,0),"[FailCake Scanner] Turned Off.") 
+}elseif(On == 0){
+Clean = 1  
+Timeout = 1
+E:soundPlay(1,0,"buttons/button19.wav")
+hint("[FailCake Scanner] Turned On.",7)
+printColor(vec(0,255,0),"[FailCake Scanner] Turned On.") 
+}
+
+}
+
+if(Clean){
+
+
+On = 1   
+hint("[FailCake Scanner] Reseted.",7)
+printColor(vec(255,0,0),"[FailCake Scanner] Reseted.") 
+Clean = 0 
+Count = 0
+X = -1
+Percent = 0
+Ye = 0
+Asd = 0
+E:setColor(1,1,1)
+soundStop(4)
+holoColor(3,vec(1,1,1))
+Screen[1048569]=0 
+Screen[1048574]=0
+Y = -1
+holoPos(1,E:toWorld(vec(0,0,0.5)))
+holoColor(1,vec(1,1,1))  
+stoptimer("wait")
+
+}
+
+if(On){
+        Change = Count - LastScanCount
+        ToScan = ( ( Res * Res ) - Count )
+        SPT = Change / ( curtime( ) - LastScan )
+        
+        Time = ToScan / SPT
+        LastScan = curtime( )
+        LastScanCount = Count
+        
+        setName("FailCake 3D Camera[BETA][Zoom = "+ZOOM+"][Done = "+Percent+"%][Time = " +floor(Time,1) + "s]") 
+      
+while(Y < 1 & maxquota() > opcounter()){
+        
+        Camera[0] = 1
+
+        if(ZOOM < 0){
+        Camera[4] = -X*ZOOM
+        Camera[5] = -Y*ZOOM
+        }else{
+        if(ZOOM == 0){
+        Camera[4] = X
+        Camera[5] = Y  
+        }else{
+        Camera[4] = X/ZOOM
+        Camera[5] = Y/ZOOM
+        }
+        }
+        Count+=1
+        X += 1/Res*2
+        
+        if(X>=1) {
+        X = -1
+        Y += 1/Res*2
+        }
+        
+        Dis = Camera[1]
+        DisF = MaxR - Dis
+        
+        if(Effect == 1){
+        DisFF = ( DisF / MaxR ) * 255
+        Screen[Count] = DisFF/randint(1,5)
+        }
+        
+        if(Effect == 2){
+        DisFF = ( Dis / MaxR ) * 255
+        Screen[Count] = DisFF/2
+        }
+        
+        if(Effect == 3){
+        DisFF = ( Dis / MaxR ) * randint(1,255)
+        Screen[Count] = DisFF
+        }
+        
+        if(Effect == 0){
+        DisFF = ( DisF / MaxR ) * 255
+        Screen[Count] = DisFF/2  
+        }
+        
+        Ye = floor( Count / Res )
+        Percent = round( ( Ye / Res ) * 100 )
+        
+        if(Fun){
+        soundPitch(4,Dis)
+        }
+        
+        holoPos(1,E:toWorld(vec(Y*2.3,X*2.3,0.5)))
+        holoColor(1,vec(-Percent*2,Percent*2,0))
+        holoColor(2,vec(-Percent*2,Percent*2,0))
+        holoColor(3,vec(-Percent*2,Percent*2,0))
+        E:setColor(Percent*2,Percent*2,Percent*2)
+}
+
+timer("hold4",400)
+if(clk("hold4")){
+if(Asd == 0){
+Asd = 1
+stoptimer("hold4")
+E:soundPlay(4,0,Music[randint(1,Music:count()),string])    
+}
+}
+
+if(Y == 1){
+E:soundPlay(3,0,"buttons/bell1.wav")
+Y = 1.1  
+Time = 0  
+}
+
+if(Y >= 1){
+On = 0
+X = 0
+Y = 0
+Camera[0] = 0
+Camera[4] = X
+Camera[5] = Y
+Count = 0
+Asd = 0
+hint("[FailCake Camera]Done Scanning!",7)
+soundStop(4)
+Time = 0
+holoPos(1,E:toWorld(vec(0,0,0.5)))
+holoColor(1,vec(1,1,1)) 
+holoColor(2,vec(1,1,1))
+holoColor(3,vec(1,1,1))      
+}
+
+}    

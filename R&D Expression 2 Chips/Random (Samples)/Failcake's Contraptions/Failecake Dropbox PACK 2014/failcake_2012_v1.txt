@@ -1,0 +1,143 @@
+@name FailCake 2012 V1
+@inputs Start
+@outputs Screen
+@persist Color Meteor Scale
+
+interval(100)
+if(first()){
+hint("* Made By FailCake * -> www.youtube.com/users/edunad ",7) 
+holoColor(5,vec(0,0,250))
+    holoColor(16,vec(90,90,90))
+Meteor = 0
+Disaster = 0
+}
+
+OP = entity()
+UP = 0
+##Floor##
+  holoCreate(1)
+    holoModel(1,"cylinder")
+    holoParent(1, OP)
+    holoScale(1,vec(2,2,0.1))
+    holoAng(1,ang(0,0,0))
+    holoPos(1,OP:pos()+vec(0,0,1+UP))
+    holoColor(1,vec(250,250,250))
+    holoMaterial(1,"models/props_wasteland/rockcliff02a")
+
+##Building 1##
+
+  holoCreate(2)
+    holoModel(2,"cube")
+    holoParent(2, OP)
+    holoScale(2,vec(0.3,0.3,0.8))
+    holoAng(2,ang(0,0,0))
+    holoPos(2,OP:pos()+vec(0,0,5+UP))
+    holoColor(2,vec(250,250,250))
+    holoMaterial(2,"models/props_debris/building_template012d")
+
+
+##Sky##
+
+  holoCreate(3)
+    holoModel(3,"hqicosphere")
+    holoParent(3, OP)
+    holoScale(3,vec(-2,-2,-3))
+    holoAng(3,ang(0,0,0))
+    holoPos(3,OP:pos()+vec(0,0,0+UP))
+    holoColor(3,vec(0,0,250))
+    holoMaterial(3,"")
+    
+## Made by FailCake ##    
+    ##meteor##
+
+  holoCreate(4)
+    holoModel(4,"hqicosphere")
+    holoParent(4, OP)
+    holoScale(4,vec(0.7,0.7,0.7))
+    holoAng(4,ang(0,0,0))
+    holoAlpha(4,0)
+    holoPos(4,OP:pos()+vec(0,0,50+UP))
+    holoColor(4,vec(90,90,90))
+    holoMaterial(4,"")
+    
+    ##Ring of Death##
+
+  holoCreate(5)
+    holoModel(5,"torus3")
+    holoParent(5, OP)
+    holoAlpha(5,0)
+    holoScale(5,vec(0.1,0.1,0.1))
+    holoAng(5,ang(0,0,0))
+    holoAlpha(5,0)
+    holoPos(5,OP:pos()+vec(0,0,2+UP))
+    holoColor(5,vec(90,90,90))
+    holoMaterial(5,"")
+
+
+if(Start == 1){
+soundStop(20000)
+soundStop(30000)
+    Disaster = 1
+}else{
+L = round(random(1,5))
+Disaster = 0
+}
+## Made by FailCake ##
+if(Disaster == 1){
+soundStop(20000)
+soundStop(30000)
+soundStop(10000)
+Color += 10
+Meteor += 1
+Screen = Meteor
+if(Meteor > 5){
+ holoPos(4,OP:pos()+vec(0,0,-Meteor + UP + 50))
+}
+if(Meteor > 45){
+holoDelete(4)
+}
+if(Meteor == 43){
+soundPlay(1000,1000,"ambient/explosions/citadel_end_explosion2.wav")
+}
+if(Meteor > 43){
+holoPos(2,OP:pos()+vec(0,0,2+UP))
+holoScale(2,vec(0.3,0.3,0.0))
+}
+if(Meteor > 44){
+Scale += 1
+    holoAlpha(5,255)
+    holoScale(5,vec(Scale,Scale,0.1))
+    holoModel(2,"cylinder")
+    holoParent(2, OP)
+    holoScale(2,vec(1,1,0.1))
+    holoPos(2,OP:pos()+vec(0,0,1.5+UP))
+    holoMaterial(2,"models/props_debris/concretefloor020a")
+}
+if(Scale > 2){
+R1 = random(0,255)
+holoColor(5,vec(R1,0,0))
+holoScale(5,vec(2,2,0.1))
+}
+if(Scale > 15){
+holoDelete(5)
+}
+if(Color == 10){
+hint("ALERT! METEOR APROACHING!!",999)
+soundVolume(1000,999)
+soundPlay(1000,1000,"ambient/alarms/citadel_alert_loop2.wav")
+}
+if(Color >= 100){
+Color -= 0
+Color += 0
+}
+holoColor(3,vec(Color,0,0))
+holoAlpha(4,255)
+}else{
+soundStop(1000)
+Color = 0
+Scale = 0
+Meteor = 0
+}
+## Made by FailCake ##
+## I hope you Guys enjoy it =D ##
+

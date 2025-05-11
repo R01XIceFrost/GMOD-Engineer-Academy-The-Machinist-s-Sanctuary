@@ -1,0 +1,420 @@
+@name FailCake Bow
+@inputs EGP:wirelink
+@persist [E O]:entity MaxF Force Ok Pulled Arrow:entity On [Life Arrows]:array Off
+@persist Active I Sd Rang:ranger MaxTime Sdd Count HeadSho MaxArr Clean Rand Ply:entity
+@outputs Version Dead Special MaxLife AllowSho StartArr Debug Print TForce AimPly:entity
+@trigger all 
+@model models/items/ammopack_medium.mdl
+#weapons/bow_shoot_crit.wav
+#vo/sniper_painsharp01.wav - 4
+#vo/sniper_painsevere01.wav - 4
+
+if(first() | duped()){
+runOnTick(1)
+
+Version = 1.4
+setName("FailCake Bow [TF2][V."+Version+"]") 
+
+E = entity()
+O = noentity()
+propSpawnEffect(0)
+Print = 0
+Ok = 0
+Force = 0
+Pulled = 0
+Off = 0
+#Made By FailCake
+
+E:soundPlay(23,0,"player/taunt_medic_heroic.wav")
+
+## SETTINGS ##
+
+MaxF = 100
+MinArr = 0
+MaxTime = 1000
+StartArr = 10
+Count = StartArr
+Debug = 0
+MaxLife = 5
+
+## SETTINGS ##
+
+holoCreate(1)
+holoModel(1,"models/weapons/c_models/c_bow/c_bow.mdl")
+holoPos(1,O:attachmentPos("anim_attachment_RH"))
+holoAng(1,O:attachmentAng("anim_attachment_RH"))
+holoParentAttachment(1,O,"anim_attachment_RH")
+holoPos(1,holoEntity(1):toWorld(vec(0,0,1)))
+holoAng(1,holoEntity(1):toWorld(ang(0,0,0)))
+holoAlpha(1,0)
+
+holoCreate(2)
+holoModel(2,"models/weapons/c_models/c_bow/c_bow.mdl")
+holoPos(2,O:attachmentPos("Chest"))
+holoAng(2,O:attachmentAng("Chest"))
+holoParentAttachment(2,O,"Chest")
+holoPos(2,holoEntity(2):toWorld(vec(-9,4,0)))
+holoAng(2,holoEntity(2):toWorld(ang(0,90,0)))
+holoAlpha(2,255)
+
+holoCreate(3)
+holoModel(3,"cube")
+holoParentAttachment(3,O,"eyes")
+holoAlpha(3,0)
+holoScaleUnits(3,vec(1,1,1))
+holoPos(3,O:toWorld(vec(0,0,70)))
+
+holoCreate(4)
+holoModel(4,"models/Effects/vol_light128x128.mdl")
+holoAlpha(4,255)
+holoScale(4,vec(0.3,0.3,0.3))
+holoPos(4,E:toWorld(vec(0,0,45)))
+
+EGP:egpClear()
+hint("* Made By FailCake *",7)
+}
+
+
+if(O == noentity() & Debug == 0 ){
+findByClass("player")
+Play = findToArray()
+E:setAng(ang(0,curtime()*100,0))
+for(F = 1,Play:count()){
+if(Play[F,entity]:pos():distance(E:pos()) <= 100 & Play[F,entity]:keyUse() & Play[F,entity]:aimEntity() == E){
+O = Play[F,entity]
+E:setAlpha(10)
+holoAlpha(4,0)
+E:setMaterial("models/wireframe")
+
+holoPos(2,O:attachmentPos("Chest"))
+holoAng(2,O:attachmentAng("Chest"))
+holoParentAttachment(2,O,"Chest")
+holoPos(2,holoEntity(2):toWorld(vec(-9,4,0)))
+holoAng(2,holoEntity(2):toWorld(ang(0,90,0)))
+
+holoPos(1,O:attachmentPos("anim_attachment_RH"))
+holoAng(1,O:attachmentAng("anim_attachment_RH"))
+holoParentAttachment(1,O,"anim_attachment_RH")
+holoPos(1,holoEntity(1):toWorld(vec(0,0,1)))
+holoAng(1,holoEntity(1):toWorld(ang(0,0,0)))
+
+holoParentAttachment(3,O,"eyes")
+holoPos(3,O:toWorld(vec(0,0,70)))
+
+holoEntity(3):soundPlay(9,0,"items/regenerate.wav")
+}
+}
+   
+}
+
+
+
+if(O:weapon():type() == "weapon_blank_pistol" | O:weapon():type() == "laserpointer" | O:weapon():type() == "weapon_pistol" | O:weapon():type() == "weapon_physgun"){
+holoAlpha(1,255)
+holoAlpha(2,0)
+O:weapon():setAlpha(0)
+
+## HUD UPDATE
+
+if(Print == 0){
+Print = 1
+EGP:egpRoundedBox(1,vec2(100,40),vec2(140,50))
+EGP:egpColor(1,vec4(172,76,62,200))
+
+EGP:egpRoundedBoxOutline(2,vec2(100,40),vec2(140,50))
+EGP:egpColor(2,vec4(255,255,255,200))
+
+}
+
+TForce = Force*118/MaxF
+EGP:egpBox(5,vec2(100,75),vec2(120,20))
+EGP:egpColor(5,vec4(172,76,62,200))
+
+EGP:egpBoxOutline(6,vec2(100,75),vec2(120,20))
+EGP:egpColor(6,vec4(255,255,255,200))
+
+EGP:egpBox(7,vec2(100,75),vec2(TForce,18))
+EGP:egpColor(7,vec4(255,255,255,255))
+
+if(Count >= 10){
+EGP:egpFont(3,"verdana",52)
+EGP:egpText(3,Count:toString(),vec2(70,11))
+EGP:egpColor(3,vec4(40,40,40,200))
+#Made By FailCake
+EGP:egpFont(4,"verdana",57)
+EGP:egpText(4,Count:toString(),vec2(70,11))
+EGP:egpColor(4,vec4(255,255,255,255))
+}else{
+EGP:egpFont(3,"verdana",52)
+EGP:egpText(3,Count:toString(),vec2(85,11))
+EGP:egpColor(3,vec4(40,40,40,200))
+
+EGP:egpFont(4,"verdana",57)
+EGP:egpText(4,Count:toString(),vec2(85,11))
+EGP:egpColor(4,vec4(255,255,255,255))
+}
+
+if(Sd == 0){
+Sd = 1
+holoEntity(1):soundPlay(2,0,"weapons/draw_bow.wav")   
+}
+
+if(AllowSho == 0 & Off == 0){
+if(O:keyAttack1() & Ok == 0 & !O:keyAttack2() & Clean == 0){
+    
+if(On == 0){
+On = 1
+holoEntity(1):soundPlay(1,0,"weapons/bow_shoot_pull.wav")    
+}   
+
+     
+if(Force <= MaxF & Clean == 0){
+Force += 0.5
+Pulled = 1
+}
+
+}else{
+
+if(Pulled == 1 & Ok == 0 & !O:keyAttack2() & Clean == 0){
+Pulled = 0    
+Ok = -1
+}
+
+}
+
+
+if(O:keyAttack2() & Ok == 0 & Clean == 0){
+Pulled = 0 
+Ok = 0 
+Force= 0
+
+if(On == 1){
+On = 0
+holoEntity(1):soundPlay(1,0,"weapons/bow_shoot_pull_reverse.wav")    
+}
+  
+}
+}
+
+
+
+
+if(Ok == -1){
+
+AllowSho = 1
+
+Arrow = propSpawn("models/weapons/w_models/w_arrow.mdl",0)
+
+Arrow:setPos(((holoEntity(1):pos() + O:eye()*2)))
+Arrow:setTrails(5,1,4,"trails/tube",vec(255,255,255),255)
+Arrow:setMass(200)
+Arrow:setAng(O:eyeAngles())
+Arrow:applyForce(((O:eye())*Force*80-Arrow:vel())*Arrow:mass()) 
+Arrow:propNotSolid(1)
+
+if(randint(1,4) == 2){
+holoEntity(1):soundPlay(1,0,"weapons/bow_shoot_crit.wav")
+Arrow:setMaterial("models/weapons/v_slam/new light1")
+Arrow:setColor(vec(255,0,0)) 
+Special = 1
+}else{
+Special = 0
+holoEntity(1):soundPlay(1,0,"weapons/bow_shoot.wav") 
+}
+
+Sdd = 0
+timer("unsolid",50)
+
+Ok = 1
+Pulled = 0
+Force = 0  
+}
+  
+}else{
+holoAlpha(1,0)
+holoAlpha(2,255)
+#Made By FailCake
+if(Print == 1){
+EGP:egpClear()
+Print = 0
+}
+
+if(Sd == 1){
+Sd = 0
+holoEntity(1):soundPlay(2,0,"weapons/draw_bow.wav")   
+}
+
+}
+
+if(Ok == 1){
+rangerFilter(O)
+rangerHitEntities(1)
+rangerFilter(holoEntity(1))
+rangerFilter(holoEntity(3))
+rangerFilter(Arrow)
+rangerHitWater(0)
+
+if(clk("unsolid")){
+stoptimer("unsolid")
+Arrow:propNotSolid(0)    
+}
+
+if(Rang:entity():isPlayer()){
+AimPly = Rang:entity()
+Rand = randint(1,46)
+
+if(Rand < 10){
+holoEntity(1):soundPlay(55,0,"vo/sniper_specialcompleted0"+Rand+".wav")    
+}else{
+holoEntity(1):soundPlay(55,0,"vo/sniper_specialcompleted"+Rand+".wav")
+}
+
+##
+#if(AimPly:aimEntity():toLocal(Rang:position()):z() > 0){
+#printColor(vec(255,0,0),"* HeadShot! *")
+#holoEntity(3):soundPlay(11,0,"achievements/achievement_earned.mp3")
+#}
+
+}
+
+
+Rang = rangerOffset(40,Arrow:pos(),Arrow:forward()) 
+
+if(Rang:hit()){ 
+   
+Active+=1
+I+=1
+Count-=1
+
+
+Arrows:pushEntity(Arrow) 
+Arrows[I,entity]:parentTo(Rang:entity())
+
+if(!Rang:entity():isPlayer()){
+Arrows[I,entity]:setPos(Arrows[I,entity]:toWorld(vec(15,0,0)))
+Arrows[I,entity]:propFreeze(1)
+Arrows[I,entity]:propNotSolid(1)
+}
+
+if(Special){
+Bum = propSpawn("models/props_phx/misc/potato_launcher_explosive.mdl",Arrows[I,entity]:pos(),ang(0,0,0),1)
+Bum:setAlpha(0)
+Bum:propBreak()    
+
+Bum = propSpawn("models/props_phx/misc/potato_launcher_explosive.mdl",Arrows[I,entity]:pos(),ang(0,0,0),1)
+Bum:setAlpha(0)
+Bum:propBreak()  
+}
+
+Life:pushNumber(MaxLife) 
+
+timer("Re_"+I,MaxTime)
+stoptimer("manual")
+Arrow:soundPlay(8,0,"weapons/blade_hitworld.wav")
+Arrow = noentity() 
+holoEntity(1):soundPlay(44,0,"items/ammo_pickup.wav")
+Ok = 0
+AimPly = noentity()
+On = 0
+Sdd = 1
+}
+
+if(!Rang:hit() & Sdd == 0){
+timer("manual",2000)    
+}
+#Made By FailCake
+
+}
+
+
+if(clk("manual")){
+Arrow:propBreak()
+Arrow = noentity() 
+holoEntity(1):soundPlay(24,0,"items/ammo_pickup.wav")
+Ok = 0
+On = 0
+Sdd = 1    
+}
+
+
+
+if(I > 0){
+
+for(Is=0,I){  
+       
+if(clk("Re_"+Is)){
+    
+if(Life[Is,number] > 0){
+Life[Is,number] = Life[Is,number] - 1
+timer("Re_"+Is,MaxTime)
+}else{
+Arrows[Is,entity]:propBreak()
+stoptimer("Re_"+Is)
+if(Active > 0){
+Active-=1
+}
+}
+    
+} 
+
+  
+}
+
+
+}
+
+
+if(Count <= MaxArr & Clean == 0){
+Off = 1   
+
+if(Active <= 0){
+printColor(vec(255,0,0),"* Crafting More Arrows *") 
+Clean = 1  
+holoEntity(3):soundPlay(344,0,"items/regenerate.wav")
+}
+    
+}
+
+if(Clean){
+printColor(vec(0,255,0),"* Arrows Crafted! *")    
+AimPly = noentity()    
+Active = 0
+On = 0
+Ok = 0
+Off = 0
+Sdd = 0   
+Life:clear()
+Arrows:clear()
+I = 0
+soundPurge()
+Count = StartArr
+Clean = 0 
+Pulled = 0
+  
+}
+
+if(O != noentity()){
+    
+if(O:health() <= 0 & Dead == 0){
+Dead = 1 
+holoEntity(3):soundPlay(34,0,"vo/sniper_paincrticialdeath0"+randint(1,4)+".wav")   
+holoEntity(3):soundPlay(35,0,"player/crit_hit"+randint(2,5)+".wav")   
+}
+
+
+if(changed(O:health()) & O:health() > 0 & O:health() < 100){
+holoEntity(3):soundPlay(35,0,"vo/sniper_painsharp0"+randint(1,4)+".wav")      
+}
+
+if(Dead == 1 & O:health() > 0){
+Dead = 0    
+}
+}
+#Made By FailCake
+if(AllowSho){
+timer("delay",500)
+if(clk("delay")){
+AllowSho = 0    
+}    
+}
+#Made By FailCake

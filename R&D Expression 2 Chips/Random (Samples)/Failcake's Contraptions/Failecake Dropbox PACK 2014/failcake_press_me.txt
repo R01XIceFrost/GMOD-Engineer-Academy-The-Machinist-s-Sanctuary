@@ -1,0 +1,225 @@
+@name FailCake Press Me
+@inputs EGP:wirelink
+@persist [E Ply BG FinalPly Freeze Piano Piano2 Floor Fur1 Fur2 Pl1 Pl2 Pl3 Pl4 Lab]:entity Event Pos Play AlphaIt Alpha Alpha2
+@trigger all
+@model models/dav0r/buttons/button.mdl
+
+function void setEvent(I:number){
+Event = I    
+}
+
+function number getEvent(){
+return Event    
+}
+
+function void createBallonChat(Size:number,Text:string,TextPos:number,Special:number){
+
+if(!Special){
+E:soundPlay(1,1,"/buttons/blip1.wav")
+}else{
+E:soundPlay(1,1,"/buttons/bell1.wav")
+}
+
+EGP:egpClear()
+EGP:egpTriangleOutline(5,vec2(250,330),vec2(280,330),vec2(250,400))
+EGP:egpRoundedBox(1,vec2(250,280),vec2(Size - 1,119))
+EGP:egpRoundedBoxOutline(2,vec2(250,280),vec2(Size,120))
+EGP:egpColor(2,vec(1,1,1)) 
+EGP:egpTriangle(4,vec2(250,330),vec2(280,330),vec2(250,400))
+EGP:egpText(3,Text,vec2(TextPos,250))
+EGP:egpFont(3,"Arial",60)
+EGP:egpColor(3,vec(1,1,1)) 
+EGP:egpColor(5,vec(1,1,1))     
+}
+
+
+if(first() | duped()){
+E = entity()
+propSpawnEffect(1)
+
+runOnLast(1)
+runOnTick(1)
+
+Event = -1 # By Default 
+EGP:egpClear()
+Play = 0
+Alpha2 = 255
+
+holoCreate(1)
+holoModel(1,"cube")
+holoPos(1,E:toWorld(vec(0,0,60.5)))
+holoColor(1,vec(1,1,1))
+holoMaterial(1,"models/debug/debugwhite")
+holoParent(1,E)
+holoAlpha(1,0)
+holoScale(1,vec(-30,-30,-10))
+
+
+}
+
+findByClass("player")
+findInSphere(E:pos(),450)
+Ply = findClosest(E:pos())
+
+if(Ply:isPlayer() && Play != 1){
+Pos = Ply:pos():distance(E:pos())    
+
+if(Pos > 300 & getEvent() != -1){
+EGP:egpClear() 
+setEvent(-1)
+}
+
+if(Pos < 250 & Pos > 150 & getEvent() != 1){
+setEvent(1)  
+}
+
+if(Pos < 150 & Pos > 100 &  getEvent() != 2){
+setEvent(2)  
+}
+
+if(Pos < 100 &  getEvent() != 3){
+setEvent(3)  
+}
+
+if(Ply:aimEntity() == E & Pos < 100 & Ply:keyUse()){
+setEvent(4)   
+Play = 1 
+FinalPly = Ply
+}
+
+}
+
+if(changed(getEvent())){
+    
+if(getEvent() == 1)    
+{    
+createBallonChat(240,"Hey You!",140,0)
+}elseif(getEvent() == 2)
+{    
+createBallonChat(240,"Yes you!",140,0)
+}elseif(getEvent() == 3)
+{    
+createBallonChat(550,"Mind Pressing Me :)?",5,0)
+}elseif(getEvent() == 4)
+{    
+createBallonChat(230,"Thanks!",150,1)
+
+timer("next",1200)
+}elseif(getEvent() == 5)
+{ 
+AlphaIt = 1
+Floor = propSpawn("models/hunter/plates/plate7x7.mdl",E:toWorld(vec(0,0,0)),ang(0,0,0),1)
+Floor:setMaterial("models/props/CS_militia/roofbeams01")
+}elseif(getEvent() == 6)
+{ 
+timer("next",1200)
+createBallonChat(980,"Lets put on some calm music, shall we?",-235,0)
+Fur1 = propSpawn("models/props_c17/FurnitureCouch001a.mdl",E:toWorld(vec(120,140,19)),ang(0,-90,0),1)
+Fur2 = propSpawn("models/props/cs_office/plant01.mdl",E:toWorld(vec(60,140,3)),ang(0,-90,0),1)
+Lab = propSpawn("models/props_lab/servers.mdl",E:toWorld(vec(-73,80,0)),ang(0,0,0),1)
+}elseif(getEvent() == 7)
+{ 
+timer("next",1900)
+createBallonChat(320,"Much Better!",100,0)
+
+Piano = propSpawn("models/props_c17/FurnitureDrawer001a.mdl",E:toWorld(vec(120,-140,21)),ang(0,90,0),1)
+Piano2 = propSpawn("models/props_lab/citizenradio.mdl",E:toWorld(vec(120,-140,41)),ang(0,90,0),1)
+
+Piano2:soundPlay(3,0,"/music/half-life03.mp3")
+
+}elseif(getEvent() == 8)
+{ 
+timer("next",1900)
+createBallonChat(820,"Now.. Let me Introduce Myself!",-135,0)
+}elseif(getEvent() == 9)
+{ 
+timer("next",1900)
+Pl1 = propSpawn("models/props_c17/FurnitureTable001a.mdl",E:toWorld(vec(0,0,7)),ang(0,90,0),1)
+Pl2 = propSpawn("models/props_c17/FurnitureChair001a.mdl",E:toWorld(vec(-30,0,20)),ang(0,0,0),1)
+Pl3 = propSpawn("models/props_lab/cactus.mdl",E:toWorld(vec(0,0,30)),ang(0,0,0),1)
+Pl4 = propSpawn("models/props_junk/watermelon01.mdl",E:toWorld(vec(-30,0,23)),ang(0,0,0),1)
+createBallonChat(690,"My Name is Failcake :D.",-40,0)
+}elseif(getEvent() == 10)
+{ 
+timer("next",1900)   
+createBallonChat(840,"And I've been Looking for Artists!",-150,0)
+}elseif(getEvent() == 11)
+{ 
+timer("next",1900)   
+createBallonChat(550,"And I need your Help.",5,0)
+}elseif(getEvent() == 12)
+{ 
+timer("next",1900)   
+createBallonChat(980,"Do you Know anyone who can Pixelart?",-235,0)
+}elseif(getEvent() == 13)
+{ 
+timer("next",1900)   
+createBallonChat(855,"If you do, contact me at Steam!",-135,0)
+}elseif(getEvent() == 14)
+{ 
+timer("endit",1900)   
+createBallonChat(230,"Thanks!",150,1)
+}
+
+
+
+}
+
+if(clk("endit")){
+E:setAlpha(255)
+printColor(vec(0,255,0),"[Email] asariathofficial@gmail.com")
+reset()   
+}
+
+if(clk("RemoveAndStart")){
+timer("niceMusic",1000)
+
+EGP:egpClear()
+
+BG = propSpawn("models/hunter/plates/plate2x7.mdl",E:toWorld(vec(-80,0,48)),ang(90,90,90),1)
+BG:setMaterial("models/props/de_inferno/infflrd")
+
+E:soundPlay(2,1,"physics/glass/glass_strain"+randint(1,2)+".wav")
+
+Freeze = propSpawn("models/hunter/blocks/cube1x1x025.mdl",FinalPly:toWorld(vec(0,0,40)),ang(0,0,0),1)
+Freeze:setAlpha(0)  
+}
+
+if(clk("niceMusic")){
+setEvent(6)   
+}
+
+if(clk("next")){ # Auto Change..
+setEvent(getEvent() + 1)    
+}
+
+
+if(AlphaIt){
+if(Alpha < 255){
+Alpha+=2
+Alpha2-=2
+}else{
+Alpha = 255
+Alpha2 = 0
+AlphaIt = 0
+timer("RemoveAndStart",600)
+}
+E:setAlpha(Alpha2)
+holoAlpha(1,Alpha)   
+}
+
+if(last()){
+BG:propDelete()    
+Piano:propDelete()
+Piano2:propDelete()
+Floor:propDelete()
+Fur1:propDelete()
+Fur2:propDelete()
+Pl1:propDelete()
+Pl2:propDelete()
+Pl3:propDelete()
+Pl4:propDelete()
+Lab:propDelete()
+Freeze:propDelete()
+}
+

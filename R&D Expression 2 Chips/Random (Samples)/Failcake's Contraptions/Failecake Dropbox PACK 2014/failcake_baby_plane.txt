@@ -1,0 +1,265 @@
+@name FailCake Baby Plane
+@inputs Seat:wirelink Cam:wirelink Driver:entity
+@outputs Toggle Out Once InvertedControls Inverted Finding
+@persist [Model Scale Pos Angle]:array Force:vector Angles:angle Player:entity
+@trigger all
+@model models/props_junk/PlasticCrate01a.mdl
+runOnTick(1)
+runOnChat(1)
+
+
+E = entity()
+
+Space = Seat:number("Space")
+W = Seat:number("W")
+S = Seat:number("S")
+A = Seat:number("A")
+D = Seat:number("D")
+MOUSE2 = Seat:number("Mouse2")
+Active = Seat:number("Active")
+Shift = Seat:number("Shift")
+Change = Seat:number("R")
+
+
+
+if(first()){
+ 
+InvertedControls = 1
+hint("Made By FailCake",7)
+hint("Version 1",7)
+## HoloAnyChecker by FailCake
+   
+print("Checking if the Server Has HoloModelAny!")
+holoCreate(0)
+holoModel(0,"models/props_junk/popcan01a.mdl")
+holoPos(0,E:pos()+vec(0,0,30))
+
+Models = "models/props_junk/popcan01a.mdl"
+
+if(holoEntity(0):model() == Models){
+hint("[NOTE] HoloModelAny Detected!",7)
+holoDelete(0)
+}else{
+hint("[WARNING] No HoloModelAny Detected! E2 Deleting...",7)
+holoDelete(0)
+selfDestructAll()
+} 
+print("Done!")    
+    
+Skin = randint(1,5)
+E:setSkin(Skin)    
+E:setMass(2)
+ 
+Model[1,string]= "models/props_junk/TrafficCone001a.mdl"
+Pos[1,vector]=vec(0,24.5,0)
+Scale[1,vector]=vec(0.8,0.8,0.8)
+Angle[1,angle]=ang(0,0,-90)
+
+Model[2,string]= "models/props_c17/doll01.mdl"
+Pos[2,vector]=vec(0,-7,4)
+Scale[2,vector]=vec(1.5,1.5,1.5)
+Angle[2,angle]=ang(0,90,0)
+
+Model[3,string]= "models/props_lab/box01a.mdl"
+Pos[3,vector]=vec(0,-9,-4)
+Scale[3,vector]=vec(1,1,1)
+Angle[3,angle]=ang(0,-90,0)
+
+Model[4,string]= "models/props_combine/combine_interface001.mdl"
+Pos[4,vector]=vec(0,7,-4)
+Scale[4,vector]=vec(0.22,0.22,0.22)
+Angle[4,angle]=ang(0,-90,0)
+
+Model[5,string]= "models/props_lab/reciever01b.mdl"
+Pos[5,vector]=vec(0,7,-4)
+Scale[5,vector]=vec(0.7,0.7,0.7)
+Angle[5,angle]=ang(0,-90,0)
+
+Model[6,string]= "models/props_docks/dock01_pole01a_128.mdl"
+Pos[6,vector]=vec(0,-20.5,0)
+Scale[6,vector]=vec(0.15,0.15,0.15)
+Angle[6,angle]=ang(90,90,0)
+
+Model[7,string]= "models/props_docks/dock01_pole01a_128.mdl"
+Pos[7,vector]=vec(5,-23,5)
+Scale[7,vector]=vec(0.15,0.15,0.15)
+Angle[7,angle]=ang(45,0,0)
+
+Model[8,string]= "models/props_docks/dock01_pole01a_128.mdl"
+Pos[8,vector]=vec(-5,-23,5)
+Scale[8,vector]=vec(0.15,0.15,0.15)
+Angle[8,angle]=ang(-45,0,0)
+
+Model[9,string]= "models/props_debris/metal_panel02a.mdl"
+Pos[9,vector]=vec(-10,-23,11)
+Scale[9,vector]=vec(0.15,0.15,0.15)
+Angle[9,angle]=ang(-45,0,0)
+
+Model[10,string]= "models/props_debris/metal_panel02a.mdl"
+Pos[10,vector]=vec(10,-23,11)
+Scale[10,vector]=vec(0.15,0.15,0.15)
+Angle[10,angle]=ang(45,0,0)
+
+Model[11,string]= "models/props_debris/metal_panel01a.mdl"
+Pos[11,vector]=vec(21,0,0)
+Scale[11,vector]=vec(0.2,0.2,0.2)
+Angle[11,angle]=ang(90,0,0)
+
+Model[12,string]= "models/props_debris/metal_panel01a.mdl"
+Pos[12,vector]=vec(-21,0,0)
+Scale[12,vector]=vec(0.2,0.2,0.2)
+Angle[12,angle]=ang(90,0,0)
+    
+Toggle = 0    
+   
+Driver:hintDriver("## Made By FailCake ##",7) 
+Driver:hintDriver("Space = Forward",7) 
+Driver:hintDriver("Press R to Invert W and S",7) 
+Driver:hintDriver("A and D to Turn",7) 
+Driver:hintDriver("Mouse2 to Enable/Disable Smoke",7) 
+Driver:hintDriver("######################",7) 
+Finding = 0
+
+for(I=1,12){
+holoCreate(I)
+holoModel(I,Model[I,string]) 
+holoScale(I,Scale[I,vector])
+holoPos(I,E:toWorld(Pos[I,vector]))
+holoAng(I,Angle[I,angle])
+holoParent(I,E) 
+}
+
+}
+
+
+String = owner():lastSaid():explode(" ")
+
+if(chatClk(owner())){  
+               
+if(String[1,string]=="-find" & Finding == 0){  
+Finding = 1    
+holoCreate(23)
+holoModel(23,"cube")
+holoScale(23,vec(1,1,50))
+holoPos(23,E:pos()+vec(0,0,310))
+holoMaterial(23,"models/debug/debugwhite")
+holoColor(23,vec(255,125,0))
+holoAlpha(23,200)
+holoParent(23,E)   
+}
+
+if(String[1,string]=="-off" & Finding == 1){        
+Finding = 0   
+holoDelete(23)
+}
+
+}
+
+O = Driver:driver()
+
+Angles = O:eyeAngles()
+
+if(Active){
+  
+
+
+if(Change){
+    
+if(Inverted == 1 & Out != 1){
+Inverted = 0   
+Out = 1
+InvertedControls = 1
+Driver:hintDriver("[NOTE] Controls Now Inverted!",7)   
+}
+
+if(Inverted == 0 & Out != 1){
+Inverted = 1
+Out = 1
+InvertedControls = 0
+Driver:hintDriver("[NOTE] Controls Now Normal!",7) 
+}
+
+}
+  
+
+
+
+if(Once != 1){
+E:soundPlay(100,100,"buttons/button24.wav")
+E:soundPlay(10230,100,"vo/heavy_yell10.wav")
+
+Driver:hintDriver("## Made By FailCake ##",7) 
+Driver:hintDriver("Space = Forward",7) 
+Driver:hintDriver("Press R to Invert W and S",7) 
+Driver:hintDriver("A and D to Turn",7) 
+Driver:hintDriver("######################",7) 
+
+Once = 1
+}
+
+holoAlpha(2,255)  
+
+Cam:setVector("Position",E:toWorld(vec(0,-40,30)))
+Cam:setAngle("Angle",E:toWorld(ang(20,90,0)))
+
+if(Space){
+E:applyForce(-E:right()*60)
+}elseif(Shift){
+E:applyForce(E:right()*60)
+}
+
+
+if(InvertedControls){
+if(W){
+E:applyTorque(vec(-10,0,0))
+}elseif(S){
+E:applyTorque(vec(10,0,0))
+E:applyForce(vec(0,0,20))
+}
+}else{
+if(S){
+E:applyTorque(vec(-10,0,0))
+}elseif(W){
+E:applyTorque(vec(10,0,0))
+E:applyForce(vec(0,0,10))
+}
+}
+
+
+if(A){
+E:applyTorque(vec(0,-10,0))    
+}elseif(D){
+E:applyTorque(vec(0,10,0))
+}
+
+
+Player = O:aimEntity()
+  
+}else{
+holoAlpha(2,0)
+Once = 0 
+}
+
+if(Out){
+timer("delay",500)
+if(clk("delay")){
+Out = 0
+stoptimer("delay")    
+}    
+}
+
+if(MOUSE2){
+if(Toggle == 1 & Out == 0){
+Out = 1
+Toggle = 0
+E:removeTrails()
+}elseif(Toggle == 0 & Out == 0){
+Out = 1
+E:setTrails(10,10,10,"trails/smoke",vec(1,1,1),255) 
+Toggle = 1
+}
+}
+
+####################################################################
+## Do not rename the E2 or remove the hint("Made by Failcake",100)##
+####################################################################
