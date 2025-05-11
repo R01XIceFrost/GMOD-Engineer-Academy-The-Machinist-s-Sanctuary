@@ -1,0 +1,164 @@
+@name FailCake Skin
+@persist E:entity
+@trigger all
+
+#Source: https://web.archive.org/web/20150429005333/http://www.wiremod.com/forum/finished-contraptions/33763-e2-failcakes-gautlier.html
+
+
+### BY FAILCAKE ###
+# http://youtu.be/UO9kZZM7IWM
+###################
+
+if(duped() || first()){
+    
+    function void setCounter(Count:string){
+ 
+        local Num = Count:toNumber()
+    
+        if(Num >= 1000){
+            holoMaterial(123,"models/duckeh/buttons/"+Count[1])
+            holoMaterial(124,"models/duckeh/buttons/"+Count[2])
+            holoMaterial(125,"models/duckeh/buttons/"+Count[3])
+            holoMaterial(126,"models/duckeh/buttons/"+Count[4])
+        }elseif(Num < 1000 && Num >= 100){
+            holoMaterial(123,"models/duckeh/buttons/0")
+            holoMaterial(124,"models/duckeh/buttons/"+Count[1])
+            holoMaterial(125,"models/duckeh/buttons/"+Count[2])
+            holoMaterial(126,"models/duckeh/buttons/"+Count[3])
+        }elseif(Num < 100 && Num >= 10){
+            holoMaterial(123,"models/duckeh/buttons/0")
+            holoMaterial(124,"models/duckeh/buttons/0")
+            holoMaterial(125,"models/duckeh/buttons/"+Count[1])
+            holoMaterial(126,"models/duckeh/buttons/"+Count[2])
+        }elseif(Num < 10 && Num >= 0){
+            holoMaterial(123,"models/duckeh/buttons/0")
+            holoMaterial(124,"models/duckeh/buttons/0")
+            holoMaterial(125,"models/duckeh/buttons/0")
+            holoMaterial(126,"models/duckeh/buttons/"+Count[1])
+        } 
+    
+   
+    }
+
+    function void applySkin(){
+             
+        ## Setup Black Holo ##   
+           
+        holoCreate(120)
+        holoModel(120,"cube")
+        holoPos(120,E:toWorld(vec(0,0,0.7)))
+        holoScaleUnits(120,vec(5,5,0.1))
+        holoParent(120,E)
+        holoColor(120,vec(1,1,1))
+    
+        ## Setup Logo Holo ##
+        
+        holoCreate(121)
+        holoModel(121,"plane")
+        holoPos(121,E:toWorld(vec(2.5,2.5,0.80)))
+        holoScaleUnits(121,vec(4,4,0.1))
+        holoParent(121,E)
+        
+        
+        holoColor(121,vec(151,28,28))
+        holoMaterial(121,"expression 2/cog_prop")
+    
+        holoCreate(122)
+        holoModel(122,"plane")
+        holoPos(122,E:toWorld(vec(-2.5,-2.5,0.80)))
+        holoScaleUnits(122,vec(8,8,0.1))
+        holoParent(122,E)
+        
+        holoColor(122,vec(151,28,28))
+        holoMaterial(122,"expression 2/cog_prop")
+    
+        # HoloNumber 1
+    
+        holoCreate(123)
+        holoModel(123,"plane")
+        holoPos(123,E:toWorld(vec(2.2,-1.62,0.82)))
+        holoScaleUnits(123,vec(0.5,0.5,0.1))
+        holoAng(123,E:toWorld(ang(0,180,0)))
+          holoParent(123,E)
+        holoMaterial(123,"models/duckeh/buttons/0")
+    
+        holoClipEnabled(123,1,1)
+        holoClip(123,1,vec(0,-0.04,0),-holoEntity(123):right(),0)
+    
+        # HoloNumber 2
+    
+        holoCreate(124)
+        holoModel(124,"plane")
+        holoPos(124,E:toWorld(vec(2.2,-1.84,0.82)))
+        holoScaleUnits(124,vec(0.5,0.5,0.1))
+        holoAng(124,E:toWorld(ang(0,180,0)))
+          holoParent(124,E)
+        
+        holoMaterial(124,"models/duckeh/buttons/0")
+    
+        holoClipEnabled(124,1,1)
+        holoClip(124,1,vec(0,-0.04,0),-holoEntity(124):right(),0)
+    
+        # HoloNumber 3
+    
+        holoCreate(125)
+        holoModel(125,"plane")
+        holoPos(125,E:toWorld(vec(2.2,-2.06,0.82)))
+        holoScaleUnits(125,vec(0.5,0.5,0.1))
+          holoParent(125,E)
+        
+        holoAng(125,E:toWorld(ang(0,180,0)))
+        holoMaterial(125,"models/duckeh/buttons/0")
+    
+        holoClipEnabled(125,1,1)
+        holoClip(125,1,vec(0,-0.04,0),-holoEntity(125):right(),0)
+    
+        # HoloNumber 4
+    
+        holoCreate(126)
+        holoModel(126,"plane")
+        holoPos(126,E:toWorld(vec(2.2,-2.26,0.82)))
+        holoScaleUnits(126,vec(0.5,0.5,0.1))
+          holoParent(126,E)
+        
+        holoAng(126,E:toWorld(ang(0,180,0)))
+        holoMaterial(126,"models/duckeh/buttons/0")
+    
+        holoClipEnabled(126,1,1)
+        holoClip(126,1,vec(0,-0.04,0),-holoEntity(126):right(),0)
+    
+        
+        # HOLO CLIPS #
+        
+        holoClipEnabled(121,1,1)
+        holoClipEnabled(121,2,1)
+        holoClip(121,1,holoEntity(121):pos(),-E:forward(),1)
+        holoClip(121,2,holoEntity(121):pos(),E:right(),1)
+        
+        holoClipEnabled(122,1,1)
+        holoClipEnabled(122,2,1)
+        holoClip(122,1,holoEntity(122):pos(),E:forward(),1)
+        holoClip(122,2,holoEntity(122):pos(),-E:right(),1)   
+    }
+
+}
+
+if(duped() || first()){
+    runOnTick(1)
+    
+    E = entity()
+    
+    applySkin()
+    setCounter("1232")
+    
+}
+
+#setCounter(ops():toString())
+holoAng(121,holoEntity(121):toWorld(ang(0,0.45,0)))
+holoAng(122,holoEntity(122):toWorld(ang(0,-0.25,0)))
+    
+holoClip(121,1,holoEntity(121):pos(),-E:forward(),1)
+holoClip(121,2,holoEntity(121):pos(),E:right(),1)
+
+holoClip(122,1,holoEntity(122):pos(),E:forward(),1)
+holoClip(122,2,holoEntity(122):pos(),-E:right(),1)
