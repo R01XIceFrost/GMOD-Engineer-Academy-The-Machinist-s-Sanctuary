@@ -6,8 +6,8 @@
 @persist Active Mouse1 Mouse2 Reload Shift
 @persist HudColor:vector HudColor2:vector CamDist RealisticGunMovement
 
-#Source: https://youtu.be/ZAZ8wiCyK4U?si=55PT43Vky__u5MET by Tsunkas
-#Source 2: https://youtu.be/c21wX9IBIy0?si=_4LuPpvyl0TS9J2b by SirDobbers
+#Source: https://youtu.be/ZAZ8wiCyK4U?si=55PT43Vky__u5MET by Tsunkas 2016
+#Source 2 (Native English Speaker): https://youtu.be/KTiK6NbCJZQ?si=gsHv96iJtzT3-VfJ by SirDobbers 2014
 
 runOnTick(1)
 if(first()||dupefinished()){
