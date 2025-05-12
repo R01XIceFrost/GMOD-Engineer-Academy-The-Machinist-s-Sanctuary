@@ -1,0 +1,92 @@
+@name Orbital Bombardment (Press M)
+@inEputs Fire
+@perDsist Accuracy SalvoSize Height Delay [Key Model]:string O:entity
+@persist TargetI:vector LaunchCount Hold HeightI
+@Xtrigger Fire
+#By thewhitish
+#########MUST SPAWN WITH LINE OF SIGHT TO SKY#########
+#For higher effectiveness, set Accuracy value low, Salvo size high, Delay low, and Model to larger.
+#Fire input is optional. It's an alternative to the internal key (M) and functions the same.
+
+#[
+
+INFO:
+
+====================Orbital Bombardment================
+
+Rain explosive props from the sky, with some pretty neat visuals and audio. Highly customizable, with adjustable radius, salvo size, and rate.
+
+The button (default M) has to be held down for a short time. Tapping might not always work.
+
+
+
+]#
+
+interval(150) #Comment this out if using Fire input. Set to a higher number for less responsiveness and less ops.
+if (first()) {
+#-------------------------------------------------------------------------------------------------------------------------------------Options
+Key = "M"    #The key on your keyboard that will control this chip. Comment out this line to disable. http://wiki.garrysmod.com/page/Enums/KEY. Case insensitive, exclude 'KEY_'"
+
+Accuracy = (1000) # Radius projectiles will land in. Lower numbers more accurate.
+SalvoSize = (10) # Number of projectiles produced.
+Height = (2000) # Distance projectiles will drop from. Set to 0 to detect height of skybox.
+Delay = (250) # Delay between shots in milliseconds. Numbers below 200 cause unpredictable results.
+Model = "models/props_phx/amraam.mdl"
+#"models/props_c17/oildrum001_explosive.mdl"                     Range 200, gibbs
+#"models/props_phx/ww2bomb.mdl"                                  Range 125
+#"models/props_phx/torpedo.mdl"                                  Range 500-700
+#"models/props_phx/misc/potato_launcher_explosive.mdl"           Range very small, rarely lethal
+#"models/props_phx/misc/flakshell_big.mdl"                       Range 300-500, shrapnel, may cause lag
+#"models/props_phx/amraam.mdl"                                   Range 325
+#--------------------------------------------------------------------------------------------------------------------------------------
+O = owner()
+findExcludeClass("prop")
+findExcludeClass("npc")
+findExcludeClass("vehicle")
+findIncludeClass("player")
+findIncludeClass("owner")
+rangerHitEntities(0)
+rangerHitWater(0)
+rangerIgnoreWorld(0)
+
+print("UPLINK TO GEOSYNCHRONOUS ORBITAL ASSETS AQUIRED. LETHAL FORCE AUTHORIZED ON ANY TARGETS.")
+
+if (!Height) # Skybox height detection
+    {HeightI = ranger(50000):pos():z()}
+    else
+    {HeightI = Height}
+}
+
+FireI = O:keyPressed(Key)
+
+if ((FireI & $FireI) | (~Fire & Fire)) #If pressed this tick
+    {Input = 1}
+
+Target = O:aimPos(!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+if (Input & !Hold)
+{
+    TargetI = Target #sound effect at target area.
+    O:soundPlay(1,2,"hl1/fvox/acquired.wav")
+    timer("delay",Delay)
+    Hold = 1
+}
+
+if ((clk("delay")) & (LaunchCount<SalvoSize)) # cycles through spawn function SalvoSize number of times
+{
+    LaunchCount++
+#    stoptimer("delay")
+    Projectile = propSpawn(Model,(TargetI + vec(random(Accuracy),random(Accuracy),HeightI)),(ang(90,0,180)),0)
+    Projectile:setMaterial("Models/effects/vol_light001")
+    Projectile:setColor(150,150,150,255)
+    Projectile:setTrails(128,128,10,"trails/laser",vec(0,169,255),255)
+    Projectile:setMass(25000)
+    Projectile:applyForce(vec(0,0,(-(10^20))))
+    findInSphere(TargetI,Accuracy)
+    TargetEnt = find()
+    TargetEnt:soundPlay(2,2,"physics/nearmiss/whoosh_large4.wav")
+    timer("delay",Delay)
+}
+
+if (LaunchCount == SalvoSize) # Reset
+        {stoptimer("delay"), LaunchCount = 0, Hold = 0}

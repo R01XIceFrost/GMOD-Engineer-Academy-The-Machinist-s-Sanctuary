@@ -1,0 +1,100 @@
+@name Fist of Death
+@persist ROT:entity MARK:array MARKHOLO:array
+#[
+INFO:
+
+Fist of Death
+This is just a sort of crappy thing I did, but it looks cool.
+Since I don't know much of sine, I did a workaround for orbiting. 
+Essentially, it makes it so that when you use fists, your fists are replaced with red skulls, and ghosts orbit you. 
+(You won't be able to see this, unless you find the holoVisible thing in there somewhere). 
+Punching someone will mark them with a skull on their head, and reloading will kill all marks. 
+Requires PropCore and holoModelAny.
+
+]#
+
+#[
+Fists of Death by Tech Mage
+Use the fists weapon for every function this chip has.
+Attacking a person in any way will mark them.
+Marked players get a skull for a head.
+Reload with the fists to explode all marked players.
+]#
+#Add a pound sign below to allow duping.
+
+
+
+if(duped()){selfDestruct()}
+runOnTick(1)
+if(first()){
+    holoCreate(1,owner():attachmentPos("anim_attachment_RH"),vec(1,1,1),owner():attachmentAng("anim_attachment_RH"),vec(255,0,0),"models/Gibs/HGIBS.mdl")
+    holoCreate(2,owner():attachmentPos("anim_attachment_LH"),vec(1,1,1),owner():attachmentAng("anim_attachment_LH"),vec(255,0,0),"models/Gibs/HGIBS.mdl")
+    holoParentAttachment(1,owner(),"anim_attachment_RH")
+    holoParentAttachment(2,owner(),"anim_attachment_LH")
+    holoAlpha(1,0)
+    holoAlpha(2,0)
+    GH1 = holoCreate(3)
+    GH2 = holoCreate(4)
+    holoPos(3,GH1:toWorld(vec(0,25,0)))
+    holoPos(4,GH2:toWorld(vec(0,-25,0)))
+    ROT = holoCreate(5)
+    holoAlpha(5,0)
+    holoModel(3,"models/props_halloween/smlprop_ghost.mdl")
+    holoModel(4,"models/props_halloween/smlprop_ghost.mdl")
+    holoParent(3,5)
+    holoParent(4,5)
+    holoPos(5,owner():attachmentPos("eyes"))
+    holoParentAttachment(5,owner(),"eyes")
+    holoAlpha(4,0)
+    holoAlpha(3,0)
+    holoVisible(1,owner(),0)
+    holoVisible(2,owner(),0)
+    holoVisible(3,owner(),0)
+    holoVisible(4,owner(),0)
+}
+holoAng(5,ROT:toWorld(ang(0,1,0)))
+holoAng(3,owner():eyeAngles())
+holoAng(4,owner():eyeAngles())
+if(owner():weapon():type() == "weapon_fists"){
+    holoAlpha(1,255)
+    holoAlpha(2,255)
+    holoAlpha(3,255)
+    holoAlpha(4,255)
+} else {
+    holoAlpha(1,0)
+    holoAlpha(2,0)
+    holoAlpha(3,0)
+    holoAlpha(4,0)
+}
+rangerFilter(owner())
+RD = rangerOffset(50,owner():shootPos(),owner():eye())
+for(I = 1,MARK:count()){
+    if(RD:entity() == MARK[I,entity]){
+        ISMARKED = 1
+        break
+    } else {
+        ISMARKED = 0
+    }
+}
+if(owner():weapon():type() == "weapon_fists" & (owner():keyAttack1() | owner():keyAttack2()) & RD:hit() & (RD:entity():isPlayer() | RD:entity():isNPC()) & !ISMARKED){
+    E = RD:entity()
+    TEMP = MARKHOLO:count()+1
+    HOLOTEMP = holoCreate(TEMP+5)
+    holoModel(TEMP+5,"models/Gibs/HGIBS.mdl")
+    holoVisible(TEMP+5,E,0)
+    holoScale(TEMP+5,vec(2,2,2))
+    holoAng(TEMP+5,E:attachmentAng("eyes"))
+    holoPos(TEMP+5,E:attachmentPos("eyes"))
+    holoParentAttachment(TEMP+5,E,"eyes")
+    MARK:pushEntity(E)
+    MARKHOLO:pushEntity(HOLOTEMP)
+}
+if(owner():weapon():type() == "weapon_fists" & owner():keyReload()){
+    for(I = 1,MARK:count()){
+        TARGETKILL = MARK:popEntity()
+        TEMPENT = propSpawn("models/props_c17/oildrum001_explosive.mdl",TARGETKILL:pos(),1)
+        TEMPENT:propBreak()
+        TARGETHOL = MARKHOLO:popEntity()
+        holoDelete(holoIndex(TARGETHOL))
+    }
+}
