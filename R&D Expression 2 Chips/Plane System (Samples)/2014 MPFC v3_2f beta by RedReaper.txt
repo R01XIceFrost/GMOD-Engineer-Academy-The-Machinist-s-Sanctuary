@@ -1,0 +1,1168 @@
+@name MPFC v3_2f beta
+@inputs [Pod Cam]:wirelink ActiveSwitch [CamParent Base2 Base3 Base4 Base5]:entity [EGP Gun1 Gun2]:wirelink  [Poshit Rotor1 Rotor2 Instpanel Stick Pedals Throtstick Colstick]:vector
+@outputs Active Vectorflight Ammo1 Ammo2 Ammo3 Ammo4 Ammo5 Althold 
+@persist Ztohold FLYPOS:vector
+@outputs Array:array WS AD LR UD FB Throttle Collective Fire1 Fire2 Flaps Aimpos:vector Geardown Output Gearbrakes Master:entity WeaponSelected PodActive
+@persist Xf Yf Zf Ammo
+@persist Maneuverability Flyforce Liftforce Angforce Updownsmoother Leftrightsmoother Forebacksmoother Liftsmoother Rollsmoother Dampforce Zoom Ang:angle 
+@persist Base:entity Seat:entity  Mass [CockpitSound EngineSound PropSound]:string Typeofvehicle Pilot:entity Airshipmod Lfm Flapsavailable Flaps
+@persist Rotors H1 Rotorarrangement Rotorblades Rotorlength Rotorwidth TailSide TailRotorblades TailRotorlength TailRotorwidth Synchrotilt Forethrustmul [Storedcenter Center]:vector Base2Valid Base3Valid Base4Valid Base5Valid BaseMass1 BaseMass2 BaseMass3 BaseMass4 BaseMass5
+@persist CamMode MouseStick Bombsight Holo:entity Activated TsA
+@persist T LRegp PitchEGPmul ScX ScY Color:vector4 SightsMode Altitude FLIR FLIRtoggle [Inertia1 Inertia2 Inertia3 Inertia4 Inertia5]:vector 
+@persist Cammode ZoomToggle  Viewmode HoldAlt LRrollholo RollInput Forezoommod [Position Direction]:vector
+@persist W A S D R Space Shift Alt M1 M2 Light Dampflapmodded Cockpitpos:vector  Liftsmoothercoll Forebacksmootherthrot Propplay Bombsightdisabled
+@persist Numberofguns WeaponSelect [Weapon1 Weapon2 Weapon3]:string Cycler Fire Planelift Velift Ralt Flapliftmod Loopstart Loopend
+@persist Autopilot Numberofpoints Index AutopilotToggle Addavec Chat:string Tiltinstrumentpanel Instrumentsable Updatepanel Gaugemaster:entity Viewpoint:vector
+@persist [Rpos]:vector Amod Yawmax Slipmax Altfeet EGPon EGPashud [ThvT PedT StkT ColT CLV]:vector Stickson Freelook Storedposhit:vector Poshitfix:vector Metric
+@persist [Topbarcent Leftbarcent Rightbarcent]:vector2 Camparentinertia:angle Nogun PIP:vector FLYPOS2:vector LC XMod YMod Hug Zed HoldCollective
+@trigger none
+
+#Source: https://youtu.be/b4cjSZOe1Go?si=mls19YU6OKHGvkBX
+
+#[
+
+INFO:
+
+This is a multipurpose, multifeature flight chip, with surprisingly good capabilities and modularity. It not as high in ops as some chips, but still runs at a relatively low interval, by optimizing code and pertick executions. Flight is incredibly easy, and setup is a breeze--just read the annotations!
+New for v3.2d is an in-cockpit "realistic" flight mode, for those who feel particularly masochistic, a (hopefully) fixed autopilot, altitude hold with "hold", "aim" autopilot waypoint settings (just goes forward x amount and sets a point there), and a few minor fixes. If there are any bugs or possible optimizations, let me know.
+
+The new EGP HUD. Prettier than the old one. Also you can fully recolor it as you desire.
+To get the chip simply copy the code into a text file, save that to your e2 folder, and open in game.
+Features:
+
+    Simple "instructor" flight controls similar to war thunder
+    NEW! Semirealistic flight controls option--most vehicles can be controlled with mouse only
+    Easy to set up and modify--few necessary inputs and lots of annotations
+    Does not require a set weight/angle "base"--can even use multiple base props!
+    NEW! Able to handle five types of vehicles--helicopters, tiltrotor/vtols, airplanes, airships, and gyrocopters--with smooth flight
+    Attitude hold
+    NEW! Compatible with clientside cam controller.
+    Automatic output for landing gear lowering and landing gear brakes
+    Well-optimized intelligent waypoint-based autopilot with autocollective/tilt, with looping and flight plans for all aircraft types
+    Optional holo rotors, flight controls, and instruments, auto-enabled as applicable
+    Altitude holding "bomb sight" mode option, for accurate level bombing (note: ballistic calc not provided!) - REMOVED DUE TO COMPLICATIONS WITH CLIENTSIDE CAM
+    Built in input for ballistic calculators
+    Switchable between 3 weapons
+    NEW! New for v3.2a EGP flight display as either a hud or a stationary screen
+    Cam zoom and FLIR
+    Efficient pilotless operation for drones or things with switchable seats
+    NEW! Ammo selection for primary armament
+    Cats
+    NEW! Now 50% more cats.
+    
+    Airplane flight is like war thunder--super easy mouse & keyboard, with automatic "instructor" rolling. All of the controls are the same for the different flight modes, so there's no confusion--collective on a heli is collective on an airship, throttle forward on a plane is throttle forward on a tiltrotor, etc.
+Instructional video to teach you how to fly planes: (Source: https://youtu.be/b4cjSZOe1Go?si=mls19YU6OKHGvkBX)
+
+
+]#
+
+#THIS CHIP PROVIDED COURTESY OF FRS AND REDREAPER ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  #################################################
+#TO USE: weld then parent upright facing forward on aircraft hull
+#Wire: pod to a linked pod controller, cam to a linked cam controller, and EGP to a linked EGP.
+#Camparent is an entity, bs-centered to the base.  All options except coordinates local to parent shoudl be clicked on cam controller
+#EVERYTHING else you can ignore, unless you want holo rotors, ballistic calculator or nav-beacon PIP display, multiples bases, holo faux controls, Weapon displays, etc.
+##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################
+#AUTOPILOT CHAT COMMANDS
+#hold [0/1/2] = rough altitude hold, only really works on helicopters and airships.  0 is off, 1 is a fixed altitdue, 2 is altitude relative to the ground.  Still in beta
+#apon = autopilot on
+#apoff = autopilot off
+#ap [set/cur/aim] [#] [#] = ground/current altitude/forward, amount of modification up/down or fore, waypoint ###
+#ap clr = clear all points
+#ap loop [#] [#] = tells it to fly from the first index, through indexed points to the last index, then back.  So "ap loop 3 7" will make it fly point 1,2,3, and then 3,4,5,6,7,3,4,5...
+##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################
+if(first())
+    {#These are the things you edit.
+    DegreesPerSecondTurn = 90 #default 60
+    Flyforce = 0.8 #Force of flight, default 1, even this is pretty fast
+    Liftforce = 1.5 #Force of lifting, default 1 (at 1, ~75% is a rough hover, and planes lift off realistically).  Very sensitive.
+    Updownsmoother = 0.15 #Smoother for pitching, adjust reaction speed to control inputs, default 0.2
+    Leftrightsmoother = 0.15 #Smoother for yawing, adjust reaction speed to control inputs, default 0.2
+    Forebacksmoother = 0.033 #Smoother for thrust, adjusts thrust sensitivity, default 0.05
+    Liftsmoother = 0.1 #Smoother for collective, adjusts lift sensitivity, default 0.05
+    Rollsmoother = 0.15 #Smoother for roll, adjusts roll speed, default 0.15
+    Flapsavailable = 1 #Does it have flaps?
+    Forethrustmul = 1 #Forward thrust multiplier for forward vtol flight, used to balance heli vs plane speed - Leave at 1 most of the time!
+    Typeofvehicle = 4 #1 is airship, 2 is heli, 3 is vtol, 4 is plane, 5 is gyrocopter.  Sets control inputs and damping--note airships will be always slower, but not turn slower, so adjust turning!
+    Velift = 800 #Forward speed to get full lift--only for planes and vtols, works in localized units.  Default is 1000
+    StickMod = vec2(-1,1) #P/R modifier for cockpit flight.  You can make it positive or negative.  This controls how strong mouse affects your flight like this.
+    #Sounds
+    CockpitSound = "acf_extra/vehiclefx/misc/windexternal.wav" #Sound that plays in the cockpit
+    EngineSound = "acf_extra/airfx/air_distant.wav" #Sound that plays from engine, pitches with load.
+    PropSound = "acf_extra/airfx/pipercub.wav" #Sound that plays from rotors or thrusting, static and unchanging.
+    #Holographic Rotor system - If you don't have holo rotors, do nothing at all.  It will detect the lack of rotor GPS points automatically
+        #Rotorarrangement 1 = Main & tail rotors, if no second rotor selected it will work as NOTAR
+        #Rotorarrangement 2 = Coaxial or tandem rotors
+        #Rotorarrangement 3 = Synchromesh rotors
+        Rotorarrangement = 1 #What arrangement of rotors are you using?
+        Rotorblades = 3 #How many rotor blades, supports only 1-4
+        Rotorlength = 14 #Main total length
+        Rotorwidth = 0.5 #Main rotor width
+        TailSide = 1 #If 1, tilts to the left.  if 2, to the right.  Only affects conventinoal rotor layout, can usually ignore
+        TailRotorblades = 3 #how many tail rotor blades, supports only 1-4
+        TailRotorlength = 5 #Tail rotor length
+        TailRotorwidth = 0.3 #Tail rotor width
+        Synchrotilt = 10 #Degrees of tilt for synchrocopter
+    #Pitch tilt of the instrument panel if enabled
+    Tiltinstrumentpanel = 0
+    #EGP
+    EGPashud = 1 #If not a hud, it's a screen.
+    Color = vec4(255,128,0,192) #Color of the egp
+    Metric = 0 #Do you believe healthcare is a fundamental right?
+
+###################Don't edit anything below this######################
+#Reds Multipurpose flight chip version history
+#V1 - repurposed heli chip, successful, failure due to quat drift- unreleasd
+#V2 - successful but complicated, hard to fly, too much egp, private beta release only
+#V3 - current version, simplified controls, less complexity, reduction in egp load, streamlining
+#V3.1a-d - modifications, updates, auptilot tweaks
+#V3.1e - sideslip modification
+#V3.1f - improved bombsight, more realistic, smoothing of output of ballistic computers or external nav beacons, added "output" for doors and special equipment
+#V3.2a - changed to the new cam controller that's clientside, addition of gyrocopter mode flight, more informative EGP, relacement of holo indicators, ported ammo system from my turret chip.
+#V3.2b - minor bug fixes, egp ammo type fixing, gun reload fixed, rotor and flight speed for gyrocopter fixed.
+#V3.2c - autopilot fix, added altitude hold, minor bug fixes, tweaking handling, add op count chat cmd so red can flog himself over his op counts like a good code-monkey.
+#V3.2d - altitude hold adjustment
+#V3.2e - altitude hold adjustment.  Again.  Adjustment of aircraft rotation during interpreted flight for vtols/planes.
+#V3.2f - refactoring and formatting.  May blacklist altitude hold due to incompatibilities with planes.  Still a wip
+#To do, in order of need:
+#Adjust altutde hold
+#Console screen feedback on autopilot state
+#Airspeed hold mode
+#WASD controls
+#Adjusted nonaccumulative first person flight
+
+
+#Personal notes on optimization - left here deliberately for users who are curious
+#So far a huuuuuge majority of hte ops are just ifhtens and other binary computation--no effect really on a server.
+#In tests having a few of them out didn't cause any issues on FRS, but, more testing needs to be done.
+#Even with heavy optimization it's stuck around 650 ops.  3.2c drops it from 750 to 650.  Woo.  3.2f drops 70 off the old 800-900, depending on base#.
+#I have no idea how to lower this further and maintain functionality.  Attempting interval(75) has failed, and almost every variable 
+#which is not essential to performance is now in the large segment of code in the center of the "active" operations.  This part runs at a lower tickrate from an internal timer system, to save CPU power.
+#
+#
+    Angforce = 240 #Angular correction force, default 225
+    Flyforce = Flyforce*0.9 #Reduced damping, compensating for it.
+    EGPon = 1 #Does it run EGP? Always should now.
+    Liftforce = Liftforce*1.25
+    Vectorflight = 0 #Vector flight is something I nicked off wowp lul, a bit more realistic feeling than standard flight.  CTRL cycles flight modes
+    Geardown = 1
+    XMod = StickMod:x()
+    YMod = abs(StickMod:y())
+    HoldCollective = 65 #Gets rewritten later, this is a default.
+    Cam["Parent",entity] = CamParent #Parents like this so it doesn't fuck up on duping.
+    Master = entity()#Self
+    Base = entity():isWeldedTo() #Base #1
+    Mass = Base:mass() + Base2:mass() + Base3:mass() + Base4:mass() + Base5:mass()
+    Storedcenter = Base:toLocal(((Base:massCenter()*Base:mass())+(Base2:massCenter()*Base2:mass())+(Base3:massCenter()*  Base3:mass())+(Base4:massCenter()*Base4:mass())+(Base5:massCenter()*Base5:mass()))/Mass) #entity():toLocal(((Base:massCenter() * Base:mass()) + (Seat:massCenter() * Seat:mass()))/Totmas)
+    BaseMass1 = Base:mass()
+    BaseMass2 = Base2:mass()
+    BaseMass3 = Base3:mass()
+    BaseMass4 = Base4:mass()
+    BaseMass5 = Base5:mass()
+    Base2Valid = BaseMass2 > 0
+    Base3Valid = BaseMass3 > 0
+    Base4Valid = BaseMass4 > 0
+    Base5Valid = BaseMass5 > 0
+    Inertia1 = Base:inertia()
+    Inertia2 = Base2:inertia()
+    Inertia3 = Base3:inertia()
+    Inertia4 = Base4:inertia()
+    Inertia5 = Base5:inertia()
+    Camparentinertia = ((shiftL(ang(CamParent:inertia()))) * 250)
+    Maneuverability = DegreesPerSecondTurn/20
+    Dampflapmodded = -((0.015)+(Flaps*0.01))
+    Up = entity():up()
+    Dampforce = Angforce/6
+    Forezoommod = (5+((100-Zoom)/2))*5
+    Liftsmoothercoll = Liftsmoother*100
+    Forebacksmootherthrot = Forebacksmoother*100
+    Lfm = (Liftforce/3)
+    Flapliftmod = 1+(Flaps*0.2)
+    Nogun = (Gun1:entity():mass() + Gun2:entity():mass()) ==0
+    Ammo = 1
+    runOnChat(1)
+    #Workin on guns
+    Yf = 0 #Planes cannot drift left or right at all
+    Index = 1
+####################### HOLO FLIGHT CONTROLS #######################
+        ThvT = entity():toLocal(Throtstick)
+        PedT = entity():toLocal(Pedals)
+        StkT = entity():toLocal(Stick)
+        ColT = entity():toLocal(Colstick)
+        if((Throtstick+Pedals+Stick)!=vec(0,0,0)) {Stickson = 1}
+    if(Stickson) {PED = entity():toWorld(PedT)
+        THV = entity():toWorld(ThvT)
+        STK = entity():toWorld(StkT)
+        CLV = entity():toWorld(ColT)
+        holoCreate(61,STK + (entity():up() * -1),vec(0.35,0.35,0.35),entity():toWorld(ang(0,270,  0)),vec(48,48,48))
+        holoMaterial(61,"models/XQM/rails/gumball_1")
+        holoModel(61,"hq_icosphere")
+        holoParent(61,entity())
+        holoCreate(62,STK + (entity():up() * 4),vec(0.2,0.2,0.6),entity():angles(),vec(48,48,48  ))
+        holoMaterial(62,"models/XQM/rails/gumball_1")
+        holoModel(62,"hq_cylinder")
+        holoParent(62,61)
+        holoCreate(63,STK + (entity():up() * 7.75)+(entity():forward() * 0.4),vec(0.225,0.225,0.29),entity():toWorld(ang(0,  90,90)),vec(48,48,48))    
+        holoMaterial(63,"models/XQM/rails/gumball_1")
+        holoModel(63,"hq_cylinder")
+        holoParent(63,61)
+        holoCreate(64,STK + (entity():up() * 7.75) + (entity():forward() * 1.7),vec(0.2,0.2,0.2),entity():toWorld(ang(0,90,90  )),vec(128,48,48))
+        holoMaterial(64,"models/XQM/rails/gumball_1")
+        holoModel(64,"hq_cylinder")
+        holoParent(64,61)
+        #Throttle stick
+        if(Typeofvehicle != 2) {
+        holoCreate(65,THV + (entity():up() * 1),vec(0.75,0.75,0.75),entity():toWorld(ang(90,0,-0)),vec(48,48,48))
+        holoMaterial(65,"models/XQM/rails/gumball_1")
+        holoModel(65,"models/props_wasteland/panel_leverHandle001a.mdl")
+        #holoParent(65,entity())
+        holoCreate(66,THV + (entity():up() * 1)+(entity():forward() * -1),vec(0.2,0.5,0.2),entity():toWorld(ang(0,0,0)),vec(48,48,48))
+        holoMaterial(66,"models/XQM/rails/gumball_1")
+        holoModel(66,"cube")
+        holoParent(65,66)
+        holoParent(66,entity())
+        holoAng(66,entity():toWorld(ang((-90)+(FB*60),0,0)))}
+        #Collective stick
+        if(Typeofvehicle != 4) {
+        holoCreate(71,CLV + (entity():up() * 5),vec(0.125,0.125,1),entity():toWorld(ang(90,0,0)  ),vec(48,48,48))
+        holoMaterial(71,"models/XQM/rails/gumball_1")
+        holoModel(71,"hq_cylinder")
+        holoParent(71,entity())
+        holoCreate(72,CLV + (entity():up() * 5)+(entity():forward() * 9),vec(0.225,0.225,0.5),entity():toWorld(ang(90,0,  0)),vec(48,48,48))
+        holoMaterial(72,"models/XQM/rails/gumball_1")
+        holoModel(72,"hq_cylinder")
+        holoParent(72,71)}
+        #Pedals
+        holoCreate(67,PED + (entity():right() * 4.2) + (entity():up() * 2.5) + (entity():forward() * 2),vec(0.2,0.35,0.5),entity():toWorld(ang(-10,0,90)),vec(48,48,48))
+        holoMaterial(67,"models/XQM/rails/gumball_1")
+        holoModel(67,"hq_cylinder")
+        holoParent(67,entity())
+        holoCreate(68,PED + (entity():right() * -4.2) + (entity():up() * 2.5) + (entity():forward() * 2),vec(0.2,0.35,0.5),entity():toWorld(ang(-10,0,90)),vec(48,48,48))
+        holoMaterial(68,"models/XQM/rails/gumball_1")
+        holoModel(68,"hq_cylinder")
+        holoParent(68,entity())
+        holoCreate(69,PED + (entity():right() * -2.25) + (entity():up() * 2.7) + (entity():forward() *5),vec(0.1,0.1,0.6),entity():toWorld(ang(0,90,90)  ),vec(48,48,48))
+        holoModel(69,"hq_cylinder")
+        holoMaterial(69,"models/XQM/rails/gumball_1")
+        holoParent(69,68)
+        holoCreate(70,PED + (entity():right() * 2.25) + (entity():up() * 2.7) + (entity():forward() *5),vec(0.1,0.1,0.6),entity():toWorld(ang(0,90,90)  ),vec(48,48,48))
+        holoModel(70,"hq_cylinder")
+        holoMaterial(70,"models/XQM/rails/gumball_1")
+        holoParent(70,67)
+        #Final preangling
+        holoAng(61,entity():toWorld((ang((-WS*45),0,(LR*45)))))
+holoPos(67,PED + (entity():right() * 4.2) + (entity():up() * (3.5+(AD*1.5))) + (entity():forward() * 2))
+holoPos(68,PED + (entity():right() * -4.2) + (entity():up() * (3.5-(AD*1.5))) + (entity():forward() * 2))
+holoScale(64,vec(0.2,0.2,0.2-((M1*0.1)*(Alt==0))))
+
+    }
+
+#######################Instruments#######################
+    Instrumentsable = (Instpanel != vec(0,0,0))
+    if(Instrumentsable) {
+     #you alter these
+        Yawmax = 36 #constrains yawing velocity to a rate 1 turn at 18, 36 for 2x a rate turn speed
+        Slipmax = 250 #constraints slipping velocity
+        Backcolor = vec(64,64,64) #Color of instrument panel backing
+        #you don't alter anything below this line.  If you do, I will cut you.
+        Array = entity():getConstraints()
+        rangerFilter(Array)
+        Lpos = vec(0,-4.1,0)
+        Rpos = vec(0,4.1,0)
+        Upos = vec(3.1,0,0.25)
+        Dpos = vec(-3.1,0,0.25)
+        Lp = entity():toWorld(Lpos)
+        Rp = entity():toWorld(Rpos)
+        Icotex = "phoenix_storms/gear_top"
+        Aitex = "phoenix_storms/fender_white"
+        holoCreate(30,Instpanel)
+        holoAlpha(30,0)
+        holoParent(30,entity())
+        Gaugemaster = holoEntity(30)
+        Geardown = 1
+       #right gauge
+        holoCreate(31,Gaugemaster:toWorld(Lpos),vec(0.8,0.8,2),Gaugemaster:angles(),(Backcolor))
+        holoModel(31,"hq_torus")
+        holoParent(31,Gaugemaster)
+        holoCreate(32,Gaugemaster:toWorld(Lpos-vec(0,0,-0.6)),vec(0.7,0.7,0.05),Gaugemaster:toWorld(ang(0,  0,0)),(vec(64,64,64)))#
+        holoMaterial(32,"models/XQM/rails/gumball01a")
+        holoModel(32,"hq_cylinder")
+        holoParent(32,Gaugemaster)
+        #left gauge
+        holoCreate(33,Gaugemaster:toWorld(Rpos),vec(0.8,0.8,2),Gaugemaster:angles(),(Backcolor))
+        holoModel(33,"hq_torus")
+        holoCreate(34,Gaugemaster:toWorld(Rpos+vec(0,0,1))  ,vec(0.7,0.7,0.05),Gaugemaster:toWorld(ang(0,0,0))  ,(vec(0,0,0)))
+        holoModel(34,"hq_cylinder")
+        holoParent(33,Gaugemaster)
+        holoParent(34,Gaugemaster)
+        #Dials on the T&B
+        holoCreate(35,Gaugemaster:toWorld(Rpos-vec(-1.5,0,-0.95)),vec(0.3,0.05,0.1),Gaugemaster:angles(),vec(  255,255,255))
+        holoMaterial(36,Icotex)
+        holoParent(36,35)
+        holoCreate(37,Gaugemaster:toWorld(Rpos+vec(3,-2,1.2)),vec(0.06,0.06,0.06),Gaugemaster:angles(),vec(255,255,255))
+        holoModel(37,"hq_icosphere")
+        holoMaterial(37,Icotex)
+        holoParent(37,Gaugemaster)
+        holoCreate(38,Gaugemaster:toWorld(Rpos+vec(3,2,1.2  )),vec(0.06,0.06,0.06),Gaugemaster:angles(),vec(255,255,255))
+        holoModel(38,"hq_icosphere")
+        holoMaterial(38,Icotex)
+        holoParent(38,Gaugemaster)
+        holoCreate(39,Gaugemaster:toWorld(Rpos+vec(-2,0,1.2)),vec(0.1,0.05,0.35),Gaugemaster:toWorld(ang(0,0,90)),vec(128,128,128))
+        holoModel(39,"hq_cylinder")
+        #holoMaterial(9,Icotex)
+        holoParent(39,Gaugemaster)
+        holoCreate(40,Gaugemaster:toWorld(Rpos+vec(-2,0,1.15)),vec(0.1,0.13,0.07),Gaugemaster:angles()  ,vec(255,255,255)) #sideslip dot
+        holoModel(40,"hq_icosphere")
+        holoMaterial(40,Icotex)
+        holoParent(40,Gaugemaster)
+        #attitude indicator
+        holoCreate(41,Gaugemaster:toWorld(Lpos+vec(0,0,0.075)),vec(0.41,0.41,0.05),Gaugemaster:toWorld(ang(90,0,0)),vec(255,255,255))
+        holoModel(41,"hq_cylinder")
+        holoMaterial(41,Icotex)
+        holoParent(41,Gaugemaster)
+        #top and bottom
+        holoCreate(42,Gaugemaster:toWorld(Lpos+vec(0.05,0,  0.07)),vec(0.4,0.4,0.4),Gaugemaster:toWorld(ang(0,  0,0)),vec(96,255,96))
+        holoModel(42,"hq_icosphere")
+        holoParent(42,41)
+        holoCreate(43,Gaugemaster:toWorld(Lpos+vec(-0.05,0,0.07)),vec(0.4,0.4,0.4),Gaugemaster:toWorld(ang(0,0,0)),vec(176,176,64))
+        holoModel(43,"hq_icosphere")
+        holoParent(43,41)
+        holoCreate(44,Gaugemaster:toWorld(Lpos+vec(3.3,0,0.8)),vec(0.06,0.06,0.09),Gaugemaster:toWorld(ang(-90,0,0)),vec(255,255,255))
+        holoModel(44,"hq_cone")
+        holoMaterial(44,Icotex)
+        holoParent(44,Gaugemaster)
+        holoCreate(47,Gaugemaster:toWorld(Lpos+vec(2.3,2.3  ,0.8)),vec(0.06,0.06,0.09),Gaugemaster:toWorld(ang(-90,45,0)),vec(64,64,64))
+        holoModel(47,"hq_cone")
+        holoMaterial(47,Icotex)
+        holoParent(47,Gaugemaster)
+        holoCreate(48,Gaugemaster:toWorld(Lpos+vec(2.3,-2.3,0.8)),vec(0.06,0.06,0.09),Gaugemaster:toWorld(  ang(-90,-45,0)),vec(64,64,64))
+        holoModel(48,"hq_cone")
+        holoMaterial(48,Icotex)
+        holoParent(48,Gaugemaster)
+        holoCreate(49,Gaugemaster:toWorld(Lpos+vec(0,0,-0.1)),vec(0.45,0.45,1.9),Gaugemaster:angles(),Backcolor)
+        holoModel(49,"hq_torus")
+        holoParent(49,Gaugemaster)
+        #Heading indicator        
+        holoCreate(50,Gaugemaster:toWorld(Dpos),vec(0.25,0.25,2),Gaugemaster:angles(),Backcolor)
+        holoModel(50,"hq_torus")
+        holoParent(50,Gaugemaster)
+        holoCreate(51,Gaugemaster:toWorld(Dpos+vec(0,0,0.15)),vec(0.22,0.22,0.2),Gaugemaster:toWorld(ang(0,0,0)),vec(64,64,64))
+        holoModel(51,"hq_cylinder")
+        holoParent(51,Gaugemaster)
+        holoCreate(52,Gaugemaster:toWorld(Dpos+vec(0,0,1.145)),vec(0.115,0.05,0.115),Gaugemaster:toWorld(ang(0,0,90)),vec(255,255,255))
+        holoModel(52,"prism")
+        holoMaterial(52,Icotex)
+        holoParent(52,Gaugemaster)
+        holoCreate(60,Gaugemaster:toWorld(Dpos+vec(1.1,0,1.15)),vec(0.05,0.05,0.05),Gaugemaster:toWorld(ang(  0,0,0)),vec(255,255,255))
+        holoMaterial(60,Icotex)
+        holoModel(60,"hq_icosphere")
+        holoParent(60,Gaugemaster)
+        #altimeter
+        holoCreate(54,Gaugemaster:toWorld(Upos),vec(0.25,0.25,2),Gaugemaster:angles(),Backcolor)
+        holoModel(54,"hq_torus")
+        holoParent(54,Gaugemaster)
+        holoCreate(55,Gaugemaster:toWorld(Upos+vec(0,0,0.2  )),vec(0.22,0.22,0.2),Gaugemaster:toWorld(ang(0,0,  0)),vec(64,64,64))
+        holoModel(55,"hq_cylinder")
+        holoParent(55,Gaugemaster)
+        #small hand
+        holoCreate(56,Gaugemaster:toWorld(Upos+vec(0,0,1.3  )),vec(0.05,0.05,0.05),Gaugemaster:toWorld(ang(0,0  ,0)),vec(255,255,255))
+        holoMaterial(56,Icotex)
+        holoModel(56,"hq_icosphere")
+        holoParent(56,Gaugemaster)
+        holoCreate(53,Gaugemaster:toWorld(Upos+vec(0.6,0,1.08)),vec(0.12,0.05,0.05),Gaugemaster:toWorld(ang(  0,0,45)),vec(255,255,255))
+        holoMaterial(53,Icotex)
+        holoParent(53,56)
+        #large hand
+        holoCreate(58,Gaugemaster:toWorld(Upos+vec(0,0,1.3  )),vec(0.05,0.05,0.05),Gaugemaster:toWorld(ang(0,0  ,0)),vec(255,255,255))
+        holoMaterial(58,Icotex)
+        holoModel(58,"hq_icosphere")
+        holoParent(58,Gaugemaster)
+        holoCreate(57,Gaugemaster:toWorld(Upos+vec(0.5,0,1.125)),vec(0.08,0.05,0.05),Gaugemaster:toWorld(ang(0,0,45)),vec(255,255,255))
+        holoMaterial(57,Icotex)
+        holoParent(57,58)
+        #blips for every 10000 units
+        holoCreate(45,Gaugemaster:toWorld(Upos+vec(-0.95,0.7,1.35)),vec(0.02,0.02,0.02),Gaugemaster:angles(),vec(255,255,255))
+        holoMaterial(45,Icotex)
+        holoModel(45,"hq_icosphere")
+        holoCreate(46,Gaugemaster:toWorld(Upos+vec(-0.37,1.12,1.35)),vec(0.02,0.02,0.02),Gaugemaster:angles(),vec(255,255,255))
+        holoMaterial(46,Icotex)
+        holoModel(46,"hq_icosphere")
+        holoParent(45,Gaugemaster)
+        holoParent(46,Gaugemaster)
+        holoCreate(59,Gaugemaster:toWorld(Upos+vec(0.36,1.12,1.35)),vec(0.02,0.02,0.02),Gaugemaster:angles()  ,vec(255,255,255))
+        holoMaterial(59,Icotex)
+        holoModel(59,"hq_icosphere")
+        holoParent(59,Gaugemaster)
+        ####
+        holoAng(30,entity():toWorld(ang(Tiltinstrumentpanel-90,0,0)))
+    }
+     
+#######################Rotors#######################
+    if(Rotor1 == vec(0,0,0)) {Rotors = 0} else {Rotors = 1} #Does it have holo rotors?  It just goes off the assumption of "if I do, you'd give me a vector for it!"
+    if(Rotors)
+            {#Modes 1 and 2 have a main conventinoal rotor
+                if(inrange(Rotorarrangement,1,3)) {
+                holoCreate(10,Rotor1,vec(Rotorwidth*0.75,Rotorwidth*0.75,2),entity():angles(),vec(64,64,64))
+                holoModel(10,"hq_cylinder")
+                holoParent(10,entity())
+                if(Rotorblades ==1) {holoCreate(2,Rotor1+(Up * 10) + entity():forward()*(Rotorlength*3),vec(Rotorlength/2,Rotorwidth,0.1),entity():angles(),vec(64,64,64))  }
+                if(Rotorblades ==2) {holoCreate(2,Rotor1+(Up * 10),vec(Rotorlength,Rotorwidth,0.1),entity():angles(),vec(64,64,64))}
+                if(Rotorblades ==3) {holoCreate(2,Rotor1+(Up * 10) + entity():forward()*(Rotorlength*3),vec(Rotorlength/2,Rotorwidth,0.1),entity():angles(),vec(64,64,64))
+                    holoCreate(3,Rotor1+(Up * 10) + entity():right()*(Rotorlength*2.6) + (entity():forward() *(Rotorlength*-1.5)),vec(Rotorlength/2,Rotorwidth,0.1),entity():toWorld(ang(0,240,0)),vec(64,64,64))
+                    holoCreate(4,Rotor1+(Up * 10) + entity():right()*(Rotorlength*-2.6) + (entity():forward() *(Rotorlength*-1.5)),vec(Rotorlength/2,Rotorwidth,0.1),entity():toWorld(ang(0,120,0)),vec(64,64,64))}
+                if(Rotorblades ==4) {holoCreate(2,Rotor1+(Up * 10),vec(Rotorlength,Rotorwidth,0.1),entity():angles(),vec(64,64,64))
+                    holoCreate(3,Rotor1+(Up * 10),vec(Rotorwidth,Rotorlength,0.1),entity():angles(),vec(64,64,64))}
+                holoCreate(5,Rotor1+(Up * 10),vec(Rotorlength,Rotorlength,0.05),entity():angles(),vec(64,64,64))
+                holoModel(5,"hq_cylinder")
+                holoAlpha(5,0)
+                holoParent(2,10)
+                holoParent(3,10)
+                holoParent(4,10)
+                holoParent(5,10)}
+                #Mode 2 has second rotor, so we put that in
+                if(Rotorarrangement !=1) {
+                holoCreate(6,Rotor2,vec(Rotorwidth*0.75,Rotorwidth  *0.75,2),entity():angles(),vec(64,64,64))
+                holoModel(6,"hq_cylinder")
+                holoParent(6,entity())
+                if(Rotorblades ==1) {holoCreate(7,Rotor2+(Up * 10) + entity():forward()*(Rotorlength*3),vec(Rotorlength/2,Rotorwidth,0.1),entity():angles(),vec(64,64,64))  }
+                if(Rotorblades ==2) {holoCreate(7,Rotor2+(Up * 10),vec(Rotorlength,Rotorwidth,0.1),entity():angles(),vec(64,64,64))}
+                if(Rotorblades ==3) {holoCreate(7,Rotor2+(Up * 10) + entity():forward()*(Rotorlength*3),vec(Rotorlength/2,Rotorwidth,0.1),entity():angles(),vec(64,64,64))
+                    holoCreate(8,Rotor2+(Up * 10) + entity():right()*(Rotorlength*2.6) + (entity():forward() *(Rotorlength*-1.5)),vec(Rotorlength/2,Rotorwidth,0.1),entity():toWorld(ang(0,240,0)),vec(64,64,64))
+                    holoCreate(9,Rotor2+(Up * 10) + entity():right()*(Rotorlength*-2.6) + (entity():forward() *(Rotorlength*-1.5)),vec(Rotorlength/2,Rotorwidth,0.1),entity():toWorld(ang(0,120,0)),vec(64,64,64))}
+                if(Rotorblades ==4) {holoCreate(7,Rotor2+(Up * 10),vec(Rotorlength,Rotorwidth,0.1),entity():angles(),vec(64,64,64))
+                    holoCreate(8,Rotor2+(Up * 10),vec(Rotorwidth,Rotorlength,0.1),entity():angles(),vec(64,64,64))}
+                holoCreate(11,Rotor2+(Up * 10),vec(Rotorlength,Rotorlength,0.05),entity():angles(),vec(64,64,64))
+                holoModel(11,"hq_cylinder")
+                holoAlpha(11,0)
+                holoParent(7,6)
+                holoParent(8,6)
+                holoParent(9,6)
+                holoParent(11,6)}
+                if((Rotorarrangement ==1) & (Rotor2 != vec(0,0,0))) {
+                holoCreate(6,Rotor2,vec(TailRotorwidth*0.75,TailRotorwidth*0.75,1),entity():angles(),vec(64,64,64))
+                holoModel(6,"hq_cylinder")
+                holoParent(6,entity())
+                if(TailRotorblades ==1) {holoCreate(7,Rotor2+(Up * 5) + entity():forward()*(TailRotorlength*3),vec(TailRotorlength/2,TailRotorwidth,0.05),entity():angles(),vec(64,64  ,64))}
+                if(TailRotorblades ==2) {holoCreate(7,Rotor2+(Up * 5),vec(TailRotorlength,TailRotorwidth,0.05),entity():angles(),vec(64,64,64))}
+                if(TailRotorblades ==3) {holoCreate(7,Rotor2+(Up * 5) + entity():forward()*(TailRotorlength*3),vec(TailRotorlength/2,TailRotorwidth,0.05),entity():angles(),vec(64,64  ,64))
+                    holoCreate(8,Rotor2+(Up * 5) + entity():right()*(TailRotorlength*2.6) + (entity():forward() *(TailRotorlength*-1.5)),vec(TailRotorlength/2,TailRotorwidth,0.05),entity():toWorld(ang(0,240,  0)),vec(64,64,64))
+                    holoCreate(9,Rotor2+(Up * 5) + entity():right()*(TailRotorlength*-2.6) + (entity():forward() *(TailRotorlength*-1.5)),vec(TailRotorlength/2,TailRotorwidth,0.05),entity():toWorld(ang(0,120,  0)),vec(64,64,64))}
+                if(TailRotorblades ==4) {holoCreate(7,Rotor2+(Up * 5),vec(TailRotorlength,TailRotorwidth,0.05),entity():angles(),vec(64,64,64))
+                    holoCreate(8,Rotor2+(Up * 5),vec(TailRotorwidth,TailRotorlength,0.05),entity():angles(),vec(64,64,64))}
+                holoCreate(11,Rotor2+(Up * 5),vec(TailRotorlength,TailRotorlength,0.05),entity():angles(),vec(64,64,64))
+                holoModel(11,"hq_cylinder")
+                holoAlpha(11,0)
+                holoParent(7,6)
+                holoParent(8,6)
+                holoParent(9,6)
+                holoParent(11,6)
+                if(TailSide ==1) {TsA = 270} else {TsA = 90}
+holoAng(6,entity():toWorld(ang(0,0,TsA)))}
+            else
+        {NOTAR = 1}#notail!
+            if(Rotorarrangement ==3) {
+            if(Rotorblades ==1) {Twist = 180}
+            if(Rotorblades ==4) {Twist = 45}
+            if(Rotorblades ==3) {Twist = 45}
+            if(Rotorblades ==2) {Twist = 90} 
+            holoCreate(21,Rotor1,vec(Rotorwidth,Rotorwidth,Rotorwidth),entity():toWorld(ang(0,0,-Synchrotilt)),vec(64,64,64))
+             holoCreate(22,Rotor2,vec(Rotorwidth,Rotorwidth,Rotorwidth),entity():toWorld(ang(0,0,Synchrotilt)),vec(64,64,64))
+            holoAng(6,holoEntity(21):toWorld(ang(0,0,0)))
+            holoPos(6,Rotor1)
+            holoAng(10,holoEntity(22):toWorld(ang(0,(45),0)))
+            holoPos(10,Rotor2)
+            holoModel(21,"hq_icosphere")
+            holoModel(22,"hq_icosphere")
+            holoParent(21,entity())
+            holoParent(22,entity())
+            holoParent(6,21)
+            holoParent(10,22)
+            holoAng(6,holoEntity(21):toWorld(ang(0,0,0)))
+            holoAng(10,holoEntity(22):toWorld(ang(0,Twist,0)))  }
+if(TailSide ==1) {TsA = 270} else {TsA = 90}
+holoAng(6,entity():toWorld(ang(0,0,TsA)))}
+            else
+        {NOTAR = 1}#notail
+            if(Rotorarrangement ==3) {
+            if(Rotorblades ==1) {Twist = 180}
+            if(Rotorblades ==4) {Twist = 45}
+            if(Rotorblades ==3) {Twist = 45}
+            if(Rotorblades ==2) {Twist = 90} 
+            holoCreate(21,Rotor1,vec(Rotorwidth,Rotorwidth,Rotorwidth),entity():toWorld(ang(0,0,-Synchrotilt)),vec(64,64,64))
+             holoCreate(22,Rotor2,vec(Rotorwidth,Rotorwidth,Rotorwidth),entity():toWorld(ang(0,0,Synchrotilt)),vec(64,64,64))
+            holoAng(6,holoEntity(21):toWorld(ang(0,0,0)))
+            holoPos(6,Rotor1)
+            holoAng(10,holoEntity(22):toWorld(ang(0,(45),0)))
+            holoPos(10,Rotor2)
+            holoModel(21,"hq_icosphere")
+            holoModel(22,"hq_icosphere")
+            holoParent(21,entity())
+            holoParent(22,entity())
+            holoParent(6,21)
+            holoParent(10,22)
+            holoAng(6,holoEntity(21):toWorld(ang(0,0,0)))
+            holoAng(10,holoEntity(22):toWorld(ang(0,Twist,0)))  }
+            
+    if(inrange(Rotorarrangement,1,2)) {holoAng(10,entity():toWorld(ang(0,H1,0)))}
+        if(Rotorarrangement==2) {holoAng(6,entity():toWorld(ang(0,-H1,0)))}
+        elseif(NOTAR ==0) {holoAng(6,entity():toWorld(ang(-H1,0,TsA)))}
+        if(Rotorarrangement==3) {holoAng(6,holoEntity(21):toWorld(ang(0,-H1,0)))
+            holoAng(10,holoEntity(22):toWorld(ang(0,H1+Twist,0  )))}
+        #Alpha control
+            SSb = UD*100
+            holoAlpha(5,SSb)
+            SSa = 255-(UD*55)
+            holoAlpha(2,SSa)
+            holoAlpha(3,SSa)
+            holoAlpha(4,SSa)
+            holoAlpha(7,SSa)
+            holoAlpha(8,SSa)
+            holoAlpha(9,SSa)
+            holoAlpha(11,SSb)
+    Airshipmod = 0.125 #Modifier to slow down airships
+    holoCreate(99,entity():pos())#This holo is a entity() for angling
+    holoAng(99,entity():angles())   
+    holoAlpha(99,0)
+    holoScale(99,vec(1,2,2))
+    Holo = holoEntity(99)
+    rangerPersist(1)
+    Self = entity():getConstraints()
+    rangerFilter(Self)
+    rangerHitWater(1)
+    }
+##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  #########################################
+#############################################OK NOW WE RUN THIS!!!###########################################  ##################################################  ##################################################  ##################################################  ##################################################  ###########################
+##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  #########################################
+Active = clamp(PodActive+ActiveSwitch,0,1)
+
+if(dupefinished()) {reset()}
+if(chatClk(Pilot) & PodActive)
+    {####CHAT######
+        Chat = lastSaid():lower()
+        if(changed(Chat) & lastSpoke() == Pilot) 
+            {
+                Split  = Chat:sub(1,Chat:length()):explode(" ")
+                Ch1 = Split:string(1)
+                Ch2 = Split:string(2)
+                Ch3 = Split:string(3)
+                Ch4 = Split:string(4)
+                if(Ch1 == "apon")
+                    {
+                        Autopilot = 1
+                        Seat:hintDriver("Autopilot Engaged",7)
+                        hideChat(1)
+                    }
+                elseif(Ch1 == "apoff")
+                    {
+                        Autopilot = 0
+                        Seat:hintDriver("Autopilot Disengaged",7)
+                        hideChat(1)
+                    }
+                elseif(Ch1 == "hold")
+                    {
+                        hideChat(1)
+                        HoldCollective = Collective
+                        Althold = clamp(Ch2:toNumber(),0,1)
+                        if(Ch2:toNumber() ==2) {Hug = 1} else {Hug = 0}
+                        Ztohold = entity():pos():z()
+                        if(abs(Ch3:toNumber() > 0))
+                            {
+                                Zed = Ch3:toNumber()
+                            }
+                        else
+                            {
+                                Tr = rangerOffset(99999,Center,vec(0,0,-1))
+                                Zed = Tr:position():z() - Center:z()
+                            }
+                    }
+                elseif(Ch1 == "opcount")
+                    {
+                        hideChat(1)
+                        Seat:hintDriver("Running at "+ops()+" ops!",3)
+                    }
+                elseif(Ch1 == "ap")
+                    {
+                        hideChat(1)
+                        if(Ch2 == "clr")
+                            {
+                                Dix = 0
+                                while(Dix<99)
+                                    {
+                                        Array:setVector(Dix,vec(0,0,0))
+                                        Dix = Dix+1
+                                    }
+                                Index = 1
+                                Seat:hintDriver("Points cleared!",3)
+                            }
+                        if(Vectorflight ==2)
+                            {
+                                TR = rangerOffset(999999999999,Seat:driver():shootPos(),Seat:driver():eye())
+                                Postogo = TR:position()
+                            }
+                        else
+                            {
+                                TR = rangerOffset(999999999999,Cam:vector("CamPos"),(Cam:angle("CamAng"):forward()))
+                                Postogo = TR:position()
+                            }
+                        if(Ch2 == "cur") {
+                            hideChat(1)
+                            Array:setVector(Ch4:toNumber(),Postogo:setZ(entity():pos():z() + Ch3:toNumber()))
+                            Seat:hintDriver("Point "+ (Ch4:toNumber())+" set!",3)}
+                        elseif(Ch2 == "set") {
+                            hideChat(1)
+                            Rtra = rangerOffset(999999,Postogo:setZ(entity():pos():z()),vec(0,0,-1))
+                            Array:setVector(Ch4:toNumber(),Postogo:setZ(Rtra:position():z() + Ch3:toNumber()))
+                            Seat:hintDriver("Point "+ (Ch4:toNumber())+" set!",3)}
+                        elseif(Ch2 == "aim") {
+                            hideChat(1)
+                            Rtra = rangerOffset(Ch3:toNumber(),Cam:vector("CamPos"),Cam:angle("CamAng"):forward())
+                            Array:setVector(Ch4:toNumber(),Rtra:position())
+                            Seat:hintDriver("Point "+ (Ch4:toNumber())+" set!",3)}
+                        elseif(Ch2 == "loop")
+                            {
+                            if(Ch4 == "end")
+                                {
+                                    Loopstart = 0
+                                    Loopend = 0
+                                    Seat:hintDriver("Loop discontinued!",3)
+                                    Index = Loopend+1
+                                }
+                            else
+                                {
+                                    Loopstart = Ch3:toNumber()
+                                    Loopend = Ch4:toNumber()
+                                    if(Loopstart != Loopend)
+                                        {
+                                            Seat:hintDriver("Looping "+Loopstart+" to "+Loopend+"!",7)
+                                        }
+                                    else
+                                        {
+                                            Seat:hintDriver("Holding at "+Loopstart+"!",7)
+                                        }
+                                }
+                            }
+                    }
+            }###########END CHAT
+    }   
+ 
+PodActive = Pod:number("Active")
+##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  #########################################
+#######THIS RUNS CONSTANTLY#######    
+if(changed(Active) & Active)
+    {
+        Index = 1
+        Zoom = 90
+        FLYPOS = entity():pos() + (entity():forward() * 9999999999999)
+        holoAng(99,entity():angles())
+        Seat = Pod:entity("Entity")
+        Seat:soundPlay(1,0,CockpitSound)
+        Base:soundPlay(2,0,EngineSound)
+        Base:soundPlay(3,0,PropSound)
+        soundPitch(2,80)
+        Freelook = 1
+        Flaps = 0
+    }
+if(Active & (!inputClk()))
+    {
+        interval(50)
+
+        ###########STARTUPS###########
+        if(changed(PodActive) & PodActive)
+            {
+                #Idk why i moved this here
+                ScX = egpScrW(Pilot)
+                ScY = egpScrH(Pilot)
+                Fontsize = ScX*0.025
+                Freelook = 1
+                Cam["Activated",number] = PodActive
+                Pilot = Seat:driver()
+                Viewmode = 2
+                MouseStick = 1
+                Cockpitpos = (CamParent:massCenter()) + (CamParent:up() * 40)
+                Cam["Position",vector] = Cockpitpos
+                EGP:egpClear()
+                Seat:hintDriver("This aircraft is flown by mouse, R+ALT unlocks controls",7)
+                if(Typeofvehicle!=2) {Seat:hintDriver("W/S is throttle",7)}
+                if(inrange(Typeofvehicle,2,3)+(Typeofvehicle ==5)) {Seat:hintDriver("Space/Shift is collective",7)}
+                elseif(Typeofvehicle ==1) {Seat:hintDriver("Space/Shift is lift",7)}
+                Seat:hintDriver("A/D or ALT+M1/M2 is roll, LCTRL changes stick modes",7)
+                #ALL EGP
+                ScX = egpScrW(Pilot)
+                ScY = egpScrH(Pilot)
+                Fontsize = ScX*0.025
+                EGP:egpRoundedBox(4,vec2(ScX*0.1,ScY*0.5),vec2(ScX*0.01,ScY*0.75))#Left bar
+                EGP:egpRoundedBox(5,vec2(ScX*0.9,ScY*0.5),vec2(ScX*0.01,ScY*0.75))#Right bar
+                EGP:egpRoundedBox(12,vec2(ScX*0.5,ScY*0.075),vec2(ScX*0.7,ScX*0.01))#Top bar
+                EGP:egpCircleOutline(6,vec2(ScX,ScY) * (vec2(0.5,0.9)),vec2(ScX,ScX) * (vec2(0.04,0.04)))
+                EGP:egpRoundedBox(13,vec2(ScX*0.1,ScY*0.5)+vec2(ScX*0.012,0),vec2(ScY*0.02,ScX*0.005))
+                EGP:egpRoundedBox(14,vec2(ScX*0.9,ScY*0.5)+vec2(ScX*-0.012,0),vec2(ScY*0.02,ScX*0.005)) #
+                EGP:egpRoundedBox(15,vec2(ScX*0.5,ScY*0.075)+vec2(0,ScY*0.02),vec2(ScX*0.005,ScY*0.02)) #Lateral button for sideslip
+                EGP:egpText(7,"N",(vec2(ScX,ScY) * vec2(0.5,0.89)) - vec2(Fontsize*0.15,ScX*0.05))
+                EGP:egpBox(8,vec2(0,ScY*-0.04),vec2(ScX*0.001,ScX*0.035))
+                EGP:egpParent(8,6)
+                if(!Metric) {EGP:egpText(9,"MPH",vec2(ScX*0.88,ScY*0.015)) } else {EGP:egpText(9,"KPH",vec2(ScX*0.88,ScY*0.015)) }
+                EGP:egpFont(9,"Lucida Console",Fontsize*0.65)
+                EGP:egpFont(7,"Lucida Console",Fontsize*0.75)
+                EGP:egpText(10,"ALT",vec2(ScX*0.85,ScY*0.9))
+                EGP:egpFont(10,"Lucida Console",Fontsize*0.65)
+                EGP:egpFont(11,"Lucida Console",Fontsize*0.65)
+                Topbarcent = vec2(ScX*0.5,ScY*0.075)+vec2(0,ScY*0.02)
+                Leftbarcent = vec2(ScX*0.1,ScY*0.5)+vec2(ScX*0.012,0)
+                Rightbarcent = vec2(ScX*0.9,ScY*0.5)+vec2(ScX*-0.012,0)
+                if(Typeofvehicle ==2)
+                    {
+                        EGP:egpText(11,"COL: 000",vec2(ScX*0.05,ScY*0.015))
+                    }
+                elseif(inrange(Typeofvehicle,4,5))
+                    {
+                        EGP:egpText(11,"THR: 000",vec2(ScX*0.05,ScY*0.015))
+                    }
+                else
+                    {
+                        EGP:egpText(11,"COL: 000 THR: 000",vec2(ScX*0.05,ScY*0.015))
+                    }
+                
+                if(!Nogun) 
+                    {
+                        Seat:hintDriver("M1/2 fires guns, 1-5 keys change ammo",7)
+                        EGP:egp3DTracker(1,vec(0,0,0))
+                        EGP:egpCircleOutline(3,vec2(0,0),vec2(Fontsize,Fontsize)/7)
+                        EGP:egpParent(3,1)
+                            
+                        if(Gun1:entity():isValid())
+                            {
+                                EGP:egpText(16,"",vec2(ScX,ScY) * (vec2(0.375,0.8)))
+                                EGP:egpFont(16,"Chatfont",Fontsize*0.6)
+                                EGP:egpSetText(16,Gun1:number("AmmoCount")+"/"+Gun1:number("Shots Left")+" ["+Gun1:entity("Entity"):acfAmmoType()+"] "+Ammo)
+                                EGP:egpColor(16,Color)
+                            }
+                        if(Gun2:entity():isValid())
+                            {
+                                EGP:egpText(17,"",vec2(ScX,ScY) * (vec2(0.575,0.8)))
+                                EGP:egpFont(17,"Chatfont",Fontsize*0.6)
+                                EGP:egpSetText(17,Gun2:number("AmmoCount")+"/"+Gun2:number("Shots Left")+" ["+Gun2:entity("Entity"):acfAmmoType()+"]")
+                                EGP:egpColor(17,Color)
+                            }
+                    }
+                K = 0
+                while(K<49) {EGP:egpColor(K,Color)
+                K = K+1}
+                EGP:egpAlpha(4,Color:w()*0.5)
+                EGP:egpAlpha(5,Color:w()*0.5)
+                EGP:egpAlpha(12,Color:w()*0.5)
+            }
+       ########################################################END STARTUP###########################################  ##################################################  ############################v
+    ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##################################################  ##
+    
+    #Constants - we do not selfindex chip, because to reference an entity costs more ops than to selfaware entity()
+    Up = entity():up()
+    Forward = entity():forward()
+    Right = entity():right()
+    Cycler = (Cycler+0.25) * (Cycler < 1.75) #internal clock to control EGP and secondary functions
+    Center = Base:toWorld(Storedcenter)
+    holoPos(99,Center)
+    LVel = entity():velL()
+    
+    if(PodActive)
+        {                
+            #Here we handle basic user inputs
+            W = Pod:number("W")
+            A = Pod:number("A")
+            S = Pod:number("S")
+            D = Pod:number("D")
+            M1 = Pod:number("Mouse1")
+            M2 = Pod:number("Mouse2")
+            Space = Pod:number("Space")
+            Shift = Pod:number("Shift")
+            Alt = Pod:number("Alt")
+            Light = Pod:number("Light")
+            R = Pod:number("R")
+            #Firing your guns?
+            if(!Nogun)
+                {
+                    Fire1 = (M1*((Alt+R)==0))
+                    Fire2 = (M2*((Alt+R)==0))
+                }
+
+            #EGP which updates quickly, but, only if changed.
+            if(changed(FB) + changed(UD))
+                {
+                    if(Typeofvehicle ==2) {EGP:egpSetText(11,"COL:"+floor(Collective))}
+                    elseif(Typeofvehicle ==4) {EGP:egpSetText(11,"THR:"+floor(Throttle))}
+                    else{EGP:egpSetText(11,"COL:"+floor(Collective)+" THR:"+floor(Throttle))}
+                    if(inrange(Typeofvehicle,1,3)+(Typeofvehicle ==5)) {EGP:egpPos(13,Leftbarcent + vec2(0,ScY*(((UD*2)-1) * -0.375)))} #Left bar is collective if applicable else throttle
+                    else {EGP:egpPos(13,Leftbarcent + vec2(0,ScY*(((FB*2)-1) * -0.375)))}
+                }
+            #This is where I'm running nonessential items, which run every 4 executions.
+            if((floor(Cycler) == Cycler))
+                {
+                    #Freelook
+                    Freelook = (Freelook + ((Alt*(changed(Alt)))*R))
+                    if(changed(Freelook)) {if(Freelook ==1) {Seat:hintDriver("Controls locked",3)} elseif(Freelook ==0) {Seat:hintDriver("Controls unlocked",3)} else{Freelook = 0}}  
+                    
+                    #Flightmode 
+                    LC = Pilot:keyPressed("LCONTROL")
+                    if(LC)
+                        {
+                            Vectorflight = Vectorflight + (LC*changed(LC))
+                            if(changed(Vectorflight))
+                                {
+                                    if((Vectorflight < 2)) {Cam["Activated",number] = 1}
+                                    elseif(Vectorflight ==2) {Cam["Activated",number] = 0} #Turns off cam for flight mode 3
+                                    else {Vectorflight = 0}
+                                    Cockpitpos = (CamParent:massCenter()) + (CamParent:up() * 100)
+                                    Cam["Position",vector] = Cockpitpos
+                                    if(Vectorflight < 3) {Seat:hintDriver("Flight mode "+Vectorflight,3)}
+                                }
+                        }
+                    
+                    #Flaps
+                    if(Flapsavailable)
+                        {
+                            Flaps = (Flaps + ((Space*(changed(Space)))*(Alt))) * (Flaps < 2)
+                            if(changed(Flaps))
+                                {
+                                    Dampflapmodded = -((0.015)+(Flaps*0.01))
+                                    Flapliftmod = 1+(Flaps*0.2)
+                                    if(Flaps ==1)
+                                        {
+                                            Seat:hintDriver("Flaps down",5)
+                                            soundPlay(4,0,"acf_extra/vehiclefx/misc/windexternal.wav")
+                                        }
+                                    elseif(Flaps ==0) 
+                                        {
+                                            Seat:hintDriver("Flaps up",5)
+                                            soundStop(4)
+                                        }
+                                } 
+                        }
+                    
+                    #Altitude
+                    Tracer = rangerOffset(99999,Center,vec(0,0,-1))
+                    Altitude = abs(entity():massCenter():z() - Tracer:position():z())
+                    
+                    #Landing Gear
+                    Geardown = Altitude<1000
+                    Gearbrakes = (Throttle+Collective) ==0
+                    
+                    #Zoom
+                    Zoom = clamp(Zoom+((M1-M2)*(R*-20)),0,100)
+                    if(changed(Zoom)) {Cam["FOV",number] = Zoom}
+                    
+                    #EGP nonessentials
+                    EGP:egpAngle(6,angnorm(entity():angles():yaw()-90))
+                    if(!Metric) {EGP:egpSetText(9,""+round(toUnit("mi/h",entity():vel():length()*1.25))+"MPH") } else {EGP:egpSetText(9,""+round(toUnit("km/h",entity():vel():length()*1.25))+"KPH") }
+                    EGP:egpSetText(10,"ALT:"+round(Altitude))
+                    EGP:egpPos(15,Topbarcent + vec2(ScX*((clamp(entity():velL():y(),-500,500)/500) * -0.35),0)) #Top bar is sideslip
+                    EGP:egpPos(14,Rightbarcent + vec2(0,ScY*((clamp(entity():vel():z(),-250,250)/250) * -0.375))) #Right bar is rate of ascent
+                    if(!Nogun)
+                        {
+                            if(Poshit != vec(0,0,0)) {PIP = Poshit} else {PIP = entity():pos() + (entity():forward() * 999999999)}
+                            EGP:egpPos(1,PIP+($PIP/2))
+                                #Ammo selection
+                            if(Pilot:keyPressed("1")) {if(Ammo ==1) {Gun1:entity("Entity"):acfUnload()} else {Ammo = 1
+                                Ammo1 = 1
+                                Ammo2 = 0
+                                Ammo3 = 0
+                                Ammo4 = 0
+                                Ammo5 = 0}}
+                            elseif(Pilot:keyPressed("2")) {if(Ammo ==2) {Gun1:entity("Entity"):acfUnload()} else {Ammo = 2
+                                Ammo1 = 0
+                                Ammo2 = 1
+                                Ammo3 = 0
+                                Ammo4 = 0
+                                Ammo5 = 0}}
+                            elseif(Pilot:keyPressed("3")) {if(Ammo ==3) {Gun1:entity("Entity"):acfUnload()} else {Ammo = 3
+                                Ammo1 = 0
+                                Ammo2 = 0
+                                Ammo3 = 1
+                                Ammo4 = 0
+                                Ammo5 = 0}}
+                            elseif(Pilot:keyPressed("4")) {if(Ammo ==4) {Gun1:entity("Entity"):acfUnload()} else {Ammo = 4
+                                Ammo1 = 0
+                                Ammo2 = 0
+                                Ammo3 = 0
+                                Ammo4 = 1
+                                Ammo5 = 0}}
+                            elseif(Pilot:keyPressed("5")) {if(Ammo ==5) {Gun1:entity("Entity"):acfUnload()} else {Ammo = 5
+                                Ammo1 = 0
+                                Ammo2 = 0
+                                Ammo3 = 0
+                                Ammo4 = 0
+                                Ammo5 = 1}}
+                            EGP:egpSetText(16,Gun1:number("AmmoCount")+"/"+Gun1:number("Shots Left")+" ["+Gun1:entity("Entity"):acfAmmoType()+"] "+Ammo)
+                            if(Gun2:entity():isValid()) {EGP:egpSetText(17,Gun2:number("AmmoCount")+"/"+Gun2:number("Shots Left")+" ["+Gun2:entity("Entity"):acfAmmoType()+"]")}
+                       }
+                    
+                    #FLIR
+                    FLIRtoggle = R*Light
+                    if(changed(FLIRtoggle))
+                        {
+                            FLIR = (FLIR + ((FLIRtoggle*(changed(FLIRtoggle))))) * (FLIR < 2)
+                            Cam["FLIR",number] = FLIR
+                        }
+                        
+                    #Instruments
+                    if(Instrumentsable)
+                        {
+                            Ang = entity():angles()
+                            holoAng(41,Gaugemaster:toWorld(ang(angnorm(90+Ang:pitch()),0,-Ang:roll())))
+                            holoAng(35,Gaugemaster:toWorld(ang(0,clamp((entity():angVel():yaw()/Yawmax),-1,1) * 34,0)))
+                            holoPos(40,Gaugemaster:toWorld(Rpos+vec(-2,clamp((entity():velL():y()/Slipmax),-1,1)*1.25,1.15)))
+                            holoAng(52,Gaugemaster:toWorld(ang(0,angnorm(Ang:yaw()),90)))
+                            holoAng(56,Gaugemaster:toWorld(ang(0,-angnorm(((Altitude/1000)*360)+180),0)))
+                            holoAng(58,Gaugemaster:toWorld(ang(0,-angnorm(((Altitude/100000)*360)+180),0)))
+                        }
+                    
+                    #Holo control sticks and shit
+                    if(Stickson)
+                        {
+                            PED = entity():toWorld(PedT)
+                            holoAng(61,entity():toWorld((ang((-WS*45),0,(LR*45)))))
+                            holoPos(67,PED + (entity():right() * 4.2) + (entity():up() * (3.5+(AD*1.5))) + (entity():forward() * 2))
+                            holoPos(68,PED + (entity():right() * -4.2) + (entity():up() * (3.5-(AD*1.5))) + (entity():forward() * 2))
+                            holoScale(64,vec(0.2,0.2,0.2-((M1*0.1)*(Alt==0))))
+                        }
+                }##############################End cycler#########################
+    }####END PILOT ONLY ACTIVE
+            
+        #Autopilot
+        if(!Autopilot)
+            {
+                if(!Freelook)
+                    {
+                        if(Vectorflight ==2)
+                            {
+                                TR = rangerOffset(999999999999,Seat:driver():shootPos(),Seat:driver():eye())
+                                Aimpos = TR:position()
+                            }
+                        else
+                            {
+                                TR = rangerOffset(999999999999,Cam:vector("CamPos"),(Cam:angle("CamAng"):forward()))
+                                Aimpos = TR:position()
+                            }
+                if((!Althold))
+                    {
+                        if(Vectorflight !=4) {FLYPOS = Aimpos} else {FLYPOS = (entity():toWorld(ang(Pod:number("W")-Pod:number("S"),(Pod:number("A")+Pod:number("D"))*!R,Pod:number("A")+Pod:number("D")*R)):forward() * 9999999999)}}#Note: flight mode 4 doesn't work yet
+                    }
+                
+                #Altitude holding
+                else
+                    {
+                        if(Freelook) {Aimpos = Center + (Forward:setZ(0)*999999999999999999999)}
+                        if(Hug)#Ground based altitude hold
+                            {
+                                Tracedownwards = rangerOffset(9999999,Center,vec(0,0,-1))
+                                Ztohold = Tracedownwards:position():z() + Zed
+                            }
+                        FLYPOS = Aimpos:setZ(Ztohold)
+                        Adjustment = 0#(Center:z() - Ztohold)*((Center-FLYPOS):length() * 0.00075)
+                        if(Typeofvehicle ==2) {FLYPOS2 = Aimpos}
+                        elseif(Typeofvehicle ==3) {FLYPOS2 = ((FLYPOS + vec(0,0,-Adjustment))*FB)+(Aimpos*(1-FB))}
+                        else{FLYPOS2 = FLYPOS + vec(0,0,-Adjustment)}
+                    }
+            }#End free flight            
+        else
+            {
+                FLYPOS = Array:vector(Index)
+                if(((entity():pos()-FLYPOS)*vec(1,1,0.5)):length() < clamp(LVel:length(),500,1500)) #Velx is clamped to a lowest variable (collision due to proximity) and highest (collision due to radius)
+                    {                        
+                        if(Index == Loopend) {Index = Loopstart} else {Index = Index+1}
+                        if(Array:vector(Index) ==vec(0,0,0)) {Autopilot = 0
+                        if(Typeofvehicle ==1) {Throttle = 0}} else {Seat:hintDriver("Moving to point "+Index,3)}
+                    }
+            }#End autopiloted flight
+
+#######MAIN FEEDBACK BASED FLIGHT SYSTEMS##########    
+    #Totally rewrote all of this to be more legible.  Remember, happy code, happy coders!
+    ########################These are the parts that function always, regardless of autopilot state.
+        if(Typeofvehicle == 4)
+                    { #Planes
+                        Rollmod = 1
+                        ADoverride = abs(A+D)>0
+                    }
+        elseif(Typeofvehicle ==3)
+                    { #Tiltrotors
+                        Rollmod = FB
+                        ADoverride = (abs(A+D)>0) * FB
+                    }
+        if(Typeofvehicle != 1)
+                    {
+                        if(Vectorflight !=2) {Vtolroll = clamp((clamp((entity():angles():pitch() /15),-1,1))*((-(Holo:bearing(FLYPOS)/-20))*(1-FB)),-1.5,1.5)}
+                        else{Vtolroll = clamp(entity():bearing(FLYPOS)/45,-1.5,1.5)}
+                    }
+        if(Typeofvehicle!=2)
+                    {
+                        Throttle = clamp(Throttle + (((W-S))*Forebacksmootherthrot),0,100)
+                        FB = Throttle/100
+                        if(changed(FB)&Stickson) {holoAng(66,entity():toWorld(ang((-90)+(FB*60),0,0)))}
+                    }
+        if(Vectorflight !=2)
+                    {
+                        RollInput = clamp((D-A),-1,1)
+                        AD = clamp(clamp(Holo:bearing(FLYPOS)/-15,-1,1),AD-Leftrightsmoother,AD+Leftrightsmoother)
+                        LRrollholo = Holo:angles():roll()/-30
+                    } 
+        else
+                    {
+                        RollInput = 0#clamp(entity():bearing(FLYPOS)/6000,-0.1,0.1)
+                        AD = clamp((A-D),AD-Leftrightsmoother,AD+Leftrightsmoother)
+                        LRrollholo = 0
+                    } 
+    
+    ########################All flight model parts that are adjusted by autopilot, being autopilot controlled
+    if(Autopilot)
+        {
+        if(Typeofvehicle ==2) {WS = clamp(clamp(((Holo:elevation(FLYPOS:setZ(Master:pos():z()))/-30)+(1-clamp((FLYPOS:z()-Center:z())/1000,0,1))),-1,1),WS-Updownsmoother,WS+Updownsmoother)} #Heli autopilot pitch -- dips the nose at distance, but if we're too low it just goes straight up
+            elseif(Typeofvehicle ==1) {WS = clamp(clamp((entity():angles():pitch()/-30),-1,1),WS-Updownsmoother,WS+Updownsmoother)} #Airship autopilot pitch -- keeps the nose level
+            else{WS = clamp(clamp(Holo:elevation(FLYPOS)/-30,-1,1),WS-Updownsmoother,WS+Updownsmoother)} #Heli autopilot pitch -- dips the nose at distance, but if we're too low it just goes straight up
+        if(Typeofvehicle !=4) {if(Liftsmoother < 0.2) {Collective = clamp(HoldCollective + ((FLYPOS:z()-Center:z())/50),25,100)} else {Collective = clamp(HoldCollective + ((FLYPOS:z()-Center:z())/10),25,100)}}
+        }
+    
+    ########################All flight functions that are adjusted by autopilot, being pilot controlled
+    else
+        {
+    #Copied the pitch functions below
+            if(Althold)
+                {
+                    if(Typeofvehicle !=4) {Collective = clamp(HoldCollective + ((Ztohold-Center:z())/10),25,100)}
+                    WS = clamp(clamp((Holo:elevation(FLYPOS2)/-30),-1,1),WS-Updownsmoother,WS+Updownsmoother)
+                }
+            else
+                {
+                    if(!(Vectorflight ==2)) {WS = clamp(clamp((Holo:elevation(FLYPOS)/-30),-1,1),WS-Updownsmoother,WS+Updownsmoother)}
+                    else {WS = clamp(clamp((Holo:elevation(FLYPOS)/(45*XMod)),-1,1),WS-Updownsmoother,WS+Updownsmoother)}
+                    Collective = clamp(Collective + (((Space-Shift)*(((R+Alt)+Light) ==0))*Liftsmoothercoll),0,100)
+                }
+            
+        }
+    
+    ########################These also always function, they're added in at the end
+    UD = clamp(Collective/100,UD-Liftsmoother,UD+Liftsmoother)
+    if(changed(UD))
+        {
+            if(Stickson) {CLV = entity():toWorld(ColT)
+            holoPos(71,CLV + (entity():up() * (((UD)*4.5)+5)))}
+        }
+    LR = clamp(clamp((LRrollholo+$LRrollholo)+(clamp((Holo:bearing(FLYPOS)/(15+(((Vectorflight ==2)*(345*YMod))-((Vectorflight ==2)*30))))*Rollmod,-2,2))+Vtolroll,-(1-ADoverride),1-ADoverride)+(RollInput),LR-Rollsmoother,LR+Rollsmoother)
+    
+    #Ok now we finalize angular inputs and adjust force
+    if(inrange(Typeofvehicle,2,3)) {HolAng = Holo:angles()}
+    if(inrange(Typeofvehicle,3,4)) {Planelift = (clamp(LVel:x(),0,Velift) / (Velift*1.5)) * (Flapliftmod)}
+    elseif(Typeofvehicle ==5) {Planelift = (clamp(LVel:x()+clamp(-LVel:z(),0,99999),0,Velift/2) / (Velift/2)) * (Flapliftmod)}
+    if(Typeofvehicle ==1)
+        {#Making airship forces
+            Xf = (FB*Airshipmod)*Flyforce #Airships fly through front-back force
+            Yf = ((RollInput/2)*(Airshipmod/5))*Flyforce #Airships can only drift at 1/5 power side to side
+            Zf = (UD)*Liftforce #Airships have full collective but no wing lift
+            Ang = ((ang(WS,AD,LR)))
+        } #Airships rotate directly based off inputs
+    elseif(Typeofvehicle ==2)
+        {
+            Hlp = HolAng:pitch()/30
+            Xf = clamp(Hlp,-1,1)*Flyforce #Helicopters fly through tilting forward
+            Yf = clamp(RollInput/2,-0.5,0.5)*Flyforce #Helicopters fly sideways at 1/3 speed through rolling
+            Zf = (UD)*Liftforce #Helicopters have full collective but no wing lift
+            Ang = ((ang(WS,((AD*(2-clamp(Hlp,-1,1)))-((LR*clamp(Hlp,-1,1))*2))/4,LR)))#Helicopters turn with rolling force more as they tilt forward
+        } 
+    elseif(Typeofvehicle ==3)
+        {
+            Hlp = HolAng:pitch()/30
+            Compound = 1-FB
+            Xf = (((clamp(Hlp,-1,1))*(Compound))+(FB*Forethrustmul))*Flyforce #VTOLs blend tilting and forward force
+            Yf = (clamp(RollInput/2,-0.5,0.5)*(Compound))*Flyforce #VTOLs lose drift ability as they increase thrust
+            Zf = ((UD*(Compound))+((Planelift)*(1-Compound)))*Liftforce #VTOLs have collective that loses effectiveness as thrust increases
+            Ang = ((ang(WS,((AD*(2-clamp(Hlp,-1,1)))-(((LR*clamp(Hlp,-1,1))*2)*Compound))/2,LR*(1+(FB))))) #VTOLs turn like helicopters, but inversely proprtionate to thrust
+        }
+    elseif(Typeofvehicle ==4)
+        {
+            Xf = (FB*Flyforce) #Planes fly with forward thrust only
+            Zf = Planelift*(Liftforce) #Planes have lift based off their forward velocity
+            Ang = ((ang(WS,AD/1.5,LR*2))) #Planes rotate based off inputs, with slow yaw from rudders but lots from rolling
+        }
+    elseif(Typeofvehicle ==5)
+        {
+            Hlp = HolAng:pitch()/30
+            Xf = (FB*0.75)*Flyforce #gyrocopters thrust like plane, but reduced by drag on lift rotor
+            Yf = clamp(RollInput/3,-0.5,0.5)*Flyforce #Gyros fly sideways but not quite as well as helis
+            Zf = (Planelift*(Liftforce))*(0.5+(UD/2)) #gyrocopters have lift based off their forward velocity
+            Ang = ang(WS,((AD*2)-((LR*clamp(Hlp*2,-2,2))*1))/2,LR) #gyrocopters manouver like helicopters, but it depends on the lift from forward velocity
+        }
+
+    if(changed(FB)+changed(UD)) {soundPitch(2,80+((FB*20))+((UD*20)*(1-FB)))}
+    holoAng(99,(Holo:toWorld(Ang*Maneuverability)))
+    
+
+    #Force mesh = Xf/Yf/Zf are directions
+    ForceVector = ((entity():forward()*Xf)+(Right*Yf)+(Up*Zf))*50
+    #Damping
+    Damping = (entity():vel()+(Right * -(LVel:y()* (1+((Typeofvehicle ==4)+(Compound*(Typeofvehicle==3)))) ))) * (Dampflapmodded) #CUSTOM LINE
+    AngDamping = entity():angVel() * (Dampforce)
+    if(inrange(Typeofvehicle,3,4)) {LiftDamping = Up * -(LVel:z() * (Planelift*(Lfm)))} elseif(Typeofvehicle ==1) {LiftDamping = Up * -(LVel:z() * (Airshipmod/2))}
+    LiftDamping = LiftDamping + (Up * -(LVel:z() * (0.025)))
+    #Creates force
+    CurrentQuat = quat(entity())
+    DesiredQuat = quat(Holo)
+    Q = DesiredQuat/CurrentQuat
+    V = rotationVector(Q)+Holo:pos()
+    FDL = ForceVector+Damping+LiftDamping
+    Base:applyTorque((((Base:toLocal((rotationVector(Q)+Base:pos())))*Angforce) - (Dampforce*(Base:angVelVector()))) * Inertia1)#
+    Base:applyForce(FDL*(BaseMass1))
+    if(Base2Valid) {Base2:applyTorque((((Base2:toLocal((rotationVector(Q)+Base2:pos())))*Angforce) - (Dampforce*(Base2:angVelVector()))) * Inertia2)
+    Base2:applyForce(FDL*(BaseMass2))}
+    if(Base3Valid) {Base3:applyTorque((((Base3:toLocal((rotationVector(Q)+Base3:pos())))*Angforce) - (Dampforce*(Base3:angVelVector()))) * Inertia3)
+    Base3:applyForce(FDL*(BaseMass3))}
+    if(Base4Valid) {Base4:applyTorque((((Base4:toLocal((rotationVector(Q)+Base4:pos())))*Angforce) - (Dampforce*(Base4:angVelVector()))) * Inertia4)
+    Base4:applyForce(FDL*(BaseMass4))}
+    if(Base5Valid) {Base5:applyTorque((((Base5:toLocal((rotationVector(Q)+Base5:pos())))*Angforce) - (Dampforce*(Base5:angVelVector()))) * Inertia5)
+    Base5:applyForce(FDL*(BaseMass5))}
+    if(Vectorflight) {CamParent:applyAngForce((angnorm(CamParent:toLocal(entity():angles())) - (CamParent:angVel()/7))*Camparentinertia)} else {CamParent:applyAngForce(((CamParent:angles() + (CamParent:angVel()/7)))*-Camparentinertia)}
+    #And to finish it all off, making hte rotors turn
+    if(Rotors)
+        {
+            if(Typeofvehicle !=5) {H1 = angnorm(H1+(100+(UD*25)))} else {H1 = angnorm(H1+((Zf/Liftforce)*100))}
+            if(inrange(Rotorarrangement,1,2)) {holoAng(10,entity():toWorld(ang(0,H1,0)))}
+            if(Rotorarrangement==2) {holoAng(6,entity():toWorld(ang(0,-H1,0)))}
+            elseif(NOTAR ==0) {holoAng(6,entity():toWorld(ang(-H1,0,TsA)))}
+            if(Rotorarrangement==3) {holoAng(6,holoEntity(21):toWorld(ang(0,-H1,0)))
+                holoAng(10,holoEntity(22):toWorld(ang(0,H1+Twist,0  )))}
+            #Alpha control
+            if(changed(UD)+(changed(Planelift)*(Typeofvehicle==5)))
+                {
+                if(Typeofvehicle!=5) {
+                SSb = UD*100
+                SSa = 255-(UD*55)}
+                else{SSb = ((Zf/Liftforce)*100)
+                SSa = 255-((Zf/Liftforce)*55)}
+                holoAlpha(5,SSb)
+                holoAlpha(2,SSa)
+                holoAlpha(3,SSa)
+                holoAlpha(4,SSa)
+                holoAlpha(7,SSa)
+                holoAlpha(8,SSa)
+                holoAlpha(9,SSa)
+            holoAlpha(11,SSb)
+                }
+        }#END ROTORS
+            
+    }#End active operations not input-triggered
+    
+if(changed(PodActive) & PodActive ==0) #Here below active because if we hop out, we clean it all up too.  It'll still run as idle.
+    {
+        EGP:egpClear()
+        ScX = 0
+        ScY = 0
+        Cam["Activated",number] = 0
+    }
+        
+if(changed(Active) & (Active ==0))
+    {
+        Dx = 0
+        Gearbrakes = 0
+        Cam["Activated",number] = 0
+        while(Dx<9) {soundStop(Dx)
+        Dx = Dx+1}
+        reset()
+    }
+
+#Heh, stuffed this in at the very bottom.
+interval(50+(!Active*200))

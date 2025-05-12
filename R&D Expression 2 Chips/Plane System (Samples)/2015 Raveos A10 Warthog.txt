@@ -1,0 +1,190 @@
+@name Raveos A10 Warthog
+@inputs Gun:wirelink Ammo:wirelink
+@outputs
+@persist [E,Targ,Prop,Rocket,D]:entity [R]:array
+@persist T P Y S H Mul K ThrustTimer Strike
+
+#[
+INFO: ZERO EXCEPT 
+Requires: PropCore.
+Optional: ACF, Sprops.
+Adv Dupe 2 file (includes ACF weapons)
+A1 A10 Warthog mk1_5.txt
+
+https://web.archive.org/web/20150508094532/http://www.wiremod.com/forum/finished-contraptions/34108-e2-raveos-a10-warthog.html
+
+]#
+
+if(first()|duped()|dupefinished())
+{
+    runOnTick(1)
+    function holoC(N:number,Pos:vector,Scale:vector,Ang:angle,Colour:vector,Model:string,Parent:entity,Mat:string)
+    {
+        holoCreate(N,Pos,Scale,Ang,Colour)
+        holoModel(N,Model)
+        holoParent(N,Parent)
+        holoMaterial(N,Mat)
+    }
+   
+    E=entity():isWeldedTo()
+    E:setMass(50000)
+    entity():setMass(0)
+    holoC(1,E:toWorld(vec(0,-135,0)),vec(3,21,4),E:toWorld(ang(0,0,0)),vec(255),"hq_rcube_thick",E,"models/props_pipes/pipemetal001a") #main fuselage
+    holoC(2,E:toWorld(vec(0,-80,15)),vec(3.3,5,11),E:toWorld(ang(0,0,90)),vec(255),"hq_cone",E,"models/props_pipes/pipemetal001a") #Back cone
+    holoC(3,E:toWorld(vec(0,-15,-12)),vec(3,11,2),E:toWorld(ang(0,0,0)),vec(255),"hq_rcube_thick",E,"models/props_pipes/pipemetal001a") #Floor
+    holoC(4,E:toWorld(vec(0,-18,15)),vec(3,5,15),E:toWorld(ang(0,0,-100)),vec(255),"hq_hdome_thin",E,"phoenix_storms/glass") #Windshield
+    holoC(5,E:toWorld(vec(0,40,0)),vec(3,4,13),E:toWorld(ang(0,0,-95)),vec(255),"hq_dome",E,"models/props_pipes/pipemetal001a") #Nose Cone
+    holoC(6,E:toWorld(vec(0,10,-7)),vec(0.55,1,1.2),E:toWorld(ang(0,0,180)),vec(255),"models/sprops/misc/tubes/size_60/h_tube_60x72.mdl",E,"models/props_pipes/pipemetal001a") #Cockpit sides
+    holoC(7,E:toWorld(vec(125,-120,-10)),vec(1,1,4),E:toWorld(ang(0,90,88)),vec(255),"models/sprops/geometry/qhex_144.mdl",E,"models/props_pipes/pipemetal001a") #Right Wing  
+    holoC(8,E:toWorld(vec(-125,-120,-10)),vec(1,1,4),E:toWorld(ang(0,90,-88)),vec(255),"models/sprops/geometry/qhex_144.mdl",E,"models/props_pipes/pipemetal001a") #Left Wing
+    holoC(9,E:toWorld(vec(-0,-215,0)),vec(3,4,15),E:toWorld(ang(0,0,90)),vec(255),"hq_dome",E,"models/props_pipes/pipemetal001a") #Rear Dome
+    holoC(10,E:toWorld(vec(-0,-255,0)),vec(20,3.5,0.2),E:toWorld(ang(0,0,-5)),vec(255),"cube",E,"models/props_pipes/pipemetal001a") #Elevator
+    holoC(11,E:toWorld(vec(120,-255,35)),vec(2,1,4),E:toWorld(ang(0,90,0)),vec(255),"models/sprops/geometry/qhex_42.mdl",E,"models/props_pipes/pipemetal001a") #Right Rudder      
+    holoC(12,E:toWorld(vec(-120,-255,35)),vec(2,1,4),E:toWorld(ang(0,90,0)),vec(255),"models/sprops/geometry/qhex_42.mdl",E,"models/props_pipes/pipemetal001a") #Left Rudder
+    holoC(13,E:toWorld(vec(20,-200,20)),vec(1.5,3,0.3),E:toWorld(ang(-10,0,0)),vec(255),"",E,"models/props_pipes/pipemetal001a") #Right Turbine connector
+    holoC(14,E:toWorld(vec(-20,-200,20)),vec(1.5,3,0.3),E:toWorld(ang(10,0,0)),vec(255),"",E,"models/props_pipes/pipemetal001a") #Left Turbine connector
+    holoC(15,E:toWorld(vec(43,-200,35)),vec(4,4,50),E:toWorld(ang(0,0,90)),vec(255),"hq_torus",E,"models/props_pipes/pipemetal001a") #Right Turbine
+    holoC(16,E:toWorld(vec(-43,-200,35)),vec(4,4,50),E:toWorld(ang(0,0,90)),vec(255),"hq_torus",E,"models/props_pipes/pipemetal001a") #Left Turbine  
+    holoC(17,E:toWorld(vec(43,-200,35)),vec(3.1,3,5),E:toWorld(ang(0,0,90)),vec(0),"hq_cylinder",E,"") #Right Turbine filler
+    holoC(18,E:toWorld(vec(-43,-200,35)),vec(3.1,3,5),E:toWorld(ang(0,0,90)),vec(0),"hq_cylinder",E,"") #Left Turbine filler
+    holoC(19,E:toWorld(vec(43,-170,35)),vec(1,1,1),E:toWorld(ang(0,0,-90)),vec(255),"hq_dome",E,"models/props_pipes/pipemetal001a") #Right Turbine filler1
+    holoC(20,E:toWorld(vec(-43,-170,35)),vec(1,1,1),E:toWorld(ang(0,0,-90)),vec(255),"hq_dome",E,"models/props_pipes/pipemetal001a") #Left Turbine filler2
+    holoC(21,E:toWorld(vec(-0,38,-5)),vec(0.2,0.3,0.4),E:toWorld(ang(0,-90,0)),vec(255),"models/props_combine/combine_interface001.mdl",E,"") #Left Turbine filler2  
+    holoC(22,E:toWorld(vec(125,-130,-10)),vec(5,1.5,1.5),E:toWorld(ang(0,90,88)),vec(255),"hq_sphere",E,"models/props_pipes/pipemetal001a") #Right Wing  
+    holoC(23,E:toWorld(vec(-125,-130,-10)),vec(5,1.5,1.5),E:toWorld(ang(0,90,-88)),vec(255),"hq_sphere",E,"models/props_pipes/pipemetal001a") #Left Wing
+   
+    holoC(24,E:toWorld(vec(125,-130,-35)),vec(0.3,0.3,3),E:toWorld(ang(0,0,0)),vec(255),"hq_cylinder",E,"") #Right Wing wheel stem
+    holoC(25,E:toWorld(vec(-125,-130,-35)),vec(0.3,0.3,3),E:toWorld(ang(0,0,0)),vec(255),"hq_cylinder",E,"") #Left Wing wheel stem
+    holoC(26,E:toWorld(vec(0,30,-35)),vec(0.3,0.3,3),E:toWorld(ang(0,0,0)),vec(255),"hq_cylinder",E,"") #Front wheel stem  
+    holoC(27,E:toWorld(vec(5,30,-55)),vec(1,1,1),E:toWorld(ang(0,90,0)),vec(255),"models/sprops/trans/wheel_c/t_wheel25.mdl",holoEntity(26),"") #Front Wheel
+    holoC(28,E:toWorld(vec(-5,30,-55)),vec(1,1,1),E:toWorld(ang(0,90,0)),vec(255),"models/sprops/trans/wheel_c/t_wheel25.mdl",holoEntity(26),"") #Front Wheel
+    holoC(29,E:toWorld(vec(130,-130,-53)),vec(1,1,1),E:toWorld(ang(0,90,0)),vec(255),"models/sprops/trans/wheel_c/t_wheel30.mdl",holoEntity(24),"") #Right Wing Wheel
+    holoC(30,E:toWorld(vec(-130,-130,-53)),vec(1,1,1),E:toWorld(ang(0,90,0)),vec(255),"models/sprops/trans/wheel_c/t_wheel30.mdl",holoEntity(25),"") #Left Wing Wheel
+ 
+    holoC(32,E:toWorld(vec(185,-130,-25)),vec(1,1,1),E:toWorld(ang(0,90,0)),vec(255),"models/props_phx/amraam.mdl",E,"") #Right missl
+    holoC(33,E:toWorld(vec(-185,-130,-25)),vec(1,1,1),E:toWorld(ang(0,90,0)),vec(255),"models/props_phx/amraam.mdl",E,"") #Left miss
+    holoC(34,E:toWorld(vec(105,-130,-25)),vec(1,1,1),E:toWorld(ang(0,90,0)),vec(255),"models/props_phx/amraam.mdl",E,"") #Right missl
+    holoC(35,E:toWorld(vec(-105,-130,-25)),vec(1,1,1),E:toWorld(ang(0,90,0)),vec(255),"models/props_phx/amraam.mdl",E,"") #Left miss
+    holoC(36,E:toWorld(vec(70,-130,-33)),vec(1,1,1),E:toWorld(ang(0,90,0)),vec(255),"models/props_phx/mk-82.mdl",E,"") #Right missl
+    holoC(37,E:toWorld(vec(-70,-130,-33)),vec(1,1,1),E:toWorld(ang(0,90,0)),vec(255),"models/props_phx/mk-82.mdl",E,"") #Left miss
+ 
+    holoC(38,E:toWorld(vec(125,-130,-20)),vec(1,1,1),E:toWorld(ang(0,90,0)),vec(255),"hq_sphere",E,"") #Right wheel swing
+    holoC(39,E:toWorld(vec(-125,-130,-20)),vec(1,1,1),E:toWorld(ang(0,90,0)),vec(255),"hq_sphere",E,"") #Left wheel swing
+    holoC(40,E:toWorld(vec(0,30,-20)),vec(1,1,1),E:toWorld(ang(0,90,0)),vec(255),"hq_sphere",E,"") #Front wheel swing    
+    holoParent(24,38)
+    holoParent(25,39)
+    holoParent(26,40)
+#
+ 
+    R=players()
+    R:insertEntity(1,E)
+    rangerPersist(1)
+    rangerFilter(R)
+    rangerFilter(Ammo:entity())    
+    rangerFilter(Gun:entity())
+    #aimer
+    holoC(31,E:toWorld(vec(0,10,31.6)),vec(0.02,0.02,0.02),E:toWorld(ang(0,0,90)),vec(255,0,0),"hq_torus",E,"")
+    holoAlpha(31,150)  
+}
+R1=rangerOffset(999999,E:pos(),vec(0,0,-1))
+H=R1:distance()
+V=E:driver():isValid()
+D=E:driver()
+E:applyAngForce(-ang(-E:angVel()[3],E:angVel()[2],E:angVel()[1])*E:mass())
+if(H<=67)
+{
+    E:applyForce((-E:vel()+vec(0,0,abs(H-67)*20))*E:mass())
+    E:applyAngForce((ang(E:angles():roll()*50,0,-E:angles():pitch()*50)-(ang(0,D:keyRight()-D:keyLeft(),0)*20))*E:mass())
+}
+if(H>67&V|T>650&V)
+{
+    Y=vec(D:eye():dot(E:right()),D:eye():dot(E:right()),0):y()
+    P=vec(0,D:eye():dot(E:up()),D:eye():dot(E:up())):z()
+    E:applyForce(E:toWorld(vec(-E:velL():x(),-E:velL():y(),-E:velL():z()/(1010-T))*E:mass()))  
+    E:applyAngForce((ang(E:angles():roll(),0,-E:angles():pitch())+(ang(-P,-Y,Y)*100))*E:mass())
+}
+if(D:keyForward()&S&T<980){T+=3}
+if(D:keyBack()|!V&T>0){T-=2}
+if(T<0){T=0}
+if(T>980){T=980}
+E:applyForce(E:forward()*E:mass()*(T+Mul)*2*V)
+Mul-=E:angles()[3]/10
+if(Mul<-400){Mul=-400}
+if(Mul>980){Mul=980}
+if(Mul<0&E:angles()[3]>-35){Mul+=3}
+if(Mul>0&E:angles()[3]<35){Mul-=0.1}
+if(changed(D)&D)
+{    
+    entity():soundPlay(1,0,"ambient/outdoors_well.wav")
+    S=1
+}
+if(changed(D)&D|changed(players():count()))
+{
+    R=array()
+    R=players()
+    for(I=1,R:count())
+    {
+        if(R[I,entity]==owner())
+        {
+            R:remove(I)
+        }
+    }
+}
+soundPitch(1,clamp(E:vel():length()/10,50,250))
+if(changed(V)&!V)
+{
+    soundPurge()
+}
+ 
+#weaps
+Gun:entity():propManipulate(E:toWorld(vec(0,40,-20)),E:toWorld(ang(7,90,0)),1,0,0)
+Ammo:entity():propManipulate(E:toWorld(vec(0,-60,-30)),E:toWorld(ang(0,0,0)),1,0,0)
+Fire=D:keyAttack1()  
+Gun["Fire",normal]=Fire
+Ammo["Active",normal]=1
+Ammo:entity():setAlpha(0)
+if(D:isValid())
+{
+    Ang3=(holoEntity(2):pos()-Targ:pos()):toAngle()
+    if(changed(D:keyReload())&D:keyReload())
+    {
+        K+=1
+        E:printDriver(R[K,entity]:name())
+        Targ=R[K,entity]
+    }
+    if(Targ:isValid()&changed(D:keyAttack2())&D:keyAttack2()&!Rocket:isValid())
+    {
+        N=randint(32,35)
+        Rocket=propSpawn("models/props_phx/amraam.mdl",holoEntity(N):pos(),holoEntity(N):angles(),0)
+        Rocket:setMass(50000)
+        Rocket:applyForce(Rocket:forward()*Rocket:mass()*3500)
+        holoEntity(N):soundPlay(2,0,"acf_extra/tankfx/guns/tank_stealth_fire.wav")
+        timer("thruster",1000)
+        Strike=0
+        ThrustTimer=0
+   
+    }  
+   
+    if(clk("thruster"))
+    {
+        Rocket:setTrails(0.5,115,2,"trails/smoke",vec(150,150,150),255)
+        Strike=1
+    }
+    if(Strike)
+    {
+        ThrustTimer++
+        Rocket:applyForce(Rocket:forward()*Rocket:mass()*4600)
+        if(ThrustTimer>50)
+        {
+            Rocket:setAng((Targ:pos()-Rocket:pos()):toAngle())
+        }    
+    }
+    if(K>R:count()){K=0}    
+    if(Rocket:pos():distance(Targ:pos())<120)
+    {
+        Rocket:propBreak()
+    }
+}
+holoAng(38,E:toWorld(ang(0,90,clamp(-((H/2)-66),-90,0))))
+holoAng(39,E:toWorld(ang(0,90,clamp(((H/2)-66),0,90))))
+holoAng(40,E:toWorld(ang(clamp(((H/2)-66),0,90),90,0)))
