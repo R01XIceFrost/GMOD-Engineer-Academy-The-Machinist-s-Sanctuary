@@ -1,0 +1,27 @@
+@name ACF Throttle+brake
+@inputs W S
+@outputs Throttle Brake
+@persist
+@trigger
+
+#made be buder5
+
+
+
+if(W == 1)
+{ Throttle = 100 }
+
+else
+{ Throttle = 0
+}
+
+if(S == 1)
+{ Brake = 10 }
+
+else
+{ Brake = 0
+}
+
+if(dupefinished())
+{ reset()
+}

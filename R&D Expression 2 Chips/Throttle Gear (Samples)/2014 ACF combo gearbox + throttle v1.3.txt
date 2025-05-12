@@ -1,0 +1,76 @@
+@name ACF combo gearbox + throttle v1.3
+@inputs RPM Wirelink:wirelink
+@outputs Throttle Gear Brake GearS Clutch
+@trigger
+
+interval(600) #This interval will cause the chip to execute every half-second while GearS is 1
+#A lower interval will change gears faster but use more ops
+#500 (half second) should be more than enough
+
+#made be buder5
+#shift is for force stay at gear 1 good for crawl or somthing
+#space is for brake
+if(first())
+{ GearS = 1
+}
+
+
+W = Wirelink:number("W")
+A = Wirelink:number("A")
+S = Wirelink:number("S")
+D = Wirelink:number("D")
+Space = Wirelink:number("Space")
+Shift = Wirelink:number("Shift")
+     
+     
+if(W == 1)
+{Throttle = 100 GearS = 1
+}
+else
+{ Throttle = 0 GearS = 1
+}
+if(S == 1)
+{Throttle = 100 GearS = -1
+}
+
+if(Shift == 1)
+{ GearS = 0
+}
+
+if(Space == 1)
+{Brake = 4 
+}
+else
+{ Brake = 0
+}
+
+#for use with clutch
+    if (RPM >= 2000) {#under this the clutch desactivate
+        Clutch = 0 
+    }elseif (RPM <= 3000) {#above this the clutch activate
+        Clutch = 1
+    }
+
+
+
+
+
+
+if (GearS == 1) {
+    if (RPM >= 4000) {
+        Shift = 1 # Will add 1 to Gear
+    }elseif (RPM <= 2400) {
+        Shift = -1 # Will subtract 1 from Gear
+    }
+    Gear = clamp(Gear + Shift, 1, 5) #Adds Shift (which is determined by RPM) to Gear
+#In case you're wondering how Shift = -1 works here, it's because Gear + -1 is the same as Gear - 1
+}elseif (GearS == -1) {
+    Gear = 6 # Does this gear have a negative ratio on the transmission? If not it won't reverse
+}else {
+    Gear = 1
+# You need to apply some breaks or something otherwise the vehicle will not stop. If you already have a solution for this ignore this comment
+}
+
+if(dupefinished())
+{ reset()
+}
