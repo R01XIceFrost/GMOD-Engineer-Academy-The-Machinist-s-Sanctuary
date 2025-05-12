@@ -1,0 +1,58 @@
+@name Reds Holo Coil Spring
+@inputs E:entity
+@persist I Scale:vector Scalefix Lim Offset
+@trigger none
+@model models/sprops/misc/fittings/cred_6_3_short.mdl
+
+#[
+
+INFO:
+Coil spring. Creates a holo coil spring; you can define how many coils you want (uses sprops bodygroups). 
+It does not extend past that initial length, though, it does compress. 
+This keeps it from behaving "oddly". 
+It has to have the coil below the prop; this is relative to prop, not world, 
+so it DOES work at any angle, just have to parent its "base" properly.
+
+]#
+
+
+interval(100)
+
+#Spring must be below prop relative to prop.
+if(dupefinished()) {reset()}
+elseif(first())
+    {
+        Offset = 6 #Offsets a bit to not put your spring INSIDE your wheel
+        Diameter = 1 #Diameter of spring
+        Coilsamount = 2 #1-4 determines how much coiling
+        
+        #Ignore everything below here
+        Endpoint = E:massCenter() - (entity():forward() * Offset)
+        Scale = vec(Diameter,Diameter,1)
+        holoCreate(1,entity():pos(),Scale,entity():angles())
+        holoModel(1,"models/sprops/trans/misc/coil.mdl")
+        holoBodygroup(1,0,3+Coilsamount)#4 - short, 5 - med, 6 - long, 7 - superlong
+        holoParent(1,entity())
+        holoScale(1,Scale)
+        if(Coilsamount ==1) {Scalefix = 0.085}
+        elseif(Coilsamount ==2) {Scalefix = 0.042}
+        elseif(Coilsamount ==3) {Scalefix = 0.028}
+        elseif(Coilsamount ==4) {Scalefix = 0.021}
+        
+        Difference = Endpoint - entity():pos()
+        Lim = Difference:length()
+        Axis = entity():toLocalAxis(Difference)
+        if(entity():toLocal(Endpoint):z() < 0) {holoAng(1,entity():toWorld(ang((atan(-Axis:z(),Axis:x()))+90,0,(atan(-Axis:z(),Axis:y()))-90)))}
+    }
+
+Endpoint = E:massCenter() - (entity():forward() * Offset)
+holoScale(1,Scale:setZ(clamp((Endpoint - entity():pos()):length(),0,Lim) * Scalefix))
+
+I++
+if(I==4)
+    {
+        Difference = Endpoint - entity():pos()
+        Axis = entity():toLocalAxis(Difference)
+        holoAng(1,entity():toWorld(ang((atan(-Axis:z(),Axis:x()))+90,0,(atan(-Axis:z(),Axis:y()))-90)))
+        I = 0
+    }

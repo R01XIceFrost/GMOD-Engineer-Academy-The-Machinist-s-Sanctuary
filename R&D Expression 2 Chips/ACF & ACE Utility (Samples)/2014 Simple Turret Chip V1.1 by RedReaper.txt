@@ -1,0 +1,127 @@
+@name Simple Turret Chip V1_1
+@inputs Active Aimpos:vector [Gun CamController]:wirelink [Seat]:entity BarrelLocked RemoteTurretFire SeatDriverFire
+@outputs Fire Activated Self:entity BarrelLatch
+@persist Base:entity Cam TurretRingRun [Inertia LockAngle]:angle TurretRingInertia
+@persist [Neg Pos Spd]:angle [ChipRef]:vector
+
+#[
+
+INFO:
+
+This is a simple aim chip. It is intended for remote turrets, but will work with regular tanks. 
+Users of chips like my old simple aim chip, or my old remote turret chip, or the generic gyro will feel at home
+--this chip adds e2-based angular limiting and a much more realistic control system.
+Though I've never been a big fan of e2 angle limiting, it is added because the other new feature on this is hull-influenced turret rotation. 
+Instead of your turret spinning happily while your tank maneuvers, turning your hull actually affects your turret, like in world of tanks or war thunder. This will hopefully help even out ACF's playing field. It also measures angular change in degrees per second, so you can more realistically tweak tanks. You'll find that even with a very slow turret traverse speed, by moving your hull it is extremely hard for enemy vehicles to flank you (doubly so for me, since my transmission has aim-based steering as an option lol) The code is deliberately very well spaced, formatted, 
+and with ample annotations, to help anyone who wants to mod it or learn from it.
+
+
+]#
+
+
+#Yep.  It works now.
+#This turret chip is provided courtesy of RedReaper and the server "Fast Red Snail".
+#To use it as a remote turret chip, wire Aimpos to the aim point of your primary turret chip, and remoteturretfire to the key to fire this turret
+#To use as a regular turret chip, wire camcontroller if you have one (you don't need cam!), seat to a seat, and Seatdriverfire to the key to fire the gun.
+#On both, wire gun to your gun--MAKE SURE ITS UPRIGHT, NOT ON ITS SIDE--and wire the gun's fire tot he chip's fire.
+#Turret Ring is an SPROPS GEOMETRY ring used to simulate a turret ring, you don't need it it's purely optional
+#You can ignore "activated" and "self"
+
+if(dupefinished()) {reset()}
+if(first())
+    {
+        Depression = 5                      #Degrees down your gun points
+        Elevation = 45                      #Degrees up your gun pounts
+        Yaw = 360                            #Degrees of yaw your gun will slew--360 is a full circle
+        DegreesPerSecondofRotation = 360     #Degrees per second that the turret rotates
+        TurretRingRun = 0                   #Does ti apply sideways force on the gun to help aim?  useful for forward mounted guns, don't use it on casemates
+        LockAngle = ang(-5,180,0)              #Angle it locks at when not in use
+        #DONT EDIT BELOW THIS
+        Cam = CamController:entity():isValid() #Does it use a camera?
+        Self = entity()#Self
+        Base = Gun:entity("Entity")#Gun
+        Inertia = shiftL(ang(Base:inertia()))*-25#inertia of the gun
+        Neg = ang(-Elevation,-Yaw/2,0)#negative angle limit
+        Pos = ang(Depression,Yaw/2,0)#positive angle limit
+        SpdPerAngle = DegreesPerSecondofRotation/20#Speed of slew per axis per tick
+        Spd = ang(SpdPerAngle,SpdPerAngle,SpdPerAngle)#Speed of slew mixed
+        LockAngle = clamp(LockAngle,Neg,Pos)
+    }
+
+if(Active)
+    {
+        interval(50+(BarrelLatch*200))
+        if(Seat:driver():isValid())
+            {
+                Driver = Seat:driver()#Manually reedeclaring this per-tick on purpose!  It isn't sloppy code!
+                if(Cam)
+                    {
+                        CamController["Activated",number] = 1
+                        Aimp = CamController:vector("CamPos")
+                    }
+                else
+                    {
+                        Aimp = Driver:shootPos() + (Driver:eye() * 9999999999)
+                    }
+                Shoot = SeatDriverFire
+            }
+        else
+            {
+                Aimp = Aimpos
+                Shoot = RemoteTurretFire
+            }
+    #If it's locked it'll crudely overwrite your old stuff
+    if(BarrelLocked)
+        {
+            Aimp = Base:pos() + (entity():toWorld(LockAngle*ang(-1,1,0)):forward() * 999999999999999)
+            BarrelLatch = clamp((clamp((inrange(Base:bearing(Aimp),-0.5,0.5) * inrange(Base:elevation(Aimp),-0.5,0.5)),BarrelLatch,BarrelLocked) * BarrelLocked),0,1)
+            Fire = 0
+        }
+    else
+        {
+            Fire = (inrange(-entity():heading(Aimp),Neg,Pos) ) *Shoot #if your aim is within the angles it will work within, it will fire.  If not, it will not fire, saving you ammo!
+        }        
+    if(!BarrelLatch)
+        {         
+            #Gets the yawing speed of the base
+            BaseSpeedAngle = ang(0,entity():bearing(ChipRef*999999),0)*1.675 #angular change of base since last computation
+            ChipRef = entity():forward() #resets chip for next computation
+            #Primary aim angles off the gun
+            EyeAngle = (Base:toLocal(Aimp):toAngle()) #Gets the amoutn the gun needs to slew, not limited.
+            #Localizing it to the chip itself, so that it can be properly clamped.  Then it's limited by elev/depression
+            ChipLocalEyeAngleClamped = (clamp(entity():toLocal(Base:toWorld(EyeAngle)),Neg,Pos))
+            #Localizing it now from the chip to the gun, so it can be speed-clamped.
+            GunLocalEyeAngleClamped = clamp(Base:toLocal(entity():toWorld(ChipLocalEyeAngleClamped)),(-Spd)+BaseSpeedAngle,(Spd)+BaseSpeedAngle)
+            #Providing a vector output
+            Out = Base:toWorld(GunLocalEyeAngleClamped)
+            #Applying force and firing
+            Base:applyAngForce( ((Base:angVel()* ((Inertia))) + ((Base:heading(Out:forward() * 9999999999999)) * ((Inertia) * (10)))):setRoll(0))
+            if(TurretRingRun) {Base:applyOffsetForce((Base:right() *  (((Base:angVel()/5) + (Base:heading(Out:forward() * 9999999999999))):yaw()))*(Inertia:yaw()/-5),Base:massCenter())}
+        }
+    else
+        {
+            BarrelLatch = BarrelLocked
+        }
+    
+    #misc
+    if(Driver:keyUse()&Driver:keyAttack2()) {Seat:ejectPod()} #Holding e but can't eject?  Hold mouse2 with it--it'll kick you out!
+    }
+else
+    {
+        interval(250)
+    }
+
+
+if(changed(Active))
+    {
+        if(!Active)
+            {
+                Fire = 0 #Cuts off firing if we leave the pod
+                CamController["Activated",number] = 0
+                reset()
+            }
+        else
+            {
+                CamController["Activated",number] = 1
+            }
+    }

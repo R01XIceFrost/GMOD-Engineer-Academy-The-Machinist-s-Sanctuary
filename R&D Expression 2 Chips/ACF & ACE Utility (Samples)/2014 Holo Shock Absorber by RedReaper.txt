@@ -1,0 +1,55 @@
+@name Holo Shock Absorber
+@inputs Endpoint:vector
+@persist I Scale:vector Base:entity Length LowLim HighLim
+@trigger none
+@model models/sprops/misc/fittings/cred_6_3_short.mdl
+
+#[
+
+INFO:
+
+
+Holo springs! Two types of leaf, a shock, and a coil spring
+Red's Useful E2s Thread-2014-09-11_00001.jpg
+
+Shock absorber, not pictured. Pretty self explanatory. 
+Creates a shock at a fixed angle, of user defined width and length. 
+Will not expand beyond shock model limit, will not compress beyond shock model limit.
+
+
+]#
+
+interval(125)
+#Shock must be below prop, relative to the prop.
+
+if(dupefinished()) {reset()}
+elseif(first())
+    {
+        Length = 1
+        Width = 1
+        #Ignore everything below here
+        
+        Scale = vec(Width,Width,Length)
+        holoCreate(1,entity():pos(),Scale,entity():heading(Endpoint))
+        holoModel(1,"models/sprops/trans/misc/shock_3.mdl")
+        holoBodygroup(1,0,3)#4 - short, 5 - med, 6 - long, 7 - superlong
+        holoParent(1,entity())
+        holoScale(1,Scale)
+        
+        Difference = Endpoint - entity():pos()
+        Lim = Difference:length()
+        Difference = Endpoint - entity():pos()
+        Axis = entity():toLocalAxis(Difference)
+        if(entity():toLocal(Endpoint):z() < 0) {holoAng(1,entity():toWorld(ang((atan(-Axis:z(),Axis:x()))+90,0,(atan(-Axis:z(),Axis:y()))-90)))}
+        holoCreate(2,Endpoint)
+        holoModel(2,"models/sprops/trans/misc/shock_3.mdl")
+        holoBodygroup(2,0,4)
+        holoScale(2,Scale)
+        EndAng = (ang((atan(-Axis:z(),Axis:x()))+90,0,(atan(-Axis:z(),Axis:y()))+90))
+        if(entity():toLocal(Endpoint):z() < 0) {holoAng(2,entity():toWorld(EndAng))}
+        Base = holoEntity(1)
+        LowLim = Length*12.5
+        HighLim = Length*25
+        
+    }
+holoPos(2,Base:toWorld(vec(0,0,clamp((Base:toLocal(Endpoint):z()),LowLim,HighLim))))
