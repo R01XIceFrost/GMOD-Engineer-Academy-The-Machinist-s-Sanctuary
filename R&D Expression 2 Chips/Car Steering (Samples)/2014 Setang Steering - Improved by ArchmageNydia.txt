@@ -1,0 +1,129 @@
+@name Setang Steering - Improved by ArchmageNydia
+@inputs A D Base:entity
+@persist Slave:entity [TurnRate TurnAngle Turn] Speed
+@model models/sprops/rectangles/size_2/rect_12x12x3.mdl
+
+#https://web.archive.org/web/20150428203221/http://www.wiremod.com/forum/finished-contraptions/33307-e2-fully-customizable-user-friendly-setang-steering-chip-land-vehicles.html
+
+#[
+
+INFO 1: 
+Disclaimer: This chip was NOT originally created by me. I only take 10% of the credit for this chip. I simply cleaned it up and made it more user friendly. I personally do not know the original creator of the chip, so if you are the original creator I will happily remove this if you would so prefer.
+
+
+Now for the actual chip. This chip uses the SetAng function to make a simple and reliable steering process to use on any vehicle you would like. It has been created for wheels, but I see no problem with using it for boats or planes or whatever else. Anyways, it's not the most realistic, and it's not perfect, but it's easy to use and to keep using. Simply change the values inside of the chip to change the steering characteristics. I have included instructions inside the chip as well, so you don't need to fret if you don't know how to use it.
+
+This is the code for it. I will include a download if you are so inclined. Just tell me.
+
+Here, have a steering.
+
+INFO 2:
+
+############### - FAQ - ###############
+
+"My car isn't moving, it only steers!"
+- This is because the chip does not include propulsion. It simply is a steering chip.
+
+"When I connect the 'Base' input to my base prop, the chip flips sideways and won't turn the right way!"
+- I have not found an internal fix for this, but you can either flip your prop the right way up or you can weld a prop on/inside of the main one and connect that instead of the base. This does not affect the steering in any way.
+
+"When I dupe the chip, the wheels are facing the wrong way!"
+- Sometimes when a dupe is completed the Base input unwires itself. This may have been fixed, but I don't yet know. You can either wire it up again, or you can spawn an entity marker, link it to the base, and wire the chip to the entity marker instead. This should keep it wired through dupes.
+
+"I'm trying to put a value like .5 into the chip, but an error pops up that says ''.' is not a supported character!'"
+- E2 doesn't like values with the point first, so use 0.5 instead.
+
+That should be all. Any questions are welcome and I would appreciate it if you would share some of your builds with me!
+
+Thanks,
+- Arch
+
+Edit - Eek, forgot a big issue. Remember to ALWAYS have your contraption facing north-south, otherwise the ballsockets will glitch out! You can find the north-south direction by spraying your spray on the ground. The side of the spray facing upwards will be the north-south direction.
+
+]#
+
+
+
+##############################################################
+## Setang Steering chip                                     ##
+## Originally made by an unknown author                     ##
+## Revised, edited, and made user friendly by ArchmageNydia.##
+##############################################################
+# Simply change the values you need for your car/boat/whatever.
+####################
+##!! How to use !!##
+###################################################################################################################
+# 1. Spawn the chip on the ground.
+# 2. Wire A and D on the chip to the Pod Controller's A and D inputs.
+# 3. Wire the Base output DIRECTLY to the base of your vehicle.
+# 4. If you don't have suspension, use the Ballsocket Centre tool to connect your wheel to the base.
+#    !!Use the "Simple Ballsocket" option on the bottom settings panel. I recommended checking "Nocollide" as well.!!
+# 4a. If you DO have suspension, you can ignore step 2.
+# 5. Get out the Ballsocket Advanced tool. Set the settings as follows.
+#######################################################
+## X Minimum = -180                                  ##
+## X Maximum = 180                                   ##
+## Y Minimum = -0.1                                  ##
+## Y Maximum = 0.1                                   ##
+## Z Minimum = -0.1                                  ##
+## Z Maximum = 0.1                                   ##
+## Everything else 0                                 ##
+## !!Free Movement MUST be checked for this to work!!##
+#######################################################
+# 6. Click with the ballsocket first on the E2, then on the wheel. It doesn't matter where you click on either.
+#
+### And you're done! ###
+## Keep in mind you will probably need to change the settings later, so keep it in a place where you can see it.
+## Also be sure to dupe the plate as well as the vehicle if you want to save it.
+## Do NOT axis or weld it to your vehicle. Keep it where it is. It will freeze itself in the right position automatically.
+
+
+
+
+###############
+## Variables ##
+###################################################################################################################
+if (dupefinished()) {reset()}                                
+                                                             
+Speed = round(toUnit("km/h",Base:vel():length()))
+######################################################################
+## ^^^Speed measuring and dupe reactivating, you can ignore this.^^^##
+######################################################################
+## Edit these values to change steering characteristics!        ##
+##################################################################
+    TurnRate = 2 # The speed at which the wheels will turn all the way left or right.
+                  # Recommended values from 2.5 to ~7
+    LowSpeedTurn = 55 # The angle(degrees) which the wheels will turn UNDER the LowSpeed variable.
+                       # Recommended values from 45 to 60
+    LowSpeed = 20 # The speed(km/h) at which the wheels will go from the LowSpeedTurn angle to the HighSpeedTurn angle.
+                    # Recommended values from 20 to 45
+    HighSpeedTurn = 35 # The angle(degrees) in which the wheels will turn OVER the LowSpeed variable.
+########################################################################################################################
+## This should be all. Have fun with a car that steers!##
+####################################################################### 
+## Technical coding stuff under. Don't really need to mess with this.##  
+#######################################################################
+
+
+if(Speed >= LowSpeed){
+    TurnAngle = HighSpeedTurn}
+else{
+    TurnAngle = LowSpeedTurn}
+    # Setting low and high speed angle differentiating
+
+
+if (first()){
+    interval(20)
+    # Tick counting
+    
+
+
+    Slave = entity()} elseif (clk()){
+    interval(20)
+
+
+    if (!Slave:isPlayerHolding()){
+        Turn += clamp((A-D)*TurnAngle - Turn, -TurnRate, TurnRate)
+        Slave:setAng( Base:toWorld(ang(0, Turn, 0)) )
+    Slave:propFreeze(1)}}
+    # Turn angle setting and auto freezing
