@@ -1,0 +1,32 @@
+@name Sims Diamond
+
+#[
+INFO
+
+Sims Plumbob
+I feel like this is sort of obligatory, seeing as just about everyone I know has made one. 
+Anyway, it changes with your health, gradually turning red. 
+I was too lazy to add an angle function, so you'll have to put it on the ground, not a wall.
+
+]#
+
+runOnTick(1)
+if(first()){
+holoCreate(1)
+holoModel(1,pyramid)
+holoScale(1,vec(1.3,1.3,2.3))
+holoPos(1,entity()toWorld(vec(0,0,27.5)))
+holoCreate(2)
+holoModel(2,pyramid)
+holoScale(2,vec(1.3,1.3,2.3))
+holoAng(2,ang(180,0,0))
+holoParent(2,1)
+holoMaterial(1,modelsshiny)
+holoMaterial(2,modelsshiny)
+holoAlpha(1,100)
+holoAlpha(2,100)
+}
+holoPos(1,owner()toWorld(vec(0,0,130)))
+holoAng(1,holoEntity(1)toWorld(ang(0,1,0)))
+holoColor(1,vec(255-((owner()health()100)255),((owner()health()100)255),0))
+holoColor(2,vec(255-((owner()health()100)255),((owner()health()100)255),0))

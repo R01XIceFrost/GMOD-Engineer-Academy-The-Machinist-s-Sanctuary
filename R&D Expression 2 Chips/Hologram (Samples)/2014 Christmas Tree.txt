@@ -1,0 +1,155 @@
+@name Christmas Tree
+@inputs
+
+ 
+if( first() | dupefinished() )
+{
+   
+    E = entity()
+
+}
+  
+    
+    X = 1
+   
+    #tree
+   
+    X++
+   
+    holoCreate( X )
+    holoModel( X, "hq_cone" )
+    holoScale( X, vec( 20, 20, 20 )/12 )
+    holoPos( X, E:pos() + vec( 0, 0, 100 ) )
+    holoColor( X, vec( 0, 56, 0 ) )
+    holoAng( X, ang( 0, 0, 0 ) )
+    holoParent(X, E )
+   
+    X++
+   
+    holoCreate( X )
+    holoModel( X, "hq_cone" )
+    holoScale( X, vec( 30, 30, 30 )/12 )
+    holoPos( X, E:pos() + vec( 0, 0, 90 ) )
+    holoColor( X, vec( 0, 56, 0 ) )
+    holoAng( X, ang( 0, 0, 0 ) )
+    holoParent(X, E )
+   
+    X++  
+    
+    #Ears
+    
+    holoCreate( X )
+    holoModel( X, "hq_cone" )
+    holoScale( X, vec( 40, 40, 40 )/12 )
+    holoPos( X, E:pos() + vec( 0, 0, 80 ) )
+    holoColor( X, vec( 0, 56, 0 ) )
+    holoAng( X, ang( 0, 0, 0 ) )
+    holoParent(X, E )
+   
+    X++ 
+    
+    holoCreate( X )
+    holoModel( X, "hq_cone" )
+    holoScale( X, vec( 50, 50, 50 )/12 )
+    holoPos( X, E:pos() + vec( 0, 0, 70 ) )
+    holoColor( X, vec( 0, 56, 0 ) )
+    holoAng( X, ang( 0, 0, 0 ) )
+    holoParent(X, E )
+   
+    X++ 
+    
+    holoCreate( X )
+    holoModel( X, "hq_cone" )
+    holoScale( X, vec( 60, 60, 60 )/12 )
+    holoPos( X, E:pos() + vec( 0, 0, 60 ) )
+    holoColor( X, vec( 0, 56, 0 ) )
+    holoAng( X, ang( 0, 0, 0 ) )
+    holoParent(X, E )
+   
+    X++ 
+    
+    holoCreate( X )
+    holoModel( X, "hq_cone" )
+    holoScale( X, vec( 70, 70, 70 )/12 )
+    holoPos( X, E:pos() + vec( 0, 0, 50 ) )
+    holoColor( X, vec( 0, 56, 0 ) )
+    holoAng( X, ang( 0, 0, 0 ) )
+    holoParent(X, E )
+   
+    X++ 
+    
+    #Trunk
+    
+    holoCreate( X )
+    holoModel( X, "hq_cylinder" )
+    holoScale( X, vec( 10, 10, 20 )/12 )
+    holoPos( X, E:pos() + vec( 0, 0, 5 ) )
+    holoColor( X, vec( 51, 37, 0 ) )
+    holoAng( X, ang( 0, 0, 0 ) )
+    holoParent(X, E )
+   
+    X++ 
+    
+    #Gifts  
+    
+    holoCreate( X )
+    holoModel( X, "cube" )
+    holoScale( X, vec( 10, 10, 10 )/12 )
+    holoPos( X, E:pos() + vec( 0, 20, 5 ) )
+    holoColor( X, vec( 255, 0, 0 ) )
+    holoAng( X, ang( 0, 0, 0 ) )
+    holoParent(X, E )
+   
+    X++ 
+     
+    holoCreate( X )
+    holoModel( X, "cube" )
+    holoScale( X, vec( 10, 10, 10 )/12 )
+    holoPos( X, E:pos() + vec( 5, -20, 5 ) )
+    holoColor( X, vec( 0, 0, 255 ) )
+    holoAng( X, ang( 0, 0, 0 ) )
+    holoParent(X, E )
+   
+    X++ 
+
+    holoCreate( X )
+    holoModel( X, "cube" )
+    holoScale( X, vec( 10, 10, 10 )/12 )
+    holoPos( X, E:pos() + vec( -10, -17, 5 ) )
+    holoColor( X, vec( 255, 0, 255 ) )
+    holoAng( X, ang( 0, 0, 0 ) )
+    holoParent(X, E )
+   
+    X++ 
+    
+    holoCreate( X )
+    holoModel( X, "cube" )
+    holoScale( X, vec( 10, 10, 15 )/12 )
+    holoPos( X, E:pos() + vec( 15, -17, 5 ) )
+    holoColor( X, vec( 0, 255, 255 ) )
+    holoAng( X, ang( 0, 0, 0 ) )
+    holoParent(X, E )
+   
+    X++ 
+    
+    holoCreate( X )
+    holoModel( X, "cube" )
+    holoScale( X, vec( 10, 10, 5 )/12 )
+    holoPos( X, E:pos() + vec( 15, -0, 2 ) )
+    holoColor( X, vec( 255, 255, 0 ) )
+    holoAng( X, ang( 0, 0, 0 ) )
+    holoParent(X, E )
+   
+    X++ 
+    
+    #star
+    
+    holoCreate( X )
+    holoModel( X, "models/balloons/balloon_star.mdl" )
+    holoScale( X, vec( 10, 10, 10 )/12 )
+    holoPos( X, E:pos() + vec( 0, 0, 105 ) )
+    holoColor( X, vec( 255, 255, 0 ) )
+    holoAng( X, ang( 0, 0, 0 ) )
+    holoParent(X, E )
+    
+    X++

@@ -1,0 +1,516 @@
+@name Prop to Holo
+@persist [B O]:entity [Ent Clr MsA]:array I CI MsI MsNS [Wep Name C]:string Ms
+
+#[
+INFO:
+
+https://web.archive.org/web/20150501152003/http://www.wiremod.com/forum/finished-contraptions/33787-e2-prop-holo-release-3-a.html
+
+This guy deserves a lot of props for that.
+
+Anyways, I was inspired to remake my prop-to-holo chip once again. This time around, I optimized it in terms of e2 performance (in the e2 itself, not purposely, if at all, in the export) and readability (in both the e2 and export, so you can add extra props after the fact). The instructions are simple: Take your grav gun out, select your base prop and props you want to export, type "-save <name>", and use that export to your liking. If you need more help, go ahead and ask, since I'm too conceited to see a problem, and I'm putting this statement here to counter it.
+
+I made a video showing off how I could do it in a snap. In real time, it took me like 7-9 minutes in total.
+
+FOR PART 2 CODE SEE AT THE VERY END
+
+]#
+
+if(first())
+{
+    runOnChat(1)
+    runOnLast(1)
+    
+    #[
+    Scans through an array of entities to find E.
+    Returns the index where E is found if it is...
+    found in the array, otherwise 0.
+    ]#
+    function number array:validate(E:entity)
+    {
+        if(!This:count())
+        {
+            return 0
+        }
+        
+        foreach(I, TE:entity = This)
+        {
+            if(TE == E)
+            {
+                return I
+            }
+        }
+        
+        return 0
+    }
+    
+    #Formats day, month, and year numbers from time(String) into a nice string as "Nth of Month, Year"
+    function string formatTime(Day, Month, Year)
+    {
+        local Day = time("day")
+        local DayS = Day + ((Day == 0 | Day > 3) ? "th" : (Day == 1) ? "st" : (Day == 2) ? "nd" : "rd")
+        
+        local Month = time("month")
+        switch(Month)
+        {
+            case 1,
+                MonthS = "January"
+            break
+            
+            case 2,
+                MonthS = "February"
+            break
+            
+            case 3,
+                MonthS = "March"
+            break
+            
+            case 4,
+                MonthS = "April"
+            break
+            
+            case 5,
+                MonthS = "May"
+            break
+            
+            case 6,
+                MonthS = "June"
+            break
+            
+            case 7,
+                MonthS = "July"
+            break
+            
+            case 8,
+                MonthS = "August"
+            break
+            
+            case 9,
+                MonthS = "September"
+            break
+            
+            case 10,
+                MonthS = "October"
+            break
+            
+            case 11,
+                MonthS = "November"
+            break
+            
+            case 12,
+                MonthS = "December"
+            break
+        }
+        
+        return DayS + " of " + MonthS + ", " + Year
+    }
+    
+    print("]Welcome to prop to holo!\n]With your gravity gun:\n-Press E to select a prop\n-R to select a base prop\n-And type \"-save <filename.txt>\" to save your file")
+    print("]Remember the fact that the base prop is not important, and should not incorporate the prop to holo, as it will not be exported.")
+    #Extra print because of first one didn't print the entire string
+    
+    Wep = "weapon_physcannon"
+    
+    O = owner()
+    
+    timer("t1", 75)
+}elseif(clk("t1")) #Main timer
+{
+    timer("t1", 75)
+    
+    if(O:weapon():type() == Wep)
+    {
+        local AreaSelection = O:keyWalk()
+        local BaseSelect = O:keyReload()
+        local PropSelect = O:keyUse()
+        
+        if(changed(AreaSelection) & AreaSelection)
+        {
+            Ms = !Ms
+            
+            hint("Area Selection toggled to " + Ms, 3)
+            
+            if(!Ms & CI >= 2)
+            {
+                findInBox(holoEntity(3):pos(), holoEntity(4):pos())
+                MsA = findToArray()
+                MsNS = 1 #Multi-selection Needs Settling
+            }
+        }
+        if(Ms)
+        {
+            if(changed(PropSelect) & PropSelect)
+            {
+                CI++
+                if(CI % 2)
+                {
+                    holoCreate(3, O:shootPos() + O:eye() * 75, vec(1), ang(), vec(0, 255, 0))
+                    holoMaterial(3, "models/debug/debugwhite")
+                    holoAlpha(3, 150)
+                }else
+                {
+                    holoCreate(4, O:shootPos() + O:eye() * 75, vec(1), ang(), vec(0, 255, 0))
+                    holoMaterial(4, "models/debug/debugwhite")
+                    holoAlpha(4, 150)
+                }
+            }
+            if(CI >= 2)
+            {
+                if(changed(CI >= 2))
+                {
+                    holoCreate(1)
+                    holoAng(1, ang())
+                    holoModel(1, "models/sprops/cuboids/height96/size_1/cube_96x96x96.mdl")
+                    holoMaterial(1, "models/debug/debugwhite")
+                    holoColor(1, vec4(0, 255, 0, 150))
+                    
+                    holoCreate(2)
+                    holoAng(2, ang())
+                    holoModel(2, "models/sprops/cuboids/height96/size_1/cube_96x96x96.mdl")
+                    holoMaterial(2, "models/debug/debugwhite")
+                    holoColor(2, vec4(0, 255, 0, 150))
+                }
+                
+                local DV = holoEntity(3):pos() - holoEntity(4):pos()
+                local Avg = (holoEntity(3):pos() + holoEntity(4):pos()) / 2
+                
+                holoPos(1, Avg)
+                holoScale(1, vec(abs(DV:x()), abs(DV:y()), abs(DV:z())) / 96)
+                
+                holoPos(2, Avg)
+                holoScale(2, -vec(abs(DV:x()), abs(DV:y()), abs(DV:z())) / 94)
+            }
+        }else
+        {
+            if(MsNS)
+            {
+                if(MsI < MsA:count())
+                {
+                    while(perf() & MsI < MsA:count())
+                    {
+                        MsI++
+                        local TE = MsA[MsI, entity]
+                        #If the prop we're dealing with isn't in our main array or...
+                        #isn't the base prop, corner prop 1, or corner prop 2
+                        if(!Ent:validate(TE) & TE != B & TE != entity() & TE:type():find("prop_"))
+                        {
+                            Clr:pushVector4(TE:getColor4())
+                            Ent:pushEntity(TE)
+                            
+                            TE:propFreeze(1)
+                            TE:setColor(vec4(0, 255, 0, 150))
+                        }
+                    }
+                }else
+                {
+                    hint("A total of " + MsA:count() + " props have been selected.", 3)
+                    
+                    MsI = 0
+                    
+                    MsA = array()
+                    
+                    holoDelete(1)
+                    holoDelete(2)
+                    holoDelete(3)
+                    holoDelete(4)
+                    
+                    MsNS = 0
+                }
+            }
+            
+            #Base Selection
+            if(changed(BaseSelect) & BaseSelect)
+            {
+                local AE = O:aimEntity()
+                if(AE:isValid())
+                {
+                    if(B:isValid())
+                    {
+                        if(B == AE)
+                        {
+                            hint("Deselecting base", 3)
+                            B:setColor(vec4(255))
+                            B = noentity()
+                        }else
+                        {
+                            hint("Deselect your current base prop before selecting another", 3)
+                        }
+                    }else
+                    {
+                        hint("Base prop selected", 3)
+                        B = AE
+                        B:propFreeze(1)
+                        B:setColor(255, 0, 0, 150)
+                    }
+                }
+            }
+            
+            #Prop Selection
+            if(changed(PropSelect) & PropSelect)
+            {
+                local AE = O:aimEntity()
+                if(AE:isValid())
+                {
+                    local Val = Ent:validate(AE)
+                    
+                    #[
+                    As Val is the index in which AE is found in Ent (0 if not found)...
+                    AE will be removed from the arrays if it is found in the array...
+                    and added to the array otherwise.
+                    ]#
+                    if(Val)
+                    {
+                        AE:setColor(Clr[Val, vector4])
+                        
+                        Ent:remove(Val)
+                        Clr:remove(Val)
+                    }else
+                    {
+                        if(AE == B)
+                        {
+                            hint("You cannot select your base prop", 3)
+                        }else
+                        {
+                            Clr:pushVector4(AE:getColor4())
+                            Ent:pushEntity(AE)
+    						                  #Need color array because of need to change a prop's color in order to show it has been selected
+                            
+                            AE:propFreeze(1)
+                            AE:setColor(0, 255, 0, 150)
+                        }
+                    }
+                    
+                    hint("Total prop count: " + Ent:count(), 3)
+                }
+            }
+        }
+    }
+}elseif(clk("t2")) #Export timer
+{
+    timer("t2", 200)
+    
+    if(I < Ent:count())
+    {
+        while(perf() & I < Ent:count())
+        {
+            I++
+            local TE = Ent[I, entity]
+            C += "\nP2HTable[" + I + ", array] = array(\""+ TE:model() + "\", \"" + TE:getMaterial() + "\", " + TE:getSkin() + ", vec4(" + (toString(round(Clr[I, vector4], 4)) + "), vec(" + round(B:toLocal(TE:pos()), 4) + "), ang(" + round(B:toLocal(TE:angles()), 4)):replace("[", ""):replace("]", "") + "))"
+        }
+        
+        
+    }else
+    {
+        C += "
+        
+#Put this in a place that runs on an interval (i.e interval, runOnTick, timers, etc.)
+if(P2HI < P2HC)
+{
+    while(perf() & holoCanCreate() & P2HI < P2HC)
+    {
+        P2HI++
+        local TA = P2HTable[P2HI, array]
+        local TI = P2HI + P2HOI
+        
+        holoCreate(TI, P2HBase:toWorld(TA[5, vector] * P2HScale), vec(P2HScale), P2HBase:toWorld(TA[6, angle]))
+        holoModel(TI, TA[1, string])
+        holoMaterial(TI, TA[2, string])
+        holoSkin(TI, TA[3, number])
+        holoColor(TI, TA[4, vector4])
+        holoParent(TI, P2HBase)
+    }
+}
+
+#[
+General tips:
+-If you wanna make a group of holograms to change their material and/or colors all together,...
+make your props you want to group a certain material and then you can put in the while loop to...
+add the holo index (TI) to an array if the material is such and print out the array once all the...
+holos are generated, and then you can use that to your liking
+
+-If you want to use multiple prop to holo exports in 1 e2, which is the reason I had redesigned...
+this e2, use the find menu's replace tab to replace \"P2H\" with \"P2H<1, 2, 3, etc.>\"...
+without the < and >, of course, and then copy the exoprt over
+]#"
+
+        if(fileCanWrite())
+        {
+            foreach(I, TE:entity = Ent)
+            {
+                TE:setColor(Clr[I, vector4])
+            }
+            B:setColor(vec4(255))
+            
+            fileWrite(">e2shared/" + Name + ".txt", C)
+            
+            print("e2 saved in your \"e2shared\" folder.\nUpdate your e2 list by clicking that button at the bottom, open the folder, and see your e2.")
+            
+            selfDestruct()
+        }
+    }
+}
+
+if(chatClk(O))
+{
+    local LS = owner():lastSaid():lower():explode(" ")
+    if(LS[1, string] == "-save")
+    {
+        hideChat(1)
+        if(Ent:count() > 0)
+        {
+            if(B:isValid())
+            {
+                Name = LS:concat("_", 2):replace(".txt", "")
+                
+                
+                C = "#Prop to holo export \"" + Name + "\" on the " + formatTime(time("day"), time("month"), time("year")) + "
+                
+#Put this chunk inside some place like if(first()) where it runs only once
+@persist P2HI P2HOI P2HC P2HScale P2HBase:entity P2HTable:table
+P2HC = "+Ent:count()+"
+P2HTI = 0\nP2HOI = 0
+P2HBase = entity() #Change to whatever entity you wish
+P2HScale = 1 #Change to whatever scale you'd like your export to be in
+#Model, Material, Skin, Color, Position, and Angle (both position and angle are relative to base)"
+                
+                timer("t2", 200)
+            }else
+            {
+                print("You need to have a base prop selected in order to save your e2.")
+            }
+        }else
+        {
+            print("You need to have selected at least 1 prop in order to save.")
+        }
+    }
+}
+
+
+#[
+INFO:
+
+https://web.archive.org/web/20150501152003/http://www.wiremod.com/forum/finished-contraptions/33787-e2-prop-holo-release-3-a.html
+
+This guy deserves a lot of props for that.
+
+Anyways, I was inspired to remake my prop-to-holo chip once again. This time around, I optimized it in terms of e2 performance (in the e2 itself, not purposely, if at all, in the export) and readability (in both the e2 and export, so you can add extra props after the fact). The instructions are simple: Take your grav gun out, select your base prop and props you want to export, type "-save <name>", and use that export to your liking. If you need more help, go ahead and ask, since I'm too conceited to see a problem, and I'm putting this statement here to counter it.
+
+I made a video showing off how I could do it in a snap. In real time, it took me like 7-9 minutes in total.
+
+Now that inverse-kinematics function isn't entirely mine. Artik had given me the little bit and I turned it into a function for him. I was gonna exclude it, which is why you see #include "lib/functions" in the video, but I got over that because you can find it on the forums with some searching.
+I feel like a bitch for making this post, Artik. Sorry bout that.
+
+Update: Added scale and area selection
+
+@name Prop to Holo Example Leg
+@persist [E Foot Femur]:entity
+@persist P2HI P2HOI P2HC P2HBase:entity P2HTable:table
+@persist P2H2I P2H2OI P2H2C P2H2Base:entity P2H2Table:table
+ 
+interval(100)
+ 
+if(first())
+{
+    function number cosine(A, B, C)
+    {
+        return acos((A^2 + B^2 - C^2) / (2*A*B))
+    }
+   
+    function ik(L1,L2,Hip:entity,Foot:vector,Chassis:entity,I1,I2)
+    {    
+        local Axis = Chassis:toLocalAxis(Foot - Hip:pos())
+        local Angle = Axis:toAngle():setRoll(-bearing(Hip:pos(), Chassis:angles(), Foot))
+        local Dist = min(Axis:length(), L1 + L2)
+        local Quat = quat(Angle) * qRotation(vec(0,90 + cosine(Dist, L1, L2),0))
+       
+        holoAng(I1, Chassis:toWorld(Quat:toAngle()))
+        holoAng(I2, Hip:toWorld(ang(cosine(L2, L1, Dist) + 180, 0, 0)))
+    }
+   
+    runOnLast(1)
+   
+    E = entity()
+   
+    Foot = propSpawn("models/sprops/geometry/sphere_12.mdl", owner():shootPos() + (owner():eye() * 60) + vec(0, 0, 5), 1)
+   
+    #Hip Holo
+    holoCreate(1)
+    holoParent(1, E)
+   
+    #Knee Holo
+    holoCreate(2, holoEntity(1):toWorld(vec(0, 0, 40)))
+    holoParent(2, 1)
+   
+    #Foot Holo
+    holoCreate(3, holoEntity(2):toWorld(vec(0, 0, 40)))
+    holoParent(3, 2)
+   
+    #Femur Holo
+    holoCreate(4, holoEntity(1):toWorld(vec(0, 0, 20)), vec())
+    holoParent(4, 1)
+   
+    #Tibia Holo
+    holoCreate(5, holoEntity(2):toWorld(vec(0, 0, 20)), vec())
+    holoParent(5, 2)
+   
+    P2HC = 2
+    P2HTI = 0
+    P2HOI = 5
+    P2HBase = holoEntity(4) #Change to whatever entity you wish
+    #Model, Material, Skin, Color, Position, and Angle (both position and angle are relative to base)
+    P2HTable[1, array] = array("models/props_junk/propane_tank001a.mdl", "", 0, vec4(255,255,255,255), vec(14.54174709,-0.51611328,6.05078363), ang(-0.19132827,-32.61684418,-0.26326972))
+    P2HTable[2, array] = array("models/props_junk/sawblade001a.mdl", "", 0, vec4(255,255,255,255), vec(-0.02368363,-12.27539062,11.38964844), ang(-75.47806549,-6.86957407,-78.01259613))
+   
+    P2H2C = 4
+    P2H2TI = 0
+    P2H2OI = 7
+    P2H2Base = holoEntity(5) #Change to whatever entity you wish
+    #Model, Material, Skin, Color, Position, and Angle (both position and angle are relative to base)
+    P2H2Table[1, array] = array("models/props_c17/furnituretoilet001a.mdl", "", 0, vec4(255,255,255,255), vec(-12.34448814,-12.25439453,31.21679497), ang(-6.20104742,-9.98744869,-9.00301838))
+    P2H2Table[2, array] = array("models/props_combine/breenchair.mdl", "", 0, vec4(255,255,255,255), vec(11.14819527,23.08740234,-11.47753716), ang(-8.42744064,75.19940186,-2.09052467))
+    P2H2Table[3, array] = array("models/cranes/crane_frame.mdl", "", 0, vec4(255,255,255,255), vec(-93.87014008,119.55957031,138.18650818), ang(-82.93695068,-172.15899658,-175.0196991))
+    P2H2Table[4, array] = array("models/props_junk/PropaneCanister001a.mdl", "", 0, vec4(255), vec(15, 0, 25), ang()) #Added in-code
+}
+ 
+if(P2HI < P2HC)
+{
+    while(perf() & holoCanCreate() & P2HI < P2HC)
+    {
+        P2HI++
+        local TA = P2HTable[P2HI, array]
+        local TI = P2HI + P2HOI
+ 
+        holoCreate(TI, P2HBase:toWorld(TA[5, vector]), vec(1), P2HBase:toWorld(TA[6, angle]))
+        holoModel(TI, TA[1, string])
+        holoMaterial(TI, TA[2, string])
+        holoSkin(TI, TA[3, number])
+        holoColor(TI, TA[4, vector4])
+        holoParent(TI, P2HBase)
+    }
+}elseif(P2H2I < P2H2C)
+{
+    while(perf() & holoCanCreate() & P2H2I < P2H2C)
+    {
+        P2H2I++
+        local TA = P2H2Table[P2H2I, array]
+        local TI = P2H2I + P2H2OI
+ 
+        holoCreate(TI, P2H2Base:toWorld(TA[5, vector]), vec(1), P2H2Base:toWorld(TA[6, angle]))
+        holoModel(TI, TA[1, string])
+        holoMaterial(TI, TA[2, string])
+        holoSkin(TI, TA[3, number])
+        holoColor(TI, TA[4, vector4])
+        holoParent(TI, P2H2Base)
+    }
+}else
+{
+    ik(40, 40, holoEntity(1), Foot:pos(), E, 1, 2)
+}
+ 
+if(last())
+{
+    Foot:propDelete()
+}
+
+
+]#

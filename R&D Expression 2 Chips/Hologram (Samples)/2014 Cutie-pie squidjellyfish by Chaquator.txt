@@ -1,0 +1,137 @@
+@name Cutiepie Sea Creature
+@persist A:angle N [E H1 H2 H3 H4]:entity CA [AA1 AA2 AA3 AA4]:array
+@model models/hunter/blocks/cube05x05x05.mdl
+
+
+if(first() | duped() | dupefinished())
+{
+    runOnTick(1)
+    
+    local RI = randint(0,1)
+    local Clr = RI ? vec(255,100,255) : vec(30,100,150)
+    
+    setName("qt3.14 "+(RI ? "jellyfish" : "squid"))
+    E = entity()
+    E:propGravity(0)
+    E:propFreeze(0)
+    E:setMaterial("models/debug/debugwhite")
+    E:setColor(Clr)
+    
+    H1 = holoCreate(1,E:toWorld(vec(7,7,-12)),vec(0.5,0.5,1))
+    H2 = holoCreate(11,E:toWorld(vec(-7,7,-12)),vec(0.5,0.5,1))
+    H3 = holoCreate(21,E:toWorld(vec(7,-7,-12)),vec(0.5,0.5,1))
+    H4 = holoCreate(31,E:toWorld(vec(-7,-7,-12)),vec(0.5,0.5,1))
+    
+    holoColor(1,Clr)
+    holoColor(11,Clr)
+    holoColor(21,Clr)
+    holoColor(31,Clr)
+    
+    holoParent(1,E)
+    holoParent(11,E)
+    holoParent(21,E)
+    holoParent(31,E)
+    
+    for(I=2,10)
+    {
+        local J = I-1
+        holoCreate(I,H1:toWorld(vec(0,0,-J*12)),vec(0.5,0.5,1))
+        holoColor(I,Clr)
+        holoParent(I,J==1 ? H1 : holoEntity(J))
+    }
+    
+    for(I=12,20)
+    {
+        local J = I-1
+        local K = I-11
+        holoCreate(I,H2:toWorld(vec(0,0,-K*12)),vec(0.5,0.5,1))
+        holoColor(I,Clr)
+        holoParent(I,K==1 ? H2 : holoEntity(J))
+    }
+    
+    for(I=22,30)
+    {
+        local J = I-1
+        local K = I-21
+        holoCreate(I,H3:toWorld(vec(0,0,-K*12)),vec(0.5,0.5,1))
+        holoColor(I,Clr)
+        holoParent(I,K==1 ? H3 : holoEntity(J))
+    }
+    
+    for(I=32,40)
+    {
+        local J = I-1
+        local K = I-31
+        holoCreate(I,H4:toWorld(vec(0,0,-K*12)),vec(0.5,0.5,1))
+        holoColor(I,Clr)
+        holoParent(I,K==1 ? H4 : holoEntity(J))
+    }
+    
+    timer("tick",90)
+}
+
+if(clk("tick"))
+{
+    stoptimer("tick")
+    timer("tick",90)
+    
+    AA1:unshiftAngle(H1:angles())
+    AA1:remove(11)
+    for(I=2,10)
+    {
+        local J = I-1
+        holoAng(I,AA1[J,angle])
+    }
+    
+    AA2:unshiftAngle(H2:angles())
+    AA2:remove(11)
+    for(I=12,20)
+    {
+        local J = I-11
+        holoAng(I,AA2[J,angle])
+    }
+    
+    AA3:unshiftAngle(H3:angles())
+    AA3:remove(11)
+    for(I=22,30)
+    {
+        local J = I-21
+        holoAng(I,AA3[J,angle])
+    }
+    
+    AA4:unshiftAngle(H4:angles())
+    AA4:remove(11)
+    for(I=32,40)
+    {
+        local J = I-31
+        holoAng(I,AA4[J,angle])
+    }
+}
+
+N+=3
+holoAng(1,E:toWorld(ang(-10+sin(N)*10,0,10-sin(N)*10)))
+holoAng(11,E:toWorld(ang(10-sin(N)*10,0,10-sin(N)*10)))
+holoAng(21,E:toWorld(ang(-10+sin(N)*10,0,-10+sin(N)*10)))
+holoAng(31,E:toWorld(ang(10-sin(N)*10,0,-10+sin(N)*10)))
+
+A *= 0.95
+
+applyForce((E:up()*max(cos(N)*15,0)-E:vel()*0.015625)*E:mass())
+applyAngForce((A-E:angVel()*0.03125)*E:mass())
+
+CA = cos(N) > 0.5
+if(changed(CA))
+{
+    if(CA)
+    {
+        local R = 5
+        A = ang(random(-R,R),random(-R,R),random(-R,R))
+    }
+}
+
+RD = rangerOffset(300,E:pos(),E:up())
+if(RD:hit())
+{
+    applyForce(-E:up()*20*E:mass())
+    applyAngForce(ang(15,0,0)*E:mass())
+}

@@ -1,0 +1,154 @@
+@name Weapon Picker
+@inputs 
+@outputs 
+@persist M:string
+@trigger 
+
+runOnTick(1)
+runOnChat(1)
+
+A=owner():lastSaid()
+W=owner():weapon():type()
+
+if(W=="weapon_crowbar"){
+    holoAlpha(2,255)
+    holoAlpha(1,0)
+    owner():weapon():setAlpha(0)
+} 
+
+else{
+    holoAlpha(2,0)
+    holoAlpha(1,0)
+}
+
+if(first()){
+    holoCreate(1)
+    holoPos(1,owner():attachmentPos("anim_attachment_RH") + vec(0,0,0))
+    holoAng(1,owner():attachmentAng("anim_attachment_RH") + ang(0,0,0))
+    holoParentAttachment(1,owner(),"anim_attachment_RH")
+    holoModel(1,"cube")
+    holoCreate(2)
+    holoPos(2,holoEntity(1):toWorld(vec(0,0,0)))
+    holoAng(2,holoEntity(1):toWorld(ang(0,0,0)))
+    holoParent(2,1)
+    hint("Check the chatbox",10)
+    print("Below is a list of weapons you can use by typing them into the chat (case sensative)")
+    print("_________________________________________________")
+    print("Fix (if the object is not in your hand)")
+    print("Crowbar")
+    print("Harpoon")
+    print("Baby")
+    print("Shoe")
+    print("Shovel")
+    print("Sign")
+    print("Pipe")
+    print("Lamp")
+    print("Broom")
+    print("Chair")
+    print("Pot")
+    print("Keyboard")
+    print("Vase")
+}
+
+switch(A){
+    case "Fix",
+        holoPos(1,owner():attachmentPos("anim_attachment_RH") + vec(0,0,0))
+        holoAng(1,owner():attachmentAng("anim_attachment_RH") + ang(0,0,0))
+        holoParentAttachment(1,owner(),"anim_attachment_RH")
+        holoPos(2,holoEntity(1):toWorld(vec(0,0,0)))
+        holoAng(2,holoEntity(1):toWorld(ang(0,0,0)))
+        holoParent(2,1)
+        hideChat(1)
+    break
+    
+    case "Crowbar",
+        holoModel(2,"models/weapons/w_crowbar.mdl")
+        holoAng(2,holoEntity(1):toWorld(ang(100,0,225)))
+        holoPos(2,holoEntity(1):toWorld(vec(0.7,0,0)))
+        hideChat(1)
+    break
+    
+    case "Harpoon",
+        holoModel(2,"models/props_junk/harpoon002a.mdl")
+        holoAng(2,holoEntity(1):toWorld(ang(280,0,225)))
+        holoPos(2,holoEntity(1):toWorld(vec(0.7,0,0)))
+        hideChat(1)
+    break
+    
+    case "Baby",
+        holoModel(2,"models/props_c17/doll01.mdl")
+        holoAng(2,holoEntity(1):toWorld(ang(0,0,180)))
+        holoPos(2,holoEntity(1):toWorld(vec(0.7,0,8)))
+        hideChat(1)
+    break
+    
+    case "Shoe",
+        holoModel(2,"models/props_junk/Shoe001a.mdl")
+        holoAng(2,holoEntity(1):toWorld(ang(0,0,180)))
+        holoPos(2,holoEntity(1):toWorld(vec(4,0,4)))
+        hideChat(1)
+    break
+    
+    case "Shovel",
+        holoModel(2,"models/props_junk/Shovel01a.mdl")
+        holoAng(2,holoEntity(1):toWorld(ang(0,90,180)))
+        holoPos(2,holoEntity(1):toWorld(vec(1,-2,8)))
+        hideChat(1)
+    break
+    
+    case "Sign",
+        holoModel(2,"models/props_lab/bewaredog.mdl")
+        holoAng(2,holoEntity(1):toWorld(ang(0,90,0)))
+        holoPos(2,holoEntity(1):toWorld(vec(0,0,-4)))
+        hideChat(1)
+    break
+    
+    case "Pipe",
+        holoModel(2,"models/props_canal/mattpipe.mdl")
+        holoAng(2,holoEntity(1):toWorld(ang(170,-90,25)))
+        holoPos(2,holoEntity(1):toWorld(vec(0.7,0,0)))
+        hideChat(1)
+    break
+    
+    case "Lamp",
+        holoModel(2,"models/props_interiors/Furniture_Lamp01a.mdl")
+        holoAng(2,holoEntity(1):toWorld(ang(0,0,0)))
+        holoPos(2,holoEntity(1):toWorld(vec(0.7,0,25)))
+        hideChat(1)
+    break
+    
+    case "Broom",
+        holoModel(2,"models/props_c17/pushbroom.mdl")
+        holoAng(2,holoEntity(1):toWorld(ang(-60,0,0)))
+        holoPos(2,holoEntity(1):toWorld(vec(-1,0,0)))
+        hideChat(1)
+    break
+    
+    case "Chair",
+        holoModel(2,"models/props_interiors/Furniture_chair01a.mdl")
+        holoAng(2,holoEntity(1):toWorld(ang(0,0,0)))
+        holoPos(2,holoEntity(1):toWorld(vec(8.5,9,18)))
+        hideChat(1)
+    break
+    
+    case "Pot",
+        holoModel(2,"models/props_interiors/pot02a.mdl")
+        holoAng(2,holoEntity(1):toWorld(ang(10,0,90)))
+        holoPos(2,holoEntity(1):toWorld(vec(2.5,2,8)))
+        hideChat(1)
+    break
+    
+    case "Keyboard",
+        holoModel(2,"models/props_c17/computer01_keyboard.mdl")
+        holoAng(2,holoEntity(1):toWorld(ang(-150,-90,90)))
+        holoPos(2,holoEntity(1):toWorld(vec(2,0,7)))
+        hideChat(1)
+    break
+    
+    case "Vase",
+        holoModel(2,"models/props_c17/pottery08a.mdl")
+        holoAng(2,holoEntity(1):toWorld(ang(0,0,180)))
+        holoPos(2,holoEntity(1):toWorld(vec(0.7,0,30)))
+        hideChat(1)
+    break
+}

@@ -1,0 +1,38 @@
+@name Epiks Trig Holo -User edition/Guest
+@persist Time  X Z Y HOLO Spinning Sin Cos Tan
+interval(20)
+if (first())## Settings here
+{
+    #amount of holos
+    HOLO = 10
+    #e2 spinning 0 is no 1 is yes
+    Spinning = 0
+    #enable sin
+    Sin = 1
+    #enable cos
+    Cos = 1
+    #enable tan
+    Tan = 0
+}
+#
+Time += 1
+for(I = 1,HOLO){
+    if (Sin == 1) {
+    X = sin(Time+(I*30))*-30
+}
+if (Cos == 1) {
+    Z = cos(Time+(I*30))*-30
+}
+if (Tan == 1) {
+    Y = tan(Time+(I*30))*30
+}
+    holoCreate(I)
+    holoPos(I,entity():toWorld(vec(I*30,0,0)))
+    holoPos(I,holoEntity(I):pos()+vec(Y,Z,X))
+} 
+if (Spinning == 1) {
+entity():setAng(ang(0,Time,0))
+}
+#[[
+Made By Epikly!!
+]]#

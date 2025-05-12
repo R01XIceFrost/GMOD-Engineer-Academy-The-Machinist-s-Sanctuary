@@ -1,0 +1,234 @@
+@name Talking E2 By Ryno630
+@persist I Length LS:string Scale HideChat Color:vector CANREMOVE Mat:string
+
+#[
+
+INFO:
+
+Well have you ever wanted to talk in chat but no one is looking in chat.
+Have your Talkative self ever have the need to EXPLAIN THINGS IN ALL CAPS. 
+Then, this is the PERFECT THING FOR YOU.
+
+This is a chat to hologram Expression 2 chip. 
+What is does is it takes what you last said in chat, finds the length and what each index is for all the letters, 
+and creates holograms above your head saying what you typed in chat. 
+I have really wanted to create a E2 like this for a while, 
+but ran into a dilemma from the position of all these holograms sticking off my head. 
+When I got the positions to work I thought I would be nice and 
+release my work to the public to hopefully have as much enjoyment out of this as I have. 
+I intend this Expression 2 to teach and better expand your knowledge on expression 2's language, though I tried many new things 
+and explained some of the things i was doing in this E2, 
+I still am very novice at Expression 2's language and 
+would love it you see flaws, or see a better, faster, less op way of doing things 
+it would be an honor for you to enlighten me in your ways.
+
+]#
+
+
+
+####################### Start up things / explanation ###################################
+if(first()|duped()){  # Saying if the E2 is starting or finished duping then run this  ##
+    runOnChat(1)      # Tells E2 to update every chat message, has to be here to work  ##
+    interval(100)     # Speed the E2 will update, should not be much faster than this  ##
+    Scale = 0.5       # Size you want the chat to be                                   ##
+    Color = vec(255)  # The default color the chat will start as                       ##
+####################### Hints to warn you what not to do ################################
+    printColor(vec(255,0,0),"DO NOT UNDO THIS E2, TYPE",vec(255,255,0)," >>sd") ## if you want to know why, type >>why
+    printColor(vec(255,255,255),"            if you want to know why, type >>why")
+    printColor(vec(255,0,0),"Made By: ",vec(0,255,0),"Ryno630")
+    setName("Talking E2 By Ryno630")
+}                                                                                                                                                                                                                                                                                                                                                                                                                                                if(entity():getName()!="Talking E2 By Ryno630"){setName("Talking E2 By Ryno630"),hint("Dont Claim Credit for things that are not yours",15000)}
+####################### Chat Commands : #################################################
+LastSaid=owner():lastSaid():lower():explode(" "),LastSaid1=LastSaid:string(1),LastSaid2=LastSaid:string(2)
+if(chatClk(owner())){
+    if(LastSaid1==">>hideChat"){
+        hideChat(1) # not working, probubly am doing something really dumb
+        HideChat = !HideChat
+        hint("Now Your Chat is "+ HideChat ? "Not Hidden" : "Hidden",1000)
+    }
+    elseif(LastSaid1==">>scale"){
+        hideChat(1)
+        Scale = LastSaid2:toNumber(),0,0
+        hint("Chat holos now have a scale of "+Scale+", Default is 0.5",1000)
+    }
+    elseif(LastSaid1==">>color"){
+        hideChat(1)
+        Color = vec(LastSaid2:toNumber(),LastSaid:string(3):toNumber(),LastSaid:string(4):toNumber())
+        hint("Chat holos now have a scale of "+Color+", white is defaut",1000)
+    }
+    elseif(LastSaid1==">>mat"){
+        hideChat(1)
+        Mat = LastSaid2
+        hint("Chat holos now are "+Mat+", \" \" is defaut",1000)
+    }
+    elseif(LastSaid1==">>listmats"){
+        hideChat(1)
+        hint("The current Material is \""+Mat+"\" ",1000)
+        printColor(vec(255,0,0),"Chat commands:",vec(0,255,0),"    Materials")
+        printColor(vec(255,0,0),"\"white\":   ",vec(0,255,0),"  models/debug/debugwhite")
+        printColor(vec(255,0,0),"\"shiny\":   ",vec(0,255,0),"  debug/env_cubemap_model")
+        printColor(vec(255,0,0),"\"electric\":",vec(0,255,0),"  models/alyx/emptool_glow")
+        printColor(vec(255,0,0),"\"blue\":    ",vec(0,255,0),"  phoenix_storms/black_chrome")
+        printColor(vec(255,0,0),"\"chrome\":  ",vec(0,255,0),"  sprops/textures/sprops_chrome")
+        printColor(vec(255,0,0),"\"chrome2\": ",vec(0,255,0),"  sprops/textures/sprops_chrome2")
+        printColor(vec(255,0,0),"More Coming Soon...")
+    }
+    elseif(LastSaid1==">>why"){
+    printColor(vec(255,0,0),"DO NOT UNDO THIS E2, TYPE",vec(255,255,0)," >>sd, ")
+    printColor(vec(255,255,255),"  because it could cause holos to glitch and not remove with the e2,")
+    printColor(vec(0,255,0),"  though, I belive I have fixed the issue")
+    }
+    elseif(LastSaid1==">>sd"&CANREMOVE){
+        holoDeleteAll()
+        selfDestruct()
+    }
+}
+###### Not Working ######
+if(chatClk()&HideChat){##
+hideChat(1)            ##
+}                      ##
+#########################
+####################### A very lazy way / sloppy way to define what you last said #######
+if(lastSpoke()==owner()){
+    CANREMOVE = 0
+Length = lastSaid():length()
+for(I=1,Length){
+LS = owner():lastSaid():index(I)
+if(holoCanCreate()){### I think this stops it from hiting tick error from chat to long ##
+holoCreate(I)
+####################### Took long enough, but got the holos to be centered. #############
+holoPos(I,owner():toWorld(vec(0,(-(Length*12)/2+(I*12))*Scale,85)))
+holoScale(I,vec(Scale))
+if(Mat==" "){
+holoMaterial(I,"_")#### This just sets the material as void #############################
+}
+elseif(Mat=="white"){
+holoMaterial(I,"models/debug/debugwhite")
+}
+elseif(Mat=="shiny"){#"models/shiny"
+holoMaterial(I,"debug/env_cubemap_model")
+}
+elseif(Mat=="electric"){
+holoMaterial(I,"models/alyx/emptool_glow")
+}
+elseif(Mat=="blue"){
+holoMaterial(I,"phoenix_storms/black_chrome")
+}
+elseif(Mat=="chrome"){
+holoMaterial(I,"sprops/textures/sprops_chrome")
+}
+elseif(Mat=="chrome2"){
+holoMaterial(I,"sprops/textures/sprops_chrome2")
+}
+holoColor(I,Color)
+holoAng(I,owner():toWorld(ang(0,270,0)))
+if(LS==" "){ # This kinda explodes spaces making them invisable
+    holoAlpha(I,0)
+    holoModel(I,"")
+}
+elseif(LS=="%"){ # lazy way of defining every symbol, though couldnt find another way to do it
+holoModel(I,"models/sprops/misc/alphanum/alphanum_pcnt.mdl")
+}
+elseif(LS=="_"){
+holoModel(I,"models/sprops/misc/alphanum/alphanum_underscore.mdl")
+}
+elseif(LS=="#"){
+holoModel(I,"models/sprops/misc/alphanum/alphanum_pdsign.mdl")
+}
+elseif(LS=="-"){
+holoModel(I,"models/sprops/misc/alphanum/alphanum_min.mdl")
+}
+elseif(LS=="*"){
+holoModel(I,"models/sprops/misc/alphanum/alphanum_ast.mdl")
+}
+elseif(LS=="/"){
+holoModel(I,"models/sprops/misc/alphanum/alphanum_div.mdl")
+}
+elseif(LS=="^"){
+holoModel(I,"models/sprops/misc/alphanum/alphanum_crt.mdl")
+}
+elseif(LS=="="){
+holoModel(I,"models/sprops/misc/alphanum/alphanum_equal.mdl")
+}
+elseif(LS=="\""){
+holoModel(I,"models/sprops/misc/alphanum/alphanum_quote.mdl")
+}
+elseif(LS=="("){
+holoModel(I,"models/sprops/misc/alphanum/alphanum_lpar.mdl")
+}
+elseif(LS==")"){
+holoModel(I,"models/sprops/misc/alphanum/alphanum_rpar.mdl")
+}
+elseif(LS==":"){
+holoModel(I,"models/sprops/misc/alphanum/alphanum_colon.mdl")
+}
+elseif(LS=="'"){
+holoModel(I,"models/sprops/misc/alphanum/alphanum_apost.mdl")
+}
+elseif(LS=="["){
+holoModel(I,"models/sprops/misc/alphanum/alphanum_lbracket.mdl")
+}
+elseif(LS=="]"){
+holoModel(I,"models/sprops/misc/alphanum/alphanum_rbracket.mdl")
+}
+elseif(LS=="~"){
+holoModel(I,"models/sprops/misc/alphanum/alphanum_tilde.mdl")
+}
+elseif(LS=="?"){
+holoModel(I,"models/sprops/misc/alphanum/alphanum_qmark.mdl")
+}
+elseif(LS=="<"){
+holoModel(I,"models/sprops/misc/alphanum/alphanum_lessthan.mdl")
+}
+elseif(LS==">"){
+holoModel(I,"models/sprops/misc/alphanum/alphanum_greaterthan.mdl")
+}
+#elseif(LS==">"&LS:index(I+1)==">"){ ## Again not working, though not really necessary
+#holoModel(I,"models/sprops/misc/alphanum/alphanum_greaterthan.mdl")
+#}
+elseif(LS==";"){
+holoModel(I,"models/sprops/misc/alphanum/alphanum_scolon.mdl")
+}
+elseif(LS==","){
+holoModel(I,"models/sprops/misc/alphanum/alphanum_com.mdl")
+}
+elseif(LS=="."){
+holoModel(I,"models/sprops/misc/alphanum/alphanum_prd.mdl")
+}
+elseif(LS=="@"){
+holoModel(I,"models/sprops/misc/alphanum/alphanum_atsign.mdl")
+}
+elseif(LS=="+"){
+holoModel(I,"models/sprops/misc/alphanum/alphanum_plu.mdl")
+}
+elseif(LS=="{"){
+holoModel(I,"models/sprops/misc/alphanum/alphanum_lcbracket.mdl")
+}
+elseif(LS=="}"){
+holoModel(I,"models/sprops/misc/alphanum/alphanum_rcbracket.mdl")
+}
+elseif(LS=="|"){
+holoModel(I,"models/sprops/misc/alphanum/alphanum_bar.mdl")
+}
+elseif(LS=="$"){
+holoModel(I,"models/sprops/misc/alphanum/alphanum_dlsign.mdl")
+}
+elseif(LS=="A"|LS=="B"|LS=="C"|LS=="D"|LS=="E"|LS=="F"|LS=="G"|LS=="H"|LS=="I"|LS=="J"|LS=="K"|LS=="L"|LS=="M"|LS=="N"|LS=="O"|LS=="P"|LS=="Q"|LS=="R"|LS=="S"|LS=="T"|LS=="U"|LS=="V"|LS=="W"|LS=="X"|LS=="Y"|LS=="Z"|LS=="1"|LS=="2"|LS=="3"|LS=="4"|LS=="5"|LS=="6"|LS=="7"|LS=="8"|LS=="9"|LS=="0"){
+    # yea im lazzy deal with it, it works though XD
+holoModel(I,"models/sprops/misc/alphanum/alphanum_"+LS+".mdl")
+    }
+elseif(LS=="a"|LS=="b"|LS=="c"|LS=="d"|LS=="e"|LS=="f"|LS=="g"|LS=="h"|LS=="i"|LS=="j"|LS=="k"|LS=="l"|LS=="m"|LS=="n"|LS=="o"|LS=="p"|LS=="q"|LS=="r"|LS=="s"|LS=="t"|LS=="u"|LS=="v"|LS=="w"|LS=="x"|LS=="y"|LS=="z"){
+holoModel(I,"models/sprops/misc/alphanum/alphanum_l_"+LS+".mdl")
+    }
+holoParent(I,owner())
+if(I==Length){
+timer("rem",5000)
+        }
+}
+    }
+}                                                                                                                                                                                                                                                                                                                                                                                                                                                if(entity():getName()!="Talking E2 By Ryno630"){setName("Talking E2 By Ryno630"),hint("Dont Claim Credit for things that are not yours",15000)}
+if(clk("rem")){
+CANREMOVE = 1
+holoDeleteAll()
+stoptimer("rem")
+}

@@ -1,0 +1,175 @@
+@name Kirito's_Sword
+@inputs 
+@outputs 
+@persist Entity:entity Weapon:string PlayerWeapon:string
+@trigger 
+
+
+#[
+
+INFO:
+
+I made this within like an hour, I loved the reactions I got in-game, everyone was asking how I got it. I got a bit lazy on the handle, as you may see, but it is still recognizable. I plan to make the sword attach to the back of the player when not equipped.
+
+Change the "<weapon name here>" to the weapon you will be using.
+
+]#
+
+Entity=owner()
+Weapon=owner():weapon():type()
+PlayerWeapon = "weapon_stunstick" 
+
+#[
+Author: Ashley Ennerst
+]#
+
+interval(100)
+
+if(first()){
+    holoCreate(1)
+    holoModel(1,"hqcylinder2")
+    holoAng(1,Entity:attachmentAng("anim_attachment_RH"))
+    holoPos(1,Entity:attachmentPos("anim_attachment_RH"))
+    holoParentAttachment(1,Entity,"anim_attachment_RH")
+    holoScale(1,vec(0.12,0.12,0.75)) 
+    holoColor(1,vec(30,30,30))
+    holoPos(1,holoEntity(1):toWorld(vec(1,-0.8,-1.5)))
+    holoAng(1,holoEntity(1):toWorld(ang(0,0,0)))
+    
+    Entity:weapon():setAlpha(0)
+    holoCreate(1)
+    holoModel(1,"hqcylinder2")
+    holoAng(1,Entity:attachmentAng("anim_attachment_RH"))
+    holoPos(1,Entity:attachmentPos("anim_attachment_RH"))
+    holoParentAttachment(1,Entity,"anim_attachment_RH")
+    holoScale(1,vec(0.12,0.12,0.75)) 
+    holoColor(1,vec(30,30,30))
+    holoPos(1,holoEntity(1):toWorld(vec(1,-0.8,-1.5)))
+    holoAng(1,holoEntity(1):toWorld(ang(0,0,0)))
+    
+    holoCreate(2)
+    holoModel(2,"cube")
+    holoPos(2,holoEntity(1):toWorld(vec(0,0,28)))
+    holoAng(2,holoEntity(1):toWorld(ang(0,180,0)))
+    holoColor(2,vec(0,0,0))
+    holoScale(2,vec(0.15,0.02,3.5))
+    holoParent(2,1)
+    
+    holoCreate(3)
+    holoModel(3,"hq_rcylinder_thin")
+    holoPos(3,holoEntity(1):toWorld(vec(0,0,4.8)))
+    holoAng(3,holoEntity(1):toWorld(ang(0,180,0)))
+    holoColor(3,vec(0,0,0))
+    holoScale(3,vec(0.16,0.16,0.05))
+    holoParent(3,1)
+    
+    holoCreate(4)
+    holoModel(4,"hq_rcylinder_thin")
+    holoPos(4,holoEntity(1):toWorld(vec(0,0,-4.5)))
+    holoAng(4,holoEntity(1):toWorld(ang(0,180,0)))
+    holoColor(4,vec(0,0,0))
+    holoScale(4,vec(0.16,0.16,0.05))
+    holoParent(4,1)
+    
+    holoCreate(5)
+    holoModel(5,"prism")
+    holoPos(5,holoEntity(1):toWorld(vec(-1.22,0,28)))
+    holoAng(5,holoEntity(1):toWorld(ang(0,90,-90)))
+    holoColor(5,vec(180,180,180))
+    holoScale(5,vec(0.02,3.5,0.05))
+    holoParent(5,1)
+    
+    holoCreate(6)
+    holoModel(6,"prism")
+    holoPos(6,holoEntity(1):toWorld(vec(1.22,0,28)))
+    holoAng(6,holoEntity(1):toWorld(ang(0,90,90)))
+    holoColor(6,vec(180,180,180))
+    holoScale(6,vec(0.02,3.5,0.05))
+    holoParent(6,1)
+    
+    holoCreate(7)
+    holoModel(7,"cube")
+    holoPos(7,holoEntity(1):toWorld(vec(-0.35,0,5.2)))
+    holoAng(7,holoEntity(1):toWorld(ang(0,180,0)))
+    holoColor(7,vec(0,0,0))
+    holoScale(7,vec(0.28,0.04,0.08))
+    holoParent(7,1)
+    
+    holoCreate(8)
+    holoModel(8,"pyramid")
+    holoPos(8,holoEntity(1):toWorld(vec(-2.6,0,5.2)))
+    holoAng(8,holoEntity(1):toWorld(ang(90,180,0)))
+    holoColor(8,vec(0,0,0))
+    holoScale(8,vec(0.08,0.04,0.1))
+    holoParent(8,1)
+    
+    holoCreate(9)
+    holoModel(9,"pyramid")
+    holoPos(9,holoEntity(1):toWorld(vec(0,0,50.2)))
+    holoAng(9,holoEntity(1):toWorld(ang(0,180,0)))
+    holoColor(9,vec(0,0,0))
+    holoScale(9,vec(0.15,0.02,0.2))
+    holoParent(9,1)
+    
+    holoCreate(10)
+    holoModel(10,"prism")
+    holoPos(10,holoEntity(1):toWorld(vec(0,0,50.5)))
+    holoAng(10,holoEntity(1):toWorld(ang(0,180,0)))
+    holoColor(10,vec(180,180,180))
+    holoScale(10,vec(0.26,0.005,0.25))
+    holoParent(10,1)
+    
+    holoCreate(11)
+    holoModel(11,"hq_dome")
+    holoPos(11,holoEntity(1):toWorld(vec(-0.65,0,6.2)))
+    holoAng(11,holoEntity(1):toWorld(ang(40,180,0)))
+    holoColor(11,vec(0,0,0))
+    holoScale(11,vec(0.25,0.05,0.25))
+    holoParent(11,1)
+    
+    holoCreate(12)
+    holoModel(12,"hq_dome")
+    holoPos(12,holoEntity(1):toWorld(vec(-0.65,0,6.2)))
+    holoAng(12,holoEntity(1):toWorld(ang(80,180,0)))
+    holoColor(12,vec(180,180,180))
+    holoScale(12,vec(0.28,0.035,0.28))
+    holoParent(12,1)
+    
+    holoCreate(13)
+    holoModel(13,"cube")
+    holoPos(13,holoEntity(1):toWorld(vec(0,0,6.2)))
+    holoAng(13,holoEntity(1):toWorld(ang(0,180,0)))
+    holoColor(13,vec(0,0,0))
+    holoScale(13,vec(0.1,0.02,0.15))
+    holoParent(13,1)
+}
+    
+if(changed(Weapon)){
+    
+    Entity:weapon():setAlpha(0)
+    
+    holoAng(1,Entity:attachmentAng("anim_attachment_RH"))
+    holoPos(1,Entity:attachmentPos("anim_attachment_RH"))
+    holoParentAttachment(1,Entity,"anim_attachment_RH")
+    holoPos(1,holoEntity(1):toWorld(vec(1,-0.8,-1.5)))
+    holoAng(1,holoEntity(1):toWorld(ang(0,0,0)))
+    
+    if(Weapon==PlayerWeapon){
+        for(I=1,13){
+            holoAlpha(I,255)   
+        }
+    }else{
+    
+    Entity:weapon():setAlpha(255)
+    
+    holoAng(1,Entity:attachmentAng("anim_attachment_RH"))
+    holoPos(1,Entity:attachmentPos("anim_attachment_RH"))
+    holoParentAttachment(1,Entity,"anim_attachment_RH")
+    holoPos(1,holoEntity(1):toWorld(vec(1,-0.8,-1.5)))
+    holoAng(1,holoEntity(1):toWorld(ang(0,0,0)))
+    
+        for(I=1,13){
+            holoAlpha(I,0)   
+        }
+    }
+}
