@@ -1,0 +1,63 @@
+@name Propellor
+@inputs Throttle Active
+@persist Cycle Idle Rotation
+
+#[
+
+INFO:
+
+This one's a propellor, it'll take different sprops small propellor models or the two phx propellors for planes. It works with my flight chip too, and has a simple disc effect when running. 
+The inputs should be pretty self-explanatory--Active is if the engine is running, throttle is 0-100.
+
+
+]#
+
+if(Active) {interval(25)} else {interval(250)}
+
+if(dupefinished()) {reset()}
+if(first())
+    {Size = 1.5
+        Rotation = 1 #1 rotates one way, -1 rotates other way
+        Model = "models/sprops/trans/air/prop_5b_s.mdl"
+        Color = vec(64,64,64)
+##########################Ignore everything below here.############################################################
+        PHX = (Model == "models/props_phx/misc/propeller2x_small.mdl") + (Model == "models/props_phx/misc/propeller3x_small.mdl")
+        Material = entity():getMaterial()
+        holoCreate(2,entity():toWorld(vec(0,0,0)))
+        holoAng(2,entity():toWorld(ang(90,0,0)))
+        holoAlpha(2,0)
+        holoModel(2,"hq_cylinder")
+        holoParent(2,entity())
+        holoCreate(1,entity():pos(),vec(1,1,1),entity():angles(),Color)
+        holoModel(1,Model)
+        Size = abs(Size)
+        if(PHX) {M = Size*0.31
+            holoAng(1,entity():toWorld(ang(90,90,90)))
+            holoScale(1,vec(M,M,M))
+            holoPos(1,entity():toWorld(vec(Size*-2.5,0,0)))}
+        else{holoScale(1,vec(Size,Size,Size))}
+        holoParent(1,2)
+        holoMaterial(1,Material)
+        holoScale(2,vec(Size*3.15,Size*3.15,0.01))
+        entity():setAlpha(0)
+        holoColor(2,Color)
+        holoAng(2,entity():toWorld(ang(0,Cycle,0)))
+    Idle = 10
+    }
+
+if(Active)
+    {
+        Cycle = angnorm(Cycle+(((Throttle*0.02)+Idle)*Rotation))
+        holoAng(2,entity():toWorld(ang(0,Cycle,0)))
+        if(changed(Throttle))
+            {
+                holoAlpha(2,(Throttle*1.28))
+                holoAlpha(1,255-(Throttle*1.28))
+            }
+    }
+
+elseif(changed(Active) & (Active ==0))
+    {
+        holoAlpha(1,255)
+        holoAlpha(2,0)
+    }

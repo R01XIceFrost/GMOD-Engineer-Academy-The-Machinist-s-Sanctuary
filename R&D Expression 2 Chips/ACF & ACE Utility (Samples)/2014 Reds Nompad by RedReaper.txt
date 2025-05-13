@@ -1,0 +1,82 @@
+@name Reds Nompad
+@inputs Seat:entity
+@outputs N0 N1 N2 N3 N4 N5 N6 N7 N8 N9 Plus Minus Equals Period Asterisk Divide
+@persist [Numbers]:array Numpad
+@model models/beer/wiremod/numpad_mini.mdl	
+
+#[
+
+INFO:
+
+My "nompad", a replacement for numpad. 
+it can be linked to a pod, which numpad can't, making it useful for stuff like "wot style" ammo switching. 
+It's already got its own thread, but I'm moving it here for consolidation.
+
+]#
+
+interval(100)
+
+if(dupefinished()) {reset()}
+if(first()) {
+    Numpad = 1#if you want to make it use a numpad, if not it'll use regular keyboard buttons
+ 
+    #####DONT TOUCH ANYTHING BELOW THIS######
+    #[Self note:array layout:
+    1-9   =   1-9
+    0     =   10
+    .     =   11
+    +     =   12
+    -     =   13
+    *     =   14
+    /     =   15
+    =     =   16
+    I left these as an array for a reason, soas to make it easier to modify   
+    ]#
+    if(Numpad) {
+    X = 0
+    while(X<10) {S = "PAD_"+X
+        if(X>0) {
+    Numbers:setString(X,S)}
+    else{Numbers:setString(X+10,S)}
+    X = X+1}
+    Numbers:setString(11,"PAD_DECIMAL")
+    Numbers:setString(12,"PAD_PLUS")
+    Numbers:setString(13,"PAD_MINUS")
+    Numbers:setString(14,"PAD_MULTIPLY")
+    Numbers:setString(15,"PAD_DIVIDE")
+    Numbers:setString(16,"PAD_EQUALS")}
+else{
+    X = 0
+    while(X<10) {S = ""+X
+        if(X>0) {
+    Numbers:setString(X,S)}
+    else{Numbers:setString(X+10,S)}
+    X = X+1}
+    Numbers:setString(11,"PERIOD")
+    Numbers:setString(16,"EQUAL")
+    Numbers:setString(13,"MINUS")
+    Numbers:setString(15,"SLASH")}
+}
+Driver = Seat:driver()
+if(!Driver:isTyping()) {
+    N1 = Driver:keyPressed(Numbers:string(1))
+    N2 = Driver:keyPressed(Numbers:string(2))
+    N3 = Driver:keyPressed(Numbers:string(3))
+    N4 = Driver:keyPressed(Numbers:string(4))
+    N5 = Driver:keyPressed(Numbers:string(5))
+    N6 = Driver:keyPressed(Numbers:string(6))
+    N7 = Driver:keyPressed(Numbers:string(7))
+    N9 = Driver:keyPressed(Numbers:string(9))
+    N0 = Driver:keyPressed(Numbers:string(10))
+    Minus = Driver:keyPressed(Numbers:string(13))
+    Equals = Driver:keyPressed(Numbers:string(16))
+    if(Numpad) {Asterisk = Driver:keyPressed(Numbers:string(14))
+        N8 = Driver:keyPressed(Numbers:string(8))
+    Plus = Driver:keyPressed(Numbers:string(12))}
+    else{Asterisk = Driver:keyPressed(Numbers:string(8)) & (Driver:keyPressed("LSHIFT")+Driver:keyPressed("RSHIFT"))
+    Plus = Driver:keyPressed(Numbers:string(16))& (Driver:keyPressed("LSHIFT")+Driver:keyPressed("RSHIFT"))
+    Equals = Driver:keyPressed(Numbers:string(16)) & ((Driver:keyPressed("LSHIFT")+Driver:keyPressed("RSHIFT"))==0)
+    N8 = Driver:keyPressed(Numbers:string(8)) & ((Driver:keyPressed("LSHIFT")+Driver:keyPressed("RSHIFT"))==0)
+    }
+    Period = Driver:keyPressed(Numbers:string(11))
+    Divide = Driver:keyPressed(Numbers:string(15))}

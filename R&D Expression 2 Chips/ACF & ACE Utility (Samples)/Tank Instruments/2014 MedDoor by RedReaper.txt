@@ -1,0 +1,32 @@
+@name MedDoor
+@inputs Open
+@trigger Open
+
+#[
+
+INFO:
+
+This is a door, works like the cupola above. Like the cupola, super low in lag, useful for something that is a detail prop. 
+The cupola defaults to open but closes when activated (like the cupola on a tank, using cam controller), 
+but this instead defaults to closed and opens on command.
+
+]#
+
+if(dupefinished()) {reset()}
+if(first())
+    { 
+        Color = vec(72,72,72)
+        Material = entity():getMaterial()
+############DONT EDIT ANYTHING BELOW HERE##############    
+        entity():setAlpha(0)
+        holoCreate(2,entity():toWorld(vec(0,0,0)),vec(0.3,0.3,1.5),entity():toWorld(ang(0,0,0)),Color)
+        holoMaterial(2,Material)
+        holoParent(2,entity())
+        holoModel(2,"hq_cylinder")
+        holoCreate(1,entity():toWorld(vec(0,16,0)),vec(1,1,0.67),entity():toWorld(ang(0,0,0)),Color)
+        holoMaterial(1,Material)
+        holoModel(1,"models/props_interiors/refrigeratorDoor01a.mdl")
+        holoParent(1,2)
+        holoAng(2,entity():toWorld(ang(0,(Open)*-150,0)))
+        }
+holoAng(2,entity():toWorld(ang(0,(Open)*-150,0)))

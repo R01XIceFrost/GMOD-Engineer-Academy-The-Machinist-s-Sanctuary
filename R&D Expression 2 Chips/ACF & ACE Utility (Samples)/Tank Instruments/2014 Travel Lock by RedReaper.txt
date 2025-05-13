@@ -1,0 +1,40 @@
+@name Travel Lock
+@inputs BarrelLatch
+@trigger BarrelLatch
+
+#[
+
+INFO:
+
+This is a simple tank gun travel lock. It just flips up when activated. 
+I use it occasionally since my aim e2 (not to be released in the near future or probably ever) 
+has a feature like a real travel lock.
+
+
+]#
+
+if(dupefinished()) {reset()}
+    if(first())
+        {
+            ScaleV = 2 #Vertical scale
+            Scale = 2 #Size scale
+#############DONT EDIT ANYTHING BELOW THIS################            
+            entity():setAlpha(0)
+            holoCreate(1,entity():pos(),vec(Scale/20,Scale/20,Scale/10))
+            holoModel(1,"hq_cylinder")
+            holoAng(1,entity():toWorld(ang(0,0,90)))
+            holoParent(1,entity())
+            holoCreate(2,entity():toWorld(vec(ScaleV*2.2,0,Scale*-0.2)))
+            holoScale(2,vec(Scale/5,ScaleV/5,Scale/5))
+            holoModel(2,"models/gibs/scanner_gib01.mdl")
+            holoParent(2,1)
+            holoCreate(3,entity():toWorld(vec(ScaleV*4.3,0,Scale*-0.4)))
+            holoModel(3,"hq_tube")
+            holoParent(3,1)
+            holoScale(3,vec(1,1,0.5)*Scale/5.5)
+            holoMaterial(3,"models/gibs/metalgibs/metal_gibs")
+            holoMaterial(2,"models/gibs/metalgibs/metal_gibs")
+            holoMaterial(1,"models/gibs/metalgibs/metal_gibs")
+        }
+        
+holoAng(1,entity():toWorld(ang((BarrelLatch*-90),0,90)))
