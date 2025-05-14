@@ -1,0 +1,120 @@
+@name Ballistics computer by Tolyzor
+@inputs Target:entity Initialvelocity:vector Initialposition:vector Compute 
+@outputs Smodel:string Flightpathposition:array Flightpathvelocity:array Tickstocompute Calc
+@persist Acceleration:vector Drag:vector Ticktime Velt:vector Position:vector Velocity:vector Boxx Boxy Boxz Box:vector Area Xdirmod Ydirmod Zdirmod Airdensity Tick Universaldragcoefficient Speedlimit
+@trigger 
+
+#[
+
+INFO:
+
+I am working on version 2, which supersedes this, see here.
+
+If you are just looking for a no-drag trajectory calculator, see Ballistic Trajectory Expression.
+
+This expression is pretty simple to use; input the prop starting position, starting velocity(launch velocity or whatever), and entity(at the exact angle it will be at when fired/dropped etc) and then press compute. It will output arrays of the flight path position and velocity, indexed by each physics tick. The uses for this are massive if you have a little imagination.
+
+A note on supported props: Currently only supports certain props (mainly phx stuff) the text screen will tell you if its supported or not. If the prop is unsupported it will give you a theoretical maximum drag flight path, in reality the prop may have less drag and it's flight path will be closer to a parabola(theoretical 0 drag).
+
+Rotation of the prop while in flight or between computing and launch is not currently supported, but I can add it if requested. (it would have to be rotation as a function of time, velocity, acceleration or position though)
+
+What it will do: Calculate trajectories of any supported prop with any mass at any orientation with any gravity value with any air density value with any initial velocity and with any initial position.
+
+]#
+
+runOnTick(1)
+if (~Target | first()) {
+    Box = Target:boxSize()
+    Boxx = Box:x() - 0.5
+    Boxy = Box:y() - 0.5
+    Boxz = Box:z() - 0.5
+    #gets the x, y, and z dimensions of the bounding box then takes off a bit (maybe bounding box margin?)
+    
+    ###########modifiers for non cuboid props(creates an equivalent cuboid for each, 100% accurate)#####################
+    Smodel = "Prop found in memory and projected area calculated"
+    if (Target:model():find("tri")) { # all phx triangles except phx extended triangles and trapeziums
+        Xdirmod = Zdirmod = 1#halves the y dir area if the prop is a triangle
+        Ydirmod = 2
+        if (Target:model():find("carved")) {Ydirmod = 4.3} # needs singleplayer testing
+        elseif ((Target:model():length() == 33) & (Target:model():find("hunter"))) {Xdirmod = 2, Ydirmod = Zdirmod = 1} # for hunters extruded triangles (prisms)
+        } # only works on plates at the mo
+    elseif (Target:model():find("squarecap")) {Xdirmod = Zdirmod = 2, Ydirmod = 1}#halves the x and z dir area if the prop is a square based pyramid
+    elseif (Target:model():find("hunter/tubes/circle")) {#halves the y dir area if the prop is a phx circle or half circle or quarter circle(this is not precise unlike the others)
+        Ydirmod = 1.3 
+        Xdirmod = Zdirmod = 1
+        if (Target:model():find("hunter/tubes/circle2x2b")) {Ydirmod = 1.73} #bodge factor for 3 quarter circle
+    }
+    elseif (Target:model():find("amraam")) {Xdirmod = 9.95, Ydirmod = 3.1, Zdirmod = 2.05} # complete bodge factors for phx amraam - test in sp
+    elseif (Target:model():find("flakshell_big")) {Xdirmod = 1.15, Ydirmod = 1.26, Zdirmod = 1.15}# complete bodge factors for phx flakshell - test in sp
+    elseif (Target:model():find("various/211")) {Xdirmod = 1.05, Ydirmod = 1.42, Zdirmod = 1.03}# complete bodge factors for phx high grav lager - test in sp
+    elseif (Target:model():find("hunter/misc/sphere")) {Xdirmod = Ydirmod = Zdirmod = 1.3}# complete bodge factors for phx hunter spheres - test in sp
+    elseif (Target:model():find("hunter/misc/cone")) {Ydirmod = 1.3, Zdirmod = Xdirmod = 1.96}# complete bodge factors for phx hunter cones - test in sp
+    elseif (Target:model():find("race-wheel")) {Xdirmod = Ydirmod = 1, Zdirmod = 1.28}# complete bodge factors for all types of phx race wheels - test in sp
+    elseif (Target:model():find("curve360")) {Xdirmod = 1, Ydirmod = 10.1, Zdirmod = 1}# complete bodge factors for all types of complete phx tubes - test in sp
+    elseif (Target:model():find("mk-82")) {Xdirmod = 1.63, Ydirmod = 1.38, Zdirmod = 1.38}# complete bodge factors for the phx mk-82 bomb - test in sp
+    elseif (Target:model():find("phx/torpedo")) {Xdirmod = 3.98, Ydirmod = 1.78, Zdirmod = 1.78}# complete bodge factors for the phx torpedo - test in sp
+    elseif (Target:model():find("phx/rocket1")) {Xdirmod = 1.1, Ydirmod = 1.28, Zdirmod = 1.1}# complete bodge factors for the phx rocket - test in sp
+    elseif (Target:model():find("phx/ww2bomb")) {Xdirmod = 1.32, Ydirmod = 1.2, Zdirmod = 1.2}# complete bodge factors for the phx ww2 bomb - test in sp
+    elseif (Target:model():find("oildrum001")) {Xdirmod = 1.02, Ydirmod = 1.33, Zdirmod = 1.04}# complete bodge factors for the hl2 oil drums 
+    elseif (Target:model():find("construct/metal_plate")) {Xdirmod = Ydirmod = Zdirmod = 1}# list of all props that dont need modifiers
+    elseif (Target:model():find("glass/glass_plate")) {Xdirmod = Ydirmod = Zdirmod = 1}
+    elseif (Target:model():find("construct/windows")) {Xdirmod = Ydirmod = Zdirmod = 1}
+    elseif (Target:model():find("wood/wood_panel")) {Xdirmod = Ydirmod = Zdirmod = 1}
+    elseif (Target:model():find("wood/wood_board")) {Xdirmod = Ydirmod = Zdirmod = 1}
+    elseif (Target:model():find("hunter/plates") & !(Target:model():find("tri") | Target:model():find("hole"))) {Xdirmod = Ydirmod = Zdirmod = 1}
+    elseif (Target:model():find("hunter/blocks")) {Xdirmod = Ydirmod = Zdirmod = 1}
+    elseif (Target:model():find("plastic/plastic_panel")) {Xdirmod = Ydirmod = Zdirmod = 1}
+    elseif (Target:model():find("solid_steel/plank")) {Xdirmod = Ydirmod = Zdirmod = 1}
+    elseif (Target:model():find("sf_bar")) {Xdirmod = Ydirmod = Zdirmod = 1}
+    elseif (Target:model():find("sf_plate")) {Xdirmod = Ydirmod = Zdirmod = 1}
+    else {
+        Xdirmod = Ydirmod = Zdirmod = 1
+        Smodel = "..." + Target:model():right(29) + " is not a supported prop, please virtual-wind-tunnel test as actual projected area may be less than currently computed"
+        }
+}
+#...these are not a mistake; they really are how gmod seems to calculate cross sectional area for non cuboids
+
+if (Compute & ~Compute) {
+    Calc = 1
+    Tick = 0
+    Tickstocompute = 0
+    rangerPersist(1)
+    rangerHitWater(1) # can't calculate trajectories under water (yet :D)
+    rangerHitEntities(1)
+    rangerFilter(Target)
+    Flightpathposition = array()
+    Flightpathvelocity = array()
+    Speedlimit = 4000 # "sv_maxvelocity" in console
+    Airdensity = 2 # "air_density" in console
+    Universaldragcoefficient = 8.18205e-6 # found by experiment
+    Ticktime = 1/67 # (seconds) # decrease this number to increase accuracy for when acceleration becomes too great for the algorithm to handle
+    Position = Initialposition
+    if (Initialvelocity:length() > Speedlimit) {Velocity = Initialvelocity:normalized() * Speedlimit} else {Velocity = Initialvelocity} # gmod speed limit
+    Acceleration = vec(0, 0, -gravity())
+    Flightpathposition[0, vector] = Position
+    Flightpathvelocity[0, vector] = Velocity
+    }
+Tickstocompute += Calc
+while (Calc & maxquota() > 240) { # increase this number before adding any additional code to this loop or it will red chip
+    Area = positive(Target:toLocal(Target:pos() + Velocity):normalized()):dot(vec((Boxy * Boxz) / Xdirmod, (Boxz * Boxx) / Ydirmod, (Boxx * Boxy) / Zdirmod))
+    # calculating orthangonaly projected cross sectional area; dot product of the local direction vector with the local (x, y, z) area of the prop
+    Drag = Universaldragcoefficient * Area * Airdensity * Velocity:length()^2 * -Velocity:normalized()
+    # using the drag equation; Force = C * A * p * v^2, and then sign convention means it opposes velocity
+    Acceleration = vec(0, 0, -gravity()) + (Drag / Target:mass())
+    # using Newton's 2nd law; F = Ma -> a = F/M
+    Velt = Velocity + Acceleration * Ticktime 
+    # using the equation of motion; v = vi + at
+    # we make the assumption that acceleration is constant for the length of the physics game tick 
+    if (Velt:length() > Speedlimit) {Velt = Velt:normalized() * Speedlimit}
+    # gmod speed limit
+    Position = Position + 0.5 * (Velocity + Velt) * Ticktime
+    # using the equation of motion; s = si + 1/2(vi + v)t
+    Velocity = Velt
+    Tick++
+    Flightpathposition[Tick, vector] = Position
+    Flightpathvelocity[Tick, vector] = Velocity
+    if (rangerOffset(Flightpathposition[Tick - 1, vector], Position):hit()) {Calc = 0} 
+}
+# last edited 20/12/2009
+# made by Tolyzor, contact for support at the wiremod forums
+# feel free to edit/use parts or all of this code so long as you credit me!

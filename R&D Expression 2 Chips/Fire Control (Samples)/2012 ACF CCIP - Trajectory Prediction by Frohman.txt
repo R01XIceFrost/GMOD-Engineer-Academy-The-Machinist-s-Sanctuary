@@ -1,0 +1,110 @@
+@name ACF Weapon CCIP
+@inputs Active Gun:entity MuzzleV Caliber Mass
+@outputs Position:vector FlightTime HitEnt InFlight
+@persist [P, V G]:vector Dt InFlight MuzzleV DragCoef Time 
+@persist Perf SimTime STime SimStart SimFinish PerfMod ActTime
+@trigger Gun MuzzleV Caliber Mass
+
+#Source: https://web.archive.org/web/20150505010603/http://www.wiremod.com/forum/finished-contraptions/30973-acf-ccip-trajectory-prediction.html
+
+#[
+
+INFO:
+
+I've had a bunch of people asking after this code to help with their own attempts, so I figured I'd just drop it here.
+
+A while ago I wanted to see if I could form an easier way to aim lobbed weaponry in ACF like mortars and howitzers with low propellant levels - in reality this kind of thing was more for playing around with iterative solutions as given GMod's scale there isn't much use for slow firing artillery pieces (a simple trace for aiming a tank gun is more than enough for actual combat).
+
+So I ended up with this, a chip which simulates through firings of the weapon using an RK4 integrator (for accuracy at large timescales).
+It takes in the muzzle velocity (in m/s), caliber (in cm) and projectile mass (in g) to simulate through the round's trajectory while active (at a rate which is determined by some fairly flakey performance management code) - data which is all visible on the ammo selection screen.
+
+I considered it a success as I learnt a lot from the experience (especially some of the concepts behind iterative solutions and integrators) and to top it off, it's pretty goddamn accurate.
+
+-----
+Now I haven't got into Garry's Mod since GM13's release and I haven't even had a go using this chip in the new version. I'm not concerned in the slightest with fixing any bugs which have cropped up over the update until I start playing Garry's Mod again - so don't expect me to help you out if you run into problems trying to jury rig it to your 200mm mortar toting joke of a tank.
+This is primarily to help out those other talented guys having issues with their own prediction solutions... People who are probably actively working on their own public chips (hint hint).
+
+So anyway, here's the code exactly as it was sitting on my old hard drive with Garry's Mod 12:
+-----
+
+Some notes:
+Caliber is assumed to be in cm.
+
+Don't use this as is for combat, not only was it not designed for that kind of environment (and is likely to be out of whack performance limiting wise since I last tweaked it), this kind of intensive fire control is generally frowned upon in ACF.
+
+Oh, and the amount of effort (and performance) used by something like an iterative solution is waaaaay overkill for practically all ACF battles and you're very likely just to be blown away by someone using a simple straight trace method who has a much smaller performance footprint.
+
+Any-who I hope the guys who asked for this find it useful!
+
+]#
+
+
+if (first() | inputClk())
+{
+    G = vec(0,0, -gravity())
+    DragCoef = ((3.1416 * (Caliber/2)^2)/10000)/Mass
+    Perf = 50
+    rangerPersist(1)
+    rangerFilter(Gun)
+    rangerDefaultZero(1)
+    runOnTick(1)
+}
+
+if (Active)
+{
+    Time = curtime()
+    Dt = $Time*15
+    PerfMod = clamp((FlightTime/10) + 5*changed(Active) + 0.4*$PerfMod - 0.8*(Gun:vel():length() +
+                     Gun:angVelVector():length() < 2 & ($Position):length() < 5), 0.005, 1)
+    
+    if (!InFlight)
+    {
+        Position = (P + Position)/2
+        FlightTime = ActTime
+        ActTime = 0
+        
+        SimTime2 = SimTime
+        SimTime = SimFinish-SimStart
+        Perf = clamp((SimTime + SimTime2) / 2 <= 0.135 ? Perf - $SimTime : Perf + $SimTime, 4, 50)
+        #Perf = clamp((FlightTime/2)*100, 5, 100)    
+        P = Gun:pos() + Gun:forward()*150
+        V = Gun:vel() + Gun:forward()*(39.37*MuzzleV)
+        
+        InFlight = 1
+        SimStart = curtime()
+
+    }
+
+    while(perf(Perf+5) & InFlight)
+    {    
+        P1 = P
+        V1 = V
+        A1 = G - (DragCoef * V1 * V:length() / 40)
+         
+        P2 = P1 + V1*Dt/2
+        V2 = V1 + A1*Dt/2
+        A2 = G - (DragCoef * V2 * V:length() / 40)
+        
+        P3 = P1 + V2*Dt/2
+        V3 = V1 + A2*Dt/2
+        A3 = G - (DragCoef * V3 * V:length() / 40)
+        
+        P4 = P1 + V3*Dt
+        V4 = V1 + A3*Dt
+        A4 = G - (DragCoef * V4 * V:length() / 40)
+        
+        P += (V1 + 2*V2 + 2*V3 + V4) * Dt/6
+        V += (A1 + 2*A2 + 2*A3 + A4) * Dt/6
+        
+        # Collision Detection
+        R = rangerOffset(P1-V/100, P)
+        InFlight = R:distance() != 0 | !P:isInWorld()? 0 : 1
+        if (!InFlight)
+        {
+            P = R:position()
+            HitEnt = R:entity() ? 1 : 0
+            SimFinish = curtime()
+        }        
+        ActTime += Dt
+    }
+}

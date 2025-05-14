@@ -1,0 +1,204 @@
+@name ballistics_4/Fire control 1
+@inputs Solve [Pos03d PosT3d]:vector MV Ttype:string FrontalArea M Tolerance
+@outputs Elev LaunchVel:vector GlobalError Phase:string Tsolve Traj:table    
+# output description: elevation angle, error vector local to the target, calculation phase
+@persist [PosT Vel0 Error]:vector2 G T Cd Rho SpdLim FlipFlop Elev0 Delta Error1 Sim
+# Point-mass persists
+@persist Run [Pos Vel Pos4o Pos5o Vel4o]:vector2 H C Time AdaptivityGain N TolerancePM Recalcs CumErrorL
+@persist Tcalc 
+# persist Description: table(time, position, velocity), calculation time(seconds)
+@trigger Solve
+
+
+#[
+
+INFO:
+
+Re: ACF Bulletometer 2
+
+    Cool. Why only predict the hit position, when instead you can predict the required launch angle to hit a target?
+
+    My vanilla gmod solution here uses RKF45 + a newton-raphson iterative solver, and is very quick. You tell it where the target is and the required accuracy, and it tells you what angle to shoot at. It also outputs the firing solution trajectory, which you can plot using holos of course. I'm sure you can convert it to ACF:
+
+
+]#
+
+runOnTick(1)
+if (first()) {
+    Phase = "ready"
+    Delta = 0.005 # small angle for calculating derivative of error with angle (Newton method)
+    # define persistant vars
+    G = gravity()
+    T = 66.567 # server tickrate
+    Cd = 1.7e-5 # Coefficient of drag
+    Rho = airDensity() 
+    SpdLim = speedLimit()
+    # create holos for the plotHit func
+    holoCreate(1, vec(0, 0, 0))
+    holoModel(1, "sphere")
+    holoColor(1, vec(255, 0, 0))
+    holoScaleUnits(1, vec(50, 50, 50))
+    # define functions
+    function plotHit() {
+        Direction = (vec2(PosT3d) - vec2(Pos03d)):normalized()
+        holoPos(1, PosT3d + vec(Direction * Error:x()) + vec(0, 0, Error:y()))
+    }
+    function vector2 accPointMass(AccVel:vector2) {
+        # returns projectile acceleration
+        return vec2(0, -G) + (C * AccVel * AccVel:length())
+    }
+    function number inVacuo(TargetPos:vector2, Grav, Spd0, Type:string) {
+        # outputs a trajectory solution given target position, gravity, muzzle velocity and type ("arc" or "flat") 
+        # if Theta = -1 there is no solution possible
+        X = TargetPos:x()
+        Y = TargetPos:y()
+        
+        ## Calculate Theta
+        # calculate required launch elevation angle
+        # http://en.wikipedia.org/wiki/Trajectory_of_a_projectile#Angle_.CE.B8_required_to_hit_coordinate_.28x.2Cy.29
+        Discriminant = Spd0^4 - Grav * (Grav * X^2 + 2 * Y * Spd0^2)
+        if (Discriminant < 0) {Theta = -1} else {
+            if (Grav == 0) {Theta = atan(Y / X)} # no gravity: go direct to target
+            elseif (Type == "arc") {Theta = atan((Spd0^2 + sqrt(Discriminant)) / (Grav * X))} # high angle
+            elseif (Type == "flat") {Theta = atan((Spd0^2 - sqrt(Discriminant)) / (Grav * X))} # low angle
+        }
+        return Theta
+    }
+}
+if (~Solve & Solve) {
+    Tsolve = FlipFlop = 0
+    print("T = 0.000 | Firing solution computation initiated")
+    # convert problem into vector2 local to pos0 
+    X = vec2(Pos03d):distance(vec2(PosT3d))
+    Y = PosT3d:z() - Pos03d:z()
+    PosT = vec2(X, Y)
+    
+    # obtain an in-vacuo initial guess angle
+    Elev = inVacuo(PosT, G, MV, Ttype)
+    # if Ttype == "arc" all angles should be less than Elev
+    # if Ttype == "flat" all angles should be higher than Elev
+    Vel0 = vec2(MV * cos(Elev), MV * sin(Elev))
+    Phase = "point-mass" # run the point mass model
+    Sim = 1
+}
+if (Phase == "guess") {
+    FlipFlop = !FlipFlop
+    Tsolve += 1/T + Tcalc
+    if (Tsolve > 20) { # the most basic way of checking for an infinite loop.... improve this
+        print("Firing solution not found")
+        Phase = "ready"
+        exit()
+        }
+    plotHit()
+    if (FlipFlop) { # determine derivative of error with angle
+        if (Error:length() < Tolerance) {
+            Phase = "ready"
+            GlobalError = Error:length() + CumErrorL # worst case
+            LaunchVel = vec(vec2(PosT3d - Pos03d):normalized() * cos(Elev)):setZ(sin(Elev)):normalized() * MV 
+            print("T = " + (round(1000*(Tsolve)) / 1000):toString() + " | Global error: " + (round(10000 * (GlobalError)) / 10000):toString() + " glu")
+            print("T = " + (round(1000*(Tsolve)) / 1000):toString() + " | Firing solution complete")
+            exit()
+        }
+        Elev0 = Elev
+        Error1 = Error:length()
+        Elev = angnorm(Elev0 + Delta)
+    } else {
+        Elev = Elev - (Delta / (Error:length() - Error1)) * Error:length()
+        Elev = angnorm(Elev) # the flat traj produces big angles!
+    }
+    Vel0 = vec2(MV * cos(Elev), MV * sin(Elev))        
+    Sim++ # simulation counter
+    Phase = "point-mass" # run the point mass model   
+}
+
+
+
+if (Phase == "point-mass") { # point-mass model
+    if (!Run) {
+        TolerancePM = Tolerance# accuracy tolerance (glu)
+        AdaptivityGain = 0.999999 # controls the step size adaptivity gain (very sensetive, keep under 1)
+        H = 2/T # initial simulation interval step size (seconds)
+        C = (-0.5 * Cd * Rho * FrontalArea) / M # quadratic damping
+        Tcalc = N = Time = Recalcs = CumErrorL = 0
+            
+        # Error checking
+        if (Vel0:length() > SpdLim) {hint("Error: Initial velocity must be less or equal to the server speed limit", 7), exit()}
+        if (M <= 0) {hint("Error: Mass must be greater than 0", 7), exit()}
+        
+        # set up initial conditions
+        Vel4o = Vel = Vel0
+        Pos4o = Pos5o = Pos = vec2()
+        Traj = table()
+                
+        # write initial conditions at time = 0 to array 
+        Traj:unshiftArray(array(0, Pos, Vel))
+        
+        # Commence main iterative computation
+        Run = 1
+    }
+    if (Run) {
+        Tcalc += 1/T
+        # numerically solve for velocity & position using the Runge-Kutta-Fehlberg method
+        while(perf()) { 
+            # Velocity
+            K1 = H*accPointMass(Vel)
+            K2 = H*accPointMass(Vel+(1/4)*K1)
+            K3 = H*accPointMass(Vel+(3/32)*K1+(9/32)*K2)
+            K4 = H*accPointMass(Vel+(1932/2197)*K1-(7200/2197)*K2+(7296/2197)*K3)
+            K5 = H*accPointMass(Vel+(439/216)*K1-8*K2+(3680/513)*K3-(845/4104)*K4)
+            Vel4o += ((25/216)*K1+(1408/2565)*K3+(2197/4104)*K4-(1/5)*K5) # 4th order solution
+            # speed limiter
+            if (Vel4o:length() > SpdLim) {Vel4o = SpdLim * Vel4o:normalized()} 
+            
+            # Position
+            L1 = H*Vel
+            L2 = L1+H*((1/4)*K1)
+            L3 = L1+H*((3/32)*K1+(9/32)*K2)
+            L4 = L1+H*((1932/2197)*K1-(7200/2197)*K2+(7296/2197)*K3)
+            L5 = L1+H*((439/216)*K1-8*K2+(3680/513)*K3-(845/4104)*K4)
+            L6 = L1-H*((8/27)*K1+2*K2-(3544/2565)*K3+(1859/4104)*K4-(11/40)*K5)
+            Pos4o += ((25/216)*L1+(1408/2565)*L3+(2197/4104)*L4-(1/5)*L5) # 4th order solution
+            Pos5o += ((16/135)*L1+(6656/12825)*L3+(28561/56430)*L4-(9/50)*L5+(2/55)*L6) # 5th order solution
+            
+            # Adaptive step-size algorithm (Source: Error estimation and control for ODEs, 
+            # SIAM J. of scientific computing, 25, 3-16 (2005))
+            ErrorL = Pos5o:distance(Pos4o)
+            TolerancePML = H * TolerancePM # local solution tolerance
+            if (ErrorL < TolerancePML) { # accept the solution
+                CumErrorL += ErrorL * H # sum the cumulative effects of errors
+                Vel = Vel4o
+                Pos = Pos5o
+                Time += H # simulation time
+                N++ # iteration count
+                H *= AdaptivityGain * (TolerancePML/ErrorL)^(1/(N + 1))
+                Traj:pushArray(array(Time - H, Pos, Vel))
+                # trajectory bounding to prevent infinite loop!
+                if ((Pos:y() < PosT:y() & Vel:y() < 0) | (Pos:x() > PosT:x())) { # this doesnt work for flat trajectories with the target higher than the gun
+                #if (Pos:x() > PosT:x()) {
+                    Run = Time = 0
+                    DirectError = Pos - PosT
+                    PosLast = Traj[N, array][2, vector2]
+                    if (DirectError:dot((PosLast - Pos)) < 0) { # check to see if error is in the direction of the trajectory or not
+                        # it is assumed the line passes the target according to the previous bounding condition
+                        # linear interpolation to find closest point of traj to target - could use higher order curve fitting here
+                        # uses vector rejection
+                        TrajLinear = (Pos - PosLast):normalized() 
+                        ErrorLength = DirectError:dot(TrajLinear)
+                        Error = DirectError - ErrorLength * TrajLinear
+                    } else {
+                        Error = DirectError # this is a bad measure of error, hence the long solve time for flat trajectories
+                    }
+                    Phase = "guess"
+                    print("T = " + (round(1000*(Tsolve + Tcalc)) / 1000):toString() + " | Simulation " + Sim + " completed; " + N + " iterations (+" + Recalcs + " dropped)")
+                    break
+                }
+            } else { # recalculate the step
+                Recalcs++ # count how many recalc are needed
+                Vel4o = Vel
+                Pos4o = Pos5o = Pos 
+                H *= AdaptivityGain * (TolerancePML/ErrorL)^(1/(N + 1))
+            }
+        }      
+    }
+}
+# by Tolyzor
