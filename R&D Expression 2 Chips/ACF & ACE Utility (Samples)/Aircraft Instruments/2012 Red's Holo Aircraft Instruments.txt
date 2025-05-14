@@ -1,0 +1,212 @@
+@name Red's Holo Aircraft Instruments
+@inputs Master:entity
+@outputs 
+@persist [Rpos]:vector Amod Yawmax Slipmax Altfeet [Array]:array
+@trigger 
+
+#Source: https://youtu.be/JZFeNFENQPU?si=sEpKSTiiZEnP68X1
+
+#[
+
+INFO:
+
+This is a comprehensive, easy-to-use instrument panel for aircraft. It includes an attitude indicator, a turn and bank indicator, an altimeter, and a heading indicator. Only one input required, and a few simple self-scaling variables to alter.
+
+
+As noted in the video, to set it up, you weld a single prop facing forward and upright to your aircraft, then link it with an entity marker. Press R with the E2 tool on the E2 to reset it, and then you're ready to go. You only have to do this once, and you can skip this step with dupes. It's ~42 ops and 31 holos.
+
+
+
+]#
+
+
+interval(125)
+
+if(dupefinished()){reset()}
+if(first())
+    {
+        #you alter these
+        Amod = 0 #altitude modifier, for how high up the master sits when on the ground.  Ignore 99% of the time, 100% if using altitude in feet
+        Yawmax = 150 #constrains yawing velocity
+        Slipmax = 700 #constraints slipping velocity
+        Altfeet = 0 #is the altitude in feet or gmod units?
+        Backcolor = vec(48,48,48)
+        #you don't alter anything below this line.  If you do, I will cut you.
+        
+        
+        
+        
+        entity():setAlpha(0) #hides the chip
+        rangerPersist(1)
+        Array = entity():getConstraints()
+        rangerFilter(Array)
+        
+        
+        Lpos = vec(0,-4.1,0)
+        Rpos = vec(0,4.1,0)
+        Upos = vec(3.1,0,0.25)
+        Dpos = vec(-3.1,0,0.25)
+        Lp = entity():toWorld(Lpos)
+        Rp = entity():toWorld(Rpos)
+        Icotex = "phoenix_storms/gear_top"
+        Aitex = "phoenix_storms/fender_white"
+        
+        #right gauge
+        holoCreate(1,entity():toWorld(Lpos),vec(0.8,0.8,2),entity():angles(),(Backcolor))
+        holoModel(1,"hq_torus")
+        holoParent(1,entity())
+        holoCreate(2,entity():toWorld(Lpos-vec(0,0,-0.6)),vec(0.7,0.7,0.05),entity():toWorld(ang(0,0,0)),(vec(64,64,64)))
+        holoMaterial(2,"models/XQM/rails/gumball01a")
+        holoModel(2,"hq_cylinder")
+        holoParent(2,entity())
+        
+        #left gauge
+        holoCreate(3,entity():toWorld(Rpos),vec(0.8,0.8,2),entity():angles(),(Backcolor))
+        holoModel(3,"hq_torus")
+        holoCreate(4,entity():toWorld(Rpos+vec(0,0,1)),vec(0.7,0.7,0.05),entity():toWorld(ang(0,0,0)),(vec(0,0,0)))
+        holoModel(4,"hq_cylinder")
+        holoParent(3,entity())
+        holoParent(4,entity())
+        
+        #Dials on the T&B
+        holoCreate(5,entity():toWorld(Rpos+vec(0,0,1)),vec(0.1,0.1,0.1),entity():toWorld(ang(0,0,0)),vec(255,255,255)) #Master indicator for yaw
+        holoModel(5,"hq_icosphere")
+        holoMaterial(5,Icotex)
+        holoParent(5,entity())
+        holoCreate(6,entity():toWorld(Rpos-vec(-1.5,0,-0.95)),vec(0.3,0.05,0.1),entity():angles(),vec(255,255,255))
+        holoMaterial(6,Icotex)
+        holoParent(6,5)
+        holoCreate(7,entity():toWorld(Rpos+vec(3,-2,1.2)),vec(0.06,0.06,0.06),entity():angles(),vec(255,255,255))
+        holoModel(7,"hq_icosphere")
+        holoMaterial(7,Icotex)
+        holoParent(7,entity())
+        holoCreate(8,entity():toWorld(Rpos+vec(3,2,1.2)),vec(0.06,0.06,0.06),entity():angles(),vec(255,255,255))
+        holoModel(8,"hq_icosphere")
+        holoMaterial(8,Icotex)
+        holoParent(8,entity())
+        holoCreate(9,entity():toWorld(Rpos+vec(-2,0,1.2)),vec(0.1,0.05,0.35),entity():toWorld(ang(0,0,90)),vec(128,128,128))
+        holoModel(9,"hq_cylinder")
+        #holoMaterial(9,Icotex)
+        holoParent(9,entity())
+        holoCreate(10,entity():toWorld(Rpos+vec(-2,0,1.15)),vec(0.1,0.13,0.07),entity():angles(),vec(255,255,255)) #sideslip dot
+        holoModel(10,"hq_icosphere")
+        holoMaterial(10,Icotex)
+        holoParent(10,entity())
+        
+        #attitude indicator
+        #master
+        holoCreate(11,entity():toWorld(Lpos+vec(0,0,0.075)),vec(0.4,0.4,0.05),entity():toWorld(ang(90,0,0)),vec(255,255,255))
+        holoModel(11,"hq_cylinder")
+        holoMaterial(11,Icotex)
+        holoParent(11,entity())
+        #top and bottom
+        holoCreate(12,entity():toWorld(Lpos+vec(0.05,0,0.07)),vec(0.4,0.4,0.4),entity():toWorld(ang(0,0,0)),vec(96,255,96))
+        holoModel(12,"hq_icosphere")
+        holoParent(12,11)
+        holoCreate(13,entity():toWorld(Lpos+vec(-0.05,0,0.07)),vec(0.4,0.4,0.4),entity():toWorld(ang(0,0,0)),vec(176,176,64))
+        holoModel(13,"hq_icosphere")
+        holoParent(13,11)
+        holoCreate(14,entity():toWorld(Lpos+vec(3.3,0,0.8)),vec(0.06,0.06,0.09),entity():toWorld(ang(-90,0,0)),vec(255,255,255))
+        holoModel(14,"hq_cone")
+        holoMaterial(14,Icotex)
+        holoParent(14,entity())
+        holoCreate(17,entity():toWorld(Lpos+vec(2.3,2.3,0.8)),vec(0.06,0.06,0.09),entity():toWorld(ang(-90,45,0)),vec(64,64,64))
+        holoModel(17,"hq_cone")
+        holoMaterial(17,Icotex)
+        holoParent(17,entity())
+        holoCreate(18,entity():toWorld(Lpos+vec(2.3,-2.3,0.8)),vec(0.06,0.06,0.09),entity():toWorld(ang(-90,-45,0)),vec(64,64,64))
+        holoModel(18,"hq_cone")
+        holoMaterial(18,Icotex)
+        holoParent(18,entity())
+        holoCreate(19,entity():toWorld(Lpos+vec(0,0,-0.1)),vec(0.45,0.45,1.9),entity():angles(),Backcolor)
+        holoModel(19,"hq_torus")
+        holoParent(19,entity())
+        
+        #Heading indicator        
+        holoCreate(20,entity():toWorld(Dpos),vec(0.25,0.25,2),entity():angles(),Backcolor)
+        holoModel(20,"hq_torus")
+        holoParent(20,entity())
+        holoCreate(21,entity():toWorld(Dpos+vec(0,0,0.15)),vec(0.22,0.22,0.2),entity():toWorld(ang(0,0,0)),vec(64,64,64))
+        holoModel(21,"hq_cylinder")
+        holoParent(21,entity())
+        holoCreate(22,entity():toWorld(Dpos+vec(0,0,1.145)),vec(0.115,0.05,0.115),entity():toWorld(ang(0,0,90)),vec(255,255,255))
+        holoModel(22,"prism")
+        holoAlpha(22,0)
+        holoMaterial(22,Icotex)
+        holoParent(22,entity())
+        holoCreate(30,entity():toWorld(Dpos+vec(0,-1.2,1.175)),vec(0.05,0.05,0.05),entity():toWorld(ang(0,0,0)),vec(255,255,255))
+        holoMaterial(30,Icotex)
+        holoModel(30,"hq_icosphere")
+        holoParent(30,22)
+        holoCreate(31,entity():toWorld(Dpos+vec(0,0,1.145)),vec(0.115,0.05,0.115),entity():toWorld(ang(0,90,90)),vec(255,255,255))
+        holoModel(31,"prism")
+        holoMaterial(31,Icotex)
+        holoParent(31,entity())
+        
+        
+        
+        #altimeter
+        holoCreate(24,entity():toWorld(Upos),vec(0.25,0.25,2),entity():angles(),Backcolor)
+        holoModel(24,"hq_torus")
+        holoParent(24,entity())
+        holoCreate(25,entity():toWorld(Upos+vec(0,0,0.2)),vec(0.22,0.22,0.2),entity():toWorld(ang(0,0,0)),vec(64,64,64))
+        holoModel(25,"hq_cylinder")
+        holoParent(25,entity())
+        #small hand
+        holoCreate(26,entity():toWorld(Upos+vec(0,0,1.3)),vec(0.05,0.05,0.05),entity():toWorld(ang(0,0,0)),vec(255,255,255))
+        holoMaterial(26,Icotex)
+        holoModel(26,"hq_icosphere")
+        holoParent(26,entity())
+        holoCreate(23,entity():toWorld(Upos+vec(0.6,0,1.08)),vec(0.15,0.05,0.05),entity():toWorld(ang(0,0,45)),vec(255,255,255))
+        holoMaterial(23,Icotex)
+        holoParent(23,26)
+        #large hand
+        holoCreate(28,entity():toWorld(Upos+vec(0,0,1.3)),vec(0.05,0.05,0.05),entity():toWorld(ang(0,0,0)),vec(255,255,255))
+        holoMaterial(28,Icotex)
+        holoModel(28,"hq_icosphere")
+        holoParent(28,entity())
+        holoCreate(27,entity():toWorld(Upos+vec(0.4,0,1.125)),vec(0.1,0.05,0.05),entity():toWorld(ang(0,0,45)),vec(255,255,255))
+        holoMaterial(27,Icotex)
+        holoParent(27,28)
+        #blips for every 10000 units
+        holoCreate(15,entity():toWorld(Upos+vec(-0.95,0.7,1.16)),vec(0.05,0.05,0.05),entity():angles(),vec(255,255,255))
+        holoMaterial(15,Icotex)
+        holoModel(15,"hq_icosphere")
+        holoCreate(16,entity():toWorld(Upos+vec(-0.37,1.12,1.16)),vec(0.05,0.05,0.05),entity():angles(),vec(255,255,255))
+        holoMaterial(16,Icotex)
+        holoModel(16,"hq_icosphere")
+        holoParent(15,entity())
+        holoParent(16,entity())
+        holoCreate(29,entity():toWorld(Upos+vec(0.36,1.12,1.16)),vec(0.05,0.05,0.05),entity():angles(),vec(255,255,255))
+        holoMaterial(29,Icotex)
+        holoModel(29,"hq_icosphere")
+        holoParent(29,entity())
+        
+        
+        
+        
+    }
+    
+Trace = rangerOffset(39999,entity():massCenter(),vec(0,0,-1))
+if(Altfeet ==1) {
+Altitude = toUnit("ft",abs(entity():massCenter():z() - Trace:position():z()) - Amod)
+}
+else
+{
+    Altitude = abs(entity():massCenter():z() - Trace:position():z()) - Amod
+}
+
+
+holoAng(11,entity():toWorld(ang(angnorm(90+Master:angles():pitch()),0,-Master:angles():roll())))
+holoAng(5,entity():toWorld(ang(0,clamp((Master:angVel():yaw()/Yawmax),-1,1) * 34,0)))
+holoPos(10,entity():toWorld(Rpos+vec(-2,clamp((Master:velL():y()/Slipmax),-1,1)*1.25,1.15)))
+holoAng(22,entity():toWorld(ang(0,angnorm(Master:angles():yaw()),90)))
+if(Altfeet ==1) {
+holoAng(26,entity():toWorld(ang(0,-angnorm(((Altitude/100)*360)+180),0)))
+holoAng(28,entity():toWorld(ang(0,-angnorm(((Altitude/10000)*360)+180),0)))
+}
+else
+{
+holoAng(26,entity():toWorld(ang(0,-angnorm(((Altitude/1000)*360)+180),0)))
+holoAng(28,entity():toWorld(ang(0,-angnorm(((Altitude/100000)*360)+180),0)))   
+}
