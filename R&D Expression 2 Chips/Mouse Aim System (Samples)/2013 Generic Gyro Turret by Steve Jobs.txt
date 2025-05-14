@@ -1,0 +1,47 @@
+@name Generic Gyro Turret
+@inputs [Gun Chair]:entity [Active]:number
+@outputs [Position]:vector [Angle]:angle
+@persist [Inertia Hold]:angle [Elevation Depression Yaw RotateSpeed]:number
+
+
+# E2 must be facing forwards relative to the chassis at all times
+# Cam Controller required
+
+
+#[
+
+Simple turret e2 with variables for limited Elevation, Depression, Yaw, and an automatically tuned rotation speed gauged on the weight of a gun.
+
+It runs about 60-70 ops when running, the only requirements are the the e2 face forward relative to the chassis at all times ( Simply parent it to the base chip ) and a Cam controller.
+
+This is handed out for the sake of fair play, so try not to modify much besides the camera position and your Elevation, Depression, and Yaw variables.
+
+
+]#
+interval(50)
+
+if ( changed(Active) ) {
+
+    Elevation = 26
+    Depression = 6
+    Yaw = 360
+    
+    
+    RotateSpeed = clamp(11.5 - (Gun:mass()/1000),0,10) # You modify this , then you're a terrible person
+
+    rangerFilter(Gun)
+    rangerFilter(entity():getConstraints())
+    rangerPersist(1)
+    
+    Elevation*=-1
+    Inertia = shiftL(ang(Gun:inertia()))
+    Hold = entity():toLocal(Gun:angles())
+} 
+elseif( Active ) {
+    Angle = Chair:toLocal(Chair:driver():eyeAngles())
+    Position = entity():toWorld(vec(0,0,45))
+    GunAng = (rangerOffset(9999999999,Position,Angle:forward()):pos() - Gun:pos()):toAngle()
+}
+else{ GunAng = entity():toWorld(Hold) }
+
+Gun:applyAngForce((Gun:toLocal(entity():toWorld(clamp(entity():toLocal(Gun:toWorld(clamp(Gun:toLocal(GunAng),ang(-RotateSpeed),ang(RotateSpeed)))),ang(Elevation,-Yaw,-1),ang(Depression,Yaw,1)))) * 250 - Gun:angVel() * 30) * Inertia)
