@@ -1,0 +1,562 @@
+@name Insta dashboard V2
+@inputs WL:wirelink SteeringPlate:entity Gear
+@outputs [InGear Speed GearSpeed ClutchA GearMode]
+@persist [Dash Dash2 Visor Cupholder Milk] 
+@persist [Wheelbase Wheelbasebar Wheelbasebar2 Wheel] 
+@persist [Console1 Console2 Backboard Floorboard Floorboard2]
+@persist [Gas GasB GasB2 Brake BrakeB BrakeB2 Clutch ClutchB ClutchB2 PB]
+@persist [H HL HM HR] [Shifter Knob] [SB SP Radio]
+@persist [DR DL DRF DLF] [Mirrorbar MirrorB Mirror]
+@persist American SpeedUnit:string [Speeds Gears]:array
+
+#[
+
+INFO:
+
+Now i decided to release a bunch more e2's today, I just finished the "AI release thread (check sig), and now i have 3 more e2's
+
+Really these e2's deserve their own threads, but i didnt think posting 4 separate threads would be a great idea.
+
+Im going to split this into 3 sections, each E2 will have instructions, description, code, and pictures.
+__________________________________________________ __________________________________________________ _________________________________________Hologram Dashboard___________________
+
+Description: this is a dashboard, made out of holograms, it is designed to take data inputs, and display them in the form of a dash. It is not meant to control the vehicle in any way. I made this specifically using my crawler, of which the e2 engine has gears, 8 of them (-2,-1,0,1,2,3,4,5).
+
+Making this was a blast, and also quite difficult, over the period of about 2 weeks. It has a gear shift, a working gas, brake, and clutch pedal, a speedometer percent bar, a working steering wheel, the ability to be right OR wrong(left) side driven. A rear view mirror, and last but not least, a beer.
+
+Instructions:Wire the WL:wirelink output to your pod controller, and reweld your seat (or place it) in the correct position.
+Wire the SteeringPlate:entity output to your steering plate/steering bar, the dash will pull angles from this and display it by turning the wheel (it has a bug while going reverse and steering, not enough of a problem to fix)
+Next IF you have an engine that has gears, OR some way to define the gears, wire the "GEAR" output to that.
+IF you do NOT have a way to get the gears, the e2 will base the gears on your speed, the system does not work great, but it does still work correctly.
+Finally, drive your car around
+
+
+
+]#
+
+
+runOnTick(1)
+E=entity()
+Speed=toUnit(SpeedUnit, E:vel():length())
+GearSpeed=toUnit("km/h", E:vel():length())
+#if you have the "gear" input wired, use it, if not use the cars own system
+GearMode=(->Gear ? 1 : 0)
+
+#####################
+#Made by postman,####
+#With ideas from#####
+#Eternal flame#######
+#And many others#####
+#Do not redistribute#
+#####################
+
+W=WL["W",number]
+S=WL["S",number]
+M1=WL["Mouse1",number]
+M2=WL["Mouse2",number]
+Space=WL["Space",number]
+Shift=WL["Shift",number]
+Alt=WL["Alt",number]
+Active=WL["Active",number]
+Seat=WL["Entity",entity]
+
+
+
+if(first())
+{
+    #1 for american, -1 for british
+    American=-1
+    
+    
+    hint("you must have 'wire_holograms_burst_amount' set to: 40",5)
+    
+    
+    Speeds=array(15,30,45,60,75)
+    
+    Gears=array(
+    vec(-2.6,-2.68,0),
+    vec(2.6,-2.68,0),
+    vec(-2.6,0,0),
+    vec(2.6,0,0),
+    vec(-2.6,2.68,0),
+    vec(2,2.68,0),
+    vec(2.6,2.68,0),
+    vec(0,0,0))
+
+    
+    InGear=1
+    
+    
+    Dash=0
+    Dash2=1
+    Visor=2
+    Cupholder=3
+    Milk=4
+    PB=5
+    
+    Wheelbase=6
+    Wheelbasebar=7
+    Wheelbasebar2=8
+    Wheel=9
+    
+    Console1=10
+    Console2=11
+    Backboard=12
+    Floorboard=13
+    Floorboard2=14
+    
+    Gas=15
+    GasB=16
+    GasB2=17
+    
+    Brake=18
+    BrakeB=19
+    BrakeB2=20
+    
+    Clutch=21
+    ClutchB=22
+    ClutchB2=23
+    
+    H=24 #its the shifter's H
+    HL=25
+    HM=26
+    HR=27
+    
+    Shifter=28
+    Knob=29
+    
+    SB=30
+    SP=31
+    Radio=32
+    
+    DR=33
+    DRF=34
+    DL=35
+    DLF=36
+    
+    Mirrorbar=37
+    MirrorB=38
+    Mirror=39
+    
+    
+    
+    holoCreate(Dash)
+    holoCreate(Dash2)
+    holoCreate(Visor)
+    holoCreate(Cupholder)
+    holoCreate(Milk)
+    holoCreate(PB)
+    
+    holoCreate(Wheelbase)
+    holoCreate(Wheelbasebar)
+    holoCreate(Wheelbasebar2)
+    holoCreate(Wheel)
+    
+    holoCreate(Console1)
+    holoCreate(Console2)
+    holoCreate(Backboard)
+    holoCreate(Floorboard)
+    holoCreate(Floorboard2)
+    
+    holoCreate(Gas)
+    holoCreate(GasB)
+    holoCreate(GasB2)
+    
+    holoCreate(Brake)
+    holoCreate(BrakeB)
+    holoCreate(BrakeB2)
+
+    holoCreate(Clutch)
+    holoCreate(ClutchB)
+    holoCreate(ClutchB2)
+    
+    holoCreate(H)
+    holoCreate(HL)
+    holoCreate(HM)
+    holoCreate(HR)
+    
+    holoCreate(Shifter)
+    holoCreate(Knob)
+    
+    holoCreate(SB)
+    holoCreate(SP)
+    holoCreate(Radio)
+
+    holoCreate(DR)
+    holoCreate(DRF)
+    holoCreate(DL)
+    holoCreate(DLF)
+    
+    holoCreate(Mirrorbar)
+    holoCreate(MirrorB)
+    holoCreate(Mirror)
+    
+
+    
+    holoModel(Dash,"hq_rcube_thin")
+    holoModel(Dash2,"hq_rcube_thin")
+    holoModel(Visor,"hq_rcube_thin")
+    holoModel(Cupholder,"models/props_junk/CinderBlock01a.mdl")
+    holoModel(Milk,"models/props_junk/garbage_glassbottle002a.mdl") #models/props_junk/garbage_milkcarton002a.mdl
+    holoModel(Console1,"hq_rcube_thin")
+    holoModel(Console2,"hq_rcube_thin")
+    
+    holoModel(Wheelbase,"hq_cylinder")
+    holoModel(Wheelbasebar,"hq_rcube")
+    holoModel(Wheelbasebar2,"hq_rcube")
+    holoModel(Wheel,"hq_torus_thin")
+    
+    holoModel(Gas,"hq_rcube")
+    holoModel(Brake,"hq_rcube_thin")
+    holoModel(Clutch,"hq_rcube_thin")
+    
+    holoModel(H,"hq_rcube_thin")
+    holoModel(HL,"hq_rcube_thin")
+    holoModel(HM,"hq_rcube_thin")
+    holoModel(HR,"hq_rcube_thin")
+    
+    holoModel(Shifter,"hq_cylinder")
+    holoModel(Knob,"models/Gibs/HGIBS.mdl")
+
+    holoModel(SB,"hq_rcube_thin")
+    holoModel(SP,"hq_rcube_thin")
+    holoModel(Radio,"models/props_lab/reciever01b.mdl")
+    
+    holoModel(DR,"hq_rcube_thin")
+    holoModel(DRF,"right_prism")
+    holoModel(DL,"hq_rcube_thin")
+    holoModel(DLF,"right_prism")
+    
+    holoModel(Mirrorbar,"hq_rcube_thin")
+    holoModel(MirrorB,"hq_rcube")
+    holoModel(Mirror,"hq_rcube_thin")
+    
+    
+    
+    holoColor(Console1,vec(110,110,110))
+    holoColor(Console2,vec(110,110,110))
+    holoColor(Cupholder,vec(240,240,240))
+    holoColor(Backboard,vec(110,110,110))
+    holoColor(Floorboard,vec(110,110,110))
+    holoColor(Floorboard2,vec(110,110,110))
+        
+    holoColor(Wheelbase,vec(110,110,110))
+    holoColor(Wheelbasebar,vec(120,120,120))
+    holoColor(Wheelbasebar2,vec(120,120,120))
+    holoColor(Wheel,vec(110,110,110))
+    
+    holoColor(Gas,vec(30,30,30))
+    holoColor(Brake,vec(30,30,30))
+    holoColor(Clutch,vec(30,30,30))
+        
+    holoColor(H,vec(0,0,0))
+    holoColor(HL,vec(0,0,0))
+    holoColor(HM,vec(0,0,0))
+    holoColor(HR,vec(0,0,0))
+    
+    holoColor(Knob,vec(200,10,10))
+
+    holoColor(SB,vec(10,10,10))
+    holoColor(SP,vec(10,180,10))
+
+    
+    holoColor(DR,vec(110,110,110))
+    holoColor(DRF,vec(110,110,110))
+    holoColor(DL,vec(110,110,110))
+    holoColor(DLF,vec(110,110,110))
+    
+    holoColor(Mirrorbar,vec(110,110,110))
+    holoColor(MirrorB,vec(110,110,110))
+    
+    
+    
+    holoAlpha(Visor,110)
+    holoAlpha(PB,0)
+    holoAlpha(GasB,0)
+    holoAlpha(BrakeB,0)
+    holoAlpha(ClutchB,0)
+    
+    
+    
+    holoMaterial(Dash,"models/props_badlands/temptile")
+    holoMaterial(Dash2,"models/props_badlands/temptile")
+    holoMaterial(Cupholder,"models/props_badlands/temptile")
+    holoMaterial(Console1,"phoenix_storms/mrref2")
+    holoMaterial(Console2,"phoenix_storms/mrref2")
+    holoMaterial(Backboard,"phoenix_storms/mrref2")
+    holoMaterial(Floorboard,"phoenix_storms/mrref2")
+    holoMaterial(Floorboard2,"phoenix_storms/mrref2")
+    
+    holoMaterial(Wheelbasebar,"phoenix_storms/grey_chrome")
+    holoMaterial(Wheelbasebar2,"phoenix_storms/grey_chrome")
+    holoMaterial(Wheelbase,"models/props_pipes/guttermetal01a")
+    holoMaterial(Wheel,"models/props_pipes/guttermetal01a")
+        
+    holoMaterial(Gas,"phoenix_storms/grey_chrome")
+    holoMaterial(GasB2,"phoenix_storms/grey_chrome")
+    holoMaterial(Brake,"phoenix_storms/grey_chrome")
+    holoMaterial(BrakeB2,"phoenix_storms/grey_chrome")
+    holoMaterial(Clutch,"phoenix_storms/grey_chrome")
+    holoMaterial(ClutchB2,"phoenix_storms/grey_chrome")
+    
+    holoMaterial(ClutchB2,"phoenix_storms/grey_chrome")
+    holoMaterial(ClutchB2,"phoenix_storms/grey_chrome")
+    holoMaterial(ClutchB2,"phoenix_storms/grey_chrome")
+    
+    
+    holoMaterial(Shifter,"phoenix_storms/fender_chrome")
+    holoMaterial(Knob,"phoenix_storms/grey_chrome")
+    
+    holoMaterial(SB,"phoenix_storms/grey_chrome")
+    holoMaterial(SP,"phoenix_storms/grey_chrome")
+    
+    holoMaterial(DR,"phoenix_storms/mrref2")
+    holoMaterial(DRF,"phoenix_storms/mrref2")
+    holoMaterial(DL,"phoenix_storms/mrref2")
+    holoMaterial(DLF,"phoenix_storms/mrref2")
+    
+    holoMaterial(Mirrorbar,"phoenix_storms/mrref2")
+    holoMaterial(MirrorB,"phoenix_storms/mrref2")
+    holoMaterial(Mirror,"debug/env_cubemap_model")
+    
+
+    
+    
+    
+    holoScale(Dash,vec(2,8,1.5))
+    holoScale(Dash2,vec(2,8,2))
+    holoScale(Visor,vec(0.1,8,1.8))
+    holoScale(PB,vec(0.2,0.2,0.2))
+    
+    holoScale(Wheelbase,vec(0.3,0.3,0.8))
+    holoScale(Wheelbasebar,vec(0.1,1.4,0.05))
+    holoScale(Wheelbasebar2,vec(0.72,0.1,0.05))
+    holoScale(Wheel,vec(1.5,1.5,1))
+    
+    holoScale(Console1,vec(3,2,1.5))
+    holoScale(Console2,vec(4.8,2,1.5))
+    holoScale(Backboard,vec(2,8,0.1))
+    holoScale(Floorboard,vec(1,8,0.1))
+    holoScale(Floorboard2,vec(8,8,0.1))
+    
+    holoScale(Gas,vec(0.9,0.25,0.15))
+    holoScale(GasB,vec(0.1,0.1,0.1))
+    holoScale(GasB2,vec(0.1,0.1,0.6))
+    
+    holoScale(Brake,vec(0.7,0.35,0.15))
+    holoScale(BrakeB,vec(0.1,0.1,0.1))
+    holoScale(BrakeB2,vec(0.1,0.1,0.6))
+    
+    holoScale(Clutch,vec(0.7,0.35,0.15))
+    holoScale(ClutchB,vec(0.1,0.1,0.1))
+    holoScale(ClutchB2,vec(0.1,0.1,0.6))
+    
+    holoScale(H,vec(0.08,0.45,0.1))
+    holoScale(HL,vec(0.5,0.08,0.1))
+    holoScale(HM,vec(0.5,0.08,0.1))
+    holoScale(HR,vec(0.5,0.08,0.1))
+    
+    holoScale(Shifter,vec(0.08,0.08,0.85))
+    holoScale(Knob,vec(0.5,0.5,0.5))
+    
+    holoScale(SB,vec(0.3,1.5,0.2))
+    holoScale(SP,vec(0.3,0.1,0.25))
+
+    holoScale(DR,vec(8.8,0.1,3))
+    holoScale(DRF,vec(2,0.1,3))
+    holoScale(DL,vec(8.8,0.1,3))
+    holoScale(DLF,vec(2,0.1,3))
+    
+    holoScale(Mirrorbar,vec(0.4,0.1,0.1))
+    holoScale(MirrorB,vec(0.05,0.72,0.32))
+    holoScale(Mirror,vec(0.06,0.6,0.3))
+    
+    
+    
+    holoPos(Dash,E:toWorld(vec(-10,0,30)))
+    holoPos(Dash2,E:toWorld(vec(-16.25,0,31.8)))
+    holoPos(Visor,E:toWorld(vec(-6,0,53.5)))
+    holoPos(Cupholder,holoEntity(Console2):toWorld(vec(25,6*American,11)))
+    holoPos(Milk,holoEntity(Cupholder):toWorld(vec(-5,0,10)))
+    holoPos(PB,E:toWorld(vec(3,-30*American,5)))
+    
+    holoPos(Wheelbase,holoEntity(Dash):toWorld(vec(12,-30*American,5)))
+    holoPos(Wheelbasebar,holoEntity(Wheelbase):toWorld(vec(3.8,0,0.5)))
+    holoPos(Wheelbasebar2,holoEntity(Wheelbasebar):toWorld(vec(0.6,0,-3.4)))
+    holoPos(Wheel,holoEntity(Wheelbase):toWorld(vec(3.9,0,1.2)))
+    
+    holoPos(Console1,E:toWorld(vec(-1,0,14)))
+    holoPos(Console2,E:toWorld(vec(34.2,0,6)))
+    holoPos(Backboard,E:toWorld(vec(-9,0,10)))
+    holoPos(Floorboard,E:toWorld(vec(2.2,0,-1.5)))
+    holoPos(Floorboard2,E:toWorld(vec(56,0,-2.5)))
+
+    holoPos(Gas,holoEntity(PB):toWorld(vec(0,10,-2)))
+    holoPos(GasB,holoEntity(PB):toWorld(vec(0,10,-4)))
+    holoPos(GasB2,holoEntity(PB):toWorld(vec(-3.5,10,-2.2)))
+    
+    holoPos(Brake,holoEntity(PB):toWorld(vec(0,0,-2)))
+    holoPos(BrakeB,holoEntity(PB):toWorld(vec(0,0,-4)))
+    holoPos(BrakeB2,holoEntity(PB):toWorld(vec(-3.5,0,-2.2)))
+    
+    holoPos(Clutch,holoEntity(PB):toWorld(vec(0,-10,-2)))
+    holoPos(ClutchB,holoEntity(PB):toWorld(vec(0,-10,-4)))
+    holoPos(ClutchB2,holoEntity(PB):toWorld(vec(-3.5,-10,-2.2)))
+    
+    holoPos(H,holoEntity(Console2):toWorld(vec(-15,-6*American,8.6)))
+    holoPos(HL,holoEntity(H):toWorld(vec(0,-2.7,0)))
+    holoPos(HM,holoEntity(H):toWorld(vec(0,0,0)))
+    holoPos(HR,holoEntity(H):toWorld(vec(0,2.7,0)))
+    
+    holoPos(Knob,holoEntity(Shifter):toWorld(vec(0,0,5)))
+    
+    holoPos(SB,holoEntity(Dash):toWorld(vec(5.5,-30*American,10.5)))
+    holoPos(SP,holoEntity(SB):toWorld(vec(0.2,-8,0)))
+    holoPos(Radio,holoEntity(Dash):toWorld(vec(3.3,0,6.8)))
+    
+    holoPos(DR,E:toWorld(vec(51,47.5,15)))
+    holoPos(DRF,E:toWorld(vec(-13,47.5,15)))
+    holoPos(DL,E:toWorld(vec(51,-47.5,15)))
+    holoPos(DLF,E:toWorld(vec(-13,-47.5,15)))
+    
+    holoPos(Mirrorbar,holoEntity(Visor):toWorld(vec(5,0,6)))
+    holoPos(MirrorB,holoEntity(Mirrorbar):toWorld(vec(2,0,0)))
+    holoPos(Mirror,holoEntity(MirrorB):toWorld(vec(0.2,0,0)))
+    
+    
+    
+    
+    holoAng(Dash,E:toWorld(ang(75,0,0)))
+    holoAng(Visor,E:toWorld(ang(20,0,0)))
+    holoAng(Cupholder,E:toWorld(ang(90,0,0)))
+    
+    holoAng(Wheelbase,holoEntity(Dash):toWorld(ang(10,0,0)))
+    holoAng(Wheelbasebar,holoEntity(Wheelbase):angles())
+    holoAng(Wheelbasebar2,holoEntity(Wheelbase):angles())
+    holoAng(Wheel,holoEntity(Wheelbase):angles())
+    holoAng(Console1,E:toWorld(ang(60,0,0)))
+    holoAng(Backboard,E:toWorld(ang(60,0,0)))
+    holoAng(Floorboard,E:toWorld(ang(10,0,0)))
+    
+    holoAng(Gas,E:toWorld(ang(60,0,0)))
+    holoAng(GasB,E:toWorld(ang(60,0,0)))
+    holoAng(GasB2,E:toWorld(ang(60,0,0)))
+    
+    holoAng(Brake,E:toWorld(ang(60,0,0)))
+    holoAng(BrakeB,E:toWorld(ang(60,0,0)))
+    holoAng(BrakeB2,E:toWorld(ang(60,0,0)))
+    
+    holoAng(Clutch,E:toWorld(ang(60,0,0)))
+    holoAng(ClutchB,E:toWorld(ang(60,0,0)))
+    holoAng(ClutchB2,E:toWorld(ang(60,0,0)))
+    
+    holoAng(SB,E:toWorld(ang(75,0,0)))
+    holoAng(SP,E:toWorld(ang(75,0,0)))
+    holoAng(Radio,E:toWorld(ang(0,0,0)))
+    
+    holoAng(DRF,E:toWorld(ang(180,0,0)))
+    holoAng(DLF,E:toWorld(ang(180,0,0)))
+    
+    
+    
+    
+    holoParent(Dash,E)
+    holoParent(Dash2,E)
+    holoParent(Visor,E)
+    holoParent(Cupholder,E)
+    holoParent(Milk,Cupholder)
+    holoParent(PB,E)
+    
+    holoParent(Wheelbase,Dash)
+    holoParent(Wheelbasebar,Wheelbase)
+    holoParent(Wheelbasebar2,Wheelbase)
+    holoParent(Wheel,Wheelbase)
+    
+    holoParent(Console1,E)
+    holoParent(Console2,E)
+    holoParent(Backboard,E)
+    holoParent(Floorboard,E)
+    holoParent(Floorboard2,E)
+    
+    holoParent(Gas,GasB)
+    holoParent(GasB,E)
+    holoParent(GasB2,Gas)
+    
+    holoParent(Brake,BrakeB)
+    holoParent(BrakeB,E)
+    holoParent(BrakeB2,Brake)
+    
+    holoParent(Clutch,ClutchB)
+    holoParent(ClutchB,E)
+    holoParent(ClutchB2,Clutch)
+    
+    holoParent(H,Console1)
+    holoParent(HL,H)
+    holoParent(HM,H)
+    holoParent(HR,H)
+    
+    holoParent(Shifter,E)
+    holoParent(Knob,Shifter)
+    
+    holoParent(SB,Dash)
+    holoParent(SP,SB)
+    holoParent(Radio,Dash)
+    
+    holoParent(DR,E)
+    holoParent(DRF,E)
+    holoParent(DL,E)
+    holoParent(DLF,E)
+    
+    holoParent(Mirrorbar,Visor)
+    holoParent(MirrorB,Visor)
+    holoParent(Mirror,Visor)
+    
+}
+
+
+if(American==1)
+{
+    SpeedUnit="mph"
+}
+elseif(American==-1)
+{
+    SpeedUnit="km/h"
+}
+
+
+#various angle codes
+holoAng(Wheelbase,holoEntity(Dash):toWorld(ang(0,SteeringPlate:angles():yaw()*4,0)))
+holoAng(GasB,E:toWorld(ang(60-(W*20),0,0)))
+holoAng(BrakeB,E:toWorld(ang(60-(Space*20),0,0)))
+holoAng(ClutchB,E:toWorld(ang(60-(ClutchA*20),0,0)))
+#holoAng(Knob,(Seat:driver():shootPos()-holoEntity(Knob):pos()):toAngle())
+
+
+
+if(GearMode==0)
+{
+    #gears
+    if(GearSpeed>Speeds[InGear,number]){if(InGear<Speeds:count()){InGear++}}
+    if(GearSpeed<Speeds[InGear-1,number]){if(InGear>0){InGear--}}
+
+    if(GearSpeed<=Speeds[InGear,number]+5&GearSpeed>=Speeds[InGear,number]-5){ClutchA=1}else{ClutchA=0}
+}
+elseif(GearMode==1)
+{
+    if(Gear==-1){InGear=6}
+    if(Gear==-2){InGear=7}
+    if(Gear==0){InGear=8}
+    if(Gear>=1){InGear=Gear}
+    if(M1|M2){ClutchA=1}else{ClutchA=0}
+}
+
+#position the shifter
+holoPos(Shifter,holoEntity(H):toWorld(Gears[InGear,vector]+vec(0,0,5)))
+
+
+#speedometer thing
+holoPos(SP,holoEntity(SB):toWorld(vec(0.2,-8+(toUnit("mph", E:vel():length())/10)*2,0)))
+
+
+#turbo light
+holoColor(Knob, (Shift ? vec(20,120,20) : vec(120,10,10)))

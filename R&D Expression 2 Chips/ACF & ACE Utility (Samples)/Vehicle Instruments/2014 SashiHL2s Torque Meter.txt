@@ -1,0 +1,113 @@
+@name SashiHL2s Torque Meter
+@inputs Torque
+@persist Torque
+@trigger Torque
+
+    ####
+    # Holographic Torque Meter
+    # Made by Sashi Degodeshi (SashiHL2)
+    # SteamID: STEAM_0:1:6453548
+    # Created: Febuary 3, 2014
+    # Updated: N/A
+    #
+    # Requires convar wire_holograms_modelany to be set to 1 or 2
+    # Also requires SProps for dial model
+    ####
+    
+
+# Chip settings
+E2 = entity()
+E2:setAlpha(0)
+
+# Unit conversion settings
+TorqueMax = 180
+TorqueAdj = (Torque/5.75)
+
+if(first() | duped())
+{
+    #Dial Case
+    holoCreate(99, E2:toWorld(vec(0,0,0)), vec(1), E2:toWorld(ang(-90,0,0)))
+    holoModel(99, "models/sprops/trans/misc/gauge_2.mdl") # Thank you xk4melot for SProps!
+    holoParent(99, E2)
+    
+    #Dial and knob
+    holoCreate(1, E2:toWorld(vec(0,0,1)), vec(0.05,0.05,0.05), E2:toWorld(ang(0,-180,0)))
+    holoColor(1, vec(200))
+    holoModel(1, "hq_sphere")
+    holoParent(1, 99)
+
+    holoCreate(2, E2:toWorld(vec(1.5,0,1)), vec(0.01,0.01,0.35), E2:toWorld(ang(90,0,0)))
+    holoColor(2, vec(0,255,0))
+    holoDisableShading(2, 1)
+    holoParent(2, 1)
+    
+    #Blackout disc
+    holoCreate(98, E2:toWorld(vec(0,0,0.70)), vec(0.35,0.35,0.01), E2:toWorld(ang(0,-40,0)))
+    holoColor(98, vec(0))
+    #holoMaterial(98, "models/shiny")
+    holoModel(98, "hq_cylinder")
+    holoParent(98, E2) 
+    
+    #Letter T!
+    holoCreate(3, E2:toWorld(vec(0.8,-1,1)), vec(0.02,0.02,0.02), E2:toWorld(ang(0,-90,90)))
+    holoModel(3, "models/sprops/misc/alphanum/alphanum_t.mdl")
+    holoMaterial(3, "models/debug/debugwhite")
+    holoColor(3, vec(0,0,255))
+    holoDisableShading(3, 1)
+    holoParent(3, E2)
+        
+    #Here comes R!
+    holoCreate(4, E2:toWorld(vec(0.8,-0.75,1)), vec(0.02,0.02,0.02), E2:toWorld(ang(0,-90,90)))
+    holoModel(4, "models/sprops/misc/alphanum/alphanum_r.mdl")
+    holoMaterial(4, "models/debug/debugwhite")
+    holoColor(4, vec(0,0,255))
+    holoDisableShading(4, 1)
+    holoParent(4, E2)
+    
+    #And Q
+    holoCreate(5, E2:toWorld(vec(0.8,-0.53,1)), vec(0.02,0.02,0.02), E2:toWorld(ang(0,-90,90)))
+    holoModel(5, "models/sprops/misc/alphanum/alphanum_q.mdl")
+    holoMaterial(5, "models/debug/debugwhite")
+    holoColor(5, vec(0,0,255))
+    holoDisableShading(5, 1)
+    holoParent(5, E2)
+    
+    #x
+    holoCreate(6, E2:toWorld(vec(0.8,-0.10,1)), vec(0.02,0.02,0.02), E2:toWorld(ang(0,-90,90)))
+    holoModel(6, "models/sprops/misc/alphanum/alphanum_l_x.mdl")
+    holoMaterial(6, "models/debug/debugwhite")
+    holoColor(6, vec(0,0,255))
+    holoDisableShading(6, 1)
+    holoParent(6, E2)
+        
+    #1
+    holoCreate(7, E2:toWorld(vec(0.8,0.20,1)), vec(0.02,0.02,0.02), E2:toWorld(ang(0,-90,90)))
+    holoModel(7, "models/sprops/misc/alphanum/alphanum_1.mdl")
+    holoMaterial(7, "models/debug/debugwhite")
+    holoColor(7, vec(0,0,255))
+    holoDisableShading(7, 1)
+    holoParent(7, E2)
+    
+    #0
+    holoCreate(8, E2:toWorld(vec(0.8,0.40,1)), vec(0.02,0.02,0.02), E2:toWorld(ang(0,-90,90)))
+    holoModel(8, "models/sprops/misc/alphanum/alphanum_0.mdl")
+    holoMaterial(8, "models/debug/debugwhite")
+    holoColor(8, vec(0,0,255))
+    holoDisableShading(8, 1)
+    holoParent(8, E2)
+    
+    # Identity and debugging shit
+    concmd("say SashiHL2's Holographic Torque Meter Loaded") # Let the server log your existance for easier identification incase you bork something up
+    if(owner():steamID() != "STEAM_0:1:6453548")
+    {
+        hint("Thank you for using my E2 code, I hope you enjoy it!", 2)
+        hint("http://steamcommunity.com/id/sashi - Visit my page!", 2)
+    }
+}
+
+runOnTick(1)
+
+if(changed(Torque))
+{
+    holoAng(1, E2:toWorld(ang(0,TorqueMax,0) - ang(0,TorqueAdj,0)))
+}

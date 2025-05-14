@@ -1,0 +1,160 @@
+@name SashiHL2s Speedometer with Throttle Needle
+@inputs Throttle
+@persist Speed
+@trigger Speed
+
+    ####
+    # Holographic Speedometer with Throttle Needle
+    # Made by Sashi Degodeshi (SashiHL2)
+    # SteamID: STEAM_0:1:6453548
+    # Created: Febuary 6, 2014
+    # Updated: N/A
+    #
+    # Requires convar wire_holograms_modelany to be set to 1 or 2
+    # Also requires SProps for dial model
+    ####
+    
+
+# Chip settings
+E2 = entity()
+E2:setAlpha(0)
+
+# Unit conversion settings
+# mph for miles per hour, km/h for kilometers per hour
+Unit = "mph"
+ThrottleDialMax = 180
+
+# Other aesthetics
+# Set our sound to let us know when our speedometer goes over the last dial number, aka TOO FAST BRO SLOW DOWN!
+WarningSound = "alarms/klaxon1.wav" 
+
+if(first() | duped())
+{
+    #Dial Case
+    holoCreate(99, E2:toWorld(vec(0,0,0)), vec(1), E2:toWorld(ang(-90,0,0)))
+    holoModel(99, "models/sprops/trans/misc/gauge_2.mdl") # Thank you xk4melot for SProps!
+    holoParent(99, E2)
+    
+    #Odometer
+    holoCreate(98, E2:toWorld(vec(1.4,0,0.50)), vec(0.05,0.25,0.03), E2:toWorld(ang(0,0,0)))
+    holoColor(98, vec(0))
+    holoDisableShading(98, 1)
+    holoParent(98, E2)
+    
+    #Dial
+    holoCreate(1, E2:toWorld(vec(0,0,1)), vec(0.05,0.05,0.05), E2:toWorld(ang(0,0,0)))
+    holoColor(1, vec(200))
+    holoModel(1, "hq_sphere")
+    holoParent(1, 99)
+
+    #Needle
+    holoCreate(2, E2:toWorld(vec(1.5,0,1)), vec(0.01,0.01,0.35), E2:toWorld(ang(90,0,0)))
+    holoColor(2, vec(0,255,0))
+    holoDisableShading(2, 1)
+    holoParent(2, 1)
+    
+    #Throttle Dial
+    holoCreate(7, E2:toWorld(vec(0,0,1)), vec(0.05,0.05,0.05), E2:toWorld(ang(0,-180,0)))
+    holoColor(7, vec(200))
+    holoModel(7, "hq_sphere")
+    holoParent(7, 99)
+    
+    #Throttle Needle
+    holoCreate(8, E2:toWorld(vec(0.85,0,0.75)), vec(0.01,0.01,0.25), E2:toWorld(ang(90,0,0)))
+    holoColor(8, vec(255,0,0))
+    holoDisableShading(8, 1)
+    holoParent(8, 7)
+    
+    # Identity and debugging shit
+    concmd("say SashiHL2's Holographic Speedometer Loaded") # Let the server log your existance for easier identification incase you bork something up
+    if(owner():steamID() != "STEAM_0:1:6453548")
+    {
+        hint("Thank you for using my E2 code, I hope you enjoy it!", 2)
+        hint("http://steamcommunity.com/id/sashi - Visit my page!", 2)
+    }
+    
+if(Unit == "km/h") #Set our conversion and display
+{
+    #Letter K!
+    holoCreate(3, E2:toWorld(vec(0.8,-1,1)), vec(0.02,0.02,0.02), E2:toWorld(ang(0,-90,90)))
+    holoModel(3, "models/sprops/misc/alphanum/alphanum_k.mdl")
+    holoMaterial(3, "models/debug/debugwhite")
+    holoColor(3, vec(0,255,0))
+    holoDisableShading(3, 1)
+    holoParent(3, E2)
+}
+else
+{
+    #Letter M!
+    holoCreate(3, E2:toWorld(vec(0.8,-1,1)), vec(0.02,0.02,0.02), E2:toWorld(ang(0,-90,90)))
+    holoModel(3, "models/sprops/misc/alphanum/alphanum_m.mdl")
+    holoMaterial(3, "models/debug/debugwhite")
+    holoColor(3, vec(0,255,0))
+    holoDisableShading(3, 1)
+    holoParent(3, E2)
+}    
+    #Here comes P!
+    holoCreate(4, E2:toWorld(vec(0.8,-0.75,1)), vec(0.02,0.02,0.02), E2:toWorld(ang(0,-90,90)))
+    holoModel(4, "models/sprops/misc/alphanum/alphanum_p.mdl")
+    holoMaterial(4, "models/debug/debugwhite")
+    holoColor(4, vec(0,255,0))
+    holoDisableShading(4, 1)
+    holoParent(4, E2)
+    
+    #And H, late as usual...
+    holoCreate(5, E2:toWorld(vec(0.8,-0.53,1)), vec(0.02,0.02,0.02), E2:toWorld(ang(0,-90,90)))
+    holoModel(5, "models/sprops/misc/alphanum/alphanum_h.mdl")
+    holoMaterial(5, "models/debug/debugwhite")
+    holoColor(5, vec(0,255,0))
+    holoDisableShading(5, 1)
+    holoParent(5, E2)
+    
+    #Overspeed warning light
+    holoCreate(6, E2:toWorld(vec(2.5,1.5,0.5)), vec(0.05), E2:toWorld(ang(0,0,0)))
+    holoModel(6, "hq_sphere")
+    holoMaterial(6, "models/debug/debugwhite")
+    holoColor(6, vec(1))
+    holoDisableShading(5, 1)
+    holoParent(6, E2)
+
+}
+
+runOnTick(1)
+local Speed = E2:vel():length()
+if(changed(Throttle))
+{
+    holoAng(7, E2:toWorld(ang(0,ThrottleDialMax,0) - ang(0,Throttle*1.8,0)))
+}
+if(changed(Speed))
+{
+    if(Unit == "km/h")
+    {
+        Adjustment = toUnit(Unit, Speed)*1.75 # Adjust our needle rotation for accurate analog reading
+        holoAng(1, E2:toWorld(ang(0,-Adjustment,0)))
+        
+        if(Speed >= 2700) # Activate warning light if speed bypasses 2700 units/s
+        {
+            holoColor(6, vec(255,0,0))
+            E2:soundPlay(3, soundDuration(WarningSound), WarningSound)
+        }
+        else
+        {
+            holoColor(6, vec(10))
+        }
+    }
+    else # mph adjustment
+    {
+        Adjustment = toUnit(Unit, Speed)*1.75 # Apparently the adjustment is the same as km/h. Keeping variable just in case.
+        holoAng(1, E2:toWorld(ang(0,-Adjustment,0)))
+        
+        if(Speed >= 4300) # Activate warning light if speed bypasses 4300 units/s
+        {
+            holoColor(6, vec(255,0,0))
+            E2:soundPlay(3, soundDuration(WarningSound), WarningSound)
+        }
+        else
+        {
+            holoColor(6, vec(10))
+        }
+    }
+}

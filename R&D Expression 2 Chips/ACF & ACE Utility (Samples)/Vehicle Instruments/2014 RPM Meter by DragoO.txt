@@ -1,0 +1,119 @@
+@name RPM Meter
+@inputs RPM
+@outputs 
+@persist Ang
+@trigger 
+#for wire just RPM from E2 to engine RPM or whatever#
+runOnTick(1)
+E = entity()
+#RPM = 0
+if(first()){
+    holoCreate(1)
+    holoPos(1,E:toWorld(vec(0,0,4)))
+    holoScale(1,vec(0.8,0.8,0.14))
+    holoModel(1,"hq_tube_thin")
+    holoParent(1,E)
+    holoColor(1,vec(120,120,120))
+    
+    holoCreate(2)
+    holoPos(2,holoEntity(1):toWorld(vec(0,0,-0.5)))
+    holoScale(2,vec(0.8,0.8,0.0001))
+    holoModel(2,"hq_sphere")
+    holoParent(2,1)
+    holoColor(2,vec(10,10,10))
+    
+    holoCreate(3)
+    holoPos(3,holoEntity(1):toWorld(vec(0,0,-0.4)))
+    holoScale(3,vec(0.07,0.07,0.01))
+    holoModel(3,"hq_sphere")
+    holoParent(3,E)
+    holoColor(3,vec(150,150,150))
+    
+    holoCreate(4)
+    holoPos(4,holoEntity(1):toWorld(vec(0.5,0,-0.5)))
+    holoScale(4,vec(0.5,0.05,0.01))
+    holoModel(4,"tetra")
+    holoParent(4,3)
+    holoColor(4,vec(200,220,200))
+    holoAng(4,E:toWorld(ang(180,0,0)))
+    holoColor(4,vec(255,0,0))
+    
+    holoCreate(5)
+    holoPos(5,holoEntity(1):toWorld(vec(3,-2.6,-0.5)))
+    holoScale(5,vec(0.08,0.08,0.08))
+    holoModel(5,"models/sprops/misc/alphanum/alphanum_0.mdl")
+    holoParent(5,E)
+    holoAng(5,E:toWorld(ang(0,90,90)))
+    
+    holoCreate(6)
+    holoPos(6,holoEntity(1):toWorld(vec(1.3,-3.8,-0.5)))
+    holoScale(6,vec(0.08,0.08,0.08))
+    holoModel(6,"models/sprops/misc/alphanum/alphanum_1.mdl")
+    holoParent(6,E)
+    holoAng(6,E:toWorld(ang(0,-90,90)))
+    
+    holoCreate(7)
+    holoPos(7,holoEntity(1):toWorld(vec(-0.8,-3.8,-0.5)))
+    holoScale(7,vec(0.08,0.08,0.08))
+    holoModel(7,"models/sprops/misc/alphanum/alphanum_2.mdl")
+    holoParent(7,E)
+    holoAng(7,E:toWorld(ang(0,-90,90)))
+    
+    holoCreate(8)
+    holoPos(8,holoEntity(1):toWorld(vec(-2.6,-2.9,-0.5)))
+    holoScale(8,vec(0.08,0.08,0.08))
+    holoModel(8,"models/sprops/misc/alphanum/alphanum_3.mdl")
+    holoParent(8,E)
+    holoAng(8,E:toWorld(ang(0,-90,90)))
+    
+    holoCreate(9)
+    holoPos(9,holoEntity(1):toWorld(vec(-3.5,-1.2,-0.5)))
+    holoScale(9,vec(0.08,0.08,0.08))
+    holoModel(9,"models/sprops/misc/alphanum/alphanum_4.mdl")
+    holoParent(9,E)
+    holoAng(9,E:toWorld(ang(0,-90,90)))
+    
+    holoCreate(10)
+    holoPos(10,holoEntity(1):toWorld(vec(-3.7,1,-0.5)))
+    holoScale(10,vec(0.08,0.08,0.08))
+    holoModel(10,"models/sprops/misc/alphanum/alphanum_5.mdl")
+    holoParent(10,E)
+    holoAng(10,E:toWorld(ang(0,-90,90)))
+    holoColor(10,vec(255,255,10))
+    
+    holoCreate(11)
+    holoPos(11,holoEntity(1):toWorld(vec(-2.7,2.7,-0.5)))
+    holoScale(11,vec(0.08,0.08,0.08))
+    holoModel(11,"models/sprops/misc/alphanum/alphanum_6.mdl")
+    holoParent(11,E)
+    holoAng(11,E:toWorld(ang(0,-90,90)))
+    holoColor(11,vec(200,200,20))
+    
+    holoCreate(12)
+    holoPos(12,holoEntity(1):toWorld(vec(-0.8,3.7,-0.5)))
+    holoScale(12,vec(0.08,0.08,0.08))
+    holoModel(12,"models/sprops/misc/alphanum/alphanum_7.mdl")
+    holoParent(12,E)
+    holoAng(12,E:toWorld(ang(0,-90,90)))
+    holoColor(12,vec(255,20,20))
+    
+    holoCreate(13)
+    holoPos(13,holoEntity(1):toWorld(vec(1.2,3.7,-0.5)))
+    holoScale(13,vec(0.08,0.08,0.08))
+    holoModel(13,"models/sprops/misc/alphanum/alphanum_8.mdl")
+    holoParent(13,E)
+    holoAng(13,E:toWorld(ang(0,-90,90)))
+    holoColor(13,vec(180,20,20))
+    
+    holoCreate(14)
+    holoPos(14,holoEntity(1):toWorld(vec(2.9,2.7,-0.5)))
+    holoScale(14,vec(0.08,0.08,0.08))
+    holoModel(14,"models/sprops/misc/alphanum/alphanum_9.mdl")
+    holoParent(14,E)
+    holoAng(14,E:toWorld(ang(0,-90,90)))
+    holoColor(14,vec(120,20,20))
+    setName("RPM Meter\nBy Drago")
+
+}
+Ang=(0.031*RPM)+40
+holoAng(3,E:toWorld(ang(0,-Ang,0)))
