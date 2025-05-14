@@ -1,0 +1,99 @@
+@name Combine Sounds
+@persist S:normal Spd:normal Mdl:string Snd:normal Health:normal
+
+interval(1)
+
+O = owner()
+Vel = O:vel():setZ(0)
+S = O:vel():setZ(0):length()
+G = O:isOnGround()
+Mod = O:model()
+Rnd = round(randint(1,6))
+N = O:inNoclip()
+Health=O:health()
+HealthShot= $Health < 0
+
+if(O:keySprint() == 1)
+{
+Spd = 130
+Snd = 1
+}
+elseif(O:isCrouch() & O:keyWalk() == 1)
+{
+Spd = 600
+Snd = 0
+}
+elseif(O:keyWalk() == 1)
+{
+Spd = 400
+Snd = 0.05
+}
+elseif(O:isCrouch())
+{
+Spd = 475
+Snd = 0.025
+}
+else
+{
+Spd = 300
+Snd = 0.5
+}
+
+
+
+if(Mod == "models/player/combine_super_soldier.mdl" | Mod == "models/player/combine_soldier_prisonguard.mdl" | Mod == "models/player/combine_soldier.mdl")
+{
+Mdl = "npc/combine_soldier/gear"
+MdlD ="npc/combine_soldier/die"
+MdlH ="npc/combine_soldier/pain"
+RndD = round(randint(1,3))
+}
+elseif(Mod == "models/player/police.mdl" | Mod == "models/player/police_fem.mdl")
+{
+Mdl = "npc/metropolice/gear"  
+MdlD ="npc/metropolice/die"
+MdlH ="npc/metropolice/pain"
+RndD = round(randint(1,4))
+}
+else
+{
+Mdl = ""   
+MdlD =""
+RndD = 0
+}
+
+if(N == 0 & Vel & G == 1)
+{
+timer("stp",Spd)
+if(clk("stp"))
+    {
+    O:soundPlay(0,0,Mdl+Rnd+".wav")
+    soundVolume(0,Snd)
+    }
+}
+
+if(N == 0 & ((changed(G) & G == 0) | changed(O:keyForward() | O:keyRight() | O:keyLeft() | O:keyBack()) & (O:keyForward() | O:keyRight() | O:keyLeft() | O:keyBack()) == 1))
+{
+O:soundPlay(1,0,Mdl+Rnd+".wav")
+soundVolume(1,Snd)
+}
+
+if(N == 0 & changed(G) & G == 1 & Vel)
+{
+O:soundPlay(2,0,Mdl+Rnd+".wav")
+soundVolume(2,Snd)
+}
+
+if(changed(O:isAlive()) & O:isAlive() == 0)
+{
+O:soundPlay(3,0,MdlD+RndD+".wav")
+}
+elseif(changed(O:isAlive()) & O:isAlive() == 1)
+{
+soundStop(3)
+}
+
+if(HealthShot)
+{
+O:soundPlay(4,0,MdlH+RndD+".wav")
+}

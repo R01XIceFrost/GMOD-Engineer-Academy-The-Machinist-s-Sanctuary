@@ -1,0 +1,271 @@
+@name Tic Tac Toe
+@persist T Points:array Ply2:entity
+@persist Turn:entity Click TurnN O:entity
+@persist Scale Check:entity ChIn Grid:array
+@persist Players:array Turns
+@model models/hunter/plates/plate3x3.mdl
+runOnTick(1)
+runOnChat(1)
+
+
+#[
+
+INFO:
+
+ This is a tic tac toe game, get someone to right click the board and they will join, player 2 always goes first, it resets when someone wins, loses or draws. You place noughts or crosses by right clicking.
+
+]#
+
+
+#if(lastSaid()=="/join"&chatClk()&!Ply2)
+#{
+#Ply2 = lastSpoke()       
+#}
+
+
+#Ply2 = owner()
+
+if(first())
+{
+findExcludeEntity(owner())
+findByClass("player")
+Players = findToArray()
+entity():setMaterial("Lights/white005")    
+entity():setColor(vec(0,0,0))
+
+for(I=1,4)
+{
+T++    
+holoCreate(I)
+holoMaterial(I,"Lights/white005")  
+Scale = entity():boxSize():x()
+holoScale(I,vec(Scale/12,1/10,1/2))
+#holoScale(I,vec(150/12,1/10,1/5))
+#holoPos(I,entity():pos())
+holoParent(I,entity())
+}
+holoPos(1,entity():pos()+vec(0,Scale/6,0))
+holoPos(2,entity():pos()-vec(0,Scale/6,0))
+holoPos(3,entity():pos()+vec(Scale/6,0,0))
+holoPos(4,entity():pos()-vec(Scale/6,0,0))
+holoAng(3,ang(0,90,0))
+holoAng(4,ang(0,90,0))
+
+
+Points[1,vector]=entity():toLocal(entity():pos()+vec(Scale/3,-Scale/3,0))
+Points[2,vector]=entity():toLocal(entity():pos()+vec(Scale/3,0,0))
+Points[3,vector]=entity():toLocal(entity():pos()+vec(Scale/3,Scale/3,0))
+Points[4,vector]=entity():toLocal(entity():pos()+vec(0,-Scale/3,0))
+Points[5,vector]=entity():toLocal(entity():pos()+vec(0,0,0))
+Points[6,vector]=entity():toLocal(entity():pos()+vec(0,Scale/3,0))
+Points[7,vector]=entity():toLocal(entity():pos()+vec(-Scale/3,-Scale/3,0))
+Points[8,vector]=entity():toLocal(entity():pos()+vec(-Scale/3,0,0))
+Points[9,vector]=entity():toLocal(entity():pos()+vec(-Scale/3,Scale/3,0))
+holoCreate(5)
+holoMaterial(5,"Lights/white005")  
+holoColor(5,vec(0,255,0))
+holoScale(5,vec(Scale/12,Scale/12,1*3)/3)
+T++
+
+
+}
+
+if(!Ply2)
+{
+for(I=1,Players:count())
+{
+Player = Players[I,entity]
+if(Player:aimEntity()==entity()&Player:keyAttack2())
+{
+Ply2 = Player
+O = owner()
+#Ran = randint(0,1)
+#if(Ran)
+#{
+#Turn = Ply2
+#TurnN = 1
+#}
+##else
+#{
+Turn = Ply2
+TurnN = 1
+#Turn = O
+#}
+break   
+}
+    
+}   
+    
+}
+
+if(Ply2)
+{
+Click = Turn:keyAttack2()
+
+Dist = 10^10^10^10
+for(I=1,9)
+{
+Aim = Turn:aimPos()
+CDist = Aim:distance(entity():toWorld(Points[I,vector]))
+if(CDist<=Dist)
+{
+Dist=CDist
+Ind = I   
+}   
+}
+
+Pos = Points[Ind,vector]
+holoPos(5,entity():toWorld(Pos))
+holoAng(5,entity():angles())
+
+if(Click&$Click&!changed(Turn))
+{
+Turns++
+for(I=6,T)
+{
+Pos = entity():toWorld(Points[Ind,vector]+vec(0,0,6))  
+if(holoEntity(I):pos()==Pos)
+{
+Break=1   
+break
+}
+}
+if(!Break)
+{
+#print("ADORABLE!")
+T++   
+holoCreate(T) 
+holoParent(T,entity())
+if(TurnN==0)
+{
+holoColor(T,vec(0,0,255))
+holoModel(T,"hqtorus2")
+holoScale(T,vec(Scale/15,Scale/15,1*3)/3)
+holoPos(T,entity():toWorld(Points[Ind,vector]+vec(0,0,6)))    
+Grid[Ind,number]=1
+Turn=Ply2
+}
+if(TurnN==1)
+{
+holoColor(T,vec(255,0,0))    
+holoPos(T,entity():toWorld(Points[Ind,vector]+vec(0,0,6)))    
+holoScale(T,vec(Scale/15,1,1)/3)
+holoAng(T,ang(0,45,0))
+T++
+holoCreate(T) 
+holoParent(T,entity())
+holoColor(T,vec(255,0,0))    
+holoPos(T,entity():toWorld(Points[Ind,vector]+vec(0,0,6)))    
+holoScale(T,vec(Scale/15,1,1)/3)
+holoAng(T,ang(0,-45,0))
+Grid[Ind,number]=-1
+Turn = O
+}
+
+#Pick Up Here!
+for(I=0,2)
+{
+T3 = I*3
+GN = Grid[1+T3,number]
+GN2 = Grid[1+1+T3,number]
+GN3 = Grid[1+2+T3,number]
+
+if(GN==GN2&GN==GN3)
+{
+if(GN==1)
+{
+print("Player 1 has won!")
+
+}
+if(GN==-1)
+{
+print("Player 2 has won!")
+    
+}
+if(GN!=0)
+{
+timer("reset",5000)
+}
+}
+}
+
+for(I=1,3)
+{
+T3 = I*3
+GN = Grid[I,number]
+GN2 = Grid[I+3,number]
+GN3 = Grid[I+3+3,number]
+
+if(GN==GN2&GN==GN3)
+{
+if(GN==1)
+{
+print("Player 1 has won!")
+   
+}
+if(GN==-1)
+{
+print("Player 2 has won!")
+    
+}
+if(GN!=0)
+{
+timer("reset",5000)
+}
+}
+}
+
+GN = Grid[1,number]
+GN2 = Grid[1+3+1,number]
+GN3 = Grid[1+3+3+2,number]
+
+if(GN==GN2&GN==GN3)
+{
+if(GN==1)
+{
+print("Player 1 has won!")  
+}
+if(GN==-1)
+{
+print("Player 2 has won!")   
+}
+if(GN!=0)
+{
+timer("reset",5000)
+}
+}
+
+GN = Grid[3,number]
+GN2 = Grid[3+3-1,number]
+GN3 = Grid[3+3+3-2,number]
+
+if(GN==GN2&GN==GN3)
+{
+if(GN==1)
+{
+print("Player 1 has won!")  
+}
+if(GN==-1)
+{
+print("Player 2 has won!")   
+}
+if(GN!=0)
+{
+timer("reset",5000)
+}
+}
+
+if(Turns>=9)
+{
+timer("reset",5000)
+print("Draw!")    
+}
+
+TurnN=!TurnN
+}
+}
+if(clk("reset"))
+{
+reset()   
+}
+}

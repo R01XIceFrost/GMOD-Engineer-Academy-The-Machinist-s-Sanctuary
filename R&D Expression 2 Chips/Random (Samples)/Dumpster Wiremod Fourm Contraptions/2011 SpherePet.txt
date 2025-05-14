@@ -1,0 +1,317 @@
+@name SpherePet [WIP]
+@inputs 
+@outputs 
+@persist Hunger Sounds:array DebugMode CurLoc:vector BefLoc:vector Age SG
+@trigger 
+
+
+#[
+
+
+About
+I haven't worked on an E2 or a while, and came up with an idea. A pet E2.
+Two days into development got me this far. Although, the first day, I was
+very tired and went to bed about 2 hours of the start, and eventually
+became a project the next day.
+
+After getting this far. I'm thinking of adding a shop to buy food to feed
+your pet, because so far, your able to feed it without buying anything.
+
+You may think this is sounding like "My Lil' Bastard" (A adult swim game)
+and I didn't expect it to come this close to be honest. It wasn't meant
+be somewhat like that game.
+
+Pet Caring Information
+The first thing to look after in your pet is its hunger. Although you will
+be notified of its hunger stages by hints.
+
+To feed a pet, look at it and hold E.
+
+What is not fixed in this version, is that it doesn't matter how far you
+are from the pet, you can be a mile away and still be able to feed it.
+
+The second... well, this should be the first. Is to look after your pet!
+Your pet can easily wander off and do "leaps of faith." These pet features
+will be later explained in the guide.
+
+Your pet will age and may eventually pass away. The farthest Ive seen a pet
+live was 79. The maximum life span of a SpherePet is 100... or it was 99.
+
+Unfreeze your pet when you get it or it will die.
+
+Letting your pet get stuck or frozen for a certain amound of time may kill it.
+This is bad. To avoid the pet from getting in trouble, I suggest you create
+a cage or pen for it to stay in.
+
+Pet Abilities
+The default movement of your pet is to hop around. Your pet will hop in
+random directions but a limited distance. So keep a close eye on your pet.
+
+A leap of faith is a leap, but the leap can vary and can be very far. Your
+pet will occasionally do this, and is not rare.
+
+Your pet will also make noises.
+
+If you missed the hunger hints and do not have any idea of how hungry your
+pet is. Walk up to it and look at its outline. The more red the outline is, the
+hungrier it is.
+
+More to come
+The pet will poo.
+Adding a follow ability.
+Memorize where its home is and return. (May not always work, multiple reasons why.)
+Being able to call your pet (May not always work, multiple reasons why.)
+Pet will mature until 20, and becomes and adult. - Done
+
+More will be added from public ideas. So please post them and I will consider the idea.
+If I have forgotten any information, it should be added shortly.
+
+There are no pictures for now, but trust me, it is fun.
+
+        
+        # Leap of faith
+        if (Action2 == 4) {
+            LOF = randint(0,1)
+            
+            if (LOF == 1) {
+                entity():applyForce(vec(randint(-255,255),randint(-255,255), 175))
+            }
+            
+            if (DebugMode == 1) {
+                    print("Leap of faith.")
+            }
+
+        }
+    }
+}
+
+if (clk("checkloc")) {
+    
+    CurLoc = entity():pos()
+    
+    if (CurLoc == BefLoc) {
+        hint("Your pet has died from being frozen, or stuck.",7)
+        
+        if (Age < 1) {
+            hint("Your pet did not even live up to becoming 1.",7)
+        } else {
+            hint("Your pet died at the age of " + Age + ".",7)
+        }
+        selfDestruct()
+    } else {
+        BefLoc = entity():pos()
+    }
+}
+
+if (clk("age")) {
+    Death = randint(Age,100)
+    
+    if (Death == Age) {
+        hint("Your pet passed away. It lived " + Age + " years.",7)
+        selfDestruct()
+    } else {
+        Age++
+        hint("Congratulations! Your pet turned " + Age + ".", 7)
+        
+        if (Age < 20) {
+            SG += 0.05
+            
+            holoScale(2, vec(-SG - 0.2,-SG - 0.2,-SG - 0.2))
+            holoScale(1, vec(SG,SG,SG))
+        } elseif (Age == 20) {
+            hint("Congratulations! Your pet matured. It is now 20.",7)
+        }
+    }
+}
+
+
+Me and my female SpherePet (age 9) getting ready to have her first drink.
+
+
+My pet and his home.
+
+
+Adult (Left), Child (Right) - (Took me 20 minutes to get my pet grown.)
+
+]#
+
+runOnTick(1)
+timer("hunger", 1000)
+timer("use", 500)
+timer("action", 1000)
+timer("checkloc", 10000)
+timer("age", 60000)
+
+Use = owner():keyUse()
+
+if (first()) {
+    
+    DebugMode = 0
+    
+    SG = 1
+    
+    BefLoc = entity():pos()
+    
+    entity():setAlpha(0)
+    
+    Sounds:setString(1,"weapons/bugbait/bugbait_squeeze1.wav")
+    Sounds:setString(2,"weapons/bugbait/bugbait_squeeze2.wav")
+    Sounds:setString(3,"weapons/bugbait/bugbait_squeeze3.wav")
+    
+    LS = owner():lastSaid()
+    holoCreate(1)
+    holoCreate(2)
+    holoModel(1, "hqicosphere2")
+    holoModel(2, "hqicosphere2")
+    holoScale(2, vec(-SG - 0.2,-SG - 0.2,-SG - 0.2))
+    holoScale(1, vec(SG,SG,SG))
+    holoColor(2, vec(0,0,0))
+    holoParent(1, entity())
+    holoParent(2, entity())
+    
+    Gender = randint(1,2)
+    
+    if (Gender == 1) {
+        holoColor(1, vec(155,155,255))
+        hint("You have a boy!",7)
+    } else {
+        holoColor(1, vec(255,155,155))
+        hint("You have a girl!",7)
+    }
+}
+
+if (Use) {
+    KeyUse = 1
+} else {
+    KeyUse = 0
+}
+
+if (clk("hunger")) {
+    Hunger += 1
+    
+    if (Hunger == 25) {
+        hint("Your pet is slightly hungry.",7)
+        holoColor(2, vec(50,0,0))
+    } elseif (Hunger < 25) {
+        holoColor(2, vec(0,0,0))
+    }
+
+    if (Hunger == 50) {
+        hint("Your pet is hungry.",7)
+        holoColor(2, vec(100,0,0))
+    }
+    
+    if (Hunger == 75) {
+        hint("Your pet is starving.",7)
+        holoColor(2, vec(150,0,0))
+    }
+    
+    if (Hunger == 100) {
+        hint("Your pet has died from starvation.",7)
+        selfDestruct()
+    }
+    
+    if (DebugMode == 1) {
+        print(Hunger + ".")
+    }
+}
+
+if (clk("use")) {
+    if (owner():keyUse()) {
+        if (owner():aimEntity() == entity()) {
+            if (Hunger > 25) {
+                Hunger = 0
+                hint("You fed your pet.",7)
+            } else {
+                hint("Your pet is not hungry.",7)
+            }
+        }
+    }
+}
+
+if (clk("action")) {
+    Action = randint(0,1)
+    if (Action == 1) {
+        Action2 = randint(1,4)
+        
+        # Make a movement
+        if (Action2 == 1) {
+            
+            if (DebugMode == 1) {
+                print("Moved.")
+            }
+            entity():applyForce(vec(randint(-100,100),randint(-100,100), 175))
+        }
+        
+        # Make a sound
+        if (Action2 == 2) {
+            
+            if (DebugMode == 1) {
+                print("Made a noise.")
+            }
+            entity():soundPlay(1,200, Sounds[randint(1,3),string])
+        }
+        
+        # Make a sound and movement
+        if (Action2 == 3) {
+            if (DebugMode == 1) {
+                print("Moved and made a noise.")
+            }
+            entity():soundPlay(1,200, Sounds[randint(1,3),string])
+            entity():applyForce(vec(randint(-100,100),randint(-100,100), 175))
+        }
+        
+        # Leap of faith
+        if (Action2 == 4) {
+            LOF = randint(0,1)
+            
+            if (LOF == 1) {
+                entity():applyForce(vec(randint(-255,255),randint(-255,255), 175))
+            }
+            
+            if (DebugMode == 1) {
+                    print("Leap of faith.")
+            }
+
+        }
+    }
+}
+
+if (clk("checkloc")) {
+    
+    CurLoc = entity():pos()
+    
+    if (CurLoc == BefLoc) {
+        hint("Your pet has died from being frozen, or stuck.",7)
+        
+        if (Age < 1) {
+            hint("Your pet did not even live up to becoming 1.",7)
+        } else {
+            hint("Your pet died at the age of " + Age + ".",7)
+        }
+        selfDestruct()
+    } else {
+        BefLoc = entity():pos()
+    }
+}
+
+if (clk("age")) {
+    Death = randint(Age,100)
+    
+    if (Death == Age) {
+        hint("Your pet passed away. It lived " + Age + " years.",7)
+        selfDestruct()
+    } else {
+        Age++
+        hint("Congratulations! Your pet turned " + Age + ".", 7)
+        
+        if (Age < 20) {
+            SG += 0.05
+            
+            holoScale(2, vec(-SG - 0.2,-SG - 0.2,-SG - 0.2))
+            holoScale(1, vec(SG,SG,SG))
+        } elseif (Age == 20) {
+            hint("Congratulations! Your pet matured. It is now 20.",7)
+        }
+    }
+}

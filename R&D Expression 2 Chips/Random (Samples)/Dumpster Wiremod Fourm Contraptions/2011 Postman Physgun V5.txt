@@ -1,0 +1,165 @@
+@name Postman_physgun V5
+@inputs Left Right Up Down
+@outputs Reset AddPitchP AddYawP AddPitch AddYaw
+@persist Prop:entity Dist BeamDist PhysHeight PhysRight 
+@persist NearestAngP NearestAngY TempAngP TempAngY
+@persist [V V1 Target]:vector Rng:ranger
+@model models/weapons/w_physics.mdl
+
+#[
+
+INFO:
+
+I KNOW this isnt an AI chip, but i wanted to squeeze it in
+(right after this im also making an in depth thread about a stargate i made, AND a thread about a holo dashboard i made.
+
+Name:Postman physgun
+Instructions:
+If you want to be able to rotate the actual physgun in any direction (no gimbal lock), spawn 4 numbpad inputs (8,4,6,5), and wire the e2 (up down left right) to those numbpads.
+
+Controls:
+Get out something other than the gmod physgun
+Works like a normal physgun, besides rotating the actual physgun.
+Crouch + E throws it (let go of holding at the right time)
+
+*I know its glitchy, i know it has issues, i know it sucks, but its cool to say the least*
+
+
+]#
+
+runOnTick(1)
+E=entity()
+
+if(first())
+{
+    E:setSkin(1)
+    E:setMass(50000)
+    AddPitchP=0
+    AddYawP=0
+}
+
+#clamp the values, clamp() doesnt work
+if(PhysHeight>=100){PhysHeight=100}
+if(PhysHeight<=50){PhysHeight=50}
+
+if(PhysRight>=50){PhysRight=50}
+if(PhysRight<=20){PhysRight=20}
+
+
+#thanks jason, this code really helped ;D
+E:applyTorque(( 150 * E:toLocalAxis(rotationVector(quat( (owner():aimPos() - E:pos()):toAngle() + ang(AddPitchP,AddYawP,0) ) / quat(E) ) ) - 12 * E:angVelVector()) * E:inertia())
+
+
+#Add ang to the prop/physgun when needed
+if(Up&!owner():keyReload()&!owner():keyUse()){AddPitchP+=2}elseif(Up&owner():keyReload()&!owner():keyUse()){AddPitchP+=0.5}
+if(Down&!owner():keyReload()&!owner():keyUse()){AddPitchP-=2}elseif(Down&owner():keyReload()&!owner():keyUse()){AddPitchP-=0.5}
+
+if(Left&!owner():keyReload()&!owner():keyUse()){AddYawP+=2}elseif(Left&owner():keyReload()&!owner():keyUse()){AddYawP+=0.5}
+if(Right&!owner():keyReload()&!owner():keyUse()){AddYawP-=2}elseif(Right&owner():keyReload()&!owner():keyUse()){AddYawP-=0.5}
+
+
+#Add ang to the prop when needed
+if(Up&!owner():keyReload()&owner():keyUse()){AddPitch+=2}elseif(Up&owner():keyReload()&owner():keyUse()){AddPitch+=0.5}
+if(Down&!owner():keyReload()&owner():keyUse()){AddPitch-=2}elseif(Down&owner():keyReload()&owner():keyUse()){AddPitch-=0.5}
+
+if(Left&!owner():keyReload()&owner():keyUse()){AddYaw+=2}elseif(Left&owner():keyReload()&owner():keyUse()){AddYaw+=0.5}
+if(Right&!owner():keyReload()&owner():keyUse()){AddYaw-=2}elseif(Right&owner():keyReload()&owner():keyUse()){AddYaw-=0.5}
+
+#Reset the added ang on the physgun
+if(((AddPitchP>0|AddYawP>0)|(AddPitchP<0|AddYawP<0))&changed(owner():keyReload())&owner():keyReload()&!owner():keyUse()&owner():isCrouch())
+{
+    AddPitchP=0
+    AddYawP=0
+}
+
+if(changed(Reset)&Reset){AddPitch=0,AddYaw=0}
+
+
+#moving the physgun above you
+if(owner():isCrouch())
+{
+    PhysHeight--
+    PhysRight+=0.5
+    V = (owner():pos()+vec(0,0,PhysHeight)+(owner():right()*PhysRight) - ( -owner():eye()*70))-E:massCenter()
+    E:applyForce((V+$V*20)*E:mass()*2)
+}
+elseif(!owner():isCrouch())
+{
+    PhysHeight++
+    PhysRight-=0.5
+    V = (owner():pos()+vec(0,0,PhysHeight)+(owner():right()*PhysRight) - ( -owner():eye()*100))-E:massCenter()
+    E:applyForce((V+$V*20)*E:mass()*2)
+}
+
+
+#creats the beams
+if(changed(owner():keyAttack1())&owner():keyAttack1()&owner():weapon():type()!="weapon_physgun")
+{
+    holoCreate(1,E:pos()+vec(0,0,20))
+    holoParent(1,E)
+    
+    if(Prop:isFrozen()){Prop:propFreeze(0)}
+    
+}
+elseif(changed(owner():keyAttack1())&!owner():keyAttack1())
+{
+    holoDelete(1)
+}
+
+#Freeze the prop
+if(Prop&changed(owner():keyAttack2())&owner():keyAttack2()&owner():keyAttack1()&!Prop:isFrozen()){Prop:propFreeze(1)}
+
+
+#limit the physbeam
+if(E:pos():distance(Rng:position())/2>=600){BeamDist=600}
+elseif(E:pos():distance(Rng:position())/2<600){BeamDist=E:pos():distance(Rng:position())/2}
+
+
+if(owner():keyAttack1()&owner():weapon():type()!="weapon_physgun")
+{
+    Reset=0
+    
+    
+    #make the ranger
+    rangerFilter(E)
+    Rng=rangerOffset(600, E:pos(),E:forward())
+    
+    #make the holos
+    holoAng(1,E:angles())
+    holoColor(1,vec(0,20,200))
+    holoAlpha(1,200)
+    holoScale(1,vec(E:pos():distance(Rng:position())/12,0.1,0.1))
+    holoPos(1,E:pos()+E:forward()*BeamDist)
+    
+    #throwing!
+    if(owner():isCrouch() & owner():keyUse() & (AddPitchP<=0|AddPitchP>=0) & (AddYawP<=0|AddYawP>=0) )
+    {
+        Prop:applyForce(owner():eye()*Prop:mass()*Prop:mass()*500)
+    }
+    
+
+    #thanks jason, this code really helped ;D
+    Prop:applyTorque(( 150 * Prop:toLocalAxis(rotationVector(quat(Prop:pos():toAngle() + ang(AddPitch,AddYaw,0) ) / quat(Prop) ) ) - 12 * Prop:angVelVector()) * Prop:inertia())
+
+
+    #force the prop
+    Target=(E:pos()+E:forward()*Dist)
+    V1=(Target-Prop:massCenter())*Prop:mass()*3
+    Prop:applyForce(V1+$V1*10)
+}
+elseif(owner():keyAttack1()&owner():weapon():type()=="weapon_physgun"){E:setColor(200,0,0)}else{E:setColor(255,255,255)}
+
+
+#sets the distance
+if(changed(Prop)){Dist=(E:pos():distance(Rng:position()))}
+
+#Sets the prop you pick up(so props with holes through them will still be grabbed)
+if(changed(owner():keyAttack1())&owner():keyAttack1()&owner():weapon():type()!="weapon_physgun"&owner():aimEntity()!=E
+|!Prop&owner():weapon():type()!="weapon_physgun"&owner():aimEntity()!=E)
+{
+    Prop=Rng:entity()
+}
+elseif(changed(owner():keyAttack1())&!owner():keyAttack1())
+{
+    Prop=noentity()
+}

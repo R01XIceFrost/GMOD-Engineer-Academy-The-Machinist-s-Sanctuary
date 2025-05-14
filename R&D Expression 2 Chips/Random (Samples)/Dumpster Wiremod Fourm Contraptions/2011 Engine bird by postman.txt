@@ -1,0 +1,99 @@
+@name Engine bird
+@inputs 
+@outputs Speed On T Force:vector Blade:entity Strength
+@model models/props_c17/TrapPropeller_Engine.mdl
+runOnTick(1)
+
+Bird=entity()
+O=owner()
+soundPitch(1,Speed*2)
+
+propSpawnEffect(0)
+
+if(T>=360){T=0}else{T++}
+
+
+if(first())
+{
+    Strength=7.5
+    On=1
+    Speed=0
+    
+    
+    holoCreate(1)
+    holoModel(1,"models/props_c17/TrapPropeller_Blade.mdl")
+    holoPos(1,Bird:toWorld(vec(0,-2.5,22)))
+    holoParent(1,Bird)
+    
+    soundPlay(1,0,"vehicles/v8/v8_idle_loop1.wav")
+    
+    timer("die",randint(80000,240000))
+    #timer("die",20000)
+}
+
+
+
+if(On)
+{
+    #upwards detection
+    rangerFilter(Bird)
+    RngU=rangerOffset(150,Bird:pos(),Bird:up())
+    RngD=rangerOffset(150,Bird:pos(),Bird:up()*-1)
+    
+    
+    #the rotation
+    if(Speed<100){Speed+=0.14}
+    holoAng(1,Bird:toWorld(ang(0,T*(Speed/2),0)))
+    
+    #making it go
+    #has force reduction based on upwards decection, and distance away
+    Force=Bird:up()*Speed*(Bird:mass()/Strength)-((Bird:pos():distance(O:pos())>=1300)*380)-(RngU:hit()*250)+(RngD:hit()*200)
+    Bird:applyForce(Force)
+    
+    
+    #angling the bird
+    if(Bird:pos():distance(O:pos())>=1500&Speed>=90)
+    {
+        Bird:applyForce(Bird:forward()*Speed*(Bird:mass()/20))
+        Bird:applyTorque(( 80 * Bird:toLocalAxis(rotationVector(quat( (O:pos() - Bird:pos()):toAngle() ) / quat(Bird) ) ) - 12 * Bird:angVelVector()) * Bird:inertia())
+    }
+    else
+    {
+        Bird:applyTorque(( 50 * Bird:toLocalAxis(rotationVector(quat( (Bird:pos() - Bird:pos()):toAngle()-ang(90,0,0) ) / quat(Bird) ) ) - 12 * Bird:angVelVector()) * Bird:inertia())
+    }
+    
+    
+}
+
+
+
+if(clk("die"))
+{
+    On=0
+    Speed=0
+    
+    soundStop(1)
+    soundPlay(3,0,"ambient/explosions/explode_3.wav")
+    
+    Bird:setTrails(55,55,4,"trails/smoke",vec(90,90,90),140)
+    
+    Blade=propSpawn(holoEntity(1):model(),Bird:toWorld(vec(0,-2.5,22)),holoEntity(1):angles(),0)
+    
+    holoAlpha(1,0)
+    
+    timer("die",randint(60000,240000))
+    timer("revive",randint(5000,10000))
+}
+
+if(clk("revive"))
+{
+    On=1,
+    soundPlay(1,0,"vehicles/v8/v8_idle_loop0.wav")
+    
+    holoAlpha(1,255)
+    holoAng(1,Blade:angles():setPitch(0):setRoll(0))
+    Blade:propDelete()
+}
+
+#fix trails
+if(changed(On)&On){Bird:removeTrails()}

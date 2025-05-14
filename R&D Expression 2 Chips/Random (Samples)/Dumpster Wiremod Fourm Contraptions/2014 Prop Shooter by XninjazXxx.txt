@@ -1,0 +1,803 @@
+@name Prop Shooter
+@persist [P E Prop Player Player2 FindR PlayerFind]:entity [MEMORY Finds PropA]:array [Props Admin]:string AimAngle:vector
+@persist [Mode L2 Sure L PlayerAim Seek Target BlockShot A I LoopBreak Aim R R2 R3 SelectNo PropT]:number
+@persist
+@trigger 
+
+#[
+
+INFO:
+
+Well, this E2 I made inspired by latest update on my Garry's Mod Pain E2 which could remember colors. 
+This E2 can remember virtually infinite props that can be shot by you. 
+This lets people who don't know how to code E2 shoot different props that would require coding knowledge before this e2...
+Note: You have to duck and right click because some props are too big that it hits you when it spawns.
+
+
+Well, I'm a bit perplexed to why my edit was a reply but here's what my reply said:
+This is not an official update since it is still very buggy but this version of the E2 acually saves it to a txt file and then you can load that txt file.
+/save [name] - saves to a txt file
+/load [name] - loads a file
+
+]#
+
+runOnTick(1)
+runOnChat(1)
+#Variables
+P = owner()
+E = entity()
+Ent = P:aimEntity()
+LS = P:lastSaid()
+LSS = LS:explode(" ")
+LSSS = LSS
+LSSSS = LSS
+#Array
+if(Mode){
+MEMORY[Mode, string] = Props
+}
+#First
+if(first()){
+    hint("Type /help for instructions",10)
+    SelectNo = 1
+    Props = "models/props_c17/oildrum001_explosive.mdl"
+    Mode = 1
+    hint("models/props_c17/oildrum001_explosive.mdl on number 1",10)
+    function hide(){
+    hideChat(1)
+    printColor(vec(255,0,0),"[Hidden]",vec(random(0,255),random(0,255),random(0,255)),+P:name(),vec(255,255,255),": "+LS)
+}
+    timer("mode",10)
+    timer("mode2",10)
+    Admin = "No"
+    BlockShot = 1
+    ##########
+    #SETTINGS#
+    ##########
+    #If LoopBreak is 0 then all of the props get applied with force (buggy) If it's 1 then
+    #1 prop will be applied force while the others don't
+    #Basically if you put LoopBreak to 1 then it will go back to vanillia version of this E2
+    LoopBreak = 0
+    ##########
+
+}
+if(clk("mode")){
+    Mode = 0
+}
+if(clk("mode2")){
+    Mode = 2
+    Props = "models/props_phx/construct/wood/wood_boardx1.mdl"
+    timer("mode",10)
+}
+#/propNo command
+if(chatClk(owner())){
+    if(LSSS:string(1):lower() == "/propno"){
+        hide()
+        Mode = LSSS:string(2):toNumber()
+        hint("Selected array "+Mode:toString()+" to save to.",10)
+}
+}
+#/prop command
+if(chatClk(owner())){
+    if(LSSSS:string(1):lower() == "/prop"){
+        Props = LSSSS:string(2)
+        hint("Saved prop "+Props+" on number "+Mode:toString(),10)
+        hide()
+        timer("mode",100)
+    }
+}
+#/select command
+if(chatClk(owner())){
+    if(LSS:string(1):lower() == "/select"){
+        hide()
+        SelectNo = LSS:string(2):toNumber()
+        hint("Prop Selected: "+MEMORY[SelectNo, string],10)
+}
+}
+#/clear command
+if(chatClk(owner())){
+    if(LS:lower() == "/clear"&!Sure){
+        hide()
+        hint("Are you sure you want to clear all saved props? type /clear again. You have 10 seconds.",10)
+        timer("Sure",100)
+        timer("clear",10000)
+}
+}
+if(clk("clear")){
+    hint("Not clearing props...",10)
+    Sure = 0
+}
+if(clk("Sure")){
+    Sure = 1
+}
+if(Sure){
+    if(chatClk(owner())){
+        if(LS:lower() == "/clear"){
+            hide()
+            Sure = 0
+            MEMORY:clear()
+            hint("Prop array cleared!",10)
+} 
+}
+}
+#/seek command
+if(chatClk(owner())){
+    if(LS:lower() == "/seek"&!Seek){
+        hide()
+        hint("Type /seek again to stop seeking players.",10)
+        timer("Seek",100)
+        A = 1
+        Finds = findToArray()
+        FindR = Finds[randint(0,Finds:count()),entity]
+}
+}
+if(clk("Seek")){
+    Seek = 1
+}
+if(Seek){
+    if(chatClk(owner())){
+        if(LS:lower() == "/seek"){
+            hide()
+            Seek = 0
+            A = 0
+            hint("Stopped seeking players!",10)
+} 
+}
+}
+if(A){
+    findByClass("player")
+    findExcludeEntity(P)
+    findSortByDistance(P:pos())
+    AimAngle = (FindR:pos()+vec(0,0,60)-Prop:pos())
+}else{
+AimAngle = (P:aimPos() - Prop:pos()) + Prop:massCenterL() 
+}
+#/aim command
+if(chatClk(owner())){
+    if(LS:lower() == "/aim"&!Aim){
+        hide()
+        hint("Type /aim again to stop aiming at cursor.",10)
+        timer("aim",100)
+}
+}
+if(clk("aim")){
+    Aim = 1
+}
+if(Aim){
+    if(chatClk(owner())){
+        if(LS:lower() == "/aim"){
+            hide()
+            Aim = 0
+            hint("Stopped aiming at cursor's position!",10)
+} 
+}
+}
+#/playerinfo command
+if(chatClk(owner())){
+    if(LS:lower() == "/playerinfo"&Seek&!L2| LS:lower() == "/playerinfo"&Target&!L2){
+        hide()
+        hint("Info Printed In Chat",10)
+        printColor(vec(random(0,255),random(0,255),random(0,255)),"/target Target's name: ",vec(255,0,0),Player:name())
+        printColor(vec(random(0,255),random(0,255),random(0,255)),"/seek Target's name: ",vec(255,0,0),find():name())
+        printColor(vec(random(0,255),random(0,255),random(0,255)),"/seek steamID: ",vec(255,0,0),find():steamID())
+        printColor(vec(random(0,255),random(0,255),random(0,255)),"/target steamID: ",vec(255,0,0),Player:steamID())
+        printColor(vec(random(0,255),random(0,255),random(0,255)),"/target Target's position: ",vec(255,0,0),round(Player:pos()):toString())
+        printColor(vec(random(0,255),random(0,255),random(0,255)),"/seek Target's position: ",vec(255,0,0),round(find():pos()):toString())
+        L = 1
+        timer("stopplayer",100)
+}elseif(LS:lower() == "/playerinfo"&!Seek&L2 | LS:lower() == "/playerinfo"&!Target&!L2){
+hide()
+hint("You have no target!",10)
+}
+}
+if(clk("stopplayer")){
+    L = 0
+}
+#/playerinfo [name] command
+if(chatClk(owner())){
+    if(LSS:string(1):lower() == "/playerinfo"&!L){
+        hide()
+        Target2 = findPlayerByName(LSS:string(2))
+        if(Target2:isAdmin() | Target2:isSuperAdmin()){
+            Admin = "Yes"
+        }else{
+        Admin = "No"
+    } 
+        if(Target2:isPlayer()){
+            Player2 = Target2
+            hint("Info Printed In Chat",10)
+            printColor(vec(random(0,255),random(0,255),random(0,255)),"Player's name: ",vec(255,0,0),Player2:name())
+            printColor(vec(random(0,255),random(0,255),random(0,255)),"Player's SteamID: ",vec(255,0,0),Player2:steamID())
+            printColor(vec(random(0,255),random(0,255),random(0,255)),"Player's position: ",vec(255,0,0),round(Player2:pos()):toString())
+            printColor(vec(random(0,255),random(0,255),random(0,255)),"Is player admin?: ",vec(255,0,0),Admin)
+            timer("stopplayer2",100)
+            L2 = 1
+    }else{
+    hide()
+    hint("Invalid Target!",10)
+}         
+}
+}
+if(clk("stopplayer2")){
+    L2 = 0
+}
+#/target command
+if(chatClk(owner())){
+    if(LSS:string(1):lower() == "/target"){
+        hide()
+        PlayerFind = findPlayerByName(LSS:string(2))
+        if(PlayerFind:isPlayer()){
+            hint("Type /stoptarget to stop targeting this player.",10)
+            timer("target",100)
+            Player = PlayerFind
+            PlayerAim = 1
+            hint("Targeted: "+Player:toString(),10)
+        }else{
+        hint("Invalid Target",10)
+        Target = 0
+        stoptimer("target")
+    }
+}
+}
+if(clk("target")){
+    Target = 1
+}
+if(Target){
+    if(chatClk(owner())){
+        if(LS:lower() == "/stoptarget"){
+            hide()
+            Target = 0
+            PlayerAim = 0
+            hint("Stopped targeting this player!",10)
+} 
+}
+}
+if(PlayerAim){
+    AimAngle = (Player:pos()+vec(0,0,60)-Prop:pos())
+}elseif(!Seek){
+AimAngle = (P:aimPos() - Prop:pos()) + Prop:massCenterL() 
+}
+#/help command
+if(chatClk(owner())){
+    if(LS:lower() == "/help"){
+        hide()
+        print("type /playerinfo or /playerinfo [name] to have infomation about a person.")
+        print("type /clear to clear your memorized props.")
+        print("type /seek to make the prop fly towards the nearest person around you.")
+        print("type /target [name] to target a player.")
+        print("type /aim to make the prop fly towards your cursor's position.")
+        print("press reload and the use key to remove all of your props.")
+        print("type /propno [number] to select that number to record the prop.")
+        print("type /prop [Prop] to record that prop to that number.")
+        print("type /select [number] to select that number.")
+        print("crouch and right click to shoot the selected prop.")
+        print("to select a prop, go to prop menu then right click and click copy. After that, in chat,")
+        print("type /propno [number from] to select a number to save your prop to.")
+        print("to find the prop, in the prop menu (Q) right click a prop then select copy.")
+        print("then type /prop [CRTL+V] to save that prop to the number set by /propno")
+        print("then crouch and right click to shoot the prop")
+        print("SCROLL UP FULL INSTRUCTIONS.")
+}
+}
+#Prevent from reaching hard quota if LoopBreak is off
+if(LoopBreak <= 0){
+    if(changed(ops()>=5000)&ops()>=5000){
+        hint("You might want to remove props (/remove). Operations Per Second: "+ops():toString(),10)
+    }
+    if(ops()>=maxquota()){
+        BlockShot = 0
+        PropA:propDelete()
+        PropA:clear()
+        hint("Tick Quota Almost Reached; All of your props are deleted.",10)
+}else{
+BlockShot = 1
+}
+#[automatic deleteion
+if(PropA:count() == 15){
+    PropA:propDelete()
+    PropA:clear()
+}
+]#
+}
+
+#Shoot the prop
+if(BlockShot){
+        PropT = 1
+    }else{
+    PropT = 0
+}
+    if(changed(P:keyAttack2())&P:keyAttack2()){
+        if(Seek){
+            Finds = findToArray()
+            FindR = Finds[randint(0,Finds:count()),entity]
+    }
+    
+        if(MEMORY[SelectNo, string] == "models/props_phx/construct/wood/wood_boardx1.mdl" | MEMORY[SelectNo, string] == "models/props_phx/misc/potato_launcher_explosive.mdl" | MEMORY[SelectNo, string] == "models/props_phx/ww2bomb.mdl" | MEMORY[SelectNo, string] == "models/Items/item_item_crate_chunk02.mdl" | MEMORY[SelectNo, string] == "models/Items/AR2_Grenade.mdl" | MEMORY[SelectNo, string] == "models/Items/CrossbowRounds.mdl"){
+            PropT = 1
+    }else{  
+    PropT = 0
+}
+        R = random(0,255)
+        R2 = random(0,255)
+        R3 = random(0,255)
+        Prop = propSpawn(MEMORY[SelectNo, string], P:pos()+vec(0,0,60), P:eyeAngles(), 0)
+        PropA:pushEntity(Prop)
+        PropA:count()
+        Prop:propGravity(0)
+        if(PropT){
+            P:soundPlay(0,0,"weapons/ar2/npc_ar2_altfire.wav")
+            Prop:setTrails(10,10,0.5,"trails/smoke",vec(R,R2,R3),255)
+            Prop:setColor(vec(R,R2,R3))
+            Prop:setMaterial("models/debug/debugwhite")
+} 
+}
+#Apply force
+if(LoopBreak <= 0){
+for(I = 1, PropA:count()){
+    local PropE = PropA[I,entity]
+    PropE:applyForce(PropE:forward()*1000000)
+    if(Seek |Aim | Target){
+        PropE:setAng(AimAngle:toAngle())
+} 
+    if(PropA:count()<I|LoopBreak){
+        PropA:clear()
+        I = 0
+        LoopBreak = 1
+        break
+    }
+}
+}
+if(LoopBreak){
+    PropE = PropA:entity(PropA:count())
+    PropE:applyForce(PropE:forward()*(1000000*Prop:mass()))
+    if(Seek |Aim | Target){
+        PropE:setAng(AimAngle:toAngle())
+}
+}
+#Deletion
+if(changed(P:keyReload())&P:keyReload()&P:keyUse()){
+    hint(PropA:count() + " Props deleted!",10)
+    PropA:propDelete()
+    PropA:clear()
+}
+if(chatClk(P)&LS == "/remove"){
+    hint(PropA:count() + " Props deleted!",10)
+    hide()
+    PropA:propDelete()
+    PropA:clear()
+}
+if(duped()){
+    reset()
+}
+
+
+#[
+updated code?
+@name Prop Shooter
+@persist [P E Prop Player Player2 FindR PlayerFind]:entity [MEMORY Finds LoadS PropA]:array [Props LoadName SaveName MEMORYW Admin]:string AimAngle:vector
+@persist [Mode L2 Sure L PlayerAim Seek I IO Target BlockShot Save BreakY O A LoopBreak Aim R Load LoadN LoadI R2 R3 SelectNo PropT]:number
+@persist
+@trigger 
+#HOW TO USE VIDEO https://www.youtube.com/watch?v=EEiypUlHsLE
+runOnTick(1)
+runOnChat(1)
+runOnFile(1)
+runOnLast(1)
+#Variables
+P = owner()
+E = entity()
+Ent = P:aimEntity()
+LS = P:lastSaid()
+LSS = LS:explode(" ")
+LSSS = LSS
+LSSSS = LSS
+#Array
+if(Mode){
+MEMORY[Mode, string] = Props
+}
+#First
+if(first()){
+    hint("Type /help for instructions",10)
+    SelectNo = 1
+    Props = "models/props_c17/oildrum001_explosive.mdl"
+    Mode = 1
+    hint("models/props_c17/oildrum001_explosive.mdl on number 1",10)
+    function hide(){
+    hideChat(1)
+    printColor(vec(255,0,0),"[Hidden]",vec(random(0,255),random(0,255),random(0,255)),+P:name(),vec(255,255,255),": "+LS)
+}
+    timer("mode",10)
+    timer("mode2",10)
+    Admin = "No"
+    BlockShot = 1
+    ##########
+    #SETTINGS#
+    ##########
+    #If LoopBreak is 0 then all of the props get applied with force (buggy) If it's 1 then
+    #1 prop will be applied force while the others don't
+    #Basically if you put LoopBreak to 1 then it will go back to vanillia version of this E2
+    LoopBreak = 0
+    ##########
+
+}
+if(clk("mode")){
+    Mode = 0
+}
+if(clk("mode2")){
+    Mode = 2
+    Props = "models/props_phx/construct/wood/wood_boardx1.mdl"
+    timer("mode",10)
+}
+#/propNo command
+if(chatClk(owner())){
+    if(LSSS:string(1):lower() == "/propno"){
+        hide()
+        Mode = LSSS:string(2):toNumber()
+        hint("Selected array "+Mode:toString()+" to save to.",10)
+}
+}
+#/prop command
+if(chatClk(owner())){
+    if(LSSSS:string(1):lower() == "/prop"){
+        Props = LSSSS:string(2)
+        hint("Saved prop "+Props+" on number "+Mode:toString(),10)
+        hide()
+        timer("mode",100)
+    }
+}
+#/select command
+if(chatClk(owner())){
+    if(LSS:string(1):lower() == "/select"){
+        hide()
+        SelectNo = LSS:string(2):toNumber()
+        hint("Prop Selected: "+MEMORY[SelectNo, string],10)
+}
+}
+#/clear command
+if(chatClk(owner())){
+    if(LS:lower() == "/clear"&!Sure){
+        hide()
+        hint("Are you sure you want to clear all saved props? type /clear again. You have 10 seconds.",10)
+        timer("Sure",100)
+        timer("clear",10000)
+}
+}
+if(clk("clear")){
+    hint("Not clearing props...",10)
+    Sure = 0
+}
+if(clk("Sure")){
+    Sure = 1
+}
+if(Sure){
+    if(chatClk(owner())){
+        if(LS:lower() == "/clear"){
+            hide()
+            Sure = 0
+            MEMORY:clear()
+            hint("Prop array cleared!",10)
+} 
+}
+}
+#/seek command
+if(chatClk(owner())){
+    if(LS:lower() == "/seek"&!Seek){
+        hide()
+        hint("Type /seek again to stop seeking players.",10)
+        timer("Seek",100)
+        A = 1
+        Finds = findToArray()
+        FindR = Finds[randint(0,Finds:count()),entity]
+}
+}
+if(clk("Seek")){
+    Seek = 1
+}
+if(Seek){
+    if(chatClk(owner())){
+        if(LS:lower() == "/seek"){
+            hide()
+            Seek = 0
+            A = 0
+            hint("Stopped seeking players!",10)
+} 
+}
+}
+if(A){
+    findByClass("player")
+    findExcludeEntity(P)
+    findSortByDistance(P:pos())
+    AimAngle = (FindR:pos()+vec(0,0,60)-Prop:pos())
+}else{
+AimAngle = (P:aimPos() - Prop:pos()) + Prop:massCenterL() 
+}
+#/aim command
+if(chatClk(owner())){
+    if(LS:lower() == "/aim"&!Aim){
+        hide()
+        hint("Type /aim again to stop aiming at cursor.",10)
+        timer("aim",100)
+}
+}
+if(clk("aim")){
+    Aim = 1
+}
+if(Aim){
+    if(chatClk(owner())){
+        if(LS:lower() == "/aim"){
+            hide()
+            Aim = 0
+            hint("Stopped aiming at cursor's position!",10)
+} 
+}
+}
+#/playerinfo command
+if(chatClk(owner())){
+    if(LS:lower() == "/playerinfo"&Seek&!L2| LS:lower() == "/playerinfo"&Target&!L2){
+        hide()
+        hint("Info Printed In Chat",10)
+        printColor(vec(random(0,255),random(0,255),random(0,255)),"/target Target's name: ",vec(255,0,0),Player:name())
+        printColor(vec(random(0,255),random(0,255),random(0,255)),"/seek Target's name: ",vec(255,0,0),find():name())
+        printColor(vec(random(0,255),random(0,255),random(0,255)),"/seek steamID: ",vec(255,0,0),find():steamID())
+        printColor(vec(random(0,255),random(0,255),random(0,255)),"/target steamID: ",vec(255,0,0),Player:steamID())
+        printColor(vec(random(0,255),random(0,255),random(0,255)),"/target Target's position: ",vec(255,0,0),round(Player:pos()):toString())
+        printColor(vec(random(0,255),random(0,255),random(0,255)),"/seek Target's position: ",vec(255,0,0),round(find():pos()):toString())
+        L = 1
+        timer("stopplayer",100)
+}elseif(LS:lower() == "/playerinfo"&!Seek&L2 | LS:lower() == "/playerinfo"&!Target&!L2){
+hide()
+hint("You have no target!",10)
+}
+}
+if(clk("stopplayer")){
+    L = 0
+}
+#/playerinfo [name] command
+if(chatClk(owner())){
+    if(LSS:string(1):lower() == "/playerinfo"&!L){
+        hide()
+        Target2 = findPlayerByName(LSS:string(2))
+        if(Target2:isAdmin() | Target2:isSuperAdmin()){
+            Admin = "Yes"
+        }else{
+        Admin = "No"
+    } 
+        if(Target2:isPlayer()){
+            Player2 = Target2
+            hint("Info Printed In Chat",10)
+            printColor(vec(random(0,255),random(0,255),random(0,255)),"Player's name: ",vec(255,0,0),Player2:name())
+            printColor(vec(random(0,255),random(0,255),random(0,255)),"Player's SteamID: ",vec(255,0,0),Player2:steamID())
+            printColor(vec(random(0,255),random(0,255),random(0,255)),"Player's position: ",vec(255,0,0),round(Player2:pos()):toString())
+            printColor(vec(random(0,255),random(0,255),random(0,255)),"Is player admin?: ",vec(255,0,0),Admin)
+            timer("stopplayer2",100)
+            L2 = 1
+    }else{
+    hide()
+    hint("Invalid Target!",10)
+}         
+}
+}
+if(clk("stopplayer2")){
+    L2 = 0
+}
+#/target command
+if(chatClk(owner())){
+    if(LSS:string(1):lower() == "/target"){
+        hide()
+        PlayerFind = findPlayerByName(LSS:string(2))
+        if(PlayerFind:isPlayer()){
+            hint("Type /stoptarget to stop targeting this player.",10)
+            timer("target",100)
+            Player = PlayerFind
+            PlayerAim = 1
+            hint("Targeted: "+Player:toString(),10)
+        }else{
+        hint("Invalid Target",10)
+        Target = 0
+        stoptimer("target")
+    }
+}
+}
+if(clk("target")){
+    Target = 1
+}
+if(Target){
+    if(chatClk(owner())){
+        if(LS:lower() == "/stoptarget"){
+            hide()
+            Target = 0
+            PlayerAim = 0
+            hint("Stopped targeting this player!",10)
+} 
+}
+}
+if(PlayerAim){
+    AimAngle = (Player:pos()+vec(0,0,60)-Prop:pos())
+}elseif(!Seek){
+AimAngle = (P:aimPos() - Prop:pos()) + Prop:massCenterL() 
+}
+#/help command
+if(chatClk(owner())){
+    if(LS:lower() == "/help"){
+        hide()
+        print("type /playerinfo or /playerinfo [name] to have infomation about a person.")
+        print("type /clear to clear your memorized props.")
+        print("type /seek to make the prop fly towards the nearest person around you.")
+        print("type /target [name] to target a player.")
+        print("type /aim to make the prop fly towards your cursor's position.")
+        print("press reload and the use key to remove all of your props.")
+        print("type /propno [number] to select that number to record the prop.")
+        print("type /prop [Prop] to record that prop to that number.")
+        print("type /select [number] to select that number.")
+        print("type /save [name] to save props to a txt file.")
+        print("type /load [name] to load that save.")
+        print("crouch and right click to shoot the selected prop.")
+        print("to select a prop, go to prop menu then right click and click copy. After that, in chat,")
+        print("type /propno [number from] to select a number to save your prop to.")
+        print("to find the prop, in the prop menu (Q) right click a prop then select copy.")
+        print("then type /prop [CRTL+V] to save that prop to the number set by /propno")
+        print("then crouch and right click to shoot the prop")
+        print("SCROLL UP FULL INSTRUCTIONS.")
+}
+}
+#Prevent from reaching hard quota if LoopBreak is off
+if(LoopBreak <= 0){
+    if(changed(ops()>=5000)&ops()>=5000){
+        hint("You might want to remove props (/remove). Operations Per Second: "+ops():toString(),10)
+    }
+    if(ops()>=maxquota()){
+        BlockShot = 0
+        PropA:propDelete()
+        PropA:clear()
+        hint("Hard Tick Quota Almost Reached; All of your props are deleted.",10)
+}else{
+BlockShot = 1
+}
+#[automatic deleteion
+if(PropA:count() == 15){
+    PropA:propDelete()
+    PropA:clear()
+}
+
+}
+
+#Shoot the prop
+if(BlockShot){
+        PropT = 1
+    }else{
+    PropT = 0
+}
+    if(changed(P:keyAttack2())&P:keyAttack2()){
+        if(Seek){
+            Finds = findToArray()
+            FindR = Finds[randint(1,Finds:count()),entity]
+    }
+    
+        if(MEMORY[SelectNo, string] == "models/props_phx/construct/wood/wood_boardx1.mdl" | MEMORY[SelectNo, string] == "models/props_phx/misc/potato_launcher_explosive.mdl" | MEMORY[SelectNo, string] == "models/props_phx/ww2bomb.mdl" | MEMORY[SelectNo, string] == "models/Items/item_item_crate_chunk02.mdl" | MEMORY[SelectNo, string] == "models/Items/AR2_Grenade.mdl" | MEMORY[SelectNo, string] == "models/Items/CrossbowRounds.mdl"){
+            PropT = 1
+    }else{  
+    PropT = 0
+}
+        R = random(0,255)
+        R2 = random(0,255)
+        R3 = random(0,255)
+        Prop = propSpawn(MEMORY[SelectNo, string], P:pos()+vec(0,0,60), P:eyeAngles(), 0)
+        PropA:pushEntity(Prop)
+        PropA:count()
+        Prop:propGravity(0)
+        if(PropT){
+            P:soundPlay(0,0,"weapons/ar2/npc_ar2_altfire.wav")
+            Prop:setTrails(10,10,5,"trails/laser",vec(R,R2,R3),255)
+            Prop:setColor(vec(R,R2,R3))
+            Prop:setMaterial("models/debug/debugwhite")
+} 
+}
+#Apply force
+if(LoopBreak <= 0){
+for(I = 1, PropA:count()){
+    local PropE = PropA[I,entity]
+    PropE:applyForce(PropE:forward()*1000000)
+    if(Seek |Aim | Target){
+        PropE:setAng(AimAngle:toAngle())
+} 
+    if(PropA:count()<I|LoopBreak){
+        PropA:clear()
+        I = 0
+        LoopBreak = 1
+        break
+    }
+}
+}
+if(LoopBreak){
+    PropE = PropA:entity(PropA:count())
+    PropE:applyForce(PropE:forward()*(1000000*Prop:mass()))
+    if(Seek |Aim | Target){
+        PropE:setAng(AimAngle:toAngle())
+}
+}
+#Deletion
+if(changed(P:keyReload())&P:keyReload()&P:keyUse()){
+    hint(PropA:count() + " Props deleted!",10)
+    PropA:propDelete()
+    PropA:clear()
+}
+if(chatClk(P)&LS == "/remove"){
+    hint(PropA:count() + " Props deleted!",10)
+    hide()
+    PropA:propDelete()
+    PropA:clear()
+}
+if(duped()){
+    reset()
+}
+#/save 
+if(chatClk(P) & LSS:string(1) == "/save"){
+    SaveName = LSS:string(2)
+    hide()
+    hint("Saved array as " + SaveName,10)
+    Save = 1
+}
+if(Save){
+    if(fileCanWrite()){
+        if(changed(Save)&Save){
+        O = 0
+        hint("Saving file.",10)
+    }
+        while(O <= MEMORY:count()){
+            O++
+            MEMORYW = MEMORYW + MEMORY[O,string]+" "
+            IO = 1
+            if(BreakY){
+                break
+            }
+    }
+if(BreakY){
+    IO = 0
+    Save = 0
+    O = 0
+    hint("Saved!",10)
+    BreakY = 0
+    MEMORYW = ""
+}
+    if(IO){
+        fileWrite(">e2shared/"+"Proplist_"+SaveName+".txt",MEMORYW)
+        BreakY = 1
+    }
+    }
+}
+#/load 
+if(chatClk(P) & LSS:string(1) == "/load"){
+    LoadName = LSS:string(2)
+    hide()
+    Load = 1
+}
+if(Load){
+    if(fileCanLoad()){
+        if(changed(Load==1)&Load==1){
+        hint("Loading List " + LoadName,10)
+        fileLoad(">e2shared/"+"Proplist_"+LoadName+".txt")
+    }
+    if(fileLoaded()){
+            LoadS = fileRead():explode(" ")
+            LoadI = 1
+            hint("File Loaded!",10)
+        }
+if(LoadN){
+    Load = 0
+    LoadN = 0
+    LoadI = 0
+    LoadS:clear()
+    hint("File 100% Loaded!",10)
+    hint("You need to respawn E2 to load anymore files!",10)
+}
+        if(LoadI){
+            hint("Converting File To Array!",10)
+            LoadN++
+            MEMORY = LoadS
+            LoadN = 1
+        }
+    }
+}
+[
+
+
+

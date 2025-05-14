@@ -1,0 +1,79 @@
+@name FailzSteer
+@inputs A D
+@outputs Left Right
+@persist
+@trigger
+
+#[
+
+INFO:
+
+How it came to be:
+Well I was sitting around today trying to figure out how to make my winch based steering system better for an ACF/Wire dune buggy I made when I thought about making a hydraulic style one. I had seen hundreds upon hundreds of tutorials for steering systems previously but they were all either so outdated they didn't work anymore, were outdated in a sense that they used e1, or just were too bulky to work on a smaller vehicle such as my buggy. So I decided I would make my own. Now before you comment on this E2 I am going to warn you it's so simple there is probably someone with one almost exactly like it, in fact in my honest opinion it's barely an e2. 
+So don't pull the "You Stole It!" card on me.
+
+I will warn you it is rather weird at times and will probably require adjusting for your specific set up.
+
+
+How to use:
+Well to begin you might need to put this in very very very early in the creation of your vehicle otherwise you may have some issues regarding space. You shouldn't have too much issue though because it's not massive or anything.
+
+Set up something like this:
+
+My first E2. (It's a steering e2)-tppw29j.jpg
+(Note the e2 isn't shown in that picture)
+
+In terms of wiring its really ultra simple. Left goes to left hydraulic length and right goes to vice versa. If it is too weak, then you need to raise the number for the constant and dampening.
+
+I'm only releasing this because I'm sure there's a few people who use wiremod but aren't e2 coding savvy and want to have some decent steering.
+
+]#
+
+
+Left=50
+Right=50
+
+if(D){Left=60 Right=40}
+if(A){Right=60 Left=40} 
+
+
+
+#[
+
+CRITIC #1
+
+Could probably do something like
+@inputs A D
+@outputs Left Right
+interval(10)
+Left = 50+(10*(A-D))
+Right = 50-(10*(A-D))
+
+
+]#
+
+
+
+#[
+
+CRITIC #2
+
+Re: My first E2. (It's a steering e2)
+
+    Quote Originally Posted by ShadowBrain View Post
+    *code*
+    Or, you could only calculate the variance in hydraulics once, instead of twice.
+
+    Code:
+
+    @inputs A D
+    @outputs Left Right
+    interval(10)
+    Change = 10*(A-D)
+    Left = 50+Change 
+    Right = 50-Change
+
+
+
+
+]#

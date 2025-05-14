@@ -1,0 +1,712 @@
+@name Combine Civil Protection Text to Voice
+@persist S:table R:table H1:normal H2:normal Last Health:normal
+runOnChat(1)
+dsJoinGroup("kh_csp")
+dsSetScope(1)
+interval(1)
+
+O=owner()
+Frnds=O:friends()
+
+    for(I=1,Frnds:count()){
+    Frnd=Frnds[I,entity]}
+
+if(first()|duped()){
+    R = table()
+    
+    R["ts16",string] = "citizensummoned"
+    R["ts17",string] = "loyaltycheckfailure"     
+    R["ts18",string] = "standardloyaltycheck"
+    
+    R["10-2",string] = "ten2"
+    R["10-4",string] = "ten4"
+    R["10-8 standing by",string] = "ten8standingby" 
+    R["10-91d count is...",string] = "ten91dcountis"
+    R["10-97",string] = "ten97"
+    R["10-97 the suspect is goa",string] = "ten97suspectisgoa" 
+    R["10-0 viscerator is hunting",string] = "tenzerovisceratorishunting"
+    R["11-99 officer needs assistance",string] = "11-99officerneedsassistance" 
+    R["404 zone",string] = "404zone"
+    R["acquiring on visual",string] = "acquiringonvisual"
+    R["administer2",string] = "administer"
+    R["affirmative3",string] = "affirmative" 
+    R["affirmative4",string] = "affirmative2"    
+    R["dispatch we need airwatch subject is 505",string] = "airwatchsubjectis505"
+    R["all right you can go",string] = "allrightyoucango" 
+    R["au at location respond to code 3",string] = "allunitsrespondcode3"
+    R["au be advised subject is now highspeed",string] = "subjectisnowhighspeed"
+    R["au bol we have 34s at...",string] = "allunitsbol34sat"
+    R["au close on suspect",string] = "allunitscloseonsuspect"
+    R["au code 2",string] = "allunitscode2"
+    R["au lock your position",string] = "lockyourposition"
+    R["au maintain this cp",string] = "allunitsmaintainthiscp"
+    R["au move in",string] = "allunitsmovein" 
+    R["au move to arrest positions",string] = "movetoarrestpositions" 
+    R["au report location suspect",string] = "allunitsreportlocationsuspect"
+    R["au sacrifice code 1 and maintain this cp",string] = "sacrificecode1maintaincp"   
+    R["amputate",string] = "amputate" 
+    R["anticitizen",string] = "anticitizen"
+    R["anyone pick up a 647e reading",string] = "anyonepickup647e"
+    R["any unit report in with 10-25 suspect",string] = "unitreportinwith10-25suspect"
+    R["apply",string] = "apply" 
+    R["assault point secure advance",string] = "assaultpointsecureadvance"
+    R["at check point",string] = "atcheckpoint"
+    R["backmeupimout",string] = "backmeupimout" 
+    R["backup",string] = "backup"    
+    R["block",string] = "block"
+    R["block is holding cohesive",string] = "blockisholdingcohesive" 
+    R["break his cover",string] = "breakhiscover"
+    R["bugs",string] = "bugs"
+    R["can1",string] = "pickupthecan1" 
+    R["can1.5",string] = "youknockeditover"
+    R["can2",string] = "pickupthecan3"
+    R["can3",string] = "pickupthecan2"
+    R["canal",string] = "canal"
+    R["canal block",string] = "canalblock"
+    R["catch that blip on the stabilization readout",string] = "catchthatbliponstabilization" 
+    R["cauterize",string] = "cauterize"
+    R["check for miscount",string] = "checkformiscount"
+    R["citizen",string] = "citizen"
+    R["classify subjects name as db this block ready for cleanout",string] = "classifyasdbthisblockready" 
+    R["clear and code 100",string] = "clearandcode100"
+    R["clear no 647 no 10-107",string] = "clearno647no10-107"
+    R["code 100",string] = "code100" 
+    R["code 7",string] = "code7"    
+    R["condemned zone",string] = "condemnedzone"
+    R["confirm adw",string] = "confirmadw" 
+    R["confirm priority 1 sighted",string] = "confirmpriority1sighted"
+    R["contact with 243 suspect",string] = "contactwith243suspect"
+    R["control is 100% this location",string] = "control100percent"
+    R["control section",string] = "controlsection"
+    R["converging",string] = "converging" 
+    R["copy",string] = "copy"
+    R["cover me im going in",string] = "covermegoingin"
+    R["cp bol for that 243",string] = "cpbolforthat243" 
+    R["cp is compromised reistablish",string] = "cpiscompromised"
+    R["cp is overrun we have no containment",string] = "cpisoverrunwehavenocontainment"
+    R["cp requests au report in",string] = "cprequestsallunitsreportin" 
+    R["cp we need to establish a perimeter at..",string] = "cpweneedtoestablishaperimeterat"
+    R["criminaltrespass 63",string] = "criminaltrespass63"
+    R["db count is...",string] = "dbcountis" 
+    R["defender",string] = "defender"    
+    R["deserviced area",string] = "deservicedarea"
+    R["designate suspect as...",string] = "designatesuspectas" 
+    R["destroy that cover",string] = "destroythatcover"
+    R["dismounting hardpoint",string] = "dismountinghardpoint"
+    R["dispatch i need 10-78 officer in trouble",string] = "dispatchineed10-78" 
+    R["dispreports suspect incursion at location",string] = "dispreportssuspectincursion"
+    R["dispupdating apb likeness",string] = "dispupdatingapb"
+    R["distribution block",string] = "distributionblock" 
+    R["document",string] = "document"
+    R["dont move",string] = "dontmove"
+    R["eight",string] = "eight" 
+    R["eighteen",string] = "eighteen"
+    R["eighty",string] = "eighty"
+    R["eleven",string] = "eleven"     
+    R["examine",string] = "examine"
+    R["expired",string] = "expired" 
+    R["external jurisdiction",string] = "externaljurisdiction"    
+    R["fall out and establish a new cp",string] = "establishnewcp"
+    R["fifteen",string] = "fifteen"
+    R["fifty",string] = "fifty" 
+    R["final verdict administered",string] = "finalverdictadministered"
+    R["fire to dislocate that interpose",string] = "firetodislocateinterpose" 
+    R["firing to expose target",string] = "firingtoexposetarget"
+    R["five",string] = "five" 
+    R["four",string] = "four"
+    R["fourteen",string] = "fourteen"
+    R["fourty",string] = "fourty" 
+    R["freeman",string] = "freeman"
+    R["freenecrotics",string] = "freenecrotics"
+    R["get that 11-44 inbound were cleaning up now",string] = "get11-44inboundcleaningup" 
+    R["get down",string] = "getdown"
+    R["get out of here",string] = "getoutofhere"
+    R["going to take a look",string] = "goingtotakealook" 
+    R["got a 10-107 send airwatch for attack",string] = "gota10-107sendairwatch"    
+    R["got him again suspect 10-20 at...",string] = "gothimagainsuspect10-20at"
+    R["got one accomplice here",string] = "gotoneaccomplicehere" 
+    R["gotsuspect1here",string] = "gotsuspect1here"
+    R["grenade",string] = "grenade"
+    R["hah",string] = "chuckle"
+    R["hardpointscanning",string] = "hardpointscanning" 
+    R["help",string] = "help"
+    R["hero",string] = "hero"
+    R["hes gone 148",string] = "hesgone148" 
+    R["hes running",string] = "hesrunning"
+    R["hes up there",string] = "hesupthere"
+    R["hiding last seen at range...",string] = "hidinglastseenatrange" 
+    R["high priority region",string] = "highpriorityregion"
+    R["holding on 10-14 duty at code 4",string] = "holdingon10-14duty"
+    R["hold it",string] = "holdit" 
+    R["hold it2",string] = "holditrightthere"    
+    R["i have a 10-30 my 10-20 is responding code 2",string] = "ihave10-30my10-20responding" 
+    R["i have a level 3 civil privacy violator here",string] = "level3civilprivacyviolator"
+    R["i have a match on apb likeness",string] = "matchonapblikeness"
+    R["i have a priority 2 anticitizen here",string] = "priority2anticitizenhere" 
+    R["industrial zone",string] = "industrialzone"    
+    R["infection",string] = "infection"
+    R["infested zone",string] = "infestedzone" 
+    R["inject",string] = "inject"
+    R["innoculate",string] = "innoculate"
+    R["in position",string] = "inposition" 
+    R["in position at hardpoint",string] = "inpositionathardpoint"
+    R["in position on the ready",string] = "inpositiononeready"
+    R["intercede",string] = "intercede" 
+    R["interlock",string] = "interlock"
+    R["investigate",string] = "investigate"
+    R["investigating 10-103",string] = "investigating10-103" 
+    R["is 10-108",string] = "is10-108"
+    R["is 415b",string] = "is415b" 
+    R["is at hardpoint ready to prosecute",string] = "isathardpointreadytoprosecute"
+    R["is closing on suspect",string] = "isclosingonsuspect"
+    R["is down",string] = "isdown" 
+    R["is go",string] = "isgo"    
+    R["is moving in",string] = "ismovingin"
+    R["is requesting secondary viscerator primary is oc",string] = "requestsecondaryviscerator"
+    R["isolate",string] = "isolate" 
+    R["is ready to go",string] = "isreadytogo"
+    R["issuing malcompliant citation",string] = "issuingmalcompliantcitation" 
+    R["ive got 408 here at location",string] = "ivegot408hereatlocation"
+    R["jury",string] = "jury"
+    R["keepmoving",string] = "keepmoving" 
+    R["king",string] = "king"
+    R["line",string] = "line" 
+    R["local cpt report status",string] = "localcptreportstatus"
+    R["location",string] = "location"
+    R["lock",string] = "lock" 
+    R["looking for trouble",string] = "lookingfortrouble"
+    R["look out",string] = "lookout" 
+    R["look out rogue viscerator",string] = "lookoutrogueviscerator"    
+    R["loose parasitics",string] = "looseparasitics"
+    R["malcompliant 10-107 my 10-20 preparing to prosecute",string] = "malcompliant10107my1020"
+    R["malignant",string] = "malignant"
+    R["meters",string] = "meters"
+    R["minor hits continuing prosecution",string] = "minorhitscontinuing"
+    R["move",string] = "move" 
+    R["move along",string] = "movealong"
+    R["move along2",string] = "movealong3"
+    R["move along3",string] = "isaidmovealong"
+    R["move back right now",string] = "movebackrightnow" 
+    R["move it",string] = "moveit2"
+    R["move it2",string] = "moveit"
+    R["moving to cover",string] = "movingtocover"
+    R["moving to hardpoint",string] = "movingtohardpoint"
+    R["necrotics",string] = "necrotics" 
+    R["need any help with this one",string] = "needanyhelpwiththisone"    
+    R["nine",string] = "nine"
+    R["nineteen",string] = "nineteen" 
+    R["ninety",string] = "ninety"
+    R["no contact",string] = "nocontact"
+    R["non-taggedviromeshere",string] = "non-taggedviromeshere"
+    R["non-citizen",string] = "noncitizen" 
+    R["non-partrol region",string] = "nonpartrolregion"
+    R["no visual on upi att",string] = "novisualonupi"
+    R["now get out of here",string] = "nowgetoutofhere" 
+    R["officer down request au code 3 to my 10-20",string] = "officerdowncode3tomy10-20"
+    R["officer down i am 10-99",string] = "officerdowniam10-99"
+    R["officer needs assistance i am 10-99",string] = "officerneedsassistance" 
+    R["officer needs help",string] = "officerneedshelp"
+    R["one",string] = "one" 
+    R["one-hundred",string] = "onehundred"
+    R["outbreak2",string] = "outbreak"
+    R["outland zone",string] = "outlandzone"
+    R["pacifying",string] = "pacifying"
+    R["patrol",string] = "patrol" 
+    R["picking up a non-corplexindy over here",string] = "pickingupnoncorplexindy"    
+    R["position to contain",string] = "positiontocontain"
+    R["possible 10-103 my location alert tag units",string] = "possible10-103alerttagunits" 
+    R["possible 404 here",string] = "possible404here"
+    R["possible 647e here request airwatch attack",string] = "possible647erequestairwatch"
+    R["possible level 3 civil privacy violator here",string] = "possiblelevel3civilprivacyviolator" 
+    R["prepare for 10-15",string] = "preparefor1015"
+    R["pt hold this position",string] = "holdthisposition"    
+    R["preparing to judge a 10-107 be advised",string] = "preparingtojudge10-107" 
+    R["preserve",string] = "preserve"
+    R["pressure",string] = "pressure"
+    R["proceed to designated checkpoints",string] = "proceedtocheckpoints"
+    R["production block",string] = "productionblock"
+    R["prosecute",string] = "prosecute" 
+    R["protection complete",string] = "protectioncomplete"
+    R["pt go again",string] = "ptgoagain" 
+    R["pt hold this position",string] = "holdthisposition"
+    R["pts at location report in",string] = "ptatlocationreport"
+    R["quick",string] = "quick" 
+    R["ready to amputate",string] = "readytoamputate"
+    R["ready to judge",string] = "readytojudge"
+    R["ready to prosecute",string] = "readytoprosecute" 
+    R["reinforcement teams code 3",string] = "reinforcementteamscode3"
+    R["reporting sightings of possible accomplices",string] = "reportsightingsaccomplices" 
+    R["repurposed area",string] = "repurposedarea"
+    R["residential block",string] = "residentialblock" 
+    R["responding",string] = "responding2"
+    R["restrict",string] = "restrict"
+    R["restricted block",string] = "restrictedblock" 
+    R["rodger that",string] = "rodgerthat"
+    R["roller",string] = "roller"
+    R["running low on verdicts taking cover",string] = "runninglowonverdicts"  
+    R["search",string] = "search"
+    R["searching for suspect no status",string] = "searchingforsuspect" 
+    R["sector",string] = "sector"
+    R["sentence delivered",string] = "sentencedelivered" 
+    R["serve",string] = "serve"
+    R["seven",string] = "seven"
+    R["seventeen",string] = "seventeen" 
+    R["seventy",string] = "seventy"
+    R["shit",string] = "shit"
+    R["shots fired hostile malignants here",string] = "shotsfiredhostilemalignants" 
+    R["six",string] = "six"
+    R["sixteen",string] = "sixteen"
+    R["sixty",string] = "sixty" 
+    R["sociocide",string] = "sociocide"
+    R["stabilization jurisdiction",string] = "stabilizationjurisdiction"
+    R["station block",string] = "stationblock"    
+    R["sterilize",string] = "sterilize"
+    R["stick",string] = "stick" 
+    R["still getting that 647e from local surveillance",string] = "stillgetting647e"
+    R["storm system",string] = "stormsystem"
+    R["subject",string] = "subject" 
+    R["subject is 505",string] = "subjectis505"
+    R["supsect has moved now to...",string] = "supsecthasmovednowto" 
+    R["suspect 11-6 my 10-20 is...",string] = "suspect11-6my1020is"
+    R["suspect is now in storm runoff system at...",string] = "suspectinstormrunoff"
+    R["suspect is bleeding from multiple wounds",string] = "suspectisbleeding" 
+    R["suspect location unknown",string] = "suspectlocationunknown"
+    R["suspect is using restricted canals at...",string] = "suspectusingrestrictedcanals"
+    R["suspect prepare to recive civil judgement",string] = "prepareforjudgement" 
+    R["suspend",string] = "suspend" 
+    R["sweeping for suspect",string] = "sweepingforsuspect"
+    R["tag 10-91d",string] = "tag10-91d"
+    R["tag one bug",string] = "tagonebug" 
+    R["tag one necrotic",string] = "tagonenecrotic"    
+    R["tag one parasitic",string] = "tagoneparasitic"
+    R["take cover",string] = "takecover" 
+    R["tap",string] = "tap"
+    R["team in position advance",string] = "teaminpositionadvance"
+    R["ten",string] = "ten" 
+    R["terminal restriction zone",string] = "terminalrestrictionzone"
+    R["thats a grenade",string] = "thatsagrenade" 
+    R["there he goes hes at...",string] = "therehegoeshesat"
+    R["there he is",string] = "thereheis"
+    R["thirteen",string] = "thirteen" 
+    R["thirty",string] = "thirty"    
+    R["three",string] = "three"
+    R["three-hundred",string] = "threehundred"
+    R["transit block",string] = "transitblock"
+    R["trash1",string] = "putitinthetrash1"    
+    R["trash2",string] = "putitinthetrash1"
+    R["twelve",string] = "twelve" 
+    R["twenty",string] = "twenty"
+    R["two",string] = "two"
+    R["two-hundred",string] = "twohundred" 
+    R["union",string] = "union"
+    R["unit is 10-65",string] = "unitis10-65"
+    R["unit is 10-8 standing by",string] = "unitis10-8standingby" 
+    R["unit is on duty 10-8",string] = "unitisonduty10-8"
+    R["603 unlawful entry",string] = "unlawfulentry603" 
+    R["upi",string] = "upi"
+    R["utl suspect",string] = "utlsuspect"
+    R["utl that suspect",string] = "utlthatsuspect" 
+    R["vacate citizen",string] = "vacatecitizen"    
+    R["vice",string] = "vice"
+    R["victor",string] = "victor" 
+    R["viscerator deployed",string] = "visceratordeployed"
+    R["viscerator is off grid",string] = "visceratorisoffgrid" 
+    R["warn1 move away",string] = "firstwarningmove"
+    R["warn2",string] = "thisisyoursecondwarning"  
+    R["warn2.5",string] = "secondwarning"
+    R["warn3",string] = "finalwarning"
+    R["warns over",string] = "readytoprosecutefinalwarning"
+    R["waste river",string] = "wasteriver"
+    R["watch it",string] = "watchit"
+    R["watch it viscerator is oc",string] = "visceratorisoc"
+    R["we are socio-stable at this location",string] = "wearesociostablethislocation" 
+    R["we got a db here cancel that 11-42",string] = "wegotadbherecancel10-102"
+    R["we got an outland biotic in here",string] = "outlandbioticinhere" 
+    R["we have a 10-108",string] = "wehavea10-108"
+    R["we have bugs on the loose",string] = "bugsontheloose" 
+    R["we have contact with a priority 2",string] = "contactwithpriority2" 
+    R["workforce intake",string] = "workforceintake" 
+    R["x-ray",string] = "xray"  
+    R["yellow",string] = "yellow"
+    R["you want a malcompliance verdict",string] = "youwantamalcomplianceverdict"
+    R["zero",string] = "zero" 
+    R["zone",string] = "zone"
+
+Last = 0
+print("-Type !listMtro to see a list of all the possible phrases!")
+print("-The list also appears in console, so you can directly copy/paste from
+  there OR bind keys to phrases easier!")
+}
+
+if (owner():isAlive() == 1 & chatClk(owner()) & Last < owner():lastSaidWhen()){
+     Last = owner():lastSaidWhen()
+     Played = 0
+
+     foreach (K,V:string = R) {  
+    if (owner():lastSaid():lower():trim() == K) {
+        owner():soundPlay(1,0,"npc/metropolice/vo/" + V + ".wav")
+        Frnd:soundPlay(1,0,"npc/metropolice/vo/" + V + ".wav")
+        hideChat(1)
+      }
+    }
+     
+    
+if(owner():lastSaid()=="!stop"){
+    soundStop(1)    
+    hideChat(1)
+    }
+    
+if(owner():isAlive() == 0){
+    soundStop(1)
+    }
+if(owner():lastSaid():lower():trim() == "!listmtro"){
+print("
+10-2 
+10-4 
+10-8 standing by  
+10-91d count is... 
+10-97 
+10-97 the suspect is goa  
+10-0 viscerator is hunting 
+11-99 officer needs assistance  
+404 zone 
+603 unlawful entry
+    acquiring on visual 
+    administer2 
+    affirmative3  
+    affirmative4")
+print("
+    all right you can go
+    au at location respond to code 3
+    au be advised subject is now highspeed 
+    au bol we have 34s at... 
+    au close on suspect 
+    au code 2 
+    au lock your position 
+    au maintain this cp 
+    au move in")
+print(" 
+    au move to arrest positions  
+    au report location suspect
+    au sacrifice code 1 and maintain this cp
+    amputate  
+    anticitizen 
+    anyone pick up a 647e reading 
+    any unit report in with 10-25 suspect -25suspect
+    apply  
+    assault point secure advance")
+print("
+    at check point 
+backmeupimout  
+backup 
+block 
+block is holding cohesive")
+print("    
+break his cover 
+bugs 
+    can1  
+    can1.5 
+    can2 
+    can3 
+    canal 
+    canal block 
+    catch that blip on the stabilization readout  
+    cauterize 
+    check for miscount 
+    citizen 
+    classify subjects name as db this block ready for cleanout")
+print("
+    clear and code 100
+    clear no 647 no 10-107")
+print("
+    code 100  
+    code 7 
+    condemned zone
+    confirm adw  
+    confirm priority 1 sighted 
+    contact with 243 suspect 
+    control is 100% this location 
+    control section 
+    converging  
+    copy 
+    cover me im going in 
+    cp bol for that 243")
+print("
+    cp is compromised reistablish")
+print("
+    cp is overrun we have no containment
+    cp requests au report in  
+    cp we need to establish a perimeter at.. 
+    criminaltrespass 63 
+db count is...  
+defender 
+deserviced area 
+designate suspect as...  
+destroy that cover 
+dismounting hardpoint")
+print("
+dispatch i need 10-78 officer in trouble
+dispatch we need airwatch subject is 505 
+dispreports suspect incursion at location 
+dispupdating apb likeness 
+distribution block  
+document 
+dont move 
+    eight  
+    eighteen 
+    eighty 
+    eleven  
+    examine")
+print("
+    expired")
+print("
+    external jurisdiction 
+fall out and establish a new cp 
+fifteen 
+fifty  
+final verdict administered 
+fire to dislocate that interpose  
+firing to expose target 
+five  
+four 
+fourteen 
+fourty  
+freeman 
+freenecrotics 
+    get that 11-44 inbound were cleaning up now")
+print("
+    get down 
+    get out of here 
+    going to take a look  
+    got a 10-107 send airwatch for attack 
+    got him again suspect 10-20 at... 
+    got one accomplice here  
+    gotsuspect1here 
+    grenade 
+hah 
+hardpointscanning  
+help 
+hero 
+hes gone 148  
+hes running 
+hes up there")
+print("
+hiding last seen at range...  
+high priority region 
+holding on 10-14 duty at code 4 
+hold it  
+hold it2 
+    i have a 10-30 my 10-20 is responding code 2  
+    i have a level 3 civil privacy violator here 
+    i have a match on apb likeness")
+print("
+    i have a priority 2 anticitizen here  
+    industrial zone 
+    infection 
+    infested zone  
+    inject 
+    innoculate 
+    in position  
+    in position at hardpoint 
+    in position on the ready 
+    intercede  
+    interlock 
+    investigate 
+    investigating 10-103  
+    is 10-108 
+    is 415b")
+print("
+    is at hardpoint ready to prosecute 
+    is closing on suspect 
+    is down  
+    is go 
+    is moving in 
+    is requesting secondary viscerator primary is oc 
+    isolate  
+    is ready to go 
+    issuing malcompliant citation")
+print("  
+    ive got 408 here at location")
+print("
+jury 
+    keepmoving  
+    king 
+line")
+print("
+local cpt report status 
+location 
+lock  
+looking for trouble 
+look out  
+look out rogue viscerator 
+loose parasitics 
+    malcompliant 10-107 my 10-20 preparing to prosecute 
+    malignant 
+    meters 
+    minor hits continuing prosecution 
+    move  
+    move along")
+print(" 
+    move along2")
+print("
+    move along3 
+    move back right now  
+    move it 
+    move it2 
+    moving to cover 
+    moving to hardpoint
+necrotics  
+need any help with this one 
+nine 
+nineteen  
+ninety 
+no contact 
+non-taggedviromeshere 
+non-citizen  
+non-partrol region 
+no visual on upi att 
+now get out of here")
+print("
+    officer down request au code 3 to my 10-20
+    officer down i am 10-99
+    officer needs assistance i am 10-99  
+    officer needs help 
+    one  
+    one-hundred 
+    outbreak2 
+    outland zone 
+pacifying 
+patrol  
+picking up a non-corplexindy over here 
+position to contain")
+print("
+possible 10-103 my location alert tag units  
+possible 404 here 
+possible 647e here request airwatch attack 
+possible level 3 civil privacy violator here  
+prepare for 10-15 
+pt hold this position 
+preparing to judge a 10-107 be advised  
+preserve 
+pressure")
+print("
+proceed to designated checkpoints 
+production block 
+prosecute
+protection complete 
+pt go again  
+pt hold this position 
+pts at location report in
+    quick  
+ready to amputate 
+ready to judge 
+ready to prosecute  
+reinforcement teams code 3")
+print("
+reporting sightings of possible accomplices  
+repurposed area 
+residential block  
+responding 
+restrict 
+restricted block  
+rodger that 
+roller 
+running low on verdicts taking cover   
+    search 
+    searching for suspect no status  
+    sector 
+    sentence delivered  
+    serve 
+    seven")
+print("
+    seventeen  
+    seventy 
+    shit 
+    shots fired hostile malignants here  
+    six 
+    sixteen 
+    sixty  
+    sociocide 
+    stabilization jurisdiction 
+    station block 
+    sterilize 
+    stick  
+    still getting that 647e from local surveillance")
+print("
+    storm system
+    subject
+    subject is 505")
+print("
+    supsect has moved now to...  
+    suspect 11-6 my 10-20 is... 
+    suspect is now in storm runoff system at... 
+    suspect is bleeding from multiple wounds  
+    suspect location unknown 
+    suspect is using restricted canals at...")
+print(" 
+    suspect prepare to recive civil judgement")
+print("
+    suspend  
+    sweeping for suspect 
+tag 10-91d 
+tag one bug  
+tag one necrotic 
+tag one parasitic 
+take cover  
+tap 
+team in position advance 
+ten  
+terminal restriction zone 
+thats a grenade  
+there he goes hes at... 
+there he is 
+thirteen  
+thirty 
+three 
+three-hundred")
+print("
+transit block 
+trash1 
+trash2 
+twelve  
+twenty 
+two 
+two-hundred  
+    union 
+    unit is 10-65
+    unit is 10-8 standing by  
+    unit is on duty 10-8 
+    upi 
+    utl suspect 
+    utl that suspect  
+vacate citizen 
+vice 
+victor  
+viscerator deployed")
+print("
+viscerator is off grid  
+    warn1 move away 
+    warn2   
+    warn2.5 
+    warn3 
+    warns over 
+    waste river 
+    watch it 
+    watch it viscerator is oc 
+    we are socio-stable at this location  
+    we got a db here cancel that 11-42
+    we got an outland biotic in here 
+    we have a 10-108")
+print("
+    we have bugs on the loose  
+    we have contact with a priority 2  
+    workforce intake  
+x-ray   
+    yellow 
+    you want a malcompliance verdict 
+zero 
+zone
+
+Scroll up for the rest of the phrases! They appear in console too!
+"),hideChat(1)}
+}

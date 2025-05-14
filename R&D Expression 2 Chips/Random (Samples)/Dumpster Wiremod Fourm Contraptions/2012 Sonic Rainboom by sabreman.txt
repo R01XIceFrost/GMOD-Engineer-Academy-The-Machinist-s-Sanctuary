@@ -1,0 +1,126 @@
+@name Sonic Rainboom
+@outputs [Parent Me]:entity [Temp Scales]:array Offset:vector
+@outputs Decay VelTrig MinSpeed Trails
+@persist I
+
+#[
+
+info:
+
+
+Well here we go, got the the problem fixed thanks to gen-3 and added a few nice features. Basically this thing gives you rainbow trails and when you noclip or go over the preset velocity (50 mph) it activates a cool holographic rainboom, that scales up and fades away.
+
+------------------
+Chat Commands:
+------------------
+/trails - turns trails on/off
+
+
+]#
+
+if(first()|dupefinished())
+{   
+    #Variables you can mess with 
+        MinSpeed = 50
+        Offset = vec(-10,0,-20)
+        Trails = 1 #1 starts with trails on, 0 with them off
+    #Dont Change anything below here, unless you know E2
+    ##################################
+    
+    runOnTick(1)
+    runOnChat(1)
+    Me = owner()
+    
+    findIncludePlayerProps(Me)
+    findByClass("weapon_physgun")
+    findSortByDistance(Me:pos())
+    
+    Parent = findResult(1)
+    
+    for(I=1,14)
+    {
+        holoCreate(I)
+        
+        if(I<=7)
+        {
+            holoAlpha(I,0)
+            holoPos(I,Parent:toWorld(Offset+vec(0,0,0+(I*5))))
+            holoEntity(I):setTrails(20,0,1,"Trails/smoke",hsv2rgb(255-(255/7)*I,1,1),255)
+            holoParent(I,Parent)
+        }else
+        {
+            holoModel(I,"torus3")
+            holoAlpha(I,0) 
+            Scales:pushVector(vec(8+((I-7)),8+((I-7)),0.032))
+            holoColor(I,hsv2rgb(255-(255/7)*(I-7),1,1))
+        }
+        
+    }
+}
+if(chatClk(Me)&lastSaid():sub(0,1)=="/")
+{
+    hideChat(1)
+    LastSaid=lastSaid():sub(2):lower():explode(" ")
+    if(LastSaid[1,string]=="trails")
+    {
+        Trails = !Trails
+        if(Trails)
+        {    
+            for(I=1,7)
+            {        
+                holoEntity(I):setTrails(20,0,1,"Trails/smoke",hsv2rgb(255-(255/7)*I,1,1),255)               
+            }
+            printColor(vec(255,255,255),"Trails Enabled")
+            
+        }else
+        {
+            for(I=1,7)
+            {        
+                holoEntity(I):removeTrails()              
+            }
+            printColor(vec(255,255,255),"Trails Disabled")
+        }       
+    }
+}
+Vel = round(toUnit("mi/h",Me:vel():length()))
+
+if(((changed(Me:inNoclip()) & Me:inNoclip() & Vel > 20)|(changed(Vel) & Vel >= MinSpeed & !VelTrig)) & !Decay)
+{
+    Temp = Scales:clone()
+    Decay = 1
+    VelTrig  = (Vel >= MinSpeed ? 1 : 0)
+    
+    for(I=8,14)
+    {
+        holoPos(I,Me:toWorld(Me:boxCenter()+vec(0+(I-7)*2,0,0)))
+        holoAng(I,Me:vel():toAngle()-ang(90,0,0))
+        holoScale(I,Scales[I-7,vector])
+        holoAlpha(I,100)
+    }
+   
+    timer("fade",100)
+    Me:soundPlay("sonicBoom",0,"/ambient/explosions/explode_4.wav")
+}elseif(Decay & clk("fade"))
+{
+    for(I=8,14)
+    {
+        Temp[I-7,vector] = (Temp[I-7,vector]+vec(1,1,0))
+        holoAlpha(I,holoEntity(I):getAlpha() - 10)
+        holoScale(I,Temp[I-7,vector])
+    }    
+    
+    if(holoEntity(I):getAlpha() > 0)
+    {
+        timer("fade",100)
+    }else
+    {
+        Decay = 0
+        Temp = array()
+    }
+}else
+{
+    if(Vel < MinSpeed)
+    {
+        VelTrig = 0
+    }
+}

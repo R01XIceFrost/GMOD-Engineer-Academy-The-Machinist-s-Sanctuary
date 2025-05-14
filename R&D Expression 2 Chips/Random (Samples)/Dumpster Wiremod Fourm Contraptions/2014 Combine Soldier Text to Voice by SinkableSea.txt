@@ -1,0 +1,522 @@
+@name Combine Soldier Text to Voice
+@persist S:table R:table Last Frnds:array
+
+
+#[
+
+INFO:
+
+Ever feel like running around a sever, ordering citizens to move along, call in for Overwatch support, or even order a citizen to pick up the can? 
+Now you can with my E2 that I spent forever on. With 397 phrases and 17 secret phrases to choose from, you can sound just like metro-cops and combine soldiers! All you have to do is type in a certain phrase, and if it's on the list, the phrase will be hidden from chat and the E2 will speak for you as if you were combine! If you feel like your tired of checking back here for all the phrases, 
+just type "!listCmbn" for combine voice chats and "!listMtro" for Civil Protection voice chats!
+
+Soldier Chip:
+
+]#
+
+runOnChat(1)
+dsJoinGroup("kh_csp")
+dsSetScope(1)
+interval(1)
+
+O=owner()
+Frnds=O:friends()
+
+    for(I=1,Frnds:count()){
+    Frnd=Frnds[I,entity]}
+
+if (first()|duped()) {
+        
+    S = table() 
+    
+    S["ts1",string] = "prison_soldier_activatecentral"
+    S["ts2",string] = "prison_soldier_boomersinbound"
+    S["ts3",string] = "prison_soldier_bunker1"
+    S["ts4",string] = "prison_soldier_bunker2"
+    S["ts5",string] = "prison_soldier_bunker3"
+    S["ts6",string] = "prison_soldier_containd8"
+    S["ts7",string] = "prison_soldier_fallback_b4"
+    S["ts8",string] = "prison_soldier_freeman_antlions"
+    S["ts9",string] = "prison_soldier_fullbioticoverrun"
+    S["ts10",string] = "prison_soldier_leader9dead"
+    S["ts11",string] = "prison_soldier_negativecontainment"
+    S["ts12",string] = "prison_soldier_prosecuted7"
+    S["ts13",string] = "prison_soldier_sundown3dead"
+    S["ts14",string] = "prison_soldier_tohighpoints"
+    S["ts15",string] = "prison_soldier_visceratorsa5"
+    
+    S["0",string] = "zero"
+    S["1",string] = "one"
+    S["2",string] = "two"
+    S["3",string] = "three"
+    S["4",string] = "four"
+    S["5",string] = "five"
+    S["6",string] = "six"
+    S["7",string] = "seven"
+    S["8",string] = "eight"
+    S["9",string] = "niner"
+    S["10",string] = "ten"
+    S["11",string] = "eleven"
+    S["12",string] = "twelve"
+    S["13",string] = "thirteen"
+    S["14",string] = "fourteen"
+    S["15",string] = "fifteen"
+    S["16",string] = "sixteen"
+    S["17",string] = "seventeen"
+    S["18",string] = "eighteen"
+    S["19",string] = "nineteen"
+    S["20",string] = "twenty"
+    S["30",string] = "thirty"
+    S["40",string] = "fourty"
+    S["50",string] = "fifty"
+    S["60",string] = "sixty"
+    S["70",string] = "seventy"
+    S["80",string] = "eighty"
+    S["90",string] = "ninety"
+    S["100",string] = "onehundred"
+    S["200",string] = "twohundred"
+    S["300",string] = "threehundred"
+    S["administer",string] = "administer"
+    S["affirmative",string] = "affirmative"
+    S["affirmative2",string] = "affirmative2"
+    S["affirmative we got him now",string] = "affirmativewegothimnow"
+    S["alert 1",string] = "alert1"
+    S["anticitizen 1",string] = "anticitizenone"
+    S["antiseptic",string] = "antiseptic"
+    S["apex",string] = "apex"
+    S["bearing",string] = "bearing"
+    S["blade",string] = "blade"
+    S["block 3.1 mace",string] = "block31mace"
+    S["block 6.4 jet",string] = "block64jet"
+    S["body pack holding",string] = "bodypackholding"
+    S["boomer",string] = "boomer"
+    S["bouncer bouncer",string] = "bouncerbouncer"
+    S["call contact parasitics",string] = "callcontactparasitics"
+    S["call contact suspect target 1",string] = "callcontacttarget1"
+    S["call hotpoint",string] = "callhotpoint"
+    S["cleaned",string] = "cleaned"
+    S["closing",string] = "closing"
+    S["closing2",string] = "closing2"
+    S["confirm sector not sterile",string] = "confirmsectornotsterile"
+    S["contact",string] = "contact"
+    S["contact2",string] = "contactconfim"
+    S["contact3",string] = "contactconfirmprosecuting"
+    S["contained",string] = "contained"
+    S["containment proceeding",string] = "containmentproceeding"
+    S["copy",string] = "copy"
+    S["copy3",string] = "copythat"
+    S["cover",string] = "coverhurt"
+    S["covering",string] = "cover"
+    S["cover me",string] = "coverme"
+    S["dagger",string] = "dagger"
+    S["dash",string] = "dash"      
+    S["degrees",string] = "degrees"
+    S["delivered",string] = "delivered"
+    S["designate target as...",string] = "designatetargetas"
+    S["displaced",string] = "displace"
+    S["displaced2",string] = "displace2"
+    S["echo",string] = "echo"
+    S["engaged in cleanup",string] = "engagedincleanup"
+    S["engaging",string] = "engaging"
+    S["executing full response",string] = "executingfullresponse"
+    S["extractor away",string] = "extractoraway"
+    S["extractor is live",string] = "extractorislive"
+    S["fist",string] = "fist"
+    S["fixed sightlines move in",string] = "fixsightlinesmovein"
+    S["flare down",string] = "flaredown"
+    S["flash",string] = "flash"
+    S["flatlined",string] = "flatline"
+    S["flush",string] = "flush"
+    S["freeman",string] = "freeman3"
+    S["full active",string] = "fullactive"
+    S["freeman",string] = "freeman3"
+    S["ghost",string] = "ghost"
+    S["ghost 2",string] = "ghost2"
+    S["go active and intersept",string] = "goactiveintercept"
+    S["go sharp",string] = "gosharp"
+    S["go sharp2",string] = "gosharpgosharp"    
+    S["grid",string] = "grid"
+    S["grid sundown 4-6",string] = "gridsundown46"
+    S["hammer",string] = "hammer"   
+    S["harden that position",string] = "hardenthatposition"
+    S["has negative movement",string] = "hasnegativemovement"    
+    S["helix",string] = "helix"
+    S["hunters",string] = "hunter"
+    S["hurricane",string] = "hurricane"
+    S["inbound",string] = "inbound"
+    S["infected",string] = "infected"
+    S["ice",string] = "ice" 
+    S["ion",string] = "ion"
+    S["is at code",string] = "isatcode"
+    S["is field promoted to leader 1 holding",string] = "isfieldpromoted"
+    S["is final team unit requesting backup",string] = "isfinalteamunitbackup"
+    S["is holding at code",string] = "isholdingatcode"
+    S["jet",string] = "jet"
+    S["judge",string] = "judge"
+    S["kilo",string] = "kilo"
+    S["leader",string] = "leader"
+    S["lost contact",string] = "lostcontact"
+    S["mace",string] = "mace"
+    S["meters",string] = "meters"
+    S["motion check all radials",string] = "motioncheckallradials"    
+    S["move in",string] = "movein"
+    S["necrotics",string] = "necrotics"
+    S["necrotics inbound",string] = "necroticsinbound"   
+    S["nomad",string] = "nomad"
+    S["nova",string] = "nova"    
+    S["noviscon",string] = "noviscon"
+    S["one contained",string] = "onecontained"
+    S["one down",string] = "onedown"
+    S["one duty vacated",string] = "onedutyvacated"
+    S["outbreak",string] = "outbreak"
+    S["outbreak status is code",string] = "outbreakstatusiscode"
+    S["overwatch",string] = "overwatch"    
+    S["overwatch advise we have heavy resistance",string] = "heavyresistance"
+    S["overwatch confirm hvt is contained",string] = "overwatchconfirmhvtcontained" 
+    S["overwatch reports possible hostiles inbound",string] = "overwatchreportspossiblehostiles"
+    S["overwatch requesting reinforcements",string] = "overwatchrequestreinforcement" 
+    S["overwatch requesting reserve activation",string] = "overwatchrequestreserveactivation"
+    S["overwatch requesting skyshield",string] = "overwatchrequestskyshield"
+    S["overwatch requesting winder dispatch",string] = "overwatchrequestwinder"
+    S["overwatch sector overrun",string] = "overwatchsectoroverrun"
+    S["overwatch target 1 sterilized",string] = "overwatchtarget1sterilized"
+    S["overwatch target contained",string] = "overwatchtargetcontained"
+    S["overwatch team is down this sector is not controlled",string] = "overwatchteamisdown"
+    S["overwatch orders 3cc stim boost",string] = "ovewatchorders3ccstimboost"
+    S["payback",string] = "payback"
+    S["phantom",string] = "phantom"
+    S["prep for contact report in",string] = "prepforcontact"
+    S["priority 1 objective",string] = "priority1objective"
+    S["priority 2 escapee",string] = "prioritytwoescapee"    
+    S["prosecuting",string] = "prosecuting"
+    S["quicksand",string] = "quicksand"
+    S["range",string] = "range"   
+    S["ranger",string] = "ranger"
+    S["razor",string] = "razor"    
+    S["ready charges",string] = "readycharges"
+    S["ready extractors",string] = "readyextractors"
+    S["ready weapons",string] = "readyweapons"
+    S["ready weapons2",string] = "readyweaponshostilesinbound"
+    S["ready weapons3",string] = "weaponsoffsafeprepforcontact"
+    S["reaper",string] = "reaper"
+    S["report all positions clear",string] = "reportallpositionsclear"
+    S["report all radials free",string] = "reportallradialsfree"       
+    S["reporting clear",string] = "reportingclear"
+    S["request medical",string] = "requestmedical"
+    S["request stim dose",string] = "requeststimdose"
+    S["ripcord",string] = "ripcord"
+    S["ripcord2",string] = "ripcordripcord"    
+    S["savage",string] = "savage"
+    S["scar",string] = "scar"
+    S["section lock up-4",string] = "sectionlockupdash4"   
+    S["sector",string] = "sector"
+    S["sector is not secure",string] = "sectorisnotsecure"    
+    S["sector is secure noviscon",string] = "sectorissecurenovison"
+    S["secure",string] = "secure"
+    S["shadow",string] = "shadow"
+    S["sharpzone",string] = "sharpzone"
+    S["sight line is clear",string] = "sightlineisclear"
+    S["skyshield reports lost contact",string] = "skyshieldreportslostcontact"
+    S["slam",string] = "slam"
+    S["slash",string] = "slash"
+    S["spear",string] = "spear"       
+    S["stab",string] = "stab"
+    S["stabilization team has sector control",string] = "stabilizationteamhassector"
+    S["stabilization team holding in position",string] = "stabilizationteamholding"
+    S["standing by",string] = "standingby]"
+    S["star",string] = "star"    
+    S["stay alert",string] = "stayalert"
+    S["stay alert2",string] = "stayalertreportsightlines"
+    S["stinger",string] = "stinger"   
+    S["striker",string] = "striker"
+    S["sundown",string] = "sundown"    
+    S["suppressing",string] = "suppressing"
+    S["swarm outbreak in sector",string] = "swarmoutbreakinsector"
+    S["sweeper",string] = "sweeper"
+    S["sweeping in",string] = "sweepingin"
+    S["swift",string] = "swift"
+    S["sword",string] = "sword"
+    S["target",string] = "target"
+    S["target blackout sweep to resume",string] = "targetblackout"
+    S["target compromised move in move in",string] = "targetcompromisedmovein"
+    S["target contact at...",string] = "targetcontactat"
+    S["target ineffective",string] = "targetineffective"
+    S["target is at...",string] = "targetisat"
+    S["target my radial",string] = "targetmyradial"
+    S["target one",string] = "targetone"
+    S["team is deployed and scanning",string] = "teamdeployedandscanning"
+    S["thats it wrap it up",string] = "thatsitwrapitup"
+    S["tracker",string] = "tracker"
+    S["uniform",string] = "uniform"
+    S["unit is closing",string] = "unitisclosing"
+    S["unit is inbound",string] = "unitisinbound"
+    S["unit is moving in",string] = "unitismovingin"
+    S["vamp",string] = "vamp"
+    S["viscon",string] = "viscon"
+    S["visual on exogen",string] = "visualonexogens"
+    S["we are in an infestation zone",string] = "weareinaninfestationzone"
+    S["we have free parasites",string] = "wehavefreeparasites"
+    S["we have non-tagged firearms",string] = "wehavenontaggedviromes"
+    S["winder",string] = "winder" 
+
+Last=0
+print("-Type !listCmbn to see a list of all the possible phrases!")
+print("-The list also appears in console, so you can directly copy/paste from
+  there OR bind keys to phrases easier!")
+}
+
+if (owner():isAlive() == 1 & chatClk(owner()) & Last < owner():lastSaidWhen()){
+     Last = owner():lastSaidWhen()
+     Played = 0
+
+     foreach (K,V:string = S) {  
+    if (owner():lastSaid():lower():trim() == K) {
+        owner():soundPlay(1,0,"npc/combine_soldier/vo/" + V + ".wav")
+        Frnd:soundPlay(1,0,"npc/combine_soldier/vo/" + V + ".wav")
+        hideChat(1)
+                 
+    }
+ }
+    
+if(owner():lastSaid()=="!stop"){
+    soundStop(1)    
+    hideChat(1)
+    }
+    
+if(owner():isAlive() == 0){
+    soundStop(1)    
+    stopAllTimers()
+    }
+if(owner():lastSaid():lower():trim() == "!listcmbn")
+{print(
+"
+0 
+1 
+2 
+3 
+4 
+5 
+6 
+7 
+8 
+9 
+10 
+11 
+12 
+13 
+14 
+15 
+16 
+17 
+18 
+19 
+20 
+30 
+40 
+50 
+60 
+70 
+80 
+90 
+100 
+200 
+300 
+    administer 
+    affirmative 
+    affirmative2 
+    affirmative we got him now 
+    alert 1 
+    anticitizen 1 
+    antiseptic 
+    apex 
+bearing 
+blade 
+block 3.1 mace")
+print("
+block 6.4 jet 
+body pack holding 
+boomer 
+bouncer bouncer 
+    call contact parasitics 
+    call contact suspect target 1 
+    call hotpoint 
+    cleaned 
+    closing 
+    closing2 
+    confirm sector not sterile 
+    contact 
+    contact2 
+    contact3")
+print("
+    contained 
+    containment proceeding 
+    copy 
+    copy3 
+    cover 
+    covering 
+    cover me 
+dagger 
+dash   
+degrees 
+delivered 
+designate target as... 
+displaced 
+displaced2 
+    echo 
+    engaged in cleanup 
+    engaging 
+    executing full response")
+print("
+    extractor away 
+    extractor is live 
+fist 
+fixed sightlines move in 
+flare down 
+flash 
+flatlined 
+flush 
+freeman 
+full active 
+freeman 
+    ghost 
+    ghost 2 
+    go active and intersept 
+    go sharp 
+    go sharp2 
+    grid 
+    grid sundown 4-6")
+print("
+    hammer 
+    harden that position
+    has negative movement
+    helix
+    hunters
+    hurricane
+inbound
+infected
+ice
+ion
+is at code
+is field promoted to leader 1 holding
+is final team unit requesting backup
+is holding at code
+    jet
+    judge")
+print("
+kilo
+    leader
+    lost contact
+mace
+meters
+motion check all radials
+move in
+    necrotics
+    necrotics inbound
+    nomad
+    nova
+    noviscon
+one contained
+one down
+one duty vacated
+outbreak
+outbreak status is code
+overwatch")
+print("
+overwatch advise we have heavy resistance
+overwatch confirm hvt is contained
+overwatch reports possible hostiles inbound
+overwatch requesting reinforcements
+overwatch requesting reserve activation
+overwatch requesting skyshield")
+print("
+overwatch requesting winder dispatch
+overwatch sector overrun
+overwatch target 1 sterilized
+overwatch target contained
+overwatch team is down this sector is not controlled
+overwatch orders 3CC stim boost
+    payback
+    phantom")
+print("
+    prep for contact report in
+    priority 1 objective
+    priority 2 escapee
+    prosecuting
+quicksand
+    range  
+    ranger
+    razor
+    ready charges
+    ready extractors
+    ready weapons
+    ready weapons2
+    ready weapons3
+    reaper")
+print("
+    report all positions clear
+    report all radials free  
+    reporting clear
+    request medical
+    request stim dose
+    ripcord
+    ripcord2
+savage
+scar
+section lock up-4
+sector
+sector is not secure
+sector is secure noviscon
+secure
+shadow")
+print("
+sharpzone
+sight line is clear
+skyshield reports lost contact
+slam
+slash
+spear 
+stab
+stabilization team has sector control
+stabilization team holding in position
+standing by
+star
+stay alert
+stay alert2
+stinger   
+striker
+sundown
+suppressing")
+print("
+swarm outbreak in sector
+sweeper
+sweeping in
+swift
+sword
+    target
+    target blackout sweep to resume
+    target compromised move in move in
+    target contact at...
+    target ineffective
+    target is at...
+    target my radial
+    target one")
+print("
+    team is deployed and scanning
+    thats it wrap it up
+    tracker
+uniform
+unit is closing
+unit is inbound
+unit is moving in
+    vamp
+    viscon
+    visual on exogen
+we are in an infestation zone
+we have free parasites")
+print("
+we have non-tagged firearms
+winder
+
+Scroll up for the rest of the phrases! They appear in console too!
+"),hideChat(1)}
+}

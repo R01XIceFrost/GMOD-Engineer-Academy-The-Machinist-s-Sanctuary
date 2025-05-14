@@ -1,0 +1,237 @@
+@name Uncle Fungus
+@inputs 
+@outputs [E]:entity [Props]:array Model:string V:vector Active AllowAC ArmRot Parented
+@persist [Merge Exit]:array Z Down
+runOnTick(1)
+
+O=owner()
+E=Props[1,entity]
+findIncludePlayerProps(O)
+
+if(first())
+{
+    Model="models/Gibs/HGIBS.mdl"
+    
+    Active=1
+    AllowAC=1
+    Parented=0
+    
+    Merge=array(
+    "vo/ravenholm/aimforhead.wav",
+    "vo/ravenholm/bucket_almost.wav",
+    "vo/ravenholm/bucket_thereyouare.wav",
+    "vo/ravenholm/engage01.wav",
+    "vo/ravenholm/grave_stayclose.wav",
+    "vo/ravenholm/pyre_keepeye.wav",
+    "vo/ravenholm/shotgun_closer.wav",
+    "vo/ravenholm/monk_coverme04.wav",
+    "vo/ravenholm/shotgun_keepitclose.wav")
+    
+    Exit=array(
+    "vo/ravenholm/exit_darkroad.wav",
+    "vo/ravenholm/exit_goquickly.wav",
+    "vo/ravenholm/exit_hurry.wav",
+    "vo/ravenholm/exit_nag01.wav",
+    "vo/ravenholm/exit_nag02.wav",
+    "vo/ravenholm/exit_salvation.wav",
+    "vo/ravenholm/monk_blocked03.wav",
+    "vo/ravenholm/monk_kill02.wav",
+    "vo/ravenholm/monk_kill05.wav",
+    "vo/ravenholm/monk_kill09.wav")
+    
+    timer("search",1000)
+    timer("confirm",2000)
+}
+
+if(clk("search")&!E)
+{
+    #main search
+    findByModel(Model)
+    Props=findToArray()
+    
+    timer("search",2000)
+    
+}
+elseif(clk("search")&E)
+{
+    hint("Skull found.",5)
+    
+    E:setAlpha(255)
+}
+
+
+#tell you to spawn the prop, but not every time it searches
+if(clk("confirm")&!E)
+{
+    timer("confirm",10000)
+    hint("Spawn a skull to begin.",5)
+}
+
+#set the weight
+if(changed(E)&E)
+{
+    E:setMass(35000)
+    holoCreate(1)
+    holoModel(1,"models/Gibs/HGIBS_spine.mdl")
+    
+    holoCreate(3)
+    holoCreate(4)
+    
+    holoModel(3,"models/skeleton/skeleton_arm.mdl")
+    holoModel(4,"models/skeleton/skeleton_arm_L.mdl")
+    
+    holoScale(3,vec(0.6,0.6,0.6))
+    holoScale(4,vec(0.6,0.6,0.6))
+}
+
+#restrict the arms from going to far forward
+if(E:angles():pitch()<=-10){ArmRot=-10}
+
+
+if(E)
+{
+    #make the spine move and stuff
+    holoPos(1,E:pos()+(O:up()*-8.6)+(O:forward()*-0.5))
+    holoAng(1,ang(0,E:angles():yaw()-90,0))
+        
+    holoPos(3,E:pos()+(O:up()*-10.6)+(E:right()*8)+(E:forward()*-2))
+    holoAng(3,ang(ArmRot,E:angles():yaw(),E:angles():roll()+20))
+    
+    holoPos(4,E:pos()+(O:up()*-10.6)+(E:right()*-8)+(E:forward()*-2))
+    holoAng(4,ang(ArmRot,E:angles():yaw(),E:angles():roll()-20))
+
+
+    #floats the fungus
+    rangerHitWater(1)
+    rangerFilter(E)
+    Rng = rangerOffset(E:pos(),E:pos()-vec(0,0,100))
+    if (Rng:hit()&Active) 
+    {
+        Diff = 60-Rng:distance()
+        if(!owner():inNoclip()){
+            E:applyForce((vec(0,0,Diff+(Z+$Z))*20-E:vel())*E:mass())
+        }
+    }
+
+    #move when hes behind you
+    if(!owner():isCrouch()&Active)
+    {
+        E:propNotSolid(1)
+        
+        V=(O:pos()-E:pos()+(O:forward()*-50)+vec(0,0,50))*E:mass()*5
+    }
+    elseif(owner():isCrouch()&Active)
+    {
+        E:propNotSolid(0)
+        
+        V=(O:pos()-E:pos()+(O:forward()*70)+vec(0,0,30))*E:mass()*5
+    }
+    elseif((!owner():isCrouch()|owner():isCrouch())&!Active)
+    {
+        E:propNotSolid(1)
+            
+        V=(O:shootPos()-E:pos())*E:mass()*7
+    }
+    
+    E:applyForce(V+$V*5)
+    
+    
+    if(changed(Active)&!Active|clk("align"))
+    {
+        holoCreate(2)
+        holoModel(2,"models/Gibs/HGIBS.mdl")
+        holoAng(2,owner():attachmentAng("eyes"))
+        holoPos(2,owner():attachmentPos("anim_attachment_head")+(O:up()*3)+(O:forward()*4)+(O:right()*-0.15))
+        
+        timer("parent",100)
+    }
+    
+    if(clk("parent")){holoParentAttachment(2,O,"eyes")}
+    if(clk("nope.avi")){E:propNotSolid(0)  
+    
+    if(changed(owner():isCrouch())&!owner():isCrouch()&owner():weapon():type()=="weapon_simplekeys"&!Parented&!Active)
+    {
+        if(!Parented){timer("align",100)}
+        Parented=1
+    }
+    
+    if(changed(owner():isCrouch())&!owner():isCrouch()&!Active)
+    {
+        E:propNotSolid(1)
+    }
+    
+
+    #thanks jason, this code really helped ;D
+    E:applyTorque(( 150 * E:toLocalAxis(rotationVector(quat( (owner():aimPos() - E:pos()):toAngle() ) / quat(E) ) ) - 12 * E:angVelVector()) * E:inertia())
+
+}
+
+if(owner():isCrouch()&changed(owner():keyAttack2())&owner():keyAttack2()&owner():keyUse()&Active&AllowAC)
+{
+    Active=0
+    AllowAC=0
+    E:setAlpha(0)
+    holoAlpha(1,0)
+    holoAlpha(3,0)
+    holoAlpha(4,0)
+    
+    timer("nope.avi",1000)
+    E:soundPlay(1,0,Merge:string(randint(1,Merge:count())))
+    
+    timer("AllowAC",1000)
+}
+elseif(owner():isCrouch()&changed(owner():keyAttack2())&owner():keyUse()&owner():keyAttack2()&!Active&AllowAC)
+{
+    Active=1
+    AllowAC=0
+    Parented=0
+    E:setAlpha(255)
+    holoAlpha(1,255)
+    holoAlpha(3,255)
+    holoAlpha(4,255)
+    
+    E:soundPlay(2,0,Exit:string(randint(1,Exit:count())))
+    
+    holoDelete(2)
+    timer("AllowAC",1000)
+}
+
+if(clk("AllowAC")&!AllowAC)
+{
+    AllowAC=1
+}
+
+
+if(changed(Z)&Z>=12)
+{
+    Down=1
+}
+if(changed(Z)&Down&Z<=1)
+{
+    Down=0
+}
+
+
+if(Down)
+{
+    if(Z>5)
+    {
+        Z-=0.2
+    }
+    else
+    {
+        Z-=0.05
+    }
+}
+else
+{
+    if(Z<5)
+    {
+        Z+=0.2
+    }
+    else
+    {
+        Z+=0.05
+    }
+}
+}
