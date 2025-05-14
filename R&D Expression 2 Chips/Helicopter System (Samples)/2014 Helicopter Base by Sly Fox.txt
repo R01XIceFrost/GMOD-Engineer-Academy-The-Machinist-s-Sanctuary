@@ -1,0 +1,132 @@
+name Helicopter Base
+@inputs [C #[Cam Controller]# EP #[Eye Pod]#]:wirelink P:entity #[Pod]#
+@persist Dri:entity Act W A S D R Spc Alt Shift M1 M2
+@persist [E]:entity
+@persist [CA #[Chase Angle]#]:angle
+@persist ISt #[Ignition State]# VSt #[View State]# IMl #[Ignition Multiplier]# FMl #[Force Multiplier]# FMs #[Full Mass]#
+@model models/hunter/plates/plate1x1.mdl
+if(first())
+{
+    #[
+    Before modifying, I recommend you remove all of these comments when you finish the code, for they are just here
+    to help you learn the code better.
+    
+    This code isn't for the faint hearted; you need to have an intermediate understanding of E2 to understand what's
+    going on in the code, and, thus, modify the code to your liking successfully. (I don't mean to sound pompous; I promise.)
+    ]#
+    
+    function number entity:cm()
+    {
+        local Mass = 0
+        foreach(I,K:entity = This:getConstraints())
+        {
+            Mass+=K:mass()
+        }
+        return This:mass()+Mass
+    }
+    
+    soundPlay("Ign",0,"NPC_AttackHelicopter.Rotors")
+    soundPitch("Ign",0)
+    
+    runOnTick(1)
+    E = entity()
+    
+    E:propFreeze(0)
+    E:setMass(2000)
+    FMs = E:cm()
+    
+    FMl = 9.011625
+    
+    holoCreate(1,E:toWorld(vec(0,0,60))) #Main Rotor
+    holoScale(1,vec(15,0.65,0.05))
+    holoParent(1,E)
+    
+    holoCreate(2,E:toWorld(vec(-125,-2,35))) #Tail Rotor
+    holoScale(2,vec(3.25,0.35,0.05))
+    holoAng(2,E:toWorld(ang(0,0,90)))
+    holoParent(2,E)
+    
+    holoCreate(10,E:toWorld(vec(0,0,5))) #Just points in the direction that is front. Remove after finishing your contraption.
+    holoModel(10,"hq_cone")
+    holoAng(10,E:toWorld(ang(90,0,0)))
+    holoParent(10,E)
+}
+
+if(changed(E:cm()))
+{
+    FMs = E:cm()
+}
+
+if(P:isValid())
+{
+    #Pod Controls
+    Dri = P:driver()
+    Act = P:driver():isValid()
+    #[
+    Note about the controls below:
+    I'm keeping these controls like this instead of using E:keyPressed(S) because this asks for their movement keys,
+    and not the actual key, meaning it will work with people who don't use WASD. I'm doing this because I know
+    someone who uses the arrow keys, and they're pretty stubborn when it comes to changing.
+    
+    Of course, if you'd like to add any extra controls, first, for keeping format, add the variable at the end of
+    line 3. Then, add a line at the bottom of all of those controls, and write your variable like the following:
+    Var = Dri:keyPressed(S)
+    ]#
+    W = Dri:keyForward()
+    A = Dri:keyLeft()
+    S = Dri:keyBack()
+    D = Dri:keyRight()
+    R = Dri:keyReload()
+    Spc = Dri:keyJump()
+    Alt = Dri:keyWalk()
+    Shift = Dri:keySprint()
+    M1 = Dri:keyAttack1()
+    M2 = Dri:keyAttack2()
+    
+    #Ignition Toggling
+    if(Act)
+    {
+        if(changed(R)&R)
+        {
+            ISt = !ISt
+            EP["Enable",number] = ISt
+        }
+    }
+    
+    #Ignition Multiplier Handling; what it does with IMl is increment it a small percentage to have a pseudo-start-up sort of thing.
+    if(ISt)
+    {
+        IMl+=0.00125
+        EP["Enable",number] = !M2
+    }else
+    {
+        IMl-=0.00125
+    }
+    IMl = clamp(IMl,0,1)
+    
+    #Rotors
+    holoAng(1,holoEntity(1):toWorld(ang(0,IMl*100,0)))
+    holoAng(2,holoEntity(2):toWorld(ang(0,IMl*50,0)))
+    
+    #Vectors (Heli flying)
+    applyForce(((E:up()*(FMl+((W-S)*(1+Shift)*2)))-(E:vel()*0.0025))*FMs*IMl)
+    
+    #Angles
+    applyAngForce((ang(EP["Y",number]*0.75,(A-D)*8,EP["X",number]*0.75)-E:angVel()/15)*FMs*IMl)
+    
+    #Sound
+    soundPitch("Ign",IMl*115)
+    
+    #View State
+    if(changed(Alt)&Alt)
+    {
+        VSt = !VSt
+        C["Activated",number] = VSt
+        C["Parent",entity] = E
+    }
+    if(VSt)
+    {
+        C["Position",vector] = E:pos()+vec(-cos(E:angles():yaw())*300,-sin(E:angles():yaw())*300,25)
+        C["Angle",angle] = E:angles():setPitch(0):setRoll(0)
+    }
+}
