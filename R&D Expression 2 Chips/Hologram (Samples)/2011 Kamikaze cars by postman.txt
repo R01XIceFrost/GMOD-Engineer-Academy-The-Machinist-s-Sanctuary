@@ -1,0 +1,162 @@
+@name holo cars ( Kamikaze cars)
+@inputs
+@outputs Count [Explosions Horns Dead]:array Ambulance:entity BodyOnBoard
+interval(30)
+Ambulance=holoEntity(0)
+
+if(first()) 
+{
+    Count=randint(10,20)
+    
+    for (I=1,Count) 
+    {
+        holoCreate(I)
+        holoScale(I,vec(0.15,0.15,0.15))
+        holoModel(I,"models/props_vehicles/car002a_physics.mdl")
+        
+        timer("turn"+I,randint(1000,3000))
+    }
+    holoCreate(0)
+    holoModel(0,"models/props_vehicles/van001a_physics.mdl")
+    holoScale(0,vec(0.16,0.16,0.16))
+    holoColor(0,vec(255,0,0))
+    holoPos(0,entity():pos()+vec(0,0,5))
+    
+    Horns=array(
+    "ambient/misc/carhonk1.wav",
+    "ambient/misc/carhonk2.wav",
+    "ambient/misc/carhonk3.wav")
+    
+    Explosions=array(
+    "ambient/explosions/explode_3.wav",
+    "ambient/explosions/explode_1.wav",
+    "ambient/explosions/explode_4.wav",
+    "ambient/explosions/explode_7.wav")
+    
+}
+
+
+for(I=1,Count)
+{
+    Car=holoEntity(I)
+    
+    RngF=rangerOffset(5,Car:pos(),Car:forward()*1)
+    RngFF=rangerOffset(5,Car:pos()+Car:forward()*20,Car:forward())
+    RngD=rangerOffset(5,Car:pos(),Car:up()*-1)
+    
+    if(RngFF:hit()|clk("turn"+I)|Car:pos():distance(entity():pos())<=10)
+    {
+        Car:soundPlay(1,0,Horns:string(randint(1,Horns:count())))
+        holoAng(I,ang(0,randint(-2,1)*90,0))
+    }
+    elseif(Car:pos():distance(entity():pos())>=1000)
+    {
+        holoAng(I,(entity():pos()-Car:pos()):toAngle())
+    }
+    
+    if(clk("turn"+I)){timer("turn"+I,randint(3000,12000))}
+    
+    
+    if(changed(RngF:hit())&RngF:hit())
+    {
+        Car:soundPlay(2,0,Explosions:string(randint(1,Explosions:count())))
+        soundPitch(2,randint(0.5,3)*60)
+        
+        
+        #make the boom
+        holoCreate(I+100)
+        holoModel(I+100,"sphere")
+        holoPos(I+100,Car:pos())
+        holoScale(I+100,vec(3,3,3))
+        holoAlpha(I+100,140)
+        holoColor(I+100,vec(255,144,10))
+        
+        #make the dead guy
+        holoCreate(I+200)
+        holoModel(I+200,"models/props/de_train/de_train_securityguard.mdl")
+        holoPos(I+200,Car:pos())
+        holoScale(I+200,vec(0.25,0.25,0.25))
+        holoAng(I+200,Car:angles())
+        Dead:pushNumber(I+200)
+        
+        holoDelete(I)
+        
+        timer("remove"+I,2000)
+    }
+    if(clk("remove"+I)){holoDelete(I+100)}
+    
+    
+    #car gravity!
+    if(!RngD:hit())
+    {
+        holoPos(I,Car:pos()+Car:forward()*2+vec(0,0,-5.7))
+    }
+    else
+    {
+        holoPos(I,Car:pos()+Car:forward()*4.5)
+        Diff=2-RngD:distance()
+        holoPos(I,Car:pos()+vec(0,0,Diff))
+    }
+    
+    if(changed(RngD:hit())&!RngD:hit())
+    {
+        holoAng(I,Car:angles()+ang(45,0,0))
+    }
+
+}
+
+if(Dead:count()>=1)
+{
+    RngA=rangerOffset(5,Ambulance:pos(),Ambulance:up()*-1)
+    RngAF=rangerOffset(5,Ambulance:pos(),Ambulance:forward())
+    holoPos(0,Ambulance:pos()+Ambulance:forward()*5.1)
+    
+    
+    if(Ambulance:pos():distance(holoEntity(Dead[1,number]):pos())<=10&!BodyOnBoard)
+    {
+        BodyOnBoard=1
+        holoPos(Dead[1,number],Ambulance:pos())
+        holoParent(Dead[1,number],Ambulance)
+    }
+    elseif(Ambulance:pos():distance(entity():pos())<=10&BodyOnBoard)
+    {
+        BodyOnBoard=0
+        
+        holoCreate(Dead[1,number]-200)
+        holoScale(Dead[1,number]-200,vec(0.15,0.15,0.15))
+        holoModel(Dead[1,number]-200,"models/props_vehicles/car002a_physics.mdl")
+        holoAng(Dead[1,number],ang(0,randint(-2,1)*90,0))
+        
+        holoDelete(Dead[1,number])
+        Dead:removeNumber(1)
+    }
+    
+    
+    #angles if there is a person
+    if(BodyOnBoard)
+    {
+        holoAng(0,(entity():pos()-Ambulance:pos()):toAngle():setPitch(0))
+    }
+    else
+    {
+        holoAng(0,(holoEntity(Dead[1,number]):pos()-Ambulance:pos()):toAngle():setPitch(0))
+    }
+    
+    
+    #gravity
+    if(!RngA:hit())
+    {
+        holoPos(0,Ambulance:pos()+vec(0,0,-5.7))
+    }
+    else
+    {
+        Diff2=4-RngA:distance()
+        holoPos(0,Ambulance:pos()+vec(0,0,Diff2))
+    }
+    
+    if(Ambulance:pos():z()<entity():pos():z()&BodyOnBoard)
+    {
+        holoPos(0,Ambulance:pos()+vec(0,0,10.7))
+    }
+        
+}

@@ -1,0 +1,95 @@
+@name HoloClock
+@persist O:entity Ang Sound TZ Logo
+@model models/hunter/tubes/circle2x2.mdl
+
+#####################################
+#      Created by Skyfire-FR        #
+# Contact : skyfire@blackfields.net #
+#####################################
+
+interval(1000)
+
+if(first()){
+	runOnChat(1)
+    entity():propNotSolid(1)
+    entity():setMaterial("models/shiny")
+    O=owner(),Ang=entity():angles():yaw(),A=0
+	
+    ## SETTINGS ##
+    Logo=1      # Display logo ?
+    Sound=1     # Enable sound ?
+    TZ=0        # Time zone
+    	
+    for(K=0,19){
+        holoCreate(K)
+        holoAng(K,ang(0,Ang,0))
+    }
+    holoModel(0,"hq_torus_thin")
+    holoScale(0,vec(8.2,8.2,8))
+    holoColor(0,vec())
+    holoParent(0,entity())
+    holoAng(0,ang(0,Ang-90,90))
+    for(K=1,12){
+        holoScale(K,vec(0.1,0.2,0.5))
+        holoColor(K,vec(0,0,100))
+        holoPos(K,entity():pos()+vec(0,0,40)+entity():up()*1.5)
+        holoParent(K,0),A+=30
+        holoAng(0,ang(A,Ang-90,90))
+    }
+    for(K=13,15){
+        holoModel(K,"hq_rcylinder")
+        holoScale(K,vec(0.4,0.4,0.4))
+        holoColor(K,vec(0,0,100))
+        holoAng(K,ang(0,Ang+90,90))
+        holoPos(K,entity():pos()+entity():up()*2)
+        holoParent(K,entity())
+    }
+    holoScale(16,vec(0.1,0.1,3.5))
+    holoColor(16,vec(255,0,0))
+    holoPos(16,entity():pos()+vec(0,0,20))
+    holoScale(17,vec(0.1,0.2,3))
+    holoColor(17,vec(60,60,60))
+    holoPos(17,entity():pos()+vec(0,0,16))
+    holoScale(18,vec(0.1,0.3,2.5))
+    holoColor(18,vec())
+    holoPos(18,entity():pos()+vec(0,0,14))
+    for(K=16,18){
+        holoPos(K,holoEntity(K):pos()+entity():up()*(2.5-(K-15)/10))
+        holoParent(K,K-3)
+    }
+    holoModel(19,"models/maxofs2d/logo_gmod_b.mdl")
+    holoScale(19,vec(0.3,0.3,0.05))
+    holoPos(19,entity():pos()+vec(0,0,8)-entity():up()*4.2)
+    holoColor(19,vec(50,150,255))
+    
+    function string hours(){
+        return toString(time("hour")+TZ)
+    }
+
+    function string minutes(){
+        TMin=time("min")
+        if(TMin<10){
+            return "0"+toString(TMin)
+        }else{
+            return toString(TMin)
+        }
+    }
+}
+
+if(Sound & !chatClk()){entity():soundPlay(1,0,"weapons/ar2/ar2_empty.wav"),soundPitch(1,50)}
+
+S=time("sec")
+M=time("min")
+H=time("hour")+TZ,if(H>=12){H-=12}
+holoAng(13,ang(S*6,Ang+90,90))
+holoAng(14,ang(M*6,Ang+90,90))
+holoAng(15,ang(H*30,Ang+90,90))
+
+LSE=O:lastSaid():lower():explode(" ")
+if(LSE:string(1)=="/clock" & chatClk(O)){
+    hideChat(1)
+    if(LSE:string(2)=="sound"){Sound=!Sound}
+    if(LSE:string(2)=="tz"){TZ=LSE:string(3):toNumber()}
+    if(LSE:string(2)=="logo"){Logo=!Logo,if(Logo){holoAlpha(19,255)}else{holoAlpha(19,0)}}
+    if(LSE:string(2)=="time"){print("It is now "+hours()+"h"+minutes()+" !")}
+}

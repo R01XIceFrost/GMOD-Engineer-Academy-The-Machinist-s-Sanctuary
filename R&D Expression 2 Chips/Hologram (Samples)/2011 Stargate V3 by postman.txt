@@ -1,0 +1,557 @@
+@name Stargate V3
+@inputs I
+@outputs [Holos Holos2 Props]:array [Gate Gate2]:entity Vec
+@outputs T L H On Dir StartUp SetUp SetUp2 Extend Ready G2P Fix
+#pointless variables
+@persist [InOffColor InOnColor OutOffColor OutOnColor DarkBlue]:vector Metal:string
+
+#[
+
+INFO:
+
+__________________________________Holo Stargate_______________________________
+Description:
+As you can imagine, this one was really hard to make, and still has quite a few glitches, but it is REALLY fancy.
+(if you dont know what stargate is, gtfo the internet.)
+This wouldnt be at all possible if it weren't for this guy:
+[ E2 ] Hologram Clipping Gates
+He gate me his bit of code to make things clip like such, and i overhauled it, and made it into a stargate. (it was 10^20 X harder than that though >_>)
+
+Instructions:
+Due to the fact that i did not know about "wire_holograms_burst amount X", the second gate takes 10 seconds to set up, but its not that bad.
+
+The first gate will be made where the e2 is, facing you, the second spawns when you hit E (2025 message future from Ice Frost, just wire it to Button and press E then press E again after 5 sec or so!)
+
+Place items in the first OR second gate (i know in stargate its different), and they will come out the other, depending on which direction its facing (you can tell by which way the water shoots out)
+
+Get really close to the REAL object, and right click, it will physically teleport to the other portal, yes this works with seats (but be careful)
+
+You can use multiple objects going either way, but beware of ops, its quite a laggy thing.
+
+Also, the gates glow in the dark, pics below.
+
+THIS CODE IS VERY MESSY, AND CRAPPY, BUT IT GETS THE JOB DONE!
+
+]#
+
+
+runOnTick(1)
+O=owner()
+E=entity()
+CanClick=changed(owner():keyUse())&owner():keyUse()&owner():pos():distance(holoEntity(1000):pos())<=100
+CanClick2=(changed(owner():keyUse())&owner():keyUse()&owner():pos():distance(holoEntity(1001):pos())<=100)
+
+findIncludePlayerProps(owner())
+findExcludeClass("gmod_wire_hologram")
+findExcludeClass("player")
+
+propSpawnEffect(0)
+
+if(first())
+{
+    #Various variables for colors and such
+    InOffColor=vec(71,41,9)
+    InOnColor=vec(186,114,82)
+    OutOffColor=vec(15,18,66)
+    OutOnColor=vec(0,70,200)
+    
+    DarkBlue=vec(35,35,38)
+    Metal="phoenix_storms/gear"
+    
+    H=100
+    
+    
+    #gate holos
+    holoCreate(1000)
+    holoPos(1000,holoEntity(1000):pos()+vec(0,0,55))
+    holoModel(1000,"models/props_canal/canal_cap001.mdl")
+    holoColor(1000,DarkBlue)
+    holoAng(1000,(owner():pos()-holoEntity(1000):pos()):toAngle():setPitch(0))
+    Gate=holoEntity(1000)
+
+
+    #spinny bit
+    holoCreate(298)
+    holoPos(298,Gate:pos())
+    holoAng(298,Gate:angles())
+    holoAlpha(298,0)
+    holoParent(298,Gate)
+    
+    
+    
+    #ring holo
+    holoCreate(1003)
+    holoPos(1003,Gate:pos()+Gate:forward()*2.2)
+    holoModel(1003,"hq_tube")
+    holoColor(1003,DarkBlue)
+    holoAng(1003,Gate:angles()+ang(90,0,0))
+    holoMaterial(1003,Metal)
+    holoScale(1003,vec(12.4,12.4,1))
+    holoParent(1003,298)
+    
+
+    Gate:soundPlay(12,0,"weapons/portalgun/portal_open1.wav")
+    soundPitch(12,80)
+    
+    
+    hint("Press E to spawn the second stargate where you're looking",5)
+    
+    
+    SetUp=1
+    
+    timer("ssu",300)
+    
+    timer("search",1000)
+}
+
+#place the second gate
+if(!Gate2&changed(owner():keyUse())&owner():keyUse())
+{
+    #gate2pos
+    G2P=owner():aimPos():z()+55
+    
+    #gate2
+    holoCreate(1001)
+    holoPos(1001,vec(owner():aimPos():x(),owner():aimPos():y(),G2P))
+    holoAlpha(1001,0)
+    holoAng(1001,(owner():pos()-holoEntity(1001):pos()):toAngle():setPitch(0)+ang(0,180,0))
+    holoModel(1001,"models/props_canal/canal_cap001.mdl")
+    holoColor(1001,DarkBlue)
+    Gate2=holoEntity(1001)
+
+    #dummy gate 2 (for angle reasons)
+    holoCreate(1002)
+    holoPos(1002,vec(owner():aimPos():x(),owner():aimPos():y(),G2P))
+    holoAng(1002,Gate2:angles()+ang(0,180,0))
+    holoModel(1002,"models/props_canal/canal_cap001.mdl")
+    holoColor(1002,DarkBlue)
+    
+    #spiny bit
+    holoCreate(299)
+    holoPos(299,Gate2:pos())
+    holoAng(299,Gate2:angles())
+    holoAlpha(299,0)
+    holoParent(299,Gate2)
+    
+    #gate 2 ring 
+    holoCreate(1004)
+    holoPos(1004,Gate2:pos()+Gate2:forward()*-2.2)
+    holoModel(1004,"hq_tube")
+    holoColor(1004,DarkBlue)
+    holoAng(1004,Gate2:angles()+ang(90,0,0))
+    holoMaterial(1004,Metal)
+    holoScale(1004,vec(12.4,12.4,1))
+    holoParent(1004,299)
+    
+    Gate2:soundPlay(10,0,"doors/doormove7.wav")
+    soundPitch(10,90)
+    
+    hint("Stargate 2 setting up, 10 seconds.",5)
+    timer("five",5000)
+    
+    timer("ss2",10000)
+}
+
+
+#rise from the ground.
+if(Gate2&!Ready)
+{
+    holoPos(1001,vec(Gate2:pos():x(),Gate2:pos():y(),G2P-H))
+    holoPos(1002,vec(Gate2:pos():x(),Gate2:pos():y(),G2P-H))
+    if(H>0){H-=0.25}elseif(changed(H)&H<=0){soundStop(10),Gate2:soundPlay(11,0,"doors/garage_stop1.wav"),soundPitch(11,90)}
+}
+
+#start a wait for the second ring, as holos can only be made so fast.
+if(clk("ss2")){SetUp2=1,Ready=1,timer("ssu2",1000),hint("Stargate:set-up complete, hit E on a gate to dial.",5)}
+
+
+if(clk("five")){hint("Stargate 2:5 seconds.",5)}
+
+
+#creating the chevron indicators
+if(SetUp)
+{
+    for(C=1,8)
+    {
+        A=(360/8)*C
+        X=sin(A)*78
+        Y=cos(A)*78
+        
+        
+        ###The input indicators###
+        
+        #fix the top and bottom markers from breaking
+        Rotate=(C==2|C==6)*90
+        
+        #base gate1
+        holoCreate(1010+C)
+        holoModel(1010+C,"right_prism")
+        holoPos(1010+C,Gate:toWorld(vec(0,Y,X))+Gate:forward()*2.5)
+        holoScale(1010+C,vec(1.1,1.8,1.1))
+        holoMaterial(1010+C,Metal)
+        holoColor(1010+C,DarkBlue)
+        holoAng(1010+C,(holoEntity(1010+C):pos()-Gate:pos()-Gate:forward()):toAngle()+ang(45,Rotate,0))
+        
+        #Chevron indicator gate1
+        holoCreate(1030+C)
+        holoModel(1030+C,"right_prism")
+        holoPos(1030+C,Gate:toWorld(vec(0,Y/1.024,X/1.024))+Gate:forward()*2.5)
+        holoScale(1030+C,vec(0.6,2,0.6))
+        holoDisableShading(1030+C,1) 
+        holoColor(1030+C,InOffColor)
+        holoAng(1030+C,holoEntity(1010+C):angles())
+    }
+}
+
+if(SetUp2)
+{
+    for(C=1,8)
+    {
+        A=(360/8)*C
+        X=sin(A)*78
+        Y=cos(A)*78
+        
+        
+        
+        ###The input indicators###
+        
+        #fix the top and bottom markers from breaking
+        Rotate=(C==2|C==6)*90
+        #base gate2
+        holoCreate(1050+C)
+        holoModel(1050+C,"right_prism")
+        holoPos(1050+C,Gate2:toWorld(vec(0,Y,X))+Gate2:forward()*-2.5)
+        holoScale(1050+C,vec(1.1,1.8,1.1))
+        holoMaterial(1050+C,Metal)
+        holoColor(1050+C,DarkBlue)
+        holoAng(1050+C,(holoEntity(1050+C):pos()-Gate2:pos()-Gate2:forward()):toAngle()+ang(45,Rotate,0))
+        
+        #Chevron indicator gate2
+        holoCreate(1070+C)
+        holoModel(1070+C,"right_prism")
+        holoPos(1070+C,Gate2:toWorld(vec(0,Y/1.024,X/1.024))+Gate2:forward()*-2.5)
+        holoScale(1070+C,vec(0.6,2,0.6))
+        holoDisableShading(1070+C,1) 
+        holoColor(1070+C,OutOffColor)
+        holoAng(1070+C,holoEntity(1050+C):angles())
+    }
+}
+#stop the set up
+#2 set ups due to to many holos being made at once
+if(clk("ssu")){SetUp=0}
+if(clk("ssu2")){SetUp2=0,Gate2:soundPlay(12,0,"weapons/portalgun/portal_open2.wav"),soundPitch(12,80)}
+
+
+
+#timers for the markers
+if(changed(StartUp)&StartUp)
+{
+    for(H=1,8)
+    {
+        timer("tk"+H,1200*H)
+    }
+}
+
+#spin the markers, make the portal
+if(StartUp)
+{
+    for(C=1,8)
+    {
+        if(clk("tk"+C))
+        {
+            holoColor(C+1030,InOnColor)
+            holoColor(C+1070,OutOnColor)
+            
+            #the holo underground wont play the sound, so if its that holo, the sound is moved to another indicator
+            Fix=(C==6 ? 1 : C)
+            
+            holoEntity(1010+Fix):soundPlay(1,2,"doors/door_metal_large_chamber_close1.wav")
+            holoEntity(1050+Fix):soundPlay(2,2,"doors/door_metal_large_chamber_close1.wav")
+            
+            soundPitch(1,55)
+            soundPitch(2,55)
+            T+=1
+        }
+    }
+    
+    if(T<8){if(Dir==1){holoAng(298,Gate:toWorld(ang(0,0,curtime()*-30)))}elseif(Dir==-1){holoAng(299,Gate:toWorld(ang(0,0,curtime()*30)))}}
+    elseif(T>=8)
+    {
+        soundPlay(3,0,"ambient/machines/teleport3.wav")
+        Gate2:soundPlay(4,0,"ambient/machines/teleport3.wav")
+        
+        soundPitch(3,50)
+        soundPitch(4,50)
+        
+        #the water layer (for the actual wormhole)
+        holoCreate(2004)
+        holoPos(2004,Gate:pos()+Gate:forward()*2)
+        holoModel(2004,"hqcylinder")
+        holoMaterial(2004,"models/shadertest/predator")
+        holoAng(2004,Gate:angles()+ang(90,0,0))
+        holoScale(2004,vec(12,12,0.3))
+        holoParent(2004,Gate)
+        
+        holoCreate(2005)
+        holoPos(2005,Gate2:pos()+Gate2:forward()*2)
+        holoModel(2005,"hqcylinder")
+        holoMaterial(2005,"models/shadertest/predator")
+        holoAng(2005,Gate2:angles()+ang(90,0,0))
+        holoScale(2005,vec(12,12,0.3))
+        holoParent(2005,Gate2)
+        
+        
+        #the extending water thing
+        holoCreate(2006)
+        holoPos(2006,Gate:pos()+Gate:forward()*6*Dir)
+        holoModel(2006,"hq_cubinder")
+        holoMaterial(2006,"models/shadertest/predator")
+        holoClipEnabled(2006,1)
+        holoAng(2006,Gate:angles()+ang(90*Dir,0,0))
+        holoClip(2006,Gate:pos(),Gate:forward()*Dir,1)
+        holoParent(2006,Gate)
+        
+        holoCreate(2007)
+        holoPos(2007,Gate2:pos()+Gate2:forward()*6*Dir)
+        holoModel(2007,"hq_cubinder")
+        holoMaterial(2007,"models/shadertest/predator")
+        holoAng(2007,Gate2:angles()+ang(90*Dir,180,0))
+        holoClipEnabled(2007,1)
+        holoClip(2007,Gate2:pos(),-Gate2:forward()*Dir,1)
+        holoParent(2007,Gate2)
+        
+        StartUp=0
+        Extend=1
+        timer("stopE",1300)
+    }
+}
+
+#water extension
+if(Extend)
+{
+    if(clk("stopE")){Extend=0,On=1}
+    L+=0.4
+    holoScale(2006,vec(8,8,L))
+}
+elseif(!Extend&L>0)
+{
+    L-=0.5
+    if(L<=0){holoDelete(2006),holoDelete(2007)}
+    holoScale(2006,vec(8,8,L))
+    holoScale(2007,vec(8,8,L))
+}
+
+
+
+
+#turning it on or off
+if(CanClick&!On&Ready&Gate2)
+{Gate=holoEntity(1000),Gate2=holoEntity(1001),holoColor(1006,InOnColor),StartUp=1,Dir=1}
+
+if(CanClick2&!On&Ready&Gate2)
+{Gate=holoEntity(1001),Gate2=holoEntity(1000),holoColor(1008,OutOnColor),StartUp=1,Dir=-1}
+
+if(changed(owner():keyUse())&owner():keyUse()&owner():pos():distance(Gate:pos())<=100&On&Gate2)
+{
+    T=0
+    On=0
+    Dir=0
+    StartUp=0
+    
+    holoDelete(2004)
+    holoDelete(2005)
+    
+    Gate:soundPlay(5,0,"ambient/machines/spindown.wav")
+    Gate2:soundPlay(6,0,"ambient/machines/spindown.wav")
+    
+    soundPitch(5,50)
+    soundPitch(6,50)
+    
+    for(I=1,Holos:count()){holoClipEnabled(I,0),holoDelete(I),holoClipEnabled(I*100,0),holoDelete(I*100)}
+    for(G=1,Holos2:count()){holoClipEnabled(G,0),holoDelete(G),holoClipEnabled(I*200,0),holoDelete(G*200)}
+    for(N=1,Props:count()){Props[N,entity]:setAlpha(255)}
+    
+    Holos:clear()
+    Props:clear()
+    
+    for(C=1,10)
+    {
+        holoColor(C+1030,InOffColor)
+        holoColor(C+1070,OutOffColor)
+    }
+}
+
+
+
+
+###########searching################
+
+if(findCanQuery()&clk("search"))
+{
+    timer("search",1000)
+    timer("Hsearch",500)
+    timer("H2search",600)
+    
+    findByClass("prop_*")
+    Props=findToArray()
+}
+
+if(findCanQuery()&clk("Hsearch"))
+{
+    findExcludeEntity(Gate)
+    findInSphere(Gate:pos(),Gate:boxSize():x())
+    Holos=findToArray()
+}
+
+if(findCanQuery()&clk("H2search"))
+{
+    findExcludeEntity(Gate2)
+    findInSphere(Gate2:pos(),Gate2:boxSize():x())
+    Holos2=findToArray()
+}
+
+
+#main statement
+if(On)
+{
+    #creates holos over props, alpha's the props
+    for(I=1,Props:count())
+    {
+        Prop=Props[I,entity]
+    
+        Prop:setAlpha(0)
+        
+        if(!Holos[I,entity])
+        {
+            holoDelete(I*100)
+        }
+        if(!Holos2[I,entity])
+        {
+            holoDelete(I*200)
+        }
+        
+        if(Prop:id()>=1000){Prop:id()==10+I}
+    
+        holoCreate(Prop:id())
+        holoModel(Prop:id(),Prop:model())
+        holoPos(Prop:id(),Prop:pos())
+        holoAng(Prop:id(),Prop:angles())
+        holoColor(Prop:id(),Prop:getColor())
+        holoMaterial(Prop:id(),Prop:getMaterial())
+        holoSkin(Prop:id(),Prop:getSkin())
+        holoClipEnabled(Prop:id(),0)
+        holoParent(Prop:id(),Prop) 
+    
+        
+        #Prop teleporting
+        if(Holos[I,entity]&owner():aimEntity()==Prop&owner():keyAttack2()&owner():pos():distance(Gate:pos())<=100)
+        {
+            Prop:soundPlay(9,0,"doors/doormove4.wav")
+            soundPitch(9,50)
+            
+            if(Prop:type()!="prop_vehicle_prisoner_pod")
+            {
+                LocalG=Gate:toLocal(Prop:pos())
+                LocalGA=Gate:toLocal(Prop:angles())
+                TempProp=propSpawn(Prop:model(),Gate2:toWorld(LocalG),Gate2:toWorld(LocalGA),Prop:isFrozen())
+                
+                TempProp:applyForce(Prop:vel()*Prop:vel():length()/2)
+                TempProp:setAlpha(255)
+                
+                holoDelete(Prop:id())
+                
+                Prop:propDelete()
+            }
+            else
+            {
+                LocalGA=Gate:toLocal(Prop:angles())
+                Prop:setAng(Gate2:toWorld(LocalGA))
+                
+                LocalG=Gate:toLocal(Prop:pos())
+                Prop:setPos(Gate2:toWorld(LocalG))
+            }
+        }
+        elseif(Holos2[I,entity]&owner():aimEntity()==Prop&owner():keyAttack2()&owner():pos():distance(Gate2:pos())<=100)
+        {
+            Prop:soundPlay(9,0,"doors/doormove4.wav")
+            soundPitch(9,50)
+
+            
+            if(Prop:type()!="prop_vehicle_prisoner_pod")
+            {
+                LocalG=Gate2:toLocal(Prop:pos())
+                LocalGA=Gate2:toLocal(Prop:angles())
+                TempProp=propSpawn(Prop:model(),Gate:toWorld(LocalG),Gate:toWorld(LocalGA),Prop:isFrozen())
+                
+                TempProp:applyForce(Prop:vel()*Prop:vel():length()/2)
+                TempProp:setAlpha(255)
+                
+                holoDelete(Prop:id())
+                
+                Prop:propDelete()
+            }
+            else
+            {
+                LocalGA=Gate2:toLocal(Prop:angles())
+                Prop:setAng(Gate:toWorld(LocalGA))
+                
+                LocalG=Gate2:toLocal(Prop:pos())
+                Prop:setPos(Gate:toWorld(LocalG))
+            }
+        }
+        
+    }
+
+    #clips the holos and make the secondary holos (gate 1)
+    for(H=1,Holos:count())
+    {
+        Holo=Holos[H,entity]
+                
+        holoClipEnabled(Holo:id(),1)
+        holoClip(Holo:id(),Gate:pos(),Gate:forward()*Dir,1)
+        
+        #second dummy holos
+        holoCreate(H*100)
+        holoModel(H*100,Holo:model())
+        holoColor(H*100,Holo:getColor())
+        holoSkin(H*100,Holo:getSkin())
+        holoMaterial(H*100,Holo:getMaterial())
+        Local=Gate:toLocal(Holo:pos())
+        LocalA=Gate:toLocal(Holo:angles())
+        holoPos(H*100, Gate2:toWorld(Local))
+        holoAng(H*100,Gate2:toWorld(LocalA))
+        holoClipEnabled(H*100,1)
+    
+        #if gate1 is the gate above the e2, then Dir needs to be  1
+        #the opposite is true as well.
+        holoClip(H*100,Gate2:pos(),Gate2:forward()*Dir*-1,1)
+    
+    }
+    
+    #clips the holos and make the secondary holos (gate2)
+    for(H2=1,Holos2:count())
+    {
+        Holo2=Holos2[H2,entity]
+        
+        holoClipEnabled(Holo2:id(),1)
+        holoClip(Holo2:id(),Gate2:pos(),Gate2:forward()*Dir*-1,1)
+        
+        #second dummy holos2
+        holoCreate(H2*200)
+        holoModel(H2*200,Holo2:model())
+        holoColor(H2*200,Holo2:getColor())
+        holoSkin(H2*200,Holo2:getSkin())
+        holoMaterial(H2*200,Holo2:getMaterial())
+        Local2=Gate2:toLocal(Holo2:pos())
+        Local2A=Gate2:toLocal(Holo2:angles())
+        holoPos(H2*200, Gate:toWorld(Local2))
+        holoAng(H2*200,Gate:toWorld(Local2A))
+        holoClipEnabled(H2*200,1)
+    
+        #if gate1 is the gate above the e2, then Dir needs to be  1
+        #the opposite is true as well.
+        holoClip(H2*200,Gate:pos(),Gate:forward()*Dir,1)
+    
+    }
+    
+}

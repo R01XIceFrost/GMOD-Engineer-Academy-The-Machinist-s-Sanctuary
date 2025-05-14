@@ -1,0 +1,109 @@
+@name Liftform
+@persist T PA:array Start E:entity
+@model 
+
+#[
+
+INFO:
+
+ This is a big grid that rises up as you walk into it, and doesn't use too many ops which is a plus!
+
+]#
+
+#runOnTick(1)
+interval(100)
+
+#Holos = 49
+#Sqrt = sqrt(Holos)
+Sqrt = 7
+Holos = Sqrt^2
+
+#print(Sqrt:toString())
+
+if(first())
+{
+#findByClass("prop_physics")
+#E = findClosest(owner():pos())    
+E=owner()
+
+for(I=1,Holos)
+{
+T++
+holoCreate(I)
+holoMaterial(I,"Lights/white005")  
+holoScale(I,vec(5,5,0.1)) 
+holoAng(I,ang(0,0,0))
+#print(T)
+if(!holoEntity(I))
+{
+T--
+break   
+}
+elseif(T==Holos)
+{
+for(I=0,Sqrt-1)
+{
+  for(J=0,Sqrt-1)
+  {
+     PA[J+I*Sqrt,vector] = vec(I*12, J*12, 0)*5
+     holoPos(J+I*Sqrt,entity():pos()+ vec(I*12, J*12, 0)*5)
+holoAng(J+I*Sqrt,ang(0,0,0))  
+}
+}
+Start=1
+}
+}         
+}
+
+if(T<Holos)
+{
+T++
+#print(T)
+holoCreate(T)
+holoScale(T,vec(5,5,0.1)) 
+holoMaterial(T,"Lights/white005")   
+holoAng(T,ang(0,0,0))  
+if(!holoEntity(T))
+{
+T--   
+}   
+elseif(T==Holos)
+{
+for(I=0,Sqrt-1)
+{
+  for(J=0,Sqrt-1)
+  {
+     PA[J+I*Sqrt,vector] = vec(I*12, J*12, 0)*5
+     holoPos(J+I*Sqrt,entity():pos()+ vec(I*12, J*12, 0)*5)
+holoAng(J+I*Sqrt,ang(0,0,0))    
+}
+}
+Start=1
+}
+}
+
+if(Start)
+{
+for(I=1,Holos)
+{
+Dist = (PA[I,vector]+entity():pos()):distance(E:pos())
+Z = clamp(255-Dist,0,255)
+#Z = clamp(Dist,0,255)
+
+MClamp = clamp(Dist/400,0,1)
+
+Col2=vec(255,0,128)
+Col = vec(0,255,0)
+Mix = Col*MClamp+Col2*(1-MClamp)
+
+
+holoPos(I,PA[I,vector]+entity():pos()+vec(0,0,Z/2))
+#holoScale(I,vec(5,5,0.1*Z/3))
+#holoAng(I,ang(0,0,0))
+#holoColor(I,vec(255,255,255)+vec(0,-Z,-Z))
+
+holoColor(I,vec(255,255,255)+vec(0,-Z,0))
+#holoColor(I,Mix)
+
+}
+}

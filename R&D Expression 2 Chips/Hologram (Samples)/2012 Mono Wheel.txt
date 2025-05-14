@@ -1,0 +1,198 @@
+@name Mono Wheel
+@inputs  [Pod Cam]:wirelink
+@outputs Acc
+@persist TarPos:vector TarAng:angle 
+@persist W A S D R Shift Alt Space Active Mouse1 Mouse2 Direction
+@persist Speed L T N I Rotation
+@model models/hunter/plates/plate1x2.mdl
+
+#[
+
+INFO:
+
+Here is my Mono-Wheel contraption (inspired my General Greivous' vehicle on Attack of the Clones). It's entirely e2 and similar to something I've uploaded but but I've rewritten most of it to give it better animation and physics.
+
+It's fun to drive and very fast with the speed boost!
+
+The controls are:
+- WASD to move
+- Hold shift to go fast
+- Hold alt to go slow
+- Space to jump
+
+]#
+
+runOnTick(100)
+Plate=entity()
+
+### Pod Controller ##################################################  ################################
+W           = Pod["W",      number]
+A           = Pod["A",      number]
+S           = Pod["S",      number]
+D           = Pod["D",      number]
+R           = Pod["R",      number]
+Shift       = Pod["Shift",  number]
+Alt         = Pod["Alt",    number]
+Space       = Pod["Space",  number]
+Active      = Pod["Active", number]
+Mouse1      = Pod["Mouse1", number]
+Mouse2      = Pod["Mouse2", number]
+if (W) {Direction = 1}
+if (S) {Direction = -1}
+##################################################  ##################################################  #
+
+### Cam Controller ##################################################  ################################
+Cam:setNumber("Activated", Active)
+Cam:setVector("Position", Plate:pos() + Plate:up()*100 - Plate:right()*240)
+Cam:setEntity("Parent", Plate)
+##################################################  ##################################################  #
+
+### Ranger ##################################################  ########################################
+rangerFilter(Plate)
+rangerHitWater(1)
+RD = rangerOffset(Plate:pos(), Plate:pos():setZ(-100000))
+##################################################  ##################################################  #
+
+### Smoothers ##################################################  #####################################
+#Leaning
+if     (A & !D)          {L += 1.5}
+elseif (D & !A)          {L -= 1.5}
+else                     {L -= L/20}
+L = clamp(L, -20, 20)
+
+#Turning
+if     (A | D)           {T += 0.05}
+else                     {T -= T/10}
+T = clamp(T, 0, 1)
+ 
+#Accelerating
+if     (W & !S)           {Acc += Shift ? 0.1 : 0.05}
+elseif (S & !W & Acc>0.7) {Acc -= Acc/5}
+elseif (S & !W)           {Acc -= 0.04}
+else                      {Acc -= Acc/25}
+if     (Alt  & Acc>0.8)   {Acc -= 0.1}
+elseif (!Shift & Acc>3.5) {Acc -= 0.1} 
+Acc = clamp(Acc, -1 , 10)
+##################################################  ##################################################  #
+
+### Sound ##################################################  #########################################
+Speed = Plate:vel():length() 
+soundPitch(0, sqrt(Speed/3))
+if ($Active)  {Plate:soundPlay(1,0,"buttons/button17.wav")}
+##################################################  ##################################################  #
+
+### Position ##################################################  ######################################
+MultiplierP = 30*Acc
+if (RD:distance() < 50 & Space & !Plate:isUnderWater()) {
+    Plate:applyForce(Plate:up()*5000)
+}
+elseif (RD:distance() < 50 & !Plate:isUnderWater()) {
+    TarPos = Plate:pos():setZ(RD:position():z() + 40) + Plate:right()*MultiplierP
+    Plate:applyForce(((TarPos - Plate:pos()) * 9 - Plate:vel()) * Plate:mass())
+}
+##################################################  ##################################################  #
+
+### Angle ##################################################  #########################################
+MultiplierA = (3 + (Speed/4000))*(A-D)
+TarAng = ang(Acc>-0.1 ? L : -L, Plate:angles():yaw() + MultiplierA*T, 0)
+Plate:applyAngForce(((TarAng - Plate:angles()) * 40 - Plate:angVel()) * Plate:mass()*4)
+##################################################  ##################################################  #
+
+### On Spawn / Holos ##################################################  ##############################
+if (first()|duped()) {
+    print("// Mono-Wheel Made By Napalm!")
+    Plate:soundPlay(0,0,"ambient/machines/fluorescent_hum_1.wav")
+    timer("delay", 1000)
+    Cam:setVector("Position", Plate:pos() + Plate:up()*100 - Plate:right()*240)
+    Cam:setEntity("Parent", Plate)
+    N = 16
+    for (I = 1, N) {
+        holoCreate(I)
+        holoColor(I, vec(I%2==1 ? 255 : 0,0,0))
+        holoParent(I, Plate)
+        holoScale(I, vec(0.5,0.9,0.3))
+    }
+    holoCreate(N+1)
+    holoColor(N+1, vec()+50)
+    holoScale(N+1, vec(1.3,0.1,1.8))
+    holoPos(N+1, Plate:pos() - Plate:right()*9)
+    holoAng(N+1, Plate:angles():setRoll(Plate:angles():roll() - 30))
+    holoParent(N+1, Plate)
+    
+    holoCreate(N+2)
+    holoColor(N+2, vec()+50)
+    holoScale(N+2, vec(1.3,0.1,0.6))
+    holoPos(N+2, Plate:pos() + Plate:right()*10 + Plate:up()*9)
+    holoAng(N+2, Plate:angles():setRoll(Plate:angles():roll() + 55))
+    holoParent(N+2, Plate)
+    
+    holoCreate(N+3)
+    holoColor(N+3, vec()+50)
+    holoScale(N+3, vec(1.3,0.2,0.2))
+    holoPos(N+3, Plate:pos() - Plate:right()*7 - Plate:up()*24)
+    holoAng(N+3, Plate:angles():setRoll(Plate:angles():roll() + 55))
+    holoParent(N+3, Plate)
+    
+    holoCreate(N+4)
+    holoColor(N+4, vec()+50)
+    holoScale(N+4, vec(0.1,0.1,1.7))
+    holoPos(N+4, Plate:pos() + Plate:right()*1 + Plate:up()*2.7 + Plate:forward()*7)
+    holoAng(N+4, Plate:angles():setRoll(Plate:angles():roll() + 55))
+    holoParent(N+4, Plate)
+    
+    holoCreate(N+5)
+    holoColor(N+5, vec()+50)
+    holoScale(N+5, vec(0.1,0.1,1.7))
+    holoPos(N+5, Plate:pos() + Plate:right()*1 + Plate:up()*2.7 - Plate:forward()*7)
+    holoAng(N+5, Plate:angles():setRoll(Plate:angles():roll() + 55))
+    holoParent(N+5, Plate)
+    
+    holoCreate(N+6)
+    holoColor(N+6, vec()+50)
+    holoScale(N+6, vec(1.7,0.1,0.1))
+    holoPos(N+6, Plate:pos() - Plate:right()*7 - Plate:up()*13 - Plate:forward()*7)
+    holoAng(N+6, Plate:angles():setPitch(Plate:angles():pitch()+90)  )
+    holoParent(N+6, Plate)
+    
+    holoCreate(N+7)
+    holoColor(N+7, vec()+50)
+    holoScale(N+7, vec(1.7,0.1,0.1))
+    holoPos(N+7, Plate:pos() - Plate:right()*7 - Plate:up()*13 + Plate:forward()*7)
+    holoAng(N+7, Plate:angles():setPitch(Plate:angles():pitch()+90)  )
+    holoParent(N+7, Plate)
+    
+    holoCreate(N+8)
+    holoModel(N+8, "hq_torus_thin")
+    holoMaterial(N+8, "models/shiny")
+    holoColor(N+8, vec(150,150,150))
+    holoScale(N+8, vec(6.5,6.5,6.5))
+    holoPos(N+8, Plate:pos())
+    holoAng(N+8, Plate:angles():setPitch(Plate:angles():pitch()+90)  )
+    holoParent(N+8, Plate)
+    
+    holoEntity(N+1):setTrails(15,0,3,"trails/laser",vec(100,100,255), 255)
+}
+
+if (Plate:vel():length() > 10 & Active) {
+    Rotation += Direction*Plate:vel():length()/100
+}
+for (I = 1, N) {
+    holoAng(I, Plate:angles():setRoll(Rotation + (360/N)*I))
+    holoPos(I, Plate:pos() + holoEntity(I):up()*38)
+    holoColor(I, vec(I%2==1?50 : 0, I%2==1?50 : 0,I%2==1?190+(60*sin(curtime()*360)) : 0))
+    holoMaterial(I, "models/shiny")
+}
+
+if (clk("delay") | $Active) {
+    Cam:setAngle("Angle", Plate:angles() + ang(22,-90,0))
+    Plate:setColor(vec4())
+    Plate:isWeldedTo(1):setColor(vec4())
+    Plate:isWeldedTo(2):setColor(vec4())
+    Plate:isWeldedTo(3):setColor(vec4())
+    Plate:isWeldedTo(4):setColor(vec4())
+    Plate:isWeldedTo(1):setMass(0.01)
+    Plate:isWeldedTo(2):setMass(0.01)
+    Plate:isWeldedTo(3):setMass(0.01)
+    Plate:isWeldedTo(4):setMass(0.01)
+}
+##################################################  ##################################################  #

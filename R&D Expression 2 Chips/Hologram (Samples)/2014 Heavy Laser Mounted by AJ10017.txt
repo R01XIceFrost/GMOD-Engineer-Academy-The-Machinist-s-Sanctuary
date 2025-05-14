@@ -1,0 +1,113 @@
+@name Heavy Laser Mounted
+@inputs Fire
+@outputs Mode
+@persist Reload Reloading X Y R RGB Charge Firing Range:ranger
+@trigger 
+runOnTick(1)
+if(first()){
+    entity():setMass(200)
+    RGB=255
+    Charge=1
+    holoCreate(1)
+    holoCreate(2)
+    holoCreate(3)
+    
+    holoModel(1,"models/props_combine/headcrabcannister01a.mdl")
+    holoModel(2,"models/Items/combine_rifle_cartridge01.mdl")
+    holoModel(3,"models/Items/combine_rifle_ammo01.mdl")
+    
+    holoScale(1,vec(0.4,1,0.4))
+    holoScale(2,vec(6,4,3))
+    
+    holoAng(2,entity():toWorld(ang(45,0,0)))
+    holoAng(3,entity():toWorld(ang(90,0,0)))
+    
+    holoPos(1,entity():toWorld(vec(59,0,0)))
+    holoPos(2,entity():toWorld(vec(-7,5,2)))
+    
+    holoParent(1,entity())
+    holoParent(2,1)
+    holoParent(3,1)
+}
+Range=rangerOffset(50000,entity():pos(),entity():forward())
+holoColor(3,vec(RGB,RGB,RGB))
+if(Charge==0&Firing==1){holoAng(3,holoEntity(3):toWorld(ang(0,R  ,0)))
+    R+=2}
+if(changed(Fire)&Fire==1&Charge==1){
+    Charge=0
+    Firing=1
+    holoCreate(6)
+    holoModel(6,"models/buildables/sapper_dispenser.mdl")
+    holoAlpha(6,0)
+    holoParent(6,3)
+    holoScale(6,vec(0.1,0.1,0.1))
+    soundPlay(4,1.5,"weapons/cow_mangler_over_charge.wav")
+    timer("fire",1550)
+}
+if(clk("fire")){
+    holoDelete(5)
+    holoCreate(5,entity():pos())
+    holoEntity(5):setTrails(100,0,1.6,"trails/laser",vec(255,255,255),255)
+    holoAlpha(5,0)
+    soundPlay(4,4,"mvm/mvm_revive.wav")
+    soundPitch(4,90)
+    Firing=0
+    RGB=0
+    timer("boom",75)
+    timer("reload",400)
+}
+if(clk("boom")){
+    holoDelete(6)
+    holoPos(5,Range:pos())
+    P=propSpawn("models/props_phx/mk-82.mdl",holoEntity(5):pos(),0)
+    P:setAlpha(0)
+    P:propBreak()
+    entity():applyForce((entity():forward())*-10000)
+    entity():applyAngForce(entity():toWorld(ang(-35,0,0)*10))
+}
+if(clk("reload")){Reload=1}
+
+if(changed(Reload)&Reload==1&Reloading==0){
+    Reloading=1
+}
+if(Reloading==1){
+if(Mode==0){
+        if(holoEntity(3):toWorld(vec(0,0,0))!=entity():toWorld(vec(-6,0,0))){holoPos(3,entity():toWorld(vec(X,0,0)))
+        X-=0.5}
+        if(holoEntity(3):toWorld(vec(0,0,0))==entity():toWorld(vec(-6,0,0))){Mode=1}
+    }
+if(Mode==1){
+        if(holoEntity(3):toWorld(vec(0,0,0))!=entity():toWorld(vec(X,6,0))){holoPos(3,entity():toWorld(vec(X  ,Y,0)))
+        Y+=0.5}
+        if(holoEntity(3):toWorld(vec(0,0,0))==entity():toWorld(vec(X,6,0))){Mode=2}
+    }
+if(changed(Mode)&Mode==2){timer("recharge",1000)
+    E=propSpawn("models/Items/combine_rifle_ammo01.mdl",holoEntity(3):pos(),holoEntity(3):angles(),0)
+    E:applyForce((E:right())*-2500)
+    E:applyForce((E:forward())*-2000)
+    E:setColor(vec(0,0,0))
+    }
+if(Mode==2){RGB+=5}
+if(clk("recharge")){Mode=3}
+if(Mode==3){
+        if(holoEntity(3):toWorld(vec(0,0,0))!=entity():toWorld(vec(X,0,0))){holoPos(3,entity():toWorld(vec(X  ,Y,0)))
+        Y-=0.5}
+        if(holoEntity(3):toWorld(vec(0,0,0))==entity():toWorld(vec(X,0,0))){Mode=4}
+    }
+if(Mode==4){
+        if(holoEntity(3):toWorld(vec(0,0,0))!=entity():toWorld(vec(0,0,0))){holoPos(3,entity():toWorld(vec(X  ,0,0)))
+        X+=0.5}
+        if(holoEntity(3):toWorld(vec(0,0,0))==entity():toWorld(vec(0,0,0))){Mode=0
+            Charge=1
+            Reloading=0
+            Reload=0
+            holoDelete(5)}
+    }
+#sound
+if(changed(Reloading)&Reloading==1){soundPlay(1,0.5,"weapons/ar2/ar2_reload_rotate.wav")
+soundPitch(1,90)}
+if(changed(Mode)&Mode==3){soundPlay(2,0.5,"weapons/ar2/ar2_reload_rotate.wav")
+soundPitch(2,90)}
+if(changed(Reloading)&Reloading==0){soundPlay(3,1,"weapons/ar2/ar2_reload_push.wav")
+soundPitch(3,75)}
+}

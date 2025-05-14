@@ -1,0 +1,51 @@
+@name Holographic_Die
+@model models/hunter/blocks/cube025x025x025.mdl
+    #@model models/hunter/blocks/cube05x05x05.mdl
+    #@model models/hunter/blocks/cube075x075x075.mdl
+
+    #---------------User Variables---------------
+    DieColor = vec(255,0,0)
+    DieMat = "models/props_lab/cornerunit_cloud" #"phoenix_storms/chrome"
+    DotColor = vec(255,255,255)
+    DotMat = "debug/debugdrawflat"
+    #--------------------------------------------
+
+    E = entity()
+    E:setAlpha(0)
+    E:setMass(100)
+    Scale = E:boxSize()
+
+    HE = holoCreate(0)
+    holoColor(0,DieColor)
+    holoMaterial(0,DieMat)
+    holoParent(0,E)
+    holoPos(0,E:toWorld(E:boxCenter()))
+    holoScale(0,Scale/12)
+
+    Pr = array(
+        #1
+        vec(0,0,0.5),
+        #6
+        vec(0.32,0.32,-0.5),vec(-0.32,-0.32,-0.5),vec(-0.32,0.32,-0.5),vec(0.32,-0.32,-0.5),vec(0.32,0,-0.5),vec(-0.32,0,-0.5),
+        #2
+        vec(-0.5,0.32,0.32),vec(-0.5,-0.32,-0.32),
+        #5
+        vec(0.5,0.32,0.32),vec(0.5,-0.32,-0.32),vec(0.5,-0.32,0.32),vec(0.5,0.32,-0.32),vec(0.5,0,0),
+        #3
+        vec(0.32,0.5,-0.32),vec(-0.32,0.5,0.32),vec(0,0.5,0),
+        #4
+        vec(0.32,-0.5,0.32),vec(-0.32,-0.5,-0.32),vec(-0.32,-0.5,0.32),vec(0.32,-0.5,-0.32)
+    )
+
+    Dot = vec(0.2,0.2,0.05)
+    for(I=1,Pr:count()) {
+        if(I == 8|I == 15) {Dot = shiftR(Dot)}
+        holoCreate(I)
+        holoColor(I,DotColor)
+        holoMaterial(I,DotMat)
+        holoModel(I,"hqicosphere2")
+        holoParent(I,E)
+        holoPos(I,HE:toWorld(Pr[I,vector]*Scale))
+        holoScale(I,Dot*Scale/12)
+    }
+

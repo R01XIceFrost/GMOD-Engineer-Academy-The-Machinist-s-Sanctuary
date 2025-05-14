@@ -1,0 +1,98 @@
+@name Minigun Watergun
+@persist Loc:vector Vels:array Decay:array
+@persist T Start
+@model models/weapons/w_models/w_minigun.mdl
+interval(20)
+
+Holos = 90
+Delay = 50
+Out = 15
+Force = 10
+
+if(first())
+{
+for(I=1,Holos)
+{
+holoCreate(I)
+holoModel(I,"hqicosphere2")
+holoScale(I,vec(1,1,1)*0.5)
+holoColor(I,vec(100,100,255))
+holoAng(I,ang(0,0,0))
+
+Ang = entity():angles()
+Rand=random(-Out,Out)
+Rand2=random(-Out,Out)
+Ang=Ang+ang(Rand,Rand2,0)
+
+Vels[I,vector]=Ang:forward()*Force
+Decay[I,number]=random(0,Delay)
+
+if(!holoEntity(I))
+{
+T=I-1
+break 
+}
+if(I==Holos)
+{
+Start=1   
+}
+}
+
+Loc = vec(55,0,-8)   
+}
+
+if(T<Holos)
+{
+T++
+
+holoCreate(T)
+holoModel(T,"hqicosphere2")
+holoScale(T,vec(1,1,1)*0.5)
+holoColor(T,vec(100,100,255))
+holoAng(T,ang(0,0,0))
+
+Ang = entity():angles()
+Rand=random(-Out,Out)
+Rand2=random(-Out,Out)
+Ang=Ang+ang(Rand,Rand2,0)
+
+Vels[T,vector]=Ang:forward()*Force
+Decay[T,number]=random(0,Delay)   
+
+if(!holoEntity(T))
+{
+T--   
+}
+
+if(T==Holos)
+{
+Start=1   
+}
+}
+
+
+if(Start)
+{
+for(I=1,Holos)
+{
+Decay[I,number]=Decay[I,number]+1
+Vels[I,vector]=Vels[I,vector]-vec(0,0,0.1)
+Vels[I,vector]=Vels[I,vector]*0.99    
+
+holoPos(I,holoEntity(I):toWorld(Vels[I,vector]))
+
+
+if(Decay[I,number]>=Delay)
+{
+holoPos(I,entity():toWorld(Loc))   
+Decay[I,number]=0
+
+Ang = entity():angles()
+Rand=random(-Out,Out)
+Rand2=random(-Out,Out)
+Ang=Ang+ang(Rand,Rand2,0)
+
+Vels[I,vector]=Ang:forward()*Force
+}
+}
+}

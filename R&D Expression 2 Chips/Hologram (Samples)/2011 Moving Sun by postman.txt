@@ -1,0 +1,38 @@
+@name Moving Sun
+@inputs 
+@outputs MapHeight T
+runOnTick(1)
+E=entity()
+T++
+
+if(first()){
+    hint("Place in skybox, about center",5)
+    hint("Made by [TBU] POSTMAN",2)
+    
+    holoCreate(1)
+    holoModel(1, "hqsphere2")
+    holoScale(1,vec(22,22,22))
+    holoColor(1,vec(250,255,0))
+    holoMaterial(1,"models/debug/debug_white")
+    
+    holoCreate(2)
+    holoModel(2,"hqsphere2")
+    holoScale(2,vec(24,24,24))
+    holoMaterial(2,"models/props_lab/tank_glass001")
+    holoParent(2,1)
+    
+    holoCreate(3)
+    holoModel(3, "hqsphere2")
+    holoScale(3,vec(1,1,1))
+    holoMaterial(3,"models/props_wasteland/rockcliff02c")
+    
+    rangerFilter(E)
+    Rng=rangerOffset(9999999999999,E:pos(),E:up())
+    MapHeight=Rng:distance()
+}
+
+X=sin(T/100)*MapHeight
+Y=cos(T/100)*MapHeight
+
+holoPos(1,E:pos()+vec(0,X,Y))
+holoPos(3,E:pos()+vec(0,-X,-Y))

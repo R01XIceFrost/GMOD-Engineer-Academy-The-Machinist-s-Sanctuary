@@ -1,0 +1,244 @@
+@name HoloMech!
+@inputs Pod:wirelink 
+@outputs 
+@persist Legs:array INC FL BL RL LL Ang:angle
+@persist Props:array
+@trigger 
+
+#[
+
+INFO:
+
+This is just a fun little mech, hook up an advanced pod controller and wirelink it and start the fun! If you say "auto" then it will walk after you (and shoot you) but it is great fun!
+
+]#
+
+if(duped()){reset()}
+runOnTick(1)
+
+Vehicle = Pod["Entity",entity]
+W = Pod["W",number]
+A = Pod["A",number]
+D = Pod["D",number]
+Click = Pod["Mouse1",number]
+
+Speed = 3
+GoSpeed = 5
+
+if(first())
+{
+
+for(I=1,20)
+{
+holoCreate(I)   
+holoModel(I,"dome2")
+holoScale(I,vec(1,1,1)*2)
+}   
+holoModel(1,"hqicosphere2")
+holoScale(1,vec(1,1,1)*4)
+holoPos(1,entity():pos()+vec(0,0,100))
+    
+for(I=6,13)
+{
+holoModel(I,"hqcylinder")
+holoScaleUnits(I,vec(3,3,100))    
+}
+    
+holoModel(14,"hqcylinder")    
+holoPos(14,holoEntity(1):pos()+vec(0,0,25))
+holoParent(14,1)
+
+holoPos(15,holoEntity(14):pos()+vec(0,0,60))
+holoAng(15,ang(180,0,0))
+holoScale(15,vec(1,1,1)*10)
+holoParent(15,1)
+
+holoPos(16,holoEntity(15):pos()+vec(0,0,-1))
+holoScale(16,vec(1,1,1.5)*10)
+holoParent(16,1)
+holoMaterial(16,"models/props_combine/health_charger_glass")
+
+Legs = array(
+holoEntity(1):pos()+holoEntity(1):forward()*50,
+holoEntity(1):pos()+holoEntity(1):forward()*-50,
+holoEntity(1):pos()+holoEntity(1):right()*50,
+holoEntity(1):pos()+holoEntity(1):right()*-50)    
+
+for(I=1,15)
+{
+holoColor(I,vec(0,0,0))    
+}
+holoColor(17,vec(0,0,0))
+holoPos(17,holoEntity(16):pos()+vec(0,0,82))
+holoScale(17,vec(2,2,1)*2)
+holoParent(17,16)
+
+holoColor(18,vec(0,0,0))
+holoModel(18,"hqcylinder")
+holoScale(18,vec(1,1,2))
+holoPos(18,holoEntity(17):pos()+vec(0,0,20))
+holoParent(18,17)
+
+holoColor(19,vec(0,0,0))
+holoModel(19,"hqicosphere2")
+holoScale(19,vec(2,2,2))
+holoPos(19,holoEntity(18):pos()+vec(0,0,20))
+holoParent(19,18)
+
+holoColor(20,vec(0,0,0))
+holoModel(20,"hqtorus2")
+holoScale(20,vec(1,1,10))
+holoAng(20,ang(90,0,0))
+holoPos(20,holoEntity(19):pos()+holoEntity(19):forward()*24)
+holoParent(20,19)
+
+#rangerPersist(1)
+rangerHitWater(1)
+}
+
+if(W|FL>1|BL>1|RL>1|LL>1|owner():lastSaid()=="auto"&holoEntity(1):pos():distance(owner():shootPos())>200)
+{
+INC=INC+GoSpeed
+
+if(INC<=100)
+{
+Legs[1,vector]=Legs[1,vector]+holoEntity(16):forward()*Speed   
+
+Div = INC/100
+FL = sin(Div*180)*10
+}
+
+if(INC>=100&INC<=200)
+{
+Legs[2,vector]=Legs[2,vector]+holoEntity(16):forward()*Speed   
+
+Div = INC/100
+BL = abs(sin(Div*180)*10)
+}
+
+if(INC>=200&INC<=300)
+{
+Legs[3,vector]=Legs[3,vector]+holoEntity(16):forward()*Speed   
+
+Div = INC/100
+RL = abs(sin(Div*180)*10)
+}
+
+if(INC>=300&INC<=400)
+{
+Legs[4,vector]=Legs[4,vector]+holoEntity(16):forward()*Speed   
+
+Div = INC/100
+LL = abs(sin(Div*180)*10)
+}
+
+
+if(INC>=400)
+{
+INC = 0    
+}
+}
+
+F = rangerOffset(2000,Legs[1,vector]:setZ(holoEntity(1):pos():z()),vec(0,0,-1))
+B = rangerOffset(2000,Legs[2,vector]:setZ(holoEntity(1):pos():z()),vec(0,0,-1))
+R = rangerOffset(2000,Legs[3,vector]:setZ(holoEntity(1):pos():z()),vec(0,0,-1))
+L = rangerOffset(2000,Legs[4,vector]:setZ(holoEntity(1):pos():z()),vec(0,0,-1))
+
+holoPos(2,F:position()+vec(0,0,FL))
+holoPos(3,B:position()+vec(0,0,BL))
+holoPos(4,R:position()+vec(0,0,RL))
+holoPos(5,L:position()+vec(0,0,LL))
+
+holoAng(2,F:hitNormal():toAngle()+ang(90,0,0))
+holoAng(3,B:hitNormal():toAngle()+ang(90,0,0))
+holoAng(4,R:hitNormal():toAngle()+ang(90,0,0))
+holoAng(5,L:hitNormal():toAngle()+ang(90,0,0))
+
+Avg = holoEntity(2):pos()+holoEntity(3):pos()+holoEntity(4):pos()+holoEntity(5):pos()
+holoPos(1,Avg/4+vec(0,0,75))
+
+for(I=1,4)
+{
+
+Distance = 200
+#Pos=rangerOffset(1000,Legs[I,vector],vec(0,0,-1)):position()
+Pos = holoEntity(I+1):pos()
+Dist_vec=(holoEntity(1):pos()-Pos)
+Dist=Dist_vec:length()
+Ang=Dist_vec:toAngle()
+
+Ang2=ang(-asin(Dist/(Distance)),0,0)
+
+holoPos(I+5,holoEntity(1):pos()+(Ang+Ang2):up()*Distance/4)
+holoAng(I+5,Ang+Ang2)
+holoPos(I+5+4,Pos+(Ang-Ang2):up()*Distance/4)
+holoAng(I+5+4,Ang-Ang2)
+      
+}
+
+if(A|owner():lastSaid()=="auto"&holoEntity(1):bearing(owner():shootPos())<1)
+{
+holoAng(1,holoEntity(1):angles()+ang(0,1,0))
+}
+
+if(D|owner():lastSaid()=="auto"&holoEntity(1):bearing(owner():shootPos())>1)
+{
+holoAng(1,holoEntity(1):angles()+ang(0,-1,0))
+}
+
+P = holoEntity(16):pos()-vec(0,0,15)
+
+V = P-Vehicle:pos() 
+Vehicle:applyForce(V*(Vehicle:mass()*10)-Vehicle:vel()*(Vehicle:mass()/2))
+
+Ang = holoEntity(16):angles()
+
+TarQ = quat(Ang+ang(0,-90,0)) 
+CurQ = quat(Vehicle)
+Q = TarQ/CurQ
+Vlock = Vehicle:toLocal(rotationVector(Q)+Vehicle:pos())
+
+Vehicle:applyTorque((150*Vlock - 12*Vehicle:angVelVector())*Vehicle:inertia())  
+
+
+if(owner():lastSaid()=="auto")
+{
+Dir = owner():shootPos()-holoEntity(19):pos()    
+}
+else
+{
+Dir = Vehicle:driver():aimPos()-holoEntity(19):pos()
+}
+holoAng(19,Dir:toAngle())
+
+
+if(Click|owner():lastSaid()=="auto"&holoEntity(1):pos():distance(owner():shootPos())<=500)
+{
+timer("bang",200)
+if(clk("bang"))
+{
+#ifdef entity:setPos( vector )
+Props:unshiftEntity(propSpawn("models/hunter/misc/sphere025x025.mdl",0))
+Props[1,entity]:setMass(500) 
+Props[1,entity]:setColor(vec(0,0,0))
+Props[1,entity]:setPos(holoEntity(19):pos())
+Dir = holoEntity(19):forward()
+Props[1,entity]:applyForce(Dir*Props[1,entity]:mass()*2000)
+Props[10,entity]:propDelete()
+#else
+#endif
+}   
+else
+{   
+}
+}
+
+if(last())
+{
+#Props:propDelete()
+}
+
+if(Pod["Entity",entity]:driver()!=owner())
+{
+Pod["Entity",entity]:killPod()   
+}

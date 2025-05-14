@@ -1,0 +1,85 @@
+@name Holo-Whip
+@persist T 
+@model models/hunter/plates/plate025x025.mdl
+
+#Source: https://web.archive.org/web/20150303181817/http://www.wiremod.com/forum/finished-contraptions/22930-flieboys-fun-little-e2s-thread.html
+
+#runOnTick(1)
+interval(20)
+Kinks = 50
+KLength = 1
+Thick = 0.5
+Bend = 3
+
+if(first())
+{
+#print(entity():boxSize():toString())
+for(I=1,30)
+{
+
+holoCreate(I)   
+holoModel(I,"hqcylinder2")
+holoScale(I,vec(Thick,Thick,KLength))
+#A:pushEntity(holoEntity(I))
+if(holoEntity(I))
+{
+T++
+}
+else
+{
+break   
+}
+}
+#print(A:count():toString())
+}
+
+if(T<Kinks)
+{
+#timer("c",1000)    
+#if(clk("c"))
+#{
+T++
+holoCreate(T)   
+holoModel(T,"hqcylinder2")
+holoScale(T,vec(Thick,Thick,KLength))    
+if(!holoEntity(T))
+{
+T--    
+}
+
+   
+#}
+
+}
+
+for(I=1,Kinks)
+{
+
+if(I==1)
+{
+holoPos(I,entity():pos()+entity():up()*6)    
+
+Ang = (holoEntity(I+1):pos()-entity():pos()):toAngle()+ang(90,0,0)
+holoAng(I,Ang)
+
+} 
+elseif(I==Kinks)
+{
+holoPos(I,holoEntity(I-1):pos()+holoEntity(I-1):up()*KLength*12)
+Ang = (holoEntity(I-1):pos()-holoEntity(I):pos()):toAngle()+ang(90,0,0)
+holoAng(I,Ang)    
+}
+else
+{
+holoPos(I,holoEntity(I-1):pos()+holoEntity(I-1):up()*KLength*12)
+Ang = (holoEntity(I+1):pos()-holoEntity(I-1):pos()):toAngle()+ang(90,0,0)
+holoAng(I,Ang)
+
+}   
+
+#P = holoEntity(I):angles():pitch()/360*255
+#Y = holoEntity(I):angles():yaw()/360*255
+#R = holoEntity(I):angles():roll()/360*255
+
+#holoColor(I,vec(P,Y,R))
+}

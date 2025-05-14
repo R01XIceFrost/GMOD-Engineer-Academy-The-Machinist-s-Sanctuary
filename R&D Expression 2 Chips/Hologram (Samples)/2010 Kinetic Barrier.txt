@@ -1,0 +1,104 @@
+@name Kinetic Barrier
+@inputs Init
+@persist Pling Al D FX FXX Tic E:entity
+interval(20)
+
+#[
+
+INFO:
+
+Hello!, this is my kinetic barrier, it will repel any prop of any mass, that is not on the internal ignore list.
+
+On this video there are 2 out of my 3 versions (3rd one is just a lite one without the "boot up" and clipping)
+The clipping on the first version is based on how far the object penetrates thesbarrier (the deeper penetration, the bigger "shieldpiece")
+The Barrier has a radius of 300 units.
+*Edit*
+It can now also repel Grenades, combine balls and mechanical npcs*(Rollermine, Manhack, Turret, City Scanner)
+
+]#
+
+# Pling is simply the findInSphere() output, which triggers the barrier and bounces off the object, hence "pling!"
+
+# Al is for Alpha, it is the variable that makes the shield fade.
+
+# D is Distance between object and E2, i had to add this in this clipping version, because most objects would be repelled the moment
+# they come within range, which was too fast for the clipping part to react on.
+
+# FX FXX are timing variables for the "boot up" sequence.
+
+# Tic is for "pulsing" the shield, since the boot up and the actual shield are 2 different holo's i thought it looked lame
+# if the barrier  just instantly dissapeared after booting, so Tic will "trigger" the actual barrier once after the "boot".
+
+# As you might be able to tell, the barrier has a big weakness, if it is currently trying to repel an object, any object further than said object, 
+# will not be repelled (it can't multitask), that is because i had to remove the ability to target multiple entities, because you can only clip at 1 position on a hologram,
+# to make it multitask, i'd have to create an additional holo for each entity.
+
+if(FX==1250){timer("pulse",330)}
+if(!clk("pulse")){Tic=1}else{Tic=0}
+Pos=entity():pos()
+if(Init==1){
+if(FX<=1300){ 
+FX=700+FXX
+FXX+=10
+holoCreate(1,Pos,vec(50,50,50),ang(90,0,0))
+holoCreate(2,Pos,vec(-50,-50,-50),ang(90,0,0))
+holoModel(1,"hqsphere2")
+holoModel(2,"hqsphere2")
+holoParent(1,entity())
+holoParent(2,entity())
+holoMaterial(1,"spacebuild/Fusion2")
+holoMaterial(2,"spacebuild/Fusion2")
+holoClipEnabled(1,1)
+holoClipEnabled(2,1)
+holoClip(1,vec(0,0,1000-FX),vec(0,0,1),0)
+holoClip(2,vec(0,0,1000-FX),vec(0,0,1),0)
+}else{
+
+FX=1310
+FXX=600
+Pling=findInSphere(Pos,295)+(1-Tic)
+E=findClosest(Pos)
+
+findExcludeModel("hqsphere2")
+findExcludePlayerProps(owner())#  HEY WATCH ME!.      This line is the one telling the barrier to let props belonging to you (the owner) through.
+# Change it to findExcludePlayer(owner()) to pop into "singleplayer mode" where it won't trigger on you, but it will trigger on your props and npcs,
+findExcludeClass("gmod")
+findExcludeClass("weapon")
+findExcludeClass("sprite") 
+findExcludeClass("_env") 
+findExcludeEntity(entity():isWeldedTo()) 
+
+F=E:pos()-Pos
+
+if((D<=305)& D>=1){
+E:applyForce(F*E:mass()*10)
+}
+D=entity():pos():distance(E:pos())
+if(Pling!=0){
+    Al=200
+holoCreate(3,Pos,vec(50,50,50))
+holoCreate(4,Pos,vec(-50,-50,-50))
+holoModel(3,"hqsphere2")
+holoModel(4,"hqsphere2")
+holoParent(3,entity())
+holoParent(4,entity())
+holoMaterial(3,"spacebuild/Fusion2")
+holoMaterial(4,"spacebuild/Fusion2")
+holoClipEnabled(3,Tic)
+holoClipEnabled(4,Tic)
+holoClip(3,E:pos(),F,1)
+holoClip(4,E:pos(),F,1)  
+}else{
+if(Al>=10){
+Al-=10}else{
+holoDeleteAll()}}
+holoAlpha(1,Al)
+holoAlpha(2,Al)
+holoAlpha(3,Al)
+holoAlpha(4,Al)
+}}else{
+Al=0
+ FX=0
+FXX=0
+holoDeleteAll()
+}

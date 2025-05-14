@@ -1,0 +1,297 @@
+@name 
+@inputs 
+@outputs Pitch Attached
+@persist I E:entity Target:entity Crowbar Return Pitch Play Attached
+@trigger all
+
+#[
+
+INFO:
+
+This is my first release. Try and be nice. D:
+Credit:
+Hobo - Helped me massively, with idea's, codes and optimization. I want your babies.
+
+Features:
+Weeeell ... It's a guitar. You can pick it up, put it down, play it or strap it to your back. What moar could you want?
+I've been meaning to release this for months n months now, but never got around to it ... D:
+I'll be putting up a video sooooon.
+
+- Hovers above chip until picked up ( Walk into the Guitar and drop it by pressing CTRL ).
+- Strap it to your back or hold it by getting out the Crowbar.
+- Play it by holding E and Right clicking while looking up and down to change the note.
+- Or just beat people up with your fancy new guitar. 
+
+]#
+
+
+if(findCanQuery()){
+    findByClass("player")
+    findSortByDistance(entity():pos())
+    
+    if(find():pos():distance(entity():pos()) <= 20)
+    {Target = find()}
+}
+
+if(first()) {
+    runOnTick(1)
+    E = entity()
+    Self = entity():pos()
+
+    holoCreate(1)
+    holoModel(1,"hqcylinder")
+    holoScale(1,vec(3,2.5,0.6))
+    holoAng(1,ang(0,0,90)) 
+    holoColor(1,vec(102,51,0)) 
+    holoMaterial(1,"models/debug/debugwhite")
+    
+    holoCreate(2)
+    holoModel(2,"hqcylinder")
+    holoScale(2,vec(2,1.6,0.6))
+    holoAng(2,ang(0,0,90)) 
+    holoColor(2,vec(102,51,0)) 
+    holoMaterial(2,"models/debug/debugwhite")
+    
+    holoCreate(3)
+    holoModel(3,"hqcylinder")
+    holoScale(3,vec(3,2.5,0.05))
+    holoAng(3,ang(0,0,90)) 
+    holoColor(3,vec(204,102,0)) 
+    holoMaterial(3,"models/debug/debugwhite")
+
+    holoCreate(4)
+    holoModel(4,"hqcylinder")
+    holoScale(4,vec(3,2.5,0.05))
+    holoAng(4,ang(0,0,90)) 
+    holoColor(4,vec(204,102,0)) 
+    holoMaterial(4,"models/debug/debugwhite")
+    
+    holoCreate(5)
+    holoModel(5,"hqcylinder")
+    holoScale(5,vec(2,1.6,0.05))
+    holoAng(5,ang(0,0,90)) 
+    holoColor(5,vec(204,102,0)) 
+    holoMaterial(5,"models/debug/debugwhite")
+
+    holoCreate(6)
+    holoModel(6,"hqcylinder")
+    holoScale(6,vec(2,1.6,0.05))
+    holoAng(6,ang(0,0,90)) 
+    holoColor(6,vec(204,102,0)) 
+    holoMaterial(6,"models/debug/debugwhite")
+    
+    holoCreate(7)
+    holoModel(7,"hqcylinder")
+    holoScale(7,vec(0.75,0.75,0.05))
+    holoAng(7,ang(0,0,90)) 
+    holoColor(7,vec(0,0,0)) 
+    holoMaterial(7,"models/debug/debugwhite")
+    
+    holoCreate(8)
+    holoScale(8,vec(0.2,0.75,0.1))
+    holoAng(8,ang(90,0,90)) 
+    holoColor(8,vec(102,51,0)) 
+    holoMaterial(8,"models/debug/debugwhite")
+    
+    holoCreate(9)
+    holoScale(9,vec(0.5,3.4,0.1))
+    holoAng(9,ang(0,0,90)) 
+    holoColor(9,vec(102,51,0)) 
+    holoMaterial(9,"models/debug/debugwhite")
+
+    holoCreate(10)
+    holoModel(10,"hqcylinder")
+    holoScale(10,vec(0.2,0.5315,3.4))
+    holoAng(10,ang(180,270,180)) 
+    holoColor(10,vec(204,102,0)) 
+    holoMaterial(10,"models/debug/debugwhite")
+    
+    holoCreate(11)
+    holoScale(11,vec(0.6,0.7,0.1))
+    holoAng(11,ang(0,0,105)) 
+    holoColor(11,vec(204,102,0)) 
+    holoMaterial(11,"models/debug/debugwhite")
+
+    holoCreate(12)
+    holoScale(12,vec(0.5,0.05,0.15))
+    holoAng(12,ang(0,0,90)) 
+    holoColor(12,vec(0,0,0)) 
+    holoMaterial(12,"models/debug/debugwhite")
+
+    holoCreate(13)
+    holoModel(13,"hqcylinder")
+    holoScale(13,vec(0.035,0.035,4.95))
+    holoAng(13,ang(180,270,180)) 
+    holoColor(13,vec(100,100,100)) 
+    holoMaterial(13,"models/debug/debugwhite")
+    
+    holoCreate(14)
+    holoModel(14,"hqcylinder")
+    holoScale(14,vec(0.035,0.035,4.95))
+    holoAng(14,ang(180,270,180)) 
+    holoColor(14,vec(100,100,100)) 
+    holoMaterial(14,"models/debug/debugwhite")
+    
+    holoCreate(15)
+    holoModel(15,"hqcylinder")
+    holoScale(15,vec(0.035,0.035,4.95))
+    holoAng(15,ang(180,270,180)) 
+    holoColor(15,vec(100,100,100)) 
+    holoMaterial(15,"models/debug/debugwhite")
+
+    holoCreate(16)
+    holoModel(16,"hqcylinder")
+    holoScale(16,vec(0.035,0.035,4.95))
+    holoAng(16,ang(180,270,180)) 
+    holoColor(16,vec(100,100,100)) 
+    holoMaterial(16,"models/debug/debugwhite")
+    
+    holoCreate(17)
+    holoModel(17,"hqcylinder")
+    holoScale(17,vec(0.035,0.035,4.95))
+    holoAng(17,ang(180,270,180)) 
+    holoColor(17,vec(100,100,100)) 
+    holoMaterial(17,"models/debug/debugwhite")
+    
+    holoCreate(18)
+    holoModel(18,"hqcylinder")
+    holoScale(18,vec(0.035,0.035,4.95))
+    holoAng(18,ang(180,270,180)) 
+    holoColor(18,vec(100,100,100)) 
+    holoMaterial(18,"models/debug/debugwhite")
+    
+    holoCreate(19)
+    holoScale(19,vec(0.2,0.75,0.1))
+    holoAng(19,ang(180,270,180)) 
+    holoColor(19,vec(102,51,0)) 
+    holoMaterial(19,"models/debug/debugwhite")
+    
+    holoCreate(20)
+    holoScale(20,vec(0.05,0.1,0.1))
+    holoAng(20,ang(195,270,180)) 
+    holoColor(20,vec(102,51,0)) 
+    holoMaterial(20,"models/debug/debugwhite")
+    
+    holoCreate(21)
+    holoScale(21,vec(0.05,0.1,0.1))
+    holoAng(21,ang(195,270,180)) 
+    holoColor(21,vec(102,51,0)) 
+    holoMaterial(21,"models/debug/debugwhite")
+    
+    holoCreate(22)
+    holoScale(22,vec(0.05,0.1,0.1))
+    holoAng(22,ang(195,270,180)) 
+    holoColor(22,vec(102,51,0)) 
+    holoMaterial(22,"models/debug/debugwhite")
+
+    holoCreate(23)
+    holoScale(23,vec(0.05,0.1,0.1))
+    holoAng(23,ang(195,270,180)) 
+    holoColor(23,vec(102,51,0)) 
+    holoMaterial(23,"models/debug/debugwhite")
+
+    holoCreate(24)
+    holoScale(24,vec(0.05,0.1,0.1))
+    holoAng(24,ang(195,270,180)) 
+    holoColor(24,vec(102,51,0)) 
+    holoMaterial(24,"models/debug/debugwhite")
+
+    holoCreate(25)
+    holoScale(25,vec(0.05,0.1,0.1))
+    holoAng(25,ang(195,270,180)) 
+    holoColor(25,vec(102,51,0)) 
+    holoMaterial(25,"models/debug/debugwhite")
+    
+    holoCreate(26)
+    holoScale(26,vec(0.5,0.5,0.5))
+    holoAng(26,ang(0,0,0)) 
+    holoColor(26,vec(102,51,0))
+    holoAlpha(26,0)
+    holoMaterial(26,"models/debug/debugwhite")
+
+    holoPos(1,Self+vec(0,0,50))
+    holoPos(2,Self+vec(0,0,68))
+    holoPos(3,Self+vec(0,3.75,50))
+    holoPos(4,Self+vec(0,-3.75,50))
+    holoPos(5,Self+vec(0,3.75,68))
+    holoPos(6,Self+vec(0,-3.75,68))
+    holoPos(7,Self+vec(0,3.9,62))
+    holoPos(8,Self+vec(0,3.9,52))
+    holoPos(9,Self+vec(0,3.9,90))
+    holoPos(10,Self+vec(0,3.3,90))
+    holoPos(11,Self+vec(0,1.9,114))
+    holoPos(12,Self+vec(0,4,110.3))
+    holoPos(13,Self+vec(2.5,4.4,80.7))
+    holoPos(14,Self+vec(1.5,4.4,80.7))
+    holoPos(15,Self+vec(0.5,4.4,80.7))
+    holoPos(16,Self+vec(-0.5,4.4,80.7))
+    holoPos(17,Self+vec(-1.5,4.4,80.7))
+    holoPos(18,Self+vec(-2.5,4.4,80.7))
+    holoPos(19,Self+vec(0,3.9,51.5))
+    holoPos(20,Self+vec(-4.15,1.2,116.5))
+    holoPos(21,Self+vec(4.15,1.2,116.5))
+    holoPos(22,Self+vec(4.15,1.7,114.5))
+    holoPos(23,Self+vec(-4.15,1.7,114.5))
+    holoPos(24,Self+vec(4.15,2.2,112.5))
+    holoPos(25,Self+vec(-4.15,2.2,112.5))
+    holoPos(26,Self+vec(0,2.2,90))
+
+    for(I=1,25){
+        holoParent(I, 26)
+    }
+
+}
+
+if(!Target) {
+if(I < 180) {I++}
+if(I == 180) {I = -180}
+holoAng(26,ang(0,I,0))
+
+}
+
+if(Target) {
+       
+    Weap = Target:weapon():type()
+    Crowbar = (Weap == "weapon_crowbar")
+    Return = Target:isCrouch()
+    if(Crowbar) {holoAng(26,ang(0,Target:attachmentAng("anim_attachment_rh"):yaw(),0)+ang(0,0,180))}
+    if(Crowbar & ($Crowbar | !Attached)){
+        print(2,"Moved")
+        Attached = 1
+        holoParentAttachment(26,Target,"anim_attachment_rh")
+        holoPos(26,Target:attachmentPos("anim_attachment_rh"))
+        Target:weapon():setMaterial("Models/effects/vol_light001")}
+        
+            if($Crowbar | Target:keyUse()) {
+                Pitch = -(Target:eyeAngles():pitch()-90)/1.7
+                    if(Pitch>110){ Play = 0 }
+                        if(Pitch == 0) {Play = 80}
+                        if(Pitch > 0 & Pitch < 10) {Play = 100}
+                        if(Pitch > 10 & Pitch < 20) {Play = 110}
+                        if(Pitch > 20 & Pitch < 30) {Play = 120}
+                        if(Pitch > 30 & Pitch < 40) {Play = 130}
+                        if(Pitch > 40 & Pitch < 50) {Play = 140}
+                        if(Pitch > 50 & Pitch < 60) {Play = 150}
+                        if(Pitch > 60 & Pitch < 70) {Play = 160}
+                        if(Pitch > 70 & Pitch < 80) {Play = 170}
+                        if(Pitch > 80 & Pitch < 90) {Play = 180}
+                        if(Pitch > 90 & Pitch < 100) {Play = 190}
+                        if(Pitch > 100 & Pitch < 110) {Play = 200}
+                    if(Target:keyAttack2()) {
+                                holoEntity(7):soundPlay(69,0,"synth/tri.wav")
+                                soundPitch(69,Play)
+                                soundVolume(69,10000)}
+                        }
+    
+    if(!Crowbar){
+    holoPos(26,Target:pos()+vec(0,0,35)+Target:forward()*-15)
+    holoAng(26,Target:angles()+ang(180,90,-10))
+    holoParentAttachment(26,Target,"chest")}
+    
+    if(Return | !Target:isAlive()) {
+        Target = noentity()
+        holoPos(26,entity():pos()+vec(0,0,90))
+        holoParent(26,entity())}
+
+}
+elseif(Attached){ Attached = 0 }

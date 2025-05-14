@@ -1,0 +1,55 @@
+@name ai_holo_worm_v3
+@persist I Count T Smooth
+@persist [E]:entity [GetPos GetAng]:array [Mod HoloMat TraiMat]:string
+@model models/holograms/rcube_thick.mdl
+if(first())
+{
+    runOnTick(1)
+    hint("Designed by [AI]Ubi",5)
+    hint("Please save copyright <:3",4)
+    
+    Count = 60
+    Smooth = 2
+    HoloMat = "models/shiny"
+    TraiMat = "trails/tube"
+    Mod = "rcube_thick"
+
+    E = entity()
+    E:setMaterial(HoloMat)
+}
+while(perf())
+{
+    if(I==Count)
+    {
+        for(I2 = 1,30)
+        {
+            T++
+            if(T>Count){T = 1}
+            
+            F = (180/Count)*T/sqrt(Count)
+            X = cos(F)*11 
+            Y = sin(F)*11
+            
+            End = (T==1) ? E:toWorld(vec(X,Y,0)) : holoEntity(T-1):toWorld(vec(X,Y,0))
+            
+            Pp = holoEntity(T):pos()
+            GetPos[T,vector] = Pp+((End-Pp)/Smooth)
+            GetAng[T,angle] = (Pp-((!(T-1)) ? E:pos() : holoEntity(T-1):pos())):toAngle()
+
+            holoPos(T,GetPos[T,vector]) 
+            holoAng(T,GetAng[T,angle])    
+            holoColor(T,positive(E:toLocal((Pp))))      
+        }
+    }
+    else
+    {
+        if(holoCanCreate())
+        {
+            I++
+            holoCreate(I,E:toWorld(vec(I*12,0,0)),vec(1),ang(),vec(),"rcube_thick")
+            holoMaterial(I,HoloMat)
+            holoDisableShading(I,1)
+            holoEntity(I):setTrails(14,0,1,TraiMat,vec(),0)
+        }
+    }
+}

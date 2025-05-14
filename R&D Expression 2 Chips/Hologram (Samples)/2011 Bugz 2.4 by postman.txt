@@ -1,0 +1,391 @@
+@name Bugz 2.4
+@outputs [Bugs AlphaSound BBSounds BugStatus LostFood]:array
+@persist [Bug AlphaBug BetaBug]:entity
+@persist [V VA]:vector [Plurl Proper MatingOrNot]:string
+@persist Food T Xnew Mating Rcolor:vector Rcol Down
+@model models/hunter/blocks/cube025x025x025.mdl
+
+
+#[
+
+INFO:
+
+Hello all, today im releasing bugz version 2.4.
+
+I have a thread on this, for version 2.3, but its in the wrong section, so im going to make a new thread here.
+
+The chip creates a alpha(mother) bug, and a beta(father) bug.
+
+When the dad gets close to the mom, they mate, and little bugs are created.
+
+what it does:
+The expression is the leader bug, it will wander around, until betabug, finds it, and they will mate, making little bugs, that will follow alpha.
+
+The alpha has a limited, random food supply, so, if theres to many bugs, they start to die off until alpha can support them all.
+
+If they get to far away from alpha, they will become "lost" bugs, and will wander looking for an alpha, they will die fairly fast from hunger.
+
+what types are there?
+
+Alphabug(red)(Aka:Leader bug, its the e2 chip)
+Betabug(blue)(Aka:creeper joe, its the blue rectangular prism thing.)
+Omegabug(s)(white/blue)
+Lostbug(s)(green)
+
+What do i need to use this?
+Wiremod.
+Wire extras.(for propcore)
+Phx(for the models)
+
+Features?
+ALpha bug will hop around, going who knows where
+
+Betabug will stalk alpha, until he gets close enough to "make his way" with alpha.
+
+A random # of baby bugs will be made.
+
+If theres bugs when alpha is mating, they will dance around alpha, being purple.
+
+A hunger system, bugs will die if theres not enough food(Amount judged by how many bugs there are)
+
+Lost bugs will be lost, and die
+
+
+What im adding later on..
+I plan to after this, add a system of "bad" bugs, that wander around and attack alpha, then perhaps get eaten or something.
+
+A way to capture bugs, i already have a control system working, i just need to set it up
+
+And anything else i can think of.
+
+
+]#
+    Xnew=randint(1,6)
+    T++
+    X=sin(T*4)*50
+    Y=cos(T*4)*50
+
+
+    #######################################
+    ###############Bugz 2.4################
+    ##             Made by               ##
+    ##        [TBU] THE POSTMAN &        ##
+    ## With lots of help from awdrgyjil, ##
+    ##    LostInTheWired, EldarStorm     ##
+    ## SmokerToker, DoctorX(for the lulz)##
+    ##     Helpful math from Psyolus     ##
+    ##    And those on wiremod.com, you  ##
+    ##        know who you are           ##
+    #######################################
+    #######################################
+
+    if(first()|duped())
+    {
+        runOnChat(1)
+        interval(100)
+        
+        AlphaBug=entity()
+        
+        Mating=0
+        
+        #Getting some sounds for alpha
+        AlphaSound=array(
+        "player/portal_enter1.wav",
+        "player/portal_enter2.wav",
+        "player/portal_exit1.wav",
+        "player/portal_exit2.wav"
+        )
+        
+        BBSounds=array(
+        "npc/dog/dog_footstep_run2.wav",
+        "npc/dog/dog_footstep_run3.wav",
+        "npc/dog/dog_footstep_run4.wav",
+        "npc/dog/dog_footstep_run5.wav",
+        "npc/dog/dog_footstep_run6.wav",
+        "npc/dog/dog_footstep_run7.wav",
+        "npc/dog/dog_footstep_run8.wav")
+
+        #make the alpha bug pretty
+        AlphaBug:setColor(255,0,0)
+        AlphaBug:setMass(9000)
+        AlphaBug:setTrails(4,4,10,"trails/smoke",vec(255,0,0),255)
+        
+        #Start alpha With some food, start the lost bugs out with a full belly ^_^
+        Food=40
+        
+        #Start the food adding, this will be changed when i add a system to randomly make food
+        timer("MoarFood",2000)
+        
+        #Start the Cycle
+        timer("Start",1000)
+    }
+
+    #Set the food in name
+    if(changed(Food)|changed(Bugs:count())|first()){setName("Bugz 2.4 || Food="+Food+" || Babies="+Bugs:count()+MatingOrNot)}
+
+    #Set Mating or not in name
+    if((changed(Mating)&Mating)|first()){MatingOrNot=" || 'Is Mating'"}else{MatingOrNot=""}
+
+
+    #Proper grammer, it will make the e2 say "1 new baby bug born", or "2 new baby bugs born" Etc
+    if(Xnew==1){Plurl="",Proper="was"}else{Plurl="s",Proper="were"}
+
+    #Make the alpha move if mating is done
+    if(changed(Mating)&!Mating&!first())
+    {
+        AlphaBug:propFreeze(0)
+        timer("AlphaJump",100)
+        timer("BetaJump",1000)
+    }
+
+    if(BetaBug:pos():distance(AlphaBug:pos())<60)
+    {
+        Mating=1
+    }
+
+    if(changed(Mating)&Mating)
+    {
+        
+        AlphaBug:propFreeze(1)
+        
+        soundPlay(7,0,"npc/roller/blade_cut.wav")
+        BetaBug:soundPlay(9,0,"npc/dog/dog_angry2.wav")
+        
+        hint(Xnew+" New baby bug"+Plurl+" "+Proper+" born!",4)
+        
+        for(S=1,Xnew)
+        {
+            soundPlay(10,0,"weapons/bugbait/bugbait_squeeze1.wav")
+            CubesMade=propSpawn("models/hunter/plates/plate.mdl",AlphaBug:pos()+randvec(-100,100)+vec(0,0,100),ang(),0)
+            Bugs:pushEntity(CubesMade)
+            BugStatus[Bugs:count(),string]="MatingBug"
+        }
+        
+        for(I=1,Bugs:count())
+        {
+            BugStatus[I,string]="MatingBug"
+        }
+        
+        timer("STOPMATING",5000)
+        timer("stopMvar",6000)
+    }
+
+    if(clk("STOPMATING"))
+    {
+        for(I=1,Bugs:count())
+        {
+            BugStatus[I,string]="BabyBug"
+            BetaBug:applyForce((BetaBug:pos()+vec(10000,10000,2009)*100000000*BetaBug:mass()))
+        }
+    }
+    if(clk("stopMvar"))
+    {
+        Mating=0
+    }
+     
+    #Starting the whole cycle
+    if(clk("Start"))
+    {   
+        #unfreeze alpha
+        AlphaBug:propFreeze(0)
+        
+        timer("search",1000)
+        
+        #start the hopping!
+        timer("spawnBeta",1500)
+        timer("MoarFood",1000)
+        timer("LessFood",2000)
+        timer("AlphaJump",3000)
+        timer("BugJump",5000)
+        timer("BetaJump",6000)
+    }
+
+    #Alpha bug's hopping
+    if(clk("AlphaJump")&!Mating)
+    {   
+        #alpha stuff
+        AlphaBug:soundPlay(2,0,AlphaSound:string(randint(0,AlphaSound:count())))
+        
+        VA=AlphaBug:pos()-AlphaBug:pos()+randvec(-40,40)*Bugs:count()*2
+        AlphaBug:applyForce(VA*AlphaBug:mass()+vec(0,0,10))
+            
+        timer("AlphaJump",randint(5000,7000))
+    }
+
+    #beta bugs hopping
+    if(clk("BetaJump")&!Mating)
+    {
+        timer("BetaJump",randint(400,2000))
+        
+        BetaBug:soundPlay(8,0,BBSounds:string(randint(0,BBSounds:count())))
+        
+        #some math from Psyolus, thanks for the help!
+        MagnitudeConstant = 300
+        PositionA = AlphaBug:pos()
+        PositionB = BetaBug:pos()
+        BToA = PositionA - PositionB
+        BToAUnit = BToA/BToA:length()
+        Final = BToAUnit*MagnitudeConstant
+        
+        BetaBug:applyForce(Final+vec(0,0,20))
+    }
+
+
+
+    #jump the bugs
+    if(clk("BugJump"))
+    {
+        Rcolor=vec(Rcol,200,200)
+
+        if(Down){Rcol-=20}
+        if(!Down){Rcol+=20}
+
+        if(Rcol>=255)
+        {
+            Down=1
+        }
+        if(Down&Rcol<=0)
+        {
+            Down=0
+        }
+
+        if(!Mating)
+        {
+            timer("BugJump",randint(300,1300))
+        }
+        else
+        {
+            timer("BugJump",100)
+        }
+        
+        Bugs[randint(1,Bugs:count()),entity]:soundPlay(1,0,"garrysmod/content_downloaded.wav")
+        
+        for(OB=1,Bugs:count())
+        {
+            Bug=Bugs[OB,entity]
+            
+            
+            #Remove the bug from the array if the entity disapears
+            if(!Bug)
+            {
+                Bugs:removeEntity(OB)
+                BugStatus:removeString(OB)
+                LostFood:removeNumber(OB)
+            }
+            
+            #BugStatus clears when there are to many, and is refilled immidiately
+            if(BugStatus:count()>Bugs:count())
+            {
+                BugStatus:clear()
+            }
+            
+            if(BugStatus[OB,string]=="BabyBug")
+            {
+                soundPitch(1,100)
+                
+                Bug:setColor(Rcolor)
+                Bug:setMaterial("models/debug/debugwhite")
+                Bug:setTrails(5,5,5,"trails/physbeam",Rcolor,255)
+                    
+                V=(AlphaBug:pos()-Bug:pos()+randvec(-10,10))
+                Bug:applyForce(V*Bug:mass()+vec(0,0,10)*2)
+                
+                if(Bug:pos():distance(AlphaBug:pos()) > 700)
+                {
+                    BugStatus[OB,string]="LostBug"
+                    LostFood:setNumber(OB,50)
+                }
+            }
+            elseif(BugStatus[OB,string]=="MatingBug")
+            {
+                soundPitch(1,300)
+                
+                Bug:setColor(255,0,255)
+                Bug:setTrails(5,5,5,"trails/physbeam",vec(255,0,255),255)
+                
+                V=(AlphaBug:pos()-Bug:pos()+vec(X,Y,20))
+                Bug:applyForce(V*Bug:mass()*4)
+            }
+            elseif(BugStatus[OB,string]=="LostBug")
+            {
+                soundPitch(1,60)
+                
+                Bug:setColor(0,255,0)
+                Bug:setTrails(5,5,5,"trails/physbeam",vec(0,255,0),255)
+
+                V=(randvec(-60,60))
+                Bug:applyForce(V*Bug:mass()+vec(0,0,20)*9)
+                
+                LostFood[OB,number]=LostFood[OB,number]-2
+                
+                if(LostFood[OB,number]<=0){Bug:propDelete(),LostFood:removeNumber(OB)}
+                
+                if(Bug:pos():distance(AlphaBug:pos()) < 699)
+                {
+                    LostFood:removeNumber(OB)
+                    BugStatus[OB,string]="BabyBug"
+                }
+            }
+            elseif(BugStatus[OB,string]==""|!BugStatus[OB,string])
+            {
+                BugStatus[OB,string]="BabyBug"
+            }
+        }
+    }
+
+
+
+    #Moar food!!
+    if(clk("MoarFood"))
+    {
+        timer("MoarFood",randint(1000,3000))
+        if(!Mating){Food+=randint(9.5,15.5)}
+    }
+
+    #Less food :(
+    if(clk("LessFood"))
+    {
+        timer("LessFood",2000)
+        if(!Mating){Food-=Bugs:count()}
+    }
+
+    #Kill dem bugs if they starve
+    if(changed(Food)&!Food)
+    {
+        Bugs[randint(1,Bugs:count()),entity]:propDelete()
+    }
+
+    #Restricting Alpha's food count
+    Food=clamp(Food,0,100)
+
+
+    if(changed(!BetaBug)&!BetaBug){timer("spawnBeta",2000)}
+
+    if(clk("spawnBeta"))
+    {
+        #make a beta cube
+        BetaBug=propSpawn("models/hunter/blocks/cube025x05x025.mdl",AlphaBug:pos()+randvec(-10,10)+vec(0,0,200),ang(),0)
+        BetaBug:setColor(0,0,255)
+        BetaBug:setTrails(5,5,5,"trails/physbeam",vec(0,0,255),255)
+    }
+
+
+    #print stats
+    if(changed(lastSaid())&lastSaid()=="!stats")
+    {
+        hideChat(1)
+        timer("waitSay1",900)
+    }
+    if(clk("waitSay1"))
+    {
+        hideChat(0)
+        hint("There are "+Bugs:count()+" bugs on the map at this time.",4)
+        timer("waitSay2",900)
+    }
+
+    if(clk("waitSay2"))
+    {
+        hint("The beta bug is "+BetaBug:pos():distance(AlphaBug:pos())+" units away from alpha bug.",4)
+    }
+
+ 

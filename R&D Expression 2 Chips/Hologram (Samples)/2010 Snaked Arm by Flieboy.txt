@@ -1,0 +1,113 @@
+@name Dr. Cocktopus' Spunktacular Jizz-Cock
+@persist T:entity Ang:angle AngF:angle INC
+@persist I Load
+@model
+
+#[
+
+INFO:
+
+ This is an eyeball guy on a giant tentacle, he follows you around by moving on the tentacle, and has a spazz attack if you get too close!
+
+]#
+
+runOnTick(1)
+
+Holos = 60
+Scale = 1
+Space = 6
+Speed = 10
+Size = 2
+
+if(first())
+{
+Bet = Holos-1
+Dist1 = Space*Scale
+Distance = Dist1*Bet
+
+AngF = ang(0,0,0)
+
+
+}
+
+if(findCanQuery())
+{
+findByClass("player")
+T = findClosest(entity():pos())    
+}
+
+if(!Load)
+{
+timer("clk",100)
+if(clk("clk"))
+{
+I++
+
+
+holoCreate(I)
+holoModel(I,"hqcylinder")   
+holoScale(I,vec(1,1,Scale))
+holoColor(I,vec(0,0,0))
+
+
+if(I==Holos+4)
+{
+holoModel(Holos+1,"hqicosphere2")
+holoModel(Holos+4,"hqicosphere2")        
+holoModel(Holos+2,"dome2")
+holoModel(Holos+3,"dome2")
+holoScale(Holos+1,vec(1,1,1)*Size)
+holoColor(Holos+1,vec(255,255,255))
+holoScale(Holos+2,vec(1.1,1.1,1.1)*Size)
+holoScale(Holos+3,vec(1.1,1.1,1.1)*Size)
+holoScale(Holos+4,vec(0.1,0.1,0.1)*Size)
+
+
+holoAng(Holos+2,ang(90,0,0))
+holoAng(Holos+3,ang(270,0,0))
+holoAng(Holos+1,ang(90,0,0))
+holoAng(Holos+4,ang(90,0,0))
+
+holoPos(Holos+1,holoEntity(Holos):pos())
+holoPos(Holos+2,holoEntity(Holos+1):pos())
+holoPos(Holos+3,holoEntity(Holos+1):pos())
+holoPos(Holos+4,holoEntity(Holos+1):pos()+holoEntity(Holos+1):forward()*5.5*-Size)
+
+holoParent(Holos+1,Holos)
+holoParent(Holos+2,Holos)
+holoParent(Holos+3,Holos)
+holoParent(Holos+4,Holos)
+
+Load=1   
+}
+}
+}
+else{
+Dir = T:shootPos()-holoEntity(Holos):pos()
+#Ang is target angle
+Ang = (Dir:toAngle()+ang(90,0,0))/Holos
+
+DirAng = angnorm(Ang-holoEntity(1):angles())
+
+AngF = DirAng/Speed+AngF
+
+for(I=1,Holos)
+{
+if(I>1)
+{
+holoPos(I,holoEntity(I-1):pos()+holoEntity(I-1):up()*(Scale*Space))   
+}
+else
+{
+holoPos(I,entity():pos())   
+}   
+
+holoAng(I,AngF+holoEntity(I-1):angles())
+}
+
+INC=INC+1
+Sin = abs(sin(INC)*70)
+
+holoAng(Holos+2,holoEntity(Holos+1):angles()-ang(Sin,0,0))
+holoAng(Holos+3,holoEntity(Holos+1):angles()+ang(Sin+180,0,0))
+}

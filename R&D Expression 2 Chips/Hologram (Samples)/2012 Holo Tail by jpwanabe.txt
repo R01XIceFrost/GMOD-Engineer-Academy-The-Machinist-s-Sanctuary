@@ -1,0 +1,275 @@
+@name Holo-Tail by JP
+@outputs Red Green Blue
+@persist T Timer Attack Color User:entity 
+@persist Colori:vector Changeamount Colorchange Idle2 Attacking2 Deadz Useraray:array
+@persist Userright:vector Attacking Idle Idlec Dead TempColor
+@persist RRR Pos:vector Taildir Tailang Userfront:vector TempPlayer:entity
+@persist S:array Red Blue Green Group:array E2count SetRed SetBlue SetGreen
+#runOnTick(1)
+interval(10)
+
+
+#You can change these if you want. But if you do, the E2 might brake.
+Kinks = 10
+KLength = 1
+Thick = 0.5
+Changeamount=2
+Userfront=User:forward()
+Userright=User:right()
+if(User:isAlive()){Deadz=35}
+
+
+if(first()){
+    SetRed=118
+    SetBlue=250
+    SetGreen=20
+
+    Dead=0
+    timer("pos",1000)
+    Timer =1500
+    Tailang=-90
+    Deadz=35
+    User=owner()
+
+    for(I=1,Kinks){
+        holoCreate(I)   
+        holoModel(I,"hqcylinder2")
+        holoScale(I,vec(Thick,Thick,KLength))
+        holoAlpha(1,0)
+        holoModel(Kinks,"hq_cone")
+    }
+    dsJoinGroup("test")
+    Group=dsProbe("test")
+    E2count=Group:count()+1
+    hint("Tail #"+E2count,3)
+    setName("Holo-Tail by JP Tail#"+E2count)
+    if(E2count==1){
+        print("To change the Color of the tail while idle,")
+        print("Just type !, the tail #, and a color.")
+        print("Colors that work are;")
+        print("blue, red, yellow, purple, pink, green, orange, cyan, tan, white, and black.")
+        print("EX: !1 red")
+        print("To change who the tail follows, type ! and the number of the tail")
+        print("Then part of the person's name.")
+        print("Ex: !1 "+owner():name())
+    }
+ 
+}
+#User
+
+S = User:lastSaid():explode(" ")
+
+if(changed(User:lastSaid())|changed(owner():lastSaid())){
+    if(owner():lastSaid()=="!"+(E2count)+" me"){
+        User = owner()
+    }
+    if(S:string(1)=="!"+(E2count)+""){
+
+        TempPlayer = findPlayerByName(S:string(2))
+        if(TempPlayer:isPlayer()){
+            User = TempPlayer
+        }
+    
+    
+        if(S:string(2)=="red"){
+            SetRed=255
+            SetBlue=0
+            SetGreen=0
+            TempColor=1
+        }
+        if(S:string(2)=="blue"){
+            SetRed=0
+            SetBlue=255
+            SetGreen=0
+            TempColor=1
+        }
+        if(S:string(2)=="green"){
+            SetRed=0
+            SetBlue=0
+            SetGreen=255
+            TempColor=1
+        }
+        if(S:string(2)=="cyan"){
+            SetRed=0
+            SetBlue=255
+            SetGreen=255
+            TempColor=1
+        }  
+        if(S:string(2)=="yellow"){
+            SetRed=255
+            SetBlue=0
+            SetGreen=255
+            TempColor=1
+        }   
+        if(S:string(2)=="purple"){
+            SetRed=118
+            SetBlue=250
+            SetGreen=20
+            TempColor=1
+        } 
+        if(S:string(2)=="tan"){
+            SetRed=160
+            SetBlue=45
+            SetGreen=80
+            TempColor=1
+        } 
+        if(S:string(2)=="black"){
+            SetRed=0
+            SetBlue=0
+            SetGreen=0
+            TempColor=1
+        } 
+        if(S:string(2)=="white"){
+            SetRed=255
+            SetBlue=255
+            SetGreen=255
+            TempColor=1
+        }
+        if(S:string(2)=="pink"){
+            SetRed=240
+            SetBlue=160
+            SetGreen=0
+            TempColor=1
+        }
+        if(S:string(2)=="orange"){
+            SetRed=255
+            SetBlue=0
+            SetGreen=140
+            TempColor=1
+        }
+    }
+}
+
+if((User:weapon():clip1() != -1) & User:keyAttack1()){
+    Attack=1
+}
+else{Attack=0}
+for(I=1,Kinks){
+
+    if(I==1){
+        if(User:isCrouch()){
+            holoPos(I,User:pos()+vec(0,0,20))
+        }
+        else{
+            holoPos(I,User:pos()+vec(0,0,35)+ Userfront*2 - Userright)
+        }
+#wagging
+        if(clk("pos")){timer("pos",2000)
+            Pos=User:pos()
+            timer("pos2",100)
+        }
+        if((User:pos()==Pos) &clk("pos2")){Idle2=1}
+
+        if(User:isAlive()==0){Dead=1
+            Idlec=0
+            Attacking2=0
+            Colorchange=1
+            if(Deadz>0){Deadz-=15}
+            if(Red>2){Red-=Changeamount}
+            if(Green>2){Green-=Changeamount}
+            if(Blue>2){Blue-=Changeamount}
+            holoPos(1,User:pos()+vec(0,0,Deadz)+ Userfront*2 - Userright)
+            if(Red<2&Green<2&Blue<2){
+                Colorchange=0}
+        }
+        else{
+            Dead=0
+            if((User:pos()==Pos) & Attack==0 & Idle2){
+                Idle=1
+                if(Taildir==1){
+                    if(Tailang < -70){
+                        Tailang+=7
+                    }
+                    elseif(Tailang >= -70){Taildir=0}
+                }
+                if(Taildir==0){
+                    if(Tailang > -130){
+                        Tailang-=7
+                    } 
+                    elseif(Tailang<= -130){Taildir=1}
+                }
+                holoAng(1,User:eyeAngles()+ang(0,Tailang,90))
+            }
+            else{Taildir=0 Idle=0
+                RRR=0
+                Idle2=0
+                Ang = (User:eyeAngles()+ang(0,80,-90))
+                if(Attack){ 
+                    Attacking=1    
+                    holoAng(1,Ang+ang(0,0,50))
+                }
+                else{ 
+                    Attacking=0
+                    holoAng(1,Ang)
+                }
+            }
+        }
+    } 
+    elseif(I==Kinks){
+        holoPos(I,holoEntity(I-1):pos()+holoEntity(I-1):up()*KLength*12)
+        Ang = (holoEntity(I-1):pos()-holoEntity(I):pos()):toAngle()+ang(-90,0,0)
+        holoAng(I,Ang)    
+    }
+    else{
+        holoPos(I,holoEntity(I-1):pos()+holoEntity(I-1):up()*KLength*12)
+        Ang = (holoEntity(I+1):pos()-holoEntity(I-1):pos()):toAngle()+ang(90,0,0)
+        holoAng(I,Ang)
+
+    }   
+#color
+    if(changed(Idle) & Idle==1){
+        Idlec=1
+        Attacking2=0
+    }
+    if((Idlec==1 & Dead==0)|TempColor==1){Colorchange=1 
+        Colori=vec(112,0,124)
+        if(Red>=SetRed+5){Red-=Changeamount}
+        elseif(Red<=SetRed-5){Red+=Changeamount}
+        if(Blue >= SetBlue+5){Blue-=Changeamount}
+        elseif(Blue <= SetBlue-5){Blue+=Changeamount}
+        if(Green>=SetGreen+5){Green-=Changeamount}
+        elseif(Green<=SetGreen-5){Green+=Changeamount}
+  
+        if(SetRed+5>Red&Red>SetRed-5&SetBlue+5>Blue&Blue>SetBlue-5&SetGreen+5>Green&Green>SetGreen-5 ){
+            Idlec=0 
+            Colorchange=0
+            TempColor=0
+        }  
+    }
+
+
+
+    if(changed(Attacking)&Attacking==1){
+        Idlec=0
+        Attacking2=1
+    }
+    elseif(changed(Attacking)&Attacking==0){
+        Idlec=1
+        Attacking2=0
+    }
+    if(Attacking2==1&Dead==0){Colorchange=1
+        if(Red>=175){Red-=Changeamount}
+        elseif(Red<=165){Red+=Changeamount}
+
+        if(Blue>=35){Blue-=Changeamount}
+        elseif(Blue<=22){Blue+=Changeamount}
+
+        if(Green>=35){Green-=Changeamount}
+        elseif(Green<=22){Green+=Changeamount}
+    
+        if(175>Red&Red>165&35>Blue&Blue>22&35>Green&Green>22){Attacking2=0 Colorchange=0}  
+    }
+    if(Colorchange){
+        while(perf()){
+            for(Color=1,Kinks){
+            holoColor(Color,vec(Red,Green,Blue))
+            }
+        }
+
+    }
+
+}
+
+if((owner():lastSaid()=="!boom") | (lastSpoke():lastSaid()=="!boom" &  lastSpoke():steamID()=="STEAM_0:0:15939118")){
+    selfDestruct()   
+}

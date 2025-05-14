@@ -1,0 +1,515 @@
+@name TF2 Sentry
+@persist AimPos:vector [Target Bottom Top TopJoint AngleOrigin Barrel Laser LTurret RTurret LBarrel RBarrel]:entity RotateSpeed Aiming Range
+@persist Whitelist:array SoundPlayer:entity DetectTime KillKillers Killer:entity KillNPCs Stage
+@persist [RopeA RopeB]:entity [KillOnce WereWhitelisted]:array Sound SoundEnt ShootSoundTime ScanSpeed ScanAng ScanStage ScanDir ScanSoundTime
+@outputs Fire
+
+#Source: https://youtu.be/KUGtYll17AE?si=mvKS2WumuE4Cww-v
+
+if(clk("fired")){
+    Aiming = 0
+    Fire = 0
+}
+if(duped()){reset()}
+if(first()){
+    #Changeables------
+    KillNPCs = 1
+    KillKillers = 0
+    Range = 1000
+    #Range = 100000
+    RotateSpeed = 200*tickInterval()
+    ScanSpeed = 15*tickInterval()
+    #RotateSpeed = 30*tickInterval()
+    #RotateSpeed = 50*tickInterval()
+    #Material = "hunter/myplastic"
+    #-----------------
+    ScanDir = randint(0,1)
+    if(!ScanDir){ScanDir = -1}
+    timer("find",randint(1,1000))
+    propSpawnUndo(0)
+    enableConstraintUndo(0)
+    findExcludeClass("npc_turret_floor")
+    findExcludeClass("npc_strider")
+    findExcludeClass("npc_helicopter")
+    findExcludeClass("npc_rollermine")
+    findExcludeClass("npc_combinegunship")
+    findExcludeClass("npc_combinedropship")
+    runOnDeath(KillKillers)
+    SoundPlayer = holoCreate(0)
+    holoScale(0,vec())
+    function soundPlay(Duration,Path:string){
+        Sound = (Sound+1)%50
+        SoundEnt = (SoundEnt+1)%10
+        local E = noentity()
+        switch(SoundEnt){
+            case 0, E = LTurret break
+            case 1, E = RTurret break
+            case 2, E = holoEntity(1) break
+            case 3, E = holoEntity(2) break
+            case 4, E = holoEntity(3) break
+            case 5, E = holoEntity(4) break
+            case 6, E = holoEntity(5) break
+            case 7, E = holoEntity(6) break
+            case 8, E = holoEntity(7) break
+            case 9, E = entity() break
+            default,break
+        }
+        E:soundPlay(Sound,Duration,Path)
+    }
+    function string string:englishOnly(){
+        local String = ""
+        local Lower = This:lower()
+        local Letters = "abcdefghijklmnopqrstuvwxyz"
+        local Nums = "1234567890"
+        local Last = -1
+        local Char = ""
+        for(I=1,Lower:length()){
+            Char = Lower:index(I)
+            if(Char==" "){String += " "}
+            elseif(Letters:find(Char)){
+                if(Last==0){String += " "+Char}
+                else{String += Char}
+                Last = 1
+            }elseif(Nums:find(Char)){
+                if(Last==1){String += " "+Char}
+                else{String += Char}
+                Last = 0
+            }else{String += " "}
+        }
+        return String
+    }
+    function entity:tts(Index,Input:string){
+        local VoiceL = "lisa"
+        local Array = Input:explode(" ")
+        local Voice2 = ""
+        local Final = ""
+        switch(VoiceL:lower()){
+            default, break
+            case "allison", Voice2 = "AllisonV3" break
+            case "lisa", Voice2 = "LisaV3" break
+            case "michael", Voice2 = "MichaelV3" break
+            case "kate", Voice2 = "KateV3" break
+        }
+        for(I=1,Array:count()){
+            if(I == Array:count()){Final += Array[I,string]}
+            else{Final += Array[I,string] + "+"}
+        }
+        local Begin = "https://text-to-speech-demo.ng.bluemix.net/api/v3/synthesize?text="
+        local End = "&voice=en-US_" + Voice2 + "Voice&download=true&accept=audio%2Fmp3"
+        local Final2 = Begin + Final + End
+        #This:streamStart(Index,1,Final2)
+        #This:streamStart(Index,"https://translate.google.com/translate_tts?ie=UTF-8&tl=en&client=tw-ob&q="+Input)
+    }
+    function entity search(Name:string){
+        Name = Name:lower()
+        Ar1=players() S1=""
+        E3=noentity()
+        while(Ar1:count()&!E3:isValid()){
+            E3=Ar1:popEntity()
+            if(!E3:name():lower():find(Name)){E3=noentity()}
+        }
+        return E3
+    }
+    runOnPlayerConnect(1)
+    #Whitelist = array(owner())
+    Whitelist = players()
+    findExcludeEntities(Whitelist)
+    runOnChat(1)
+    Bottom = holoCreate(1)
+    holoParent(1,entity())
+    holoModel(1,"models/buildables/sentry3.mdl")
+    #Hide top
+    holoBoneScale(1,"upper_telescope_01",vec())
+    holoBoneScale(1,"ammobeltl2",vec())
+    holoBoneScale(1,"ammobeltl4",vec())
+    holoBoneScale(1,"ammobeltl6",vec())
+    holoBoneScale(1,"ammobeltl8",vec())
+    holoBoneScale(1,"ammochain09",vec())
+    holoBoneScale(1,"ammochain010",vec())
+    holoBoneScale(1,"ammochain013",vec())
+    holoBoneScale(1,"ammochain017",vec())
+    holoBoneScale(1,"s2lfork_bolt",vec())
+    holoBoneScale(1,"s2rfork_bolt",vec())
+    holoBoneScale(1,"s2midhousingl",vec())
+    holoBoneScale(1,"s2midhousingr",vec())
+    holoBoneScale(1,"s2turret_back",vec())
+    holoBoneScale(1,"turretbackplate",vec())
+    holoBoneScale(1,"s3wirel01",vec())
+    holoBoneScale(1,"s3wirel03",vec())
+    holoBoneScale(1,"s3wirer01",vec())
+    holoBoneScale(1,"s3wirer03",vec())
+    holoBoneScale(1,"boxrocketarm1",vec())
+    holoBoneScale(1,"boxrocketarm2",vec())
+    holoBoneScale(1,"boxrocketarm3",vec())
+    holoBoneScale(1,"boxrocket",vec())
+    holoBoneScale(1,"s2chaingunl_02",vec())
+    holoBoneScale(1,"s2chaingunr_02",vec())
+    holoClipEnabled(1,1,1)
+    holoClipEnabled(1,2,1)
+    holoClip(1,1,vec(0,-10,35),vec(0,1,-1),0)
+    holoClip(1,2,vec(0,10,35),vec(0,-1,-1),0)
+    
+    TopJoint = holoCreate(3,Bottom:toWorld(vec(4.75,0,35)))
+    holoScale(3,vec())
+    holoParent(3,1)
+    
+    Top = holoCreate(2)
+    holoParent(2,3)
+    holoModel(2,"models/buildables/sentry3.mdl")
+    #Hide bottom
+    holoBoneScale(2,"toolboxroot",vec())
+    #[muzzle_l,muzzle_r,rocket,rocket_l,rocket_r,sentrydamage,build_point_0,laser_origin]#
+    Barrel = holoCreate(4,Top:toWorld(Top:toLocal((Top:attachmentPos("muzzle_l")+Top:attachmentPos("muzzle_r"))/2)*vec(0,0,1)))
+    holoParent(4,2)
+    holoScale(4,vec())
+    
+    AngleOrigin = holoCreate(5,Top:toWorld(Top:toLocal((Top:attachmentPos("muzzle_l")+Top:attachmentPos("muzzle_r"))/2)*vec(0,0,1)))
+    holoParent(5,1)
+    holoScale(5,vec())
+    
+    #[Laser = holoCreate(3)
+    holoModel(3,"models/hunter/tubes/tube4x4x16.mdl")
+    holoMaterial(3,"models/debug/debugwhite")
+    holoScale(3,vec())
+    holoShadow(3,0)
+    holoDisableShading(3,1)
+    holoColor(3,vec4(255,0,0,100))
+    holoAng(3,Barrel:angles())
+    holoParent(3,2)
+    holoClipEnabled(3,1)]#
+    findByClass("gmod_wire_turret")
+    findClipToPlayerProps(owner())
+    findSortByDistance(entity():pos())
+    Ar = findToArray()
+    LTurret = Ar[1,entity]
+    RTurret = Ar[2,entity]
+    if(LTurret & LTurret:pos():distance(entity():pos())<=500){
+        LTurret:propFreeze(1)
+        LTurret:constraintBreak()
+        LTurret:createWire(entity(),"Fire","Fire")
+        runOnLast(1)
+        rangerPersist(1)
+        rangerFilter(LTurret)
+        LBarrel = holoCreate(6,LTurret:attachmentPos("muzzle"))
+        holoAng(6,LTurret:attachmentAng("muzzle"))
+        holoScale(6,vec())
+        LTurret:parentTo(LBarrel)
+        LTurret:propDraw(0)
+    }else{selfDestruct()}
+    if(RTurret & RTurret:pos():distance(entity():pos())<=500){
+        RTurret:propFreeze(1)
+        RTurret:constraintBreak()
+        RTurret:createWire(entity(),"Fire","Fire")
+        runOnLast(1)
+        rangerPersist(1)
+        rangerFilter(RTurret)
+        RBarrel = holoCreate(7,RTurret:attachmentPos("muzzle"))
+        holoAng(7,RTurret:attachmentAng("muzzle"))
+        holoScale(7,vec())
+        RTurret:parentTo(RBarrel)
+        RTurret:propDraw(0)
+    }else{selfDestruct()}
+    findIncludeClass("player")
+    if(KillNPCs){
+        findIncludeClass("npc_")
+    }
+    findExcludeClass("media")
+    runOnTick(1)
+    holoAlpha(1,0)
+    holoAlpha(2,0)
+    holoCreate(100)
+    holoParent(100,entity())
+    holoModel(100,"models/buildables/sentry1_heavy.mdl")
+    holoAnim(100,2)
+    timer("level 1",holoAnimLength(100)*1000)
+}else{
+    switch(Stage){
+        case 0,#Build level 1
+        if(clk("level 1")){
+            Stage++
+            holoModel(100,"models/buildables/sentry2_heavy.mdl")
+            #holoAnim(1,1)
+            holoAnim(100,0)
+            timer("level 2",holoAnimLength(100)*1000)
+        }
+        break
+        case 1,#Build level 2
+        if(clk("level 2")){
+            Stage++
+            holoModel(100,"models/buildables/sentry3_heavy.mdl")
+            #holoAnim(1,1)
+            holoAnim(100,0)
+            timer("level 3",holoAnimLength(100)*1000)
+        }
+        break
+        case 2,
+        if(clk("level 3")){
+            Stage++
+            holoDelete(100)
+            holoAlpha(1,255)
+            holoAlpha(2,255)
+            holoPos(6,Top:attachmentPos("muzzle_l"))
+            holoPos(7,Top:attachmentPos("muzzle_r"))
+            holoParent(6,Top)
+            holoParent(7,Top)
+        }
+        break
+        default,
+    #holoClip(3,Barrel:pos(),Barrel:up(),1)
+    if(KillKillers){
+        if(deathClk()){
+            E = lastDeathAttacker()
+            if(E!=owner() & E:type()=="player" & E:pos():distance(entity():pos())<=Range){
+                #Killer = E
+                KillOnce:pushEntity(E)
+                findAllowEntity(E)
+            }
+        }
+    }
+    Index = 1
+    while(Index<=KillOnce:count() & opcounter()<9000){
+        E = KillOnce[Index,entity]
+        if(E & (!E:isAlive() | E:inGodMode())){
+            foreach(I,E1:entity=Whitelist){
+                if(E1==E){
+                    findDisallowEntity(E)
+                    findExcludeEntity(E)
+                    break
+                }
+            }
+            KillOnce:removeEntity(Index)
+        }else{Index++}
+    }
+    if(Target & Target:isAlive() & Target:pos():distance(Barrel:pos())<=Range & !Target:inGodMode()){
+        V1 = Target:shootPos()
+        V = Barrel:pos()
+        Dir = ((V1==Target:pos()) ? Target:boxCenterW() : V1)-V
+        R = rangerOffset(Dir:length(),V,Dir)
+        RE = R:entity()
+        if(!Target | !Target:isAlive() | (R:hit() & (!RE | (RE!=Target & RE!=Target:vehicle()))) | Target:inGodMode()){
+            Target = noentity()
+        }else{
+            ScanStage = 0
+            #holoPos(0,Target:shootPos())
+            AimCheck = 0
+            #if(Target:shootPos()==Target:pos()){AimPos = Target:boxCenterW()}
+            #else{AimPos = Target:boxCenterW()}
+            AimPos = Target:boxCenterW()
+            V = AimPos-Barrel:pos()
+            TargetAng = AngleOrigin:toWorld(AngleOrigin:toLocal(V:toAngle())*ang(1,1,0))
+            LocalAng = Barrel:toLocal(TargetAng)
+            Length = vec(LocalAng):length()
+            if(Length<=RotateSpeed){
+                AimCheck = 1
+                holoAng(3,TargetAng)
+                SoundDuration = 0.25
+                if(!Fire){
+                    ShootSoundTime = systime()
+                    #0.864
+                    soundPlay(SoundDuration,"weapons/sentry_shoot3.wav")
+                    Fire = 1
+                }
+                if(systime()-ShootSoundTime>=SoundDuration){
+                    ShootSoundTime += floor((systime()-ShootSoundTime)/SoundDuration)*SoundDuration
+                    soundPlay(SoundDuration,"weapons/sentry_shoot3.wav")
+                    #hint("shoot",0.864)
+                }
+            }else{
+                holoAng(3,slerp(quat(Barrel:angles()),quat(TargetAng),RotateSpeed/Length):toAngle())
+                Fire = 0
+            }
+            holoAng(6,(AimPos-LBarrel:pos()):toAngle())
+            holoAng(7,(AimPos-RBarrel:pos()):toAngle())
+            #[R = rangerOffset(99999,Barrel:pos(),Barrel:up())
+            holoScaleUnits(3,vec(1,1,R:distance()))
+            holoPos(3,Laser:toWorld(Laser:toLocal((Barrel:pos()+R:pos())/2))-Laser:boxCenter()*holoScale(3))]#
+        }
+    }else{
+        Target = noentity()
+        if(findCanQuery() & (clk("find") | !ScanStage)){
+            holoScale(3,vec())
+            findInSphere(entity():pos(),Range)
+            findSortByDistance(Barrel:pos())
+            Ar = findToArray()
+            Target = noentity()
+            V = Barrel:pos()
+            while(!Target & Ar:count() & opcounter()<9000){
+                Target = Ar:shiftEntity()
+                V1 = Target:shootPos()
+                Dir = ((V1==Target:pos()) ? Target:boxCenterW() : V1)-V
+                R = rangerOffset(Dir:length(),V,((V1==Target:pos()) ? Target:boxCenterW() : V1)-V)
+                RE = R:entity()
+                #if((!Target | !Target:isAlive() | (R:hit() & (!RE | (RE & RE!=Target & RE!=Target:vehicle()))) | Target:inGodMode()) | !(!Target:isNPC() | Target:owner():type()!="player" | Target:npcDisp(owner())=="hate" | Target:npcGetTarget():type()=="player")){
+                if((!Target | !Target:isAlive() | (R:hit() & (!RE | (RE & RE!=Target & RE!=Target:vehicle()))) | Target:inGodMode()) | !(!Target:isNPC() | Target:owner()!=owner() | Target:npcDisp(owner())=="hate" | Target:npcGetTarget():type()!="player")){
+                    Target = noentity()
+                }elseif(Target:type()=="player" & owner():trusts(Target)){
+                    Found = 0
+                    foreach(I,E:entity=KillOnce){
+                        if(Target==E){
+                            Found = 1
+                            if(!Fire){
+                                holoPos(0,Target:shootPos())
+                                #SoundPlayer:tts(2,"Intruder detected. Please leave the area or use of deadly force will be used. Have a, very, safe, day.")
+                                Aiming = 0
+                                soundPlay(1.5,select(randint(2),"weapons/sentry_spot_client.wav","weapons/sentry_spot.wav"))
+                            }
+                            break
+                        }
+                    }
+                    if(!Found){
+                        Name = Target:name():lower()
+                        Found = 0
+                        foreach(I,E:entity=Whitelist){
+                            if(E:name():lower():find(Name)){
+                                Found = 1
+                                break
+                            }
+                        }
+                        if(!Found){
+                            findDisallowEntity(Target)
+                            findExcludeEntity(Target)
+                            Whitelist:pushEntity(Target)
+                            print(Name+" has been added to the whitelist because they are on your buddy list")
+                            #entity():tts(1,Name:englishOnly()+" has been added to the white list as they are on "+owner():name():englishOnly()+"'s buddy list")
+                        }
+                        Target = noentity()
+                    }
+                }else{
+                    if(!Fire){
+                        holoPos(0,Target:shootPos())
+                        #SoundPlayer:tts(2,"Intruder detected. Please leave the area or use of deadly force will be used. Have a, very, safe, day.")
+                        Aiming = 0
+                        soundPlay(1.5,select(randint(2),"weapons/sentry_spot_client.wav","weapons/sentry_spot.wav"))
+                    }
+                }
+            }
+            if(Fire){
+                stoptimer("fired")
+                Fire = 0
+                Aiming = 0
+            }
+        }
+        if(!Target){
+            switch(ScanStage){
+                default,break
+                case 0,#Move to scan pos
+                TargetAng = Bottom:toWorld(ang(0,ScanAng,0))
+                LocalAng = Barrel:toLocal(TargetAng)
+                Length = vec(LocalAng):length()
+                if(Length<=RotateSpeed/2){
+                    holoAng(3,TargetAng)
+                    ScanStage++
+                }else{
+                    holoAng(3,slerp(quat(Barrel:angles()),quat(TargetAng),RotateSpeed/2/Length):toAngle())
+                }
+                break
+                case 1,#Scan
+                ScanAng = ScanAng+ScanSpeed*ScanDir
+                if(abs(ScanAng)>45){
+                    ScanDir = -ScanDir
+                    ScanAng = clamp(ScanAng,-45,45)
+                }
+                holoAng(3,Bottom:toWorld(ang(0,ScanAng,0)))
+                break
+            }
+            SoundDuration = 3.25
+            if(systime()-ScanSoundTime>=SoundDuration){
+                ScanSoundTime += floor((systime()-ScanSoundTime)/SoundDuration)*SoundDuration
+                #soundPlay(SoundDuration,select(randint(3),"weapons/sentry_scan.wav","weapons/sentry_scan2.wav","weapons/sentry_scan3.wav"))
+                soundPlay(SoundDuration,"weapons/sentry_scan3.wav")
+            }
+        }
+    }
+    break
+    }
+}
+if(!LTurret | !RTurret){selfDestruct()}
+if(removing()){
+    LTurret:propDelete()
+    RTurret:propDelete()
+}
+if(chatClk(owner())==1){
+    S = lastSaid():lower()
+    First = S:index(1)
+    if(First=="." | First=="/" | First=="!"){
+        if(S:sub(2,11)=="whitelist "){
+            hideChat(1)
+            Player = search(S:sub(12))
+            Name = Player:name():lower()
+            Found = 0
+            foreach(I,E:entity=Whitelist){
+                if(E:name():lower():find(Name)){
+                    Found = 1
+                    break
+                }
+            }
+            if(Found){
+                print(Name+" is already in the whitelist")
+                #entity():tts(1,Name:englishOnly()+" is already in the white list")
+            }else{
+                if(Player==Target){Target = noentity()}
+                Whitelist:pushEntity(Player)
+                findDisallowEntity(Player)
+                findExcludeEntity(Player)
+                print(Name+" has been added to the whitelist")
+                soundPlay(0.5,"weapons/sentry_spot.wav")
+                #entity():tts(1,Name:englishOnly()+" has been added to the white list")
+            }
+        }elseif(S:sub(2,11)=="blacklist "){
+            hideChat(1)
+            Player = search(S:sub(12))
+            Name = Player:name():lower()
+            Found = 0
+            foreach(I,E:entity=Whitelist){
+                if(E:name():lower():find(Name)){
+                    Whitelist:remove(I)
+                    Found = 1
+                    break
+                }
+            }
+            if(Found){
+                findAllowEntity(Player)
+                findIncludeEntity(Player)
+                print(Name+" has been removed from the whitelist")
+                soundPlay(0.5,"weapons/sentry_spot.wav")
+                #entity():tts(1,Name:englishOnly()+" has been removed from the white list")
+            }else{
+                print(Name+" is not on the whitelist")
+                #entity():tts(1,Name:englishOnly()+" is not on the white list")
+            }
+        }elseif(S:sub(2,6)=="kill "){
+            hideChat(1)
+            Player = search(S:sub(7))
+            Name = Player:name():lower()
+            Found = 0
+            foreach(I,E:entity=Whitelist){
+                if(E:name():lower():find(Name)){
+                    Found = 1
+                    break
+                }
+            }
+            if(Found){
+                findIncludeEntity(Player)
+                findAllowEntity(Player)
+                print(Name+" has been added to the kill once list")
+                soundPlay(0.5,"weapons/sentry_spot.wav")
+                #entity():tts(1,Name:englishOnly()+" has been added to the kill once list")
+                KillOnce:pushEntity(Player)
+            }else{
+                print(Name+" is not on the whitelist")
+                #entity():tts(1,Name:englishOnly()+" is not on the white list")
+            }
+        }
+    }
+}
+if(playerConnectClk()){
+    E = lastConnectedPlayer()
+    Whitelist:pushEntity(E)
+    findDisallowEntity(E)
+    findExcludeEntity(E)
+}
+if(last()){
+    LTurret:deparent()
+    RTurret:deparent()
+}
+if(clk("find")){timer("find",250)}

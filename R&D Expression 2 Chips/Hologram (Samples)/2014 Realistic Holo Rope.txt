@@ -1,0 +1,131 @@
+@name Legend of the Rope: Revengeance
+
+@persist [ E ]:entity [ Parts ]:array
+@persist [ GRAVITY ]:vector SEGMENT_COUNT SEGMENT_LENGTH SEGMENT_MASS TIME_SCALE COLLISION
+
+@model models/hunter/plates/plate.mdl
+
+#[ 
+    Made by The Sandvich Maker aka SandvichDISH! with help from Daaniegun
+    Based on Thomas Jakobsen's 'Advanced Character Physics'
+    
+    http://web.archive.org/web/20080410171619/http://www.teknikus.dk/tj/gdc2001.htm
+]#
+
+#[ -- FUNCTIONS -- ]#
+
+if( first() ) {
+    function void createRope() { 
+        for( I = 1, SEGMENT_COUNT ) {
+            local Holo = holoCreate( I, E:toWorld( vec( 0, 0, I * SEGMENT_LENGTH ) ), vec( 0.1, 0.1, SEGMENT_LENGTH / 11.5 ), ang(), vec( 255 ), "hq_cylinder" )
+            holoMaterial( I, "models/props_combine/metal_combinebridge001" )
+            holoShadow( I, 1 )
+            
+            Holo[ "pos", vector ] = Holo:pos()
+            Holo[ "oldpos", vector ] = Holo:pos()
+            Holo[ "mass", normal ] = SEGMENT_MASS
+            Holo[ "time", normal ] = curtime()
+            Holo[ "isholo", normal ] = 1
+           
+            Parts[ I, entity ] = Holo
+        }
+    }
+    
+    function void init() { 
+        runOnTick( 1 ) 
+        
+        E = entity()
+        E:setMass( SEGMENT_MASS )
+        
+        Parts[ 0, entity ] = E
+        E[ "mass", normal ] = E:mass()
+        E[ "oldpos", vector ] = E:pos()
+        
+        createRope()
+    }
+}
+
+#[ -- INIT -- ]#
+
+if( duped() | dupefinished() ) {
+    reset()
+}
+
+if( first() ) {
+    SEGMENT_COUNT = 10
+    SEGMENT_LENGTH = 10
+    SEGMENT_MASS = 100
+    
+    TIME_SCALE = 1
+    
+    COLLISION = 1
+    
+    GRAVITY = vec( 0, 0, -9.81 ) * SEGMENT_LENGTH * SEGMENT_MASS
+    
+    init()
+}
+
+#[ -- EXECUTE -- ]#
+
+E[ "pos", vector ] = E:massCenter()
+
+if( tickClk() & perf() ) {
+    for( I = 1, SEGMENT_COUNT ) {
+        local P = Parts[ I, entity ]
+        local PPos = P[ "pos", vector ]
+        local POld = P[ "oldpos", vector ]
+        local PMass = P[ "mass", normal ]
+        local PHolo = P[ "isholo", normal ]
+        local PInv = 1 / PMass
+        
+        local P2 = Parts[ I - 1, entity ]
+        local P2Pos = P2[ "pos", vector ]
+        local P2Mass = P2[ "mass", normal ]
+        local P2Holo = P2[ "isholo", normal ]
+        local P2Inv = 1 / P2Mass
+        
+        local Step = ( curtime() - P[ "time", normal ] ) * TIME_SCALE
+        P[ "time", normal ] = curtime()
+        
+        local A = GRAVITY / PMass
+        
+        P[ "oldpos", vector ] = PPos
+        
+        PPos += PPos * 0.998 - POld * 0.998 + A * Step ^ 2
+        
+        local Delta = P2Pos - PPos
+        local DeltaLength = Delta:length()
+        local Difference = ( DeltaLength - SEGMENT_LENGTH ) / ( DeltaLength * ( PInv + P2Inv ) )
+        
+        PPos += PInv * Delta * Difference 
+        P2Pos -= P2Inv * Delta * Difference 
+        
+        if( !PHolo ) {
+            P:applyForce( PInv * Delta * Difference * PMass * 2 )
+        }
+        if( !P2Holo ) {
+            P2:applyForce( -( P2Inv * Delta * Difference * P2Mass ) * 2 )
+        }
+        
+        if( COLLISION ) {
+            local NewOld = P[ "oldpos", vector ]
+            local VelDir = PPos - NewOld
+            local R = rangerOffsetHull( VelDir:length() + 1, NewOld - VelDir:normalized(), VelDir:normalized(), vec( SEGMENT_LENGTH, 1.2, 1.2 ) )
+            if( R:hit() ) {
+                NewOld -= R:hitNormal() * ( NewOld - R:pos() ):dot( R:hitNormal() )
+                PPos -= R:hitNormal() * ( PPos - R:pos() ):dot( R:hitNormal() )
+                PPos = PPos * 0.9 + NewOld * 0.1
+                
+                P[ "oldpos", vector ] = NewOld
+            }
+        }
+        
+        local Dir = ( P2Pos - PPos ):normalized()
+        
+        holoPos( I, PPos + Dir * SEGMENT_LENGTH * 0.5 )
+        holoAng( I, Dir:toAngle() + ang( 90, 0, 0 ) )
+        
+        P[ "pos", vector ] = PPos
+        P2[ "pos", vector ] = P2Pos
+    }
+}

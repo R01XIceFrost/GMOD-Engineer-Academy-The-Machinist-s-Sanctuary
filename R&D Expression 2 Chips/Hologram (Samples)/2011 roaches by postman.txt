@@ -1,0 +1,90 @@
+@name holo roaches v3
+@inputs
+@outputs
+@persist Count Status:array
+interval(30)
+
+if(first()) 
+{
+    Count=randint(10,20)
+    
+    for (I=1,Count) 
+    {
+        holoCreate(I)
+        holoScale(I,vec(0.6,0.2,0.15))
+        holoModel(I,"sphere")
+        holoColor(I,vec(79,51,9))
+        holoEntity(I):setTrails(6,6,50,"trails/laser",holoEntity(I):getColor(),255)
+        holoAng(I,ang(0,randint(-1,2)*90,0))
+        Status:setString(I,"moving")
+        
+        timer("turn"+I,randint(1000,5000))
+    }
+}
+
+
+for(I=1,Count)
+{
+    Roach=holoEntity(I)
+    
+    if(Status[I,string]=="moving")
+    {
+        holoPos(I,Roach:pos()+Roach:forward()*1.1)
+        
+        RngF=rangerOffset(5,Roach:pos(),Roach:forward()*1)
+        RngFD=rangerOffset(5,Roach:pos()+Roach:forward()*10,Roach:up()*-1)
+        RngD=rangerOffset(5,Roach:pos(),Roach:up()*-1)
+        
+        if(!RngFD:hit()|RngF:hit()|clk("turn"+I))
+        {
+            Roach:soundPlay(1,0,"roach/rch_walk.wav")
+            soundPitch(1,randint(0.5,3)*60)
+            holoAng(I,ang(0,randint(-2,1)*90,0))
+        }
+        if(clk("turn"+I)){timer("turn"+I,randint(1000,5000))}
+        
+        
+        if(RngF:hit())
+        {
+            RngU=rangerOffset(5,Roach:pos(),Roach:up()*1)
+            
+            if(RngU:hit())
+            {
+                Status:setString(I,"captured")
+                holoParent(I,RngU:entity())
+                
+                Roach:soundPlay(2,0,"roach/rch_die.wav")
+                soundPitch(2,randint(1,3)*60)
+            }
+        }
+        
+        
+    }
+    elseif(Status[I,string]=="captured")
+    {
+        RngU=rangerOffset(5,Roach:pos(),Roach:up()*1)
+        
+        holoAng(I,ang(0,randint(-2,1)*20,0))
+        
+        if(!RngU:hit())
+        {
+            Status:setString(I,"moving")
+            holoUnparent(I)
+        }
+    }
+    
+    
+    #roach gravity!
+    if(!RngD:hit())
+    {
+        if(!RngFD:hit())
+        {
+            holoPos(I,Roach:pos()+vec(0,0,-5.7))
+        }
+    }
+    else
+    {
+        Diff=2-RngD:distance()
+        holoPos(I,Roach:pos()+vec(0,0,Diff))
+    }
+}

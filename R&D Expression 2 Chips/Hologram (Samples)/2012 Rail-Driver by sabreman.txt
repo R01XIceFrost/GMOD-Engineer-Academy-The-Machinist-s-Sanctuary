@@ -1,0 +1,223 @@
+@name Rail-Driver
+@inputs Fire
+@outputs Charged
+@persist [E Me Muzzle Round Tracer]:entity [Color]:vector Sounds:array RTable:gtable
+@persist T Mode H
+@model models/hunter/blocks/cube025x150x025.
+
+
+#[
+
+
+INFO:
+
+Ok here's this thing:
+Rail Gun + Fancy stand-z08cvh.jpgRail Gun + Fancy stand-6nvvah.jpgRail Gun + Fancy stand-plrz0h.jpgRail Gun + Fancy stand-hfofph.jpg
+(Yes, the gun is animated)
+--Intro--
+It's a rail gun. The functionality is simple as shit, the holos and the fancy (not really) mounting system are what tool up like 99% of the development time. The railgun is fully functional and works perfectly, the stand still has a few tiny bugs that I just don't care enough to fix.
+
+--Basic Desc--
+Basically I designed this sucker to be as close to an actual lua weapon as possible. The gun has a fire input and charged output (I would have also made it actually go through walls, but the fraction function that you find in lua tracers isn't present with e2 ones). The base is also feature full. The sucker has a Target and pos input allowing you to direct it's fire, however, if nothing is wired it will auto focus on your aimpos. The base also has a freeze and unmount input, freeze stops all rotation while triggered and unmount pops the gun out of the stand.
+
+--Fetures--
+Gun:
++ Sweet-ass model and effects (I wish I could use particles D
++ Resembles a lua weapons closely as possible
++ Explosive
+
+Base:
++ Once again, sweet-ass model and effects
++ Allows for precision aiming of a mounted rail gun (w/ built in inputs for target/pos).
+
+Combo (gun mounted on base)
++ Decrease the recharge time form 2.8 sec to 1.8
+
+--Techincal Details--
+The gun: This thing is extreamly simple, basicly you trigger the fire input, it sticks a trail on holo then waits 250 tics, moves the holo to the end of a trace done form the guns "muzzle" and blows up a phx shell at that pos, then waits 2.8 sec. (1.8 if mounted) before letting you fire again.
+
+The base: Pretty simple to, although getting the positioning/ angling right was a bitch (it's not local to the base e2 either, however, [one of the things that I was to lazy to fix], if you feel like you want to fix that be my guest). Basically it does a search in a sphere for the model and class of the gun e2, upon finding it it waits 250 ticks, (during which it positions and angles the gun with the rotator holo) and then parents. Both the base and gun use a gtable to communicate if the gun is mounted and what color to use.
+
+
+]#
+
+
+if(first()|dupefinished())
+{
+    Color = vec(0,255,255)
+    
+    runOnTick(1)
+
+    Me = owner()
+    E = entity()
+    E:setAlpha(0)
+    E:setColor(Color)
+    
+    RTable = gTable("Rail-Gun"+Me:id(),1)
+    #RTable["Mounted"+E:id(),number] = 0
+    RTable["Color"+E:id(),vector] = Color
+
+    Sounds = array("/ambient/energy/ion_cannon_shot1.wav","/ambient/energy/ion_cannon_shot2.wav",
+    "/ambient/energy/ion_cannon_shot3.wav")
+
+    Charged = 1
+
+    #Holos
+    A = ang(0,180,0)
+    O = vec(0,15,0)
+    
+    holoCreate(1,E:toWorld(E:boxCenter()+O+vec(0,-20,0)),vec(0.2,0.2,4.8),E:toWorld(ang(90,90,0)+A),Color,"hq_cylinder"):setMaterial("models/alyx/emptool_glow")
+    holoCreate(2,E:toWorld(E:boxCenter()+O+vec(0,-20,1)),vec(4.8,0.3,0.3),E:toWorld(ang(0,90,0)+A),vec(255,255,255),"hq_dome"):setMaterial("models/props_canal/metalwall005b")
+    holoCreate(3,E:toWorld(E:boxCenter()+O+vec(0,-20,-1)),vec(4.8,0.3,0.3),E:toWorld(ang(0,90,180)+A),vec(255,255,255),"hq_dome"):setMaterial("models/props_canal/metalwall005b")
+
+    holoCreate(4,E:toWorld(E:boxCenter()+O+vec(0,-20,0)),vec(0.4,0.4,0.4),E:toWorld(ang(90,90,0)+A),vec(255,255,255),"hq_torus_thick"):setMaterial("models/props_canal/metalwall005b")
+    holoCreate(5,E:toWorld(E:boxCenter()+O+vec(0,-30,0)),vec(0.4,0.4,0.4),E:toWorld(ang(90,90,0)+A),vec(255,255,255),"hq_torus_thick"):setMaterial("models/props_canal/metalwall005b")
+    holoCreate(6,E:toWorld(E:boxCenter()+O+vec(0,-35,0)),vec(0.35,0.35,0.35),E:toWorld(ang(90,90,0)+A),vec(255,255,255),"hq_torus_thick"):setMaterial("models/props_canal/metalwall005b")
+    holoCreate(7,E:toWorld(E:boxCenter()+O+vec(0,-40,0)),vec(0.3,0.3,0.3),E:toWorld(ang(90,90,0)+A),vec(255,255,255),"hq_torus_thick"):setMaterial("models/props_canal/metalwall005b")
+    
+    Muzzle = holoCreate(8,E:toWorld(E:boxCenter()+O+vec(0,-49,0)),vec(0.5,0.5,1),E:toWorld(ang(90,90,0)+A),vec(255,255,255),"pyramid")
+            holoMaterial(8,"models/props_canal/metalwall005b")
+        holoCreate(9,E:toWorld(E:boxCenter()+O+vec(0,-47,0)),vec(0.1,0.6,0.4),E:toWorld(ang(0,0,0)+A),Color,"hq_sphere")#:setMaterial("models/alyx/emptool_glow")
+        holoCreate(10,E:toWorld(E:boxCenter()+O+vec(0,-47,0)),vec(0.1,0.6,0.4),E:toWorld(ang(90,0,0)+A),Color,"hq_sphere")#:setMaterial("models/alyx/emptool_glow")
+    
+    #body  
+    holoCreate(11,E:toWorld(E:boxCenter()+O+vec(0,15,0)),vec(1,1,1),E:toWorld(ang(0,0,90)+A),vec(255,255,255),"hq_stube_thin"):setMaterial("models/props_combine/health_charger_glass")
+    holoCreate(12,E:toWorld(E:boxCenter()+O+vec(0,-16.7,0)),vec(0.3,0.5,1),E:toWorld(ang(0,90,0)+A),vec(255,255,255),"right_prism"):setMaterial("models/props_canal/metalwall005b")
+    
+    Offset = vec(0,15,0)
+    
+    #core
+    holoCreate(13,E:toWorld(E:boxCenter()+O+vec(0,0,0)+Offset),vec(0.175,0.175,0.175),E:toWorld(ang(0,0,0)+A),Color,"hq_rcylinder_thick"):setMaterial("models/alyx/emptool_glow")
+    holoCreate(14,E:toWorld(E:boxCenter()+O+vec(0,0,0.75)+Offset),vec(0.2,0.2,0.2),E:toWorld(ang(0,0,0)+A),vec(255,255,255),"hq_dome"):setMaterial("models/props_canal/metalwall005b")
+    holoCreate(15,E:toWorld(E:boxCenter()+O+vec(0,0,-0.75)+Offset),vec(0.2,0.2,0.2),E:toWorld(ang(180,0,0)+A),vec(255,255,255),"hq_dome"):setMaterial("models/props_canal/metalwall005b")
+    holoCreate(16,E:toWorld(E:boxCenter()+O+vec(0,0,0)+Offset),vec(0.3,0.3,0.3),E:toWorld(ang(90,90,0)+A),vec(255,255,255),"hq_torus"):setMaterial("models/props_canal/metalwall005b")
+    holoCreate(17,E:toWorld(E:boxCenter()+O+vec(0,0,0)+Offset),vec(0.3,0.3,0.3),E:toWorld(ang(90,0,0)+A),vec(255,255,255),"hq_torus"):setMaterial("models/props_canal/metalwall005b")
+    
+        #rings
+        holoCreate(18,E:toWorld(E:boxCenter()+O+vec(0,0,0)+Offset),vec(0.45,0.45,0.45),E:toWorld(ang(90,0,0)+A),vec(255,255,255),"hq_torus_thin"):setMaterial("models/props_canal/metalwall005b")
+        holoCreate(19,E:toWorld(E:boxCenter()+O+vec(0,0,0)+Offset),vec(0.6,0.6,0.6),E:toWorld(ang(90,0,0)+A),vec(255,255,255),"hq_torus_thin"):setMaterial("models/props_canal/metalwall005b")
+        holoCreate(20,E:toWorld(E:boxCenter()+O+vec(0,0,0)+Offset),vec(0.8,0.8,0.8),E:toWorld(ang(90,0,0)+A),vec(255,255,255),"hq_torus_thin"):setMaterial("models/props_canal/metalwall005b")
+
+    for(I=14,20)
+    {
+        holoParent(I,13)
+    }  
+    
+    
+    holoCreate(21,E:toWorld(E:boxCenter()+O+vec(0,3,0)),vec(1,1,1),E:toWorld(ang(0,90,0)+A),vec(255,255,255),"right_prism"):setMaterial("models/props_canal/metalwall005b")
+    holoCreate(22,E:toWorld(E:boxCenter()+O+vec(0,10,0)),vec(0.2,0.2,1),E:toWorld(ang(90,-90,0)+A),Color,"hq_cone"):setMaterial("models/alyx/emptool_glow")
+    holoCreate(23,E:toWorld(E:boxCenter()+O+vec(0,-9,0)),vec(1,1,1),E:toWorld(ang(0,-90,0)+A),vec(255,255,255),"right_prism"):setMaterial("models/props_canal/metalwall005b")
+    holoCreate(24,E:toWorld(E:boxCenter()+O+vec(0,21,0)),vec(1,0.1,1),E:toWorld(ang(0,0,0)+A),vec(255,255,255),""):setMaterial("models/props_canal/metalwall005b")
+    
+    holoCreate(25,E:toWorld(E:boxCenter()+O+vec(0,-5.7,1.5)),vec(1,1,1),E:toWorld(ang(0,0,-45)+A),vec(255,255,255),"hq_torus"):setMaterial("models/props_canal/metalwall005b")
+    holoCreate(26,E:toWorld(E:boxCenter()+O+vec(0,-0.7,1.5)),vec(1,1,1),E:toWorld(ang(0,0,45)+A),vec(255,255,255),"hq_torus"):setMaterial("models/props_canal/metalwall005b")
+    
+    holoCreate(27,E:toWorld(E:boxCenter()+O+vec(0,-3,0)),vec(2,1,1),E:toWorld(ang(0,90,180)+A),vec(255,255,255),"prism"):setMaterial("models/props_combine/health_charger_glass")
+    
+    holoCreate(28,E:toWorld(E:boxCenter()+O+vec(3.7,-30,3.7)),vec(0.032,2.6,0.032),E:toWorld(ang(0,-6,-6.5)+A),vec(255,255,255),""):setMaterial("models/props_canal/metalwall005b")
+    holoCreate(29,E:toWorld(E:boxCenter()+O+vec(-3.7,-30,3.7)),vec(0.032,2.6,0.032),E:toWorld(ang(0,6,-6.5)+A),vec(255,255,255),""):setMaterial("models/props_canal/metalwall005b")
+
+    holoCreate(30)
+        Tracer = holoEntity(30)
+        holoAlpha(30,0)
+        holoPos(30,Muzzle:pos())
+        
+    for(I=1,30)
+    {
+        if(I<14 | I>20)
+        {
+            holoParent(I,E)
+        }
+    }    
+    
+    E:soundPlay("hum",0,"/ambient/machines/combine_shield_loop3.wav")
+     soundVolume("hum",0.3)
+}
+if(Fire & !Mode)
+{ 
+    Mount = RTable["Mounted"+E:id(),number]
+    Tracer:setTrails(50,0,2.8,"trails/laser",Color,255)
+    holoAlpha(1,0)
+
+    Mode = 1
+    Charged = 0
+    
+    soundStop("hum")
+    E:soundPlay("Fire",0,Sounds[round(random(1,Sounds:count())),string])
+    E:soundPlay("charge",(!Mount ? 2.8 : 1.7),"/ambient/machines/thumper_startup1.wav")
+    
+    timer("boom",100)
+    timer("recharge",(!Mount ? 2800 : 1800))
+}
+
+if(Mode)
+{ 
+    if(clk("boom"))
+    {
+        Round = propSpawn("models/props_phx/misc/flakshell_big.mdl",Muzzle:pos(),ang(),1)
+        Round:setAlpha(0)
+        
+        rangerFilter(E)
+        rangerFilter(Round)
+        if( RTable["Mounted"+E:id(),number])
+        {
+            Trace = rangerOffset(10000, E:toWorld(vec(-6,-6,12)), E:right())
+        }else
+        {
+            Trace = rangerOffset(10000, Muzzle:pos(),Muzzle:up())
+        }
+        
+        TarPos = (Trace:hit() ? Trace:pos() : Muzzle:toWorld(vec(0,0,10000)))
+        
+        Round:setPos(TarPos)
+        Round:propBreak()
+        
+        holoUnparent(30)
+        holoPos(30,TarPos)
+        
+        Mode = 2
+        H=0.25
+    }     
+
+    if(clk("recharge"))
+    {
+        Charged = 1
+    }
+
+    if(Charged & Mode == 2)
+    {
+        Mode = 0
+        H=1
+        holoAlpha(1,255)
+        Tracer:removeTrails()
+        holoPos(30,Muzzle:pos())
+        holoParent(30,E)
+        E:soundPlay("hum",0,"/ambient/machines/combine_shield_loop3.wav")
+        soundVolume("hum",0.3)
+    }
+}
+
+
+
+#Animations
+#core
+T = T+1*0.75
+if(!Charged)
+{
+    H = H+1*1
+    T -= sin(H)/2
+}
+holoAng(13,ang(sin(T)*300,cos(T)*300,sin(T)*300))
+holoAng(18,ang(cos(T)*300,sin(T)*300,sin(T)*300))
+holoAng(19,ang(sin(T)*300,sin(T)*300,cos(T)*300))
+holoAng(20,ang(cos(T)*300,cos(T)*300,sin(T)*300))
+
+#body
+holoAng(25,holoEntity(25):toWorld(ang(0,0,0)+ang(0,1,0)))
+holoAng(26,holoEntity(26):toWorld(ang(0,0,0)+ang(0,1,0)))
+
+if(last())
+{
+    RTable["Color",vector] = vec(255,0,0)
+    RTable["Mounted",number] = 0
+}

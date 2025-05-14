@@ -1,0 +1,92 @@
+@name Gridded Ranger
+@inputs 
+@outputs 
+@persist Back:vector Co Notes:array Sound:string
+@trigger 
+runOnTick(1)
+
+Holos = 30
+Scale = 5
+Out = 12
+Out2 = 12
+Up = 12
+
+Sound = "synth/saw.wav"
+#59 = Low C
+
+# A# D# D# F  F  G2 A#2 G2 D# A# D# D# F  F  G2 D# A# D# D# F  F  G2 A#2 G2 D# C2 F  G#2 G2 D#
+# 57 62 62 64 64 66 69  66 62 57 62 62 64 64 66 62 57 62 62 64 64 66 69  66 62 71 64 67  66 62
+
+
+if(first())
+{
+Notes = array(57,62,62,64,64,66,69,66,62,57,62,62,64,64,66,62,57,62,62,64,64,66,69,66,62,71,64,67,66,62)
+#print(Notes:count():toString())
+for(I=1,Holos)
+{
+holoCreate(I)   
+holoModel(I,"plane")
+holoColor(I,vec(0,255,0))
+holoScale(I,vec(1,1,1)*Scale)  
+holoPos(I,entity():pos())
+holoMaterial(I,"Lights/white005")
+
+}   
+Back = entity():pos()
+}
+
+O = owner()
+
+XDist = abs(Back:x()-O:pos():x())
+YDist = abs(Back:y()-O:pos():y())
+
+rangerFilter(owner())
+rangerHitWater(1)
+rangerFilter(owner():vehicle())
+R = rangerOffset(1000000,owner():pos(),vec(0,0,-1))
+RHit = R:hitNormal()
+RPos = R:position()
+UpSet = vec(0,0,RPos:z())+RHit
+Ang = RHit:toAngle()+ang(90,0,0)
+
+if(XDist>=Scale*Out)
+{
+Pitch = 2^((Notes[Co,number]+Up)/12)
+soundPlay(1,100,Sound)
+soundPitch(1,Pitch)    
+
+Co=Co%Holos+1
+if(abs(Back:x()-O:pos():x())!=Back:x()-O:pos():x())
+{
+holoPos(Co,Back:setZ(0)+vec(Scale*Out,0,0)+UpSet)
+holoAng(Co,Ang)
+Back = Back+vec(Scale*Out2,0,0)
+}
+else
+{
+holoPos(Co,Back:setZ(0)-vec(Scale*Out,0,0)+UpSet)
+holoAng(Co,Ang)
+Back = Back-vec(Scale*Out2,0,0)    
+}
+}
+
+if(YDist>=Scale*Out)
+{
+Pitch = 2^((Notes[Co,number]+Up)/12)
+soundPlay(1,100,Sound)
+soundPitch(1,Pitch)    
+
+Co=Co%Holos+1
+if(abs(Back:y()-O:pos():y())!=Back:y()-O:pos():y())
+{
+holoPos(Co,Back:setZ(0)+vec(0,Scale*Out,0)+UpSet)
+holoAng(Co,Ang)
+Back = Back+vec(0,Scale*Out2,0)
+}
+else
+{
+holoPos(Co,Back:setZ(0)-vec(0,Scale*Out,0)+UpSet)
+holoAng(Co,Ang)
+Back = Back-vec(0,Scale*Out2,0)    
+}
+}

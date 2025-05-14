@@ -1,0 +1,561 @@
+@name Raveos Instant Car
+@inputs 
+@outputs 
+@persist T Y WheelHeight Rotspeed Speed Acceleration Breaks Timer
+@persist EnginePitch Pitch Roll WheelWidth FrontHeight BackHeight
+@persist RightWidth LeftWidth Fflip Bflip FlipSpeed Reve
+@persist HoloScale:vector HoloModel Holos Force
+##Made by Raveo##
+
+#[
+
+INFO:
+
+Hello everyone. This is my instant stunt car. No wiring is required. simply copy the E2 and put it on any chair! Very easy.
+
+
+First of all I would like to apologise for the crappy looking car. I'm not very creative or good when it comes to modelling holograms. To make up for this somewhat I've made this car as customisable as possible. Almost anything pertaining to the physics or aesthetics can be changed easily, you can even disable the holograms and then build your own body. Just remember to set all the weights to 0 and parent them to the chair!!!!!!!
+
+Secondly, I ask that you simply take a moment to read the small messages that pops up in the bottom right hand corner when you get into your car. They will tell you the controls! Too many people use my stuff then ask what the controls are.
+
+Thirdly, I am open to suggestions and ideas. I would appreciate it if you informed me about any bugs so I can get around to fixing them. Currently on my "to do" list is
+
+1: Fix a small physics bug when landing on the tail end. (done)
+
+2: Improve car look.
+
+3: Add a holographic speedo
+
+4: Add gear sounds.
+
+I hope you enjoy using it as much as I enjoyed writing it. Please leave a "like" if you like it. Thank you. Have fun!
+
+
+]#
+
+E=entity():isWeldedTo()
+if(first())
+{
+    #Make sure everyone has the same values before racing!
+    #Physics
+    Speed=100
+    Acceleration=0.02
+    Breaks=0.05
+    FlipSpeed=100
+    ###################################################################
+    #Cosmetic
+    EnginePitch=30       
+    WheelHeight=1.1
+    WheelWidth=1.2
+    Holos=1 #Removes the default car holos. Does not remove wheels.
+    #Colours
+    R=random(0,255)
+    G=random(0,255)
+    B=random(0,255)
+    Colour=vec(R,G,B) #You can set your own prefered colours here. Red, Green, Blue
+    #Wheel Positions (This may affect some physical properties)
+    FrontHeight=50
+    BackHeight=-80
+    RightWidth=25 #Can be used to make a motorbike :P
+    LeftWidth=-55  
+            
+    runOnTick(1)
+    rangerPersist(1)
+    holoCreate(1)
+    holoCreate(2)
+    holoCreate(3)
+    holoCreate(4)
+        
+    holoParent(1,E)
+    holoParent(2,E)
+    holoParent(3,E)
+    holoParent(4,E)
+
+    #Changing the wheel model will cause the E2 to think holo any model is disabled.    
+    holoModel(1,"models/xeon133/racewheel/race-wheel-30.mdl")
+    holoModel(2,"models/xeon133/racewheel/race-wheel-30.mdl")
+    holoModel(3,"models/xeon133/racewheel/race-wheel-30.mdl")
+    holoModel(4,"models/xeon133/racewheel/race-wheel-30.mdl")
+    
+    holoScale(1,vec(WheelWidth,WheelHeight,WheelHeight))
+    holoScale(2,vec(WheelWidth,WheelHeight,WheelHeight))
+    holoScale(3,vec(WheelWidth,WheelHeight,WheelHeight))
+    holoScale(4,vec(WheelWidth,WheelHeight,WheelHeight))
+    #######Car Holo Body (This can be disabled)########
+    if(Holos)
+    {    
+        holoCreate(5)#Front under hood.
+        holoPos(5,E:toWorld(vec(-15,115,-10)))
+        holoAng(5,E:toWorld(ang(0,0,0)))
+        holoModel(5,"hq_rcube_thick")
+        holoScale(5,vec(7.9,3.5,1.5))
+        holoParent(5,E)
+        holoColor(5,Colour)
+        holoMaterial(5,"phoenix_storms/chrome")
+
+                        
+        holoCreate(6)#car interior body
+        holoPos(6,E:toWorld(vec(-15,-15,-8.1)))
+        holoAng(6,E:toWorld(ang(0,0,0)))
+        holoModel(6,"hq_stube_thin")
+        holoScale(6,vec(8.05,8,2.5))
+        holoParent(6,E)
+        #holoMaterial(6,"phoenix_storms/chrome")
+        holoColor(6,clamp(Colour-vec(50,50,50),vec(0,0,0),vec(255,255,255)))
+                        
+        holoCreate(7)#body and hood connector
+        holoPos(7,E:toWorld(vec(-15,70,-15)))
+        holoAng(7,E:toWorld(ang(0,0,0)))
+        holoModel(7,"cube")
+        holoScale(7,vec(5,7,1.5))
+        holoParent(7,E)           
+        #holoMaterial(7,"phoenix_storms/chrome")
+        holoColor(7,Colour)
+        
+        holoCreate(8)#hood sloap
+        holoPos(8,E:toWorld(vec(-15,90,-3.2)))
+        holoAng(8,E:toWorld(ang(0,0,-5)))
+        holoModel(8,"cube")
+        holoScale(8,vec(8,7,1))
+        holoParent(8,E)        
+        #holoMaterial(8,"phoenix_storms/chrome")
+        holoColor(8,Colour)
+        
+        holoCreate(9)#car interior floor
+        holoPos(9,E:toWorld(vec(-15,-15,-22)))
+        holoAng(9,E:toWorld(ang(0,0,0)))
+        holoModel(9,"cube")
+        holoScale(9,vec(8,8,0.1))
+        holoParent(9,E)        
+        #holoMaterial(9,"phoenix_storms/chrome")
+        holoColor(9,Colour)
+        #Right
+        holoCreate(10)#Front Rear wheel cover
+        holoPos(10,E:toWorld(vec(27,40,-5)))
+        holoAng(10,E:toWorld(ang(0,0,25)))
+        holoModel(10,"cube")
+        holoScale(10,vec(1,2,0.5))
+        holoParent(10,E)
+        #holoMaterial(10,"phoenix_storms/chrome")
+        holoColor(10,Colour)
+        
+        holoCreate(11)#Front Front wheel cover
+        holoPos(11,E:toWorld(vec(27,60,-6)))
+        holoAng(11,E:toWorld(ang(0,0,-25)))
+        holoModel(11,"cube")
+        holoScale(11,vec(1,3,0.5))
+        holoParent(11,E)
+        #holoMaterial(11,"phoenix_storms/chrome")
+        holoColor(11,Colour)
+        #Left
+        holoCreate(12)#Front Rear wheel cover
+        holoPos(12,E:toWorld(vec(-57,40,-5)))
+        holoAng(12,E:toWorld(ang(0,0,25)))
+        holoModel(12,"cube")
+        holoScale(12,vec(1,2,0.5))
+        holoParent(12,E)
+        #holoMaterial(12,"phoenix_storms/chrome")
+        holoColor(12,Colour)
+        
+        holoCreate(13)#Front Front wheel cover
+        holoPos(13,E:toWorld(vec(-57,60,-6)))
+        holoAng(13,E:toWorld(ang(0,0,-25)))
+        holoModel(13,"cube")
+        holoScale(13,vec(1,3,0.5))
+        holoParent(13,E)
+        #holoMaterial(13,"phoenix_storms/chrome")
+        holoColor(13,Colour)
+        
+        holoCreate(14)#body and boot connector
+        holoPos(14,E:toWorld(vec(-15,-80,-15)))
+        holoAng(14,E:toWorld(ang(0,0,0)))
+        holoModel(14,"cube")
+        holoScale(14,vec(5,3,1.5))
+        holoParent(14,E)           
+        #holoMaterial(14,"phoenix_storms/chrome")
+        holoColor(14,Colour)
+        
+        holoCreate(15)#Boot
+        holoPos(15,E:toWorld(vec(-15,-115,-10)))
+        holoAng(15,E:toWorld(ang(0,0,0)))
+        holoModel(15,"hq_rcube_thick")
+        holoScale(15,vec(7.9,2,1.5))
+        holoParent(15,E)
+        holoMaterial(15,"phoenix_storms/chrome")
+        holoColor(15,Colour)
+        
+        holoCreate(16)#top boot sloap
+        holoPos(16,E:toWorld(vec(-15,-95,-3)))
+        holoAng(16,E:toWorld(ang(0,0,15)))
+        holoModel(16,"cube")
+        holoScale(16,vec(8,4,1.5))
+        holoParent(16,E)
+        #holoMaterial(16,"phoenix_storms/chrome")
+        holoColor(16,Colour)
+        
+        holoCreate(17)#Rear Rear wheel cover
+        holoPos(17,E:toWorld(vec(-15,-110,-15)))
+        holoAng(17,E:toWorld(ang(0,0,0)))
+        holoModel(17,"cube")
+        holoScale(17,vec(8,2,1.5))
+        holoParent(17,E)
+        #holoMaterial(17,"phoenix_storms/chrome")
+        holoColor(17,Colour)
+        
+        holoCreate(18)#Rear Front wheel cover
+        holoPos(18,E:toWorld(vec(-15,-70,0)))
+        holoAng(18,E:toWorld(ang(0,0,-25)))
+        holoModel(18,"cube")
+        holoScale(18,vec(8,2,1))
+        holoParent(18,E)
+       # holoMaterial(18,"phoenix_storms/chrome")
+        holoColor(18,Colour)
+        
+        holoCreate(19)#Little random bit on the back
+        holoPos(19,E:toWorld(vec(-15,-65,6)))
+        holoAng(19,E:toWorld(ang(0,0,0)))
+        holoModel(19,"cube")
+        holoScale(19,vec(8.5,1.5,1))
+        holoParent(19,E)
+        #holoMaterial(19,"phoenix_storms/chrome")
+        holoColor(19,vec(0,0,0))
+        
+        holoCreate(20)#Front Window
+        holoPos(20,E:toWorld(vec(-15,45,15)))
+        holoAng(20,E:toWorld(ang(0,0,-45)))
+        holoModel(20,"cube")
+        holoScale(20,vec(7.9,3,0.05))
+        holoParent(20,E)
+        holoAlpha(20,100)
+        holoColor(20,vec(0,0,0))
+                       
+        holoCreate(21)#little front bit I forgot about
+        holoPos(21,E:toWorld(vec(-15,100,-15)))
+        holoAng(21,E:toWorld(ang(0,0,0)))
+        holoModel(21,"cube")
+        holoScale(21,vec(8,5,1.5))
+        holoParent(21,E)  
+        #holoMaterial(21,"phoenix_storms/chrome")
+        holoColor(21,Colour)
+        
+        holoCreate(22)#Weird front body gap
+        holoPos(22,E:toWorld(vec(-15,40,1)))
+        holoAng(22,E:toWorld(ang(0,0,0)))
+        holoModel(22,"cube")
+        holoScale(22,vec(8,2,1))
+        holoParent(22,E) 
+        #holoMaterial(22,"phoenix_storms/chrome")
+        holoColor(22,Colour)
+        
+        holoCreate(23)#Front Window support 1
+        holoPos(23,E:toWorld(vec(-15,32,28)))
+        holoAng(23,E:toWorld(ang(90,0,0)))
+        holoModel(23,"hq_cylinder")
+        holoScale(23,vec(0.1,0.1,7.8))
+        holoParent(23,E)
+        holoMaterial(23,"phoenix_storms/chrome")
+                
+        holoCreate(24)#Front Window support 2 Right
+        holoPos(24,E:toWorld(vec(32,43,17)))
+        holoAng(24,E:toWorld(ang(-45,90,0)))
+        holoModel(24,"hq_cylinder")
+        holoScale(24,vec(0.1,0.1,2.6))
+        holoParent(24,E)
+        holoMaterial(24,"phoenix_storms/chrome")
+        
+        holoCreate(25)#Front Window support 2 Right
+        holoPos(25,E:toWorld(vec(-62,43,17)))
+        holoAng(25,E:toWorld(ang(-45,90,0)))
+        holoModel(25,"hq_cylinder")
+        holoScale(25,vec(0.1,0.1,2.6))
+        holoParent(25,E)
+        holoMaterial(25,"phoenix_storms/chrome")
+        
+        holoCreate(26)#Left Mirror Support
+        holoPos(26,E:toWorld(vec(-63,23,7)))
+        holoAng(26,E:toWorld(ang(-45,15,0)))
+        holoModel(26,"hq_cylinder")
+        holoScale(26,vec(0.1,0.1,1))
+        holoParent(26,E)
+        holoMaterial(26,"phoenix_storms/chrome")
+        
+        holoCreate(27)#Right Mirror Support
+        holoPos(27,E:toWorld(vec(33,23,7)))
+        holoAng(27,E:toWorld(ang(45,15,0)))
+        holoModel(27,"hq_cylinder")
+        holoScale(27,vec(0.1,0.1,1))
+        holoParent(27,E)
+        holoMaterial(27,"phoenix_storms/chrome")
+        
+        holoCreate(28)#Right Mirror
+        holoPos(28,E:toWorld(vec(39,22,13)))
+        holoAng(28,E:toWorld(ang(0,-15,-90)))
+        holoModel(28,"hq_dome")
+        holoScale(28,vec(0.7,0.7,0.7))
+        holoParent(28,E)
+        holoMaterial(28,"phoenix_storms/chrome")
+        
+        holoCreate(29)#Left Mirror
+        holoPos(29,E:toWorld(vec(-69,19,13)))
+        holoAng(29,E:toWorld(ang(0,35,-90)))
+        holoModel(29,"hq_dome")
+        holoScale(29,vec(0.7,0.7,0.7))
+        holoParent(29,E)
+        holoMaterial(29,"phoenix_storms/chrome")
+        
+        holoCreate(30)#Left Mirror Mirror
+        holoPos(30,E:toWorld(vec(-69,19,13)))
+        holoAng(30,E:toWorld(ang(0,35,-90)))
+        holoModel(30,"hq_cylinder")
+        holoScale(30,vec(0.6,0.6,0.01))
+        holoParent(30,E)
+        holoMaterial(30,"debug/env_cubemap_model")
+                
+        holoCreate(31)#Right Mirror Mirror
+        holoPos(31,E:toWorld(vec(39,22,13)))
+        holoAng(31,E:toWorld(ang(0,-15,-90)))
+        holoModel(31,"hq_cylinder")
+        holoScale(31,vec(0.6,0.6,0.01))
+        holoParent(31,E)
+        holoMaterial(31,"debug/env_cubemap_model")
+        
+        holoCreate(32)#Right Head Light 1
+        holoPos(32,E:toWorld(vec(20,132,-10)))
+        holoAng(32,E:toWorld(ang(0,-0,-90)))
+        holoModel(32,"hq_cylinder")
+        holoScale(32,vec(0.8,0.8,1))
+        holoParent(32,E)
+        holoAlpha(32,150)
+                        
+        holoCreate(33)#Right Head Light 2
+        holoPos(33,E:toWorld(vec(10,132,-10)))
+        holoAng(33,E:toWorld(ang(0,-0,-90)))
+        holoModel(33,"hq_cylinder")
+        holoScale(33,vec(0.8,0.8,1))
+        holoParent(33,E)
+        holoAlpha(33,150)
+                
+        holoCreate(34)#Left Head Light 1
+        holoPos(34,E:toWorld(vec(-50,132,-10)))
+        holoAng(34,E:toWorld(ang(0,-0,-90)))
+        holoModel(34,"hq_cylinder")
+        holoScale(34,vec(0.8,0.8,1))
+        holoParent(34,E)
+        holoAlpha(34,150)
+                        
+        holoCreate(35)#Left Head Light 2
+        holoPos(35,E:toWorld(vec(-40,132,-10)))
+        holoAng(35,E:toWorld(ang(0,-0,-90)))
+        holoModel(35,"hq_cylinder")
+        holoScale(35,vec(0.8,0.8,1))
+        holoParent(35,E)
+        holoAlpha(35,150)
+                
+        holoCreate(36)#Right Rear Light 1
+        holoPos(36,E:toWorld(vec(20,-123,-10)))
+        holoAng(36,E:toWorld(ang(0,-0,-0)))
+        holoModel(36,"hq_rcube_thick")
+        holoScale(36,vec(1.5,0.8,1))
+        holoColor(36,vec(255,0,0))        
+        holoParent(36,E)
+
+                
+        holoCreate(37)#Left Rear Light 1
+        holoPos(37,E:toWorld(vec(-50,-123,-10)))
+        holoAng(37,E:toWorld(ang(0,-0,-0)))
+        holoModel(37,"hq_rcube_thick")
+        holoScale(37,vec(1.5,0.8,1))
+        holoColor(37,vec(255,0,0))        
+        holoParent(37,E)
+        
+        holoCreate(38)#Steering Column
+        holoPos(38,E:toWorld(vec(-0,25,2.5)))
+        holoAng(38,E:toWorld(ang(0,-0,45)))
+        holoModel(38,"hq_cylinder")
+        holoScale(38,vec(0.3,0.3,2))
+        holoColor(38,vec(100,100,100))        
+        holoParent(38,E)
+        
+        holoCreate(39)#Steering Wheel
+        holoPos(39,E:toWorld(vec(-0,15,10)))
+        holoAng(39,E:toWorld(ang(0,-0,90)))
+        holoModel(39,"hq_torus_thin")
+        holoScale(39,vec(1.2,1.2,1.2))
+        holoColor(39,vec(100,100,100))        
+        holoParent(39,E)
+        
+        holoCreate(40)#Steering Wheel Body
+        holoPos(40,E:toWorld(vec(-0,14,10)))
+        holoAng(40,E:toWorld(ang(0,-0,-90)))
+        holoModel(40,"hq_dome")
+        holoScale(40,vec(0.7,0.7,1))
+        holoColor(40,vec(100,100,100))        
+        holoParent(40,holoEntity(39))
+        
+        holoCreate(41)#Steering Wheel Spoke 1
+        holoPos(41,E:toWorld(vec(2,15,10)))
+        holoAng(41,E:toWorld(ang(45,0,0)))
+        holoModel(41,"hq_cylinder")
+        holoScale(41,vec(0.05,0.05,0.9))
+        holoColor(41,vec(100,100,100))        
+        holoParent(41,holoEntity(39))
+        
+        holoCreate(42)#Steering Wheel Spoke 2
+        holoPos(42,E:toWorld(vec(-2,15,10)))
+        holoAng(42,E:toWorld(ang(-45,0,0)))
+        holoModel(42,"hq_cylinder")
+        holoScale(42,vec(0.05,0.05,0.9))
+        holoColor(42,vec(100,100,100))        
+        holoParent(42,holoEntity(39))
+        
+        holoCreate(43)#Steering Wheel Spoke 3
+        holoPos(43,E:toWorld(vec(0,15,8.5)))
+        holoAng(43,E:toWorld(ang(0,0,0)))
+        holoModel(43,"hq_cylinder")
+        holoScale(43,vec(0.05,0.05,0.9))
+        holoColor(43,vec(100,100,100))        
+        holoParent(43,holoEntity(39))
+        
+        holoCreate(44)#Symbol
+        holoPos(44,E:toWorld(vec(0,14,10)))
+        holoAng(44,E:toWorld(ang(90,0,90)))
+        holoModel(44,"models/beer/wiremod/watersensor_mini.mdl")
+        holoScale(44,vec(0.5,0.5,0.5))
+        holoParent(44,holoEntity(39))
+        
+        holoCreate(45)#Hood Scoop
+        holoPos(45,E:toWorld(vec(-15,90,3)))
+        holoAng(45,E:toWorld(ang(0,0,-90)))
+        holoModel(45,"hq_tube")
+        holoScale(45,vec(3,0.7,2))
+        holoColor(45,vec(100,100,100))        
+        holoParent(45,E)
+        
+        holoCreate(46)#Hood Scoop Part 2: attack of the clones.
+        holoPos(46,E:toWorld(vec(-15,73,2)))
+        holoAng(46,E:toWorld(ang(0,0,-80)))
+        holoModel(46,"hq_tube")
+        holoScale(46,vec(3,0.7,1.1))
+        holoColor(46,vec(100,100,100))        
+        holoParent(46,E)
+        
+        holoCreate(47)#Hood Scoop Part 3: Revenge of the filter.
+        holoPos(47,E:toWorld(vec(-15,100,3)))
+        holoAng(47,E:toWorld(ang(0,0,-90)))
+        holoModel(47,"hq_cylinder")
+        holoScale(47,vec(2.9,0.6,0.1))        
+        holoParent(47,E)
+        holoMaterial(47,"phoenix_storms/mat/mat_phx_carbonfiber2")
+        }
+    HoloScale=vec(31,16,31)
+    
+    if(round(holoEntity(1):boxSize())!=HoloScale)
+    {
+        print("wire_holograms_modelany is disabled on this server. Creating new wheels...")
+        HoloModel=1 
+    }    
+    rangerFilter(E)
+    rangerFilter(players())
+    
+}
+entity():setMass(0)
+E:setMass(50000)
+Driver=E:driver()
+M1=Driver:keyAttack1()
+M2=Driver:keyAttack2()
+Rvel=E:angVel():roll()
+Pvel=E:angVel():pitch()
+Yvel=E:angVel():yaw()
+Range=rangerOffset(100,E:pos()+vec(0,0,-8),-E:up())
+Height=Range:distance()
+FR=rangerOffset(30,E:toWorld(vec(RightWidth,FrontHeight,0)),-E:up())
+FL=rangerOffset(30,E:toWorld(vec(LeftWidth,FrontHeight,0)),-E:up())
+BR=rangerOffset(30,E:toWorld(vec(RightWidth,BackHeight,0)),-E:up())
+BL=rangerOffset(30,E:toWorld(vec(LeftWidth,BackHeight,0)),-E:up())
+Forward=E:forward()*E:mass()*Speed
+Force=(-FR:distance()+30)*3
+if(Height<49)
+{
+    E:applyForce(-E:vel()*E:mass()+((Forward+$Forward)*(T+Reve))+vec(0,0,1)*E:mass()*10*(28-Height)+vec(0,0,-1)*E:mass()*Force*(Height-28)+vec(0,0,1)*E:mass()*7.511255)
+}
+if(Height>40)
+{
+    if(M2){Fflip+=0.08}
+    else{Fflip-=0.01}
+    if(Fflip>1){Fflip=1}
+    elseif(Fflip<0){Fflip=0}
+    if(M1){Bflip-=0.08}
+    else{Bflip+=0.01}
+    if(Bflip<-1){Bflip=-1}
+    elseif(Bflip>0){Bflip=0}    
+    
+    R1=0
+    Pd=0
+}
+else{R1=E:angles():roll(),Pd=E:angles():pitch(),Fflip=0,Bflip=0}
+E:applyAngForce(ang(Rvel+Pitch+R1+(Fflip*FlipSpeed)+(Bflip*FlipSpeed),-Yvel-(Y*100),-Pvel+(-Pd*20)+Roll)*E:mass())
+if(M1&Height<40){T+=Acceleration}
+else{T-=0.01}
+if(T>10){T=10}
+if(T<0){T=0}
+if(M2&Height<40){T-=Breaks}
+if(M2&T<=0){Reve-=0.01}
+if(Reve<-2){Reve=-2}
+if(!M2){Reve+=0.01}
+if(Reve>0){Reve=0}
+if(E:vel():length()>100)
+{
+    Y=vec(Driver:eye():dot(E:right()),Driver:eye():dot(E:right()),0):y()
+}
+else{Y=0}
+Rotspeed+=T*10
+holoPos(1,FR:position()+vec(0,0,-8+(WheelHeight)*14.5))
+holoPos(2,FL:position()+vec(0,0,-8+(WheelHeight)*14.5))
+holoPos(3,BR:position()+vec(0,0,-8+(WheelHeight)*14.5))
+holoPos(4,BL:position()+vec(0,0,-8+(WheelHeight)*14.5))
+holoAng(1,E:toWorld(ang(Rotspeed,clamp((-Y*100)/4,-45,45)+90,180)))
+holoAng(2,E:toWorld(ang(Rotspeed,clamp((-Y*100)/4,-45,45)+90,0)))
+holoAng(3,E:toWorld(ang(Rotspeed,90,180)))
+holoAng(4,E:toWorld(ang(Rotspeed,90,0)))
+if(Driver)
+{
+Timer+=1 
+if(Timer>200)
+{Timer=0}
+if(Timer==5) {E:soundPlay(2,0,"vehicles/airboat/fan_motor_fullthrottle_loop1.wav")}
+soundPitch(2,(EnginePitch)*(T+abs(Reve)))
+}
+else{soundStop(2)}
+Roll=(((FR:distance()-30)+(BR:distance()-30))+((-FL:distance()+30)+(-BL:distance()+30)))*15
+Pitch=(((FR:distance()-30)+(FL:distance()-30))+((-BL:distance()+30)+(-BR:distance()+30)))*15
+if(changed(HoloModel)&HoloModel)
+{
+    holoDelete(44)
+    holoModel(1,"hq_sphere")
+    holoModel(2,"hq_sphere")
+    holoModel(3,"hq_sphere")
+    holoModel(4,"hq_sphere")
+    
+    holoScale(1,vec(3,1,3))
+    holoScale(2,vec(3,1,3))
+    holoScale(3,vec(3,1,3))
+    holoScale(4,vec(3,1,3))
+    
+    holoColor(1,vec(20,20,20))
+    holoColor(2,vec(20,20,20))
+    holoColor(3,vec(20,20,20))
+    holoColor(4,vec(20,20,20))
+    
+    print("please ask your local server admin or owner to type 'wire_holograms_modelany 1' into the console!")
+    
+}
+
+#Holo wheel turning
+holoAng(39,E:toWorld(ang(Y*100,0,90)))
+if(changed(Driver)&Driver)
+{
+    E:hintDriver("Made by Raveo",7)
+    E:hintDriver("Mouse 1 and 2: Accelerate/Flip",5)
+    E:hintDriver("Mouse aim to steer",5)
+    E:hintDriver("Enjoy!",5)
+}

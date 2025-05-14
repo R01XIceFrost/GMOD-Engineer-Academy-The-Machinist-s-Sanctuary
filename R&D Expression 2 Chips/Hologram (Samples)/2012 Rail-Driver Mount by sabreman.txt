@@ -1,0 +1,154 @@
+@name Rail-Driver Mount
+@inputs  Target:entity Pos:vector Freeze Unmount
+@persist [Gun Me E Mount]:entity Ang:angle Mode Rotation RTable:gtable
+@model models/jaanus/wiretool/wiretool_waypoint.mdl
+
+
+#[
+
+INFO;
+
+--Last Thoughts--
+Firstly, what I mean by it's not localized, is that if the base upside down, the rotator will be right side up, making it look kind weird.
+Secondly, if you find any bugs, unless it's something huge, I don't care. Like I said before I'm done with this contraption so don't plan on getting any help from me.
+
+]#
+
+if(first()|dupefinished())
+{
+    runOnTick(1)
+    runOnLast(1)
+    
+    Color = vec(0,255,0)
+    
+    E = entity()
+    Me = owner()
+    
+    RTable = gTable("Rail-Gun"+Me:id(),1)
+
+    holoCreate(1,E:toWorld(vec(0,0,2.5)),vec(3,3,0.4),E:toWorld(ang(0,0,0)),vec(255,255,255),"hq_cylinder"):setMaterial("models/props_canal/metalwall005b")
+    
+    holoCreate(2,E:toWorld(vec(0,0,25)),vec(0.7,0.7,3),E:toWorld(ang(0,0,0)),vec(255,255,255),"hq_tube"):setMaterial("models/props_combine/health_charger_glass")
+    holoCreate(3,E:toWorld(vec(0,0,25)),vec(0.2,0.2,3),E:toWorld(ang(0,0,0)),Color,"hq_cylinder"):setMaterial("models/alyx/emptool_glow")
+    
+    holoCreate(4,E:toWorld(vec(0,0,44)),vec(1,1,0.8),E:toWorld(ang(180,0,0)),vec(255,255,255),"hq_dome"):setMaterial("models/props_canal/metalwall005b")
+        Mount = holoEntity(4)
+        
+    holoCreate(5,E:toWorld(vec(-0.12,0,44)),vec(2,1.1,0.1),E:toWorld(ang(0,0,0)),vec(255,255,255),""):setMaterial("models/props_canal/metalwall005b")
+    holoCreate(6,E:toWorld(vec(-11,0,50)),vec(1.1,1.1,0.2),E:toWorld(ang(90,0,0)),vec(255,255,255),"hq_stube_thin"):setMaterial("models/props_canal/metalwall005b")
+    holoCreate(7,E:toWorld(vec(10.7,0,50)),vec(1.1,1.1,0.2),E:toWorld(ang(90,0,0)),vec(255,255,255),"hq_stube_thin"):setMaterial("models/props_canal/metalwall005b")
+    
+    holoCreate(8,E:toWorld(vec(0,0,44)),vec(0.2,0.2,0.5),E:toWorld(ang(0,0,0)),Color,"cone"):setMaterial("models/alyx/emptool_glow")
+    holoCreate(9,E:toWorld(vec(0,0,50)),vec(0.7,0.7,0.7),E:toWorld(ang(90,0,0)),Color,"hq_torus"):setMaterial("models/alyx/emptool_glow")
+    
+    for(I=5,9)
+    {
+        holoParent(I,4)
+    }
+    
+    holoCreate(10,E:toWorld(vec(0,0,5.9)),vec(3,3,0.2),E:toWorld(ang(0,0,0)),vec(255,255,255),"hq_cone"):setMaterial("models/props_canal/metalwall005b")
+    
+    holoCreate(11,E:toWorld(vec(20,0,2.5)),vec(1,1,0.4),E:toWorld(ang(0,0,0)),vec(255,255,255),"right_prism"):setMaterial("models/props_canal/metalwall005b")
+    holoCreate(12,E:toWorld(vec(-20,0,2.5)),vec(1,1,0.4),E:toWorld(ang(0,180,0)),vec(255,255,255),"right_prism"):setMaterial("models/props_canal/metalwall005b")
+    holoCreate(13,E:toWorld(vec(0,20,2.5)),vec(1,1,0.4),E:toWorld(ang(0,90,0)),vec(255,255,255),"right_prism"):setMaterial("models/props_canal/metalwall005b")
+    holoCreate(14,E:toWorld(vec(0,-20,2.5)),vec(1,1,0.4),E:toWorld(ang(0,-90,0)),vec(255,255,255),"right_prism"):setMaterial("models/props_canal/metalwall005b")
+    
+    holoCreate(15,E:toWorld(vec(0,-10,21)),vec(1,0.1,3.6),E:toWorld(ang(0,0,-18)),vec(255,255,255),"prism"):setMaterial("models/props_canal/metalwall005b")
+    holoCreate(16,E:toWorld(vec(0,10,21)),vec(1,0.1,3.6),E:toWorld(ang(0,0,18)),vec(255,255,255),"prism"):setMaterial("models/props_canal/metalwall005b")
+    holoCreate(17,E:toWorld(vec(10,0,21)),vec(1,0.1,3.6),E:toWorld(ang(0,90,-18)),vec(255,255,255),"prism"):setMaterial("models/props_canal/metalwall005b")
+    holoCreate(18,E:toWorld(vec(-10,0,21)),vec(1,0.1,3.6),E:toWorld(ang(0,90,18)),vec(255,255,255),"prism"):setMaterial("models/props_canal/metalwall005b")
+    
+    for(I=1,18)
+    {
+        if(I<5 | I>9)
+        {
+            holoParent(I,E)
+        }
+    }
+    
+    Rotation=1
+}
+if(~Unmount & Unmount)
+{
+    if(Gun)
+    {
+        Gun:deparent()
+        Gun:propFreeze(0)
+        Gun:applyForce((Mount:toWorld(vec(0.5,0.2,1)*50)-Gun:pos())*500)
+        E:soundPlay("off",0,"/ambient/machines/thumper_shutdown1.wav")
+        timer("delay",3500)
+    }else
+    {
+        printColor(vec(255,0,0),"ERROR", vec(255,255,255),": There is no gun to un-mount")
+        E:soundPlay("Error",0,"buttons/button10.wav")
+    }
+}
+if(Gun)
+{
+    holoAlpha(8,255)
+    holoAlpha(9,255)
+    if(clk("parent"))
+    {
+        Gun:parentTo(Mount)
+        RTable["Mounted"+Gun:id(),number]=1
+        Mode = 1
+    }
+    if(Mode)
+    {
+        TargetPos = (Target ? Target:toWorld(Target:boxCenter()) : (->Pos ? Pos : Me:aimPos()))
+        Ang = (TargetPos - Mount:pos()):toAngle() 
+        
+        if(Rotation | Freeze)
+        {
+            holoAng(4,Ang+ang(0,0,180))
+        }
+    }else
+    {
+        Gun:setPos(Mount:toWorld(vec(-6.1,6,-12)))
+        Gun:setAng(Mount:toWorld(ang(0,90,0)))
+
+    }
+}else
+{
+    holoAlpha(8,0)
+    holoAlpha(9,0)
+
+    
+    Mode = 0
+    if(findCanQuery())
+    {
+
+        findIncludePlayerProps(Me)
+        findIncludeClass("gmod_wire_expression2")
+        findIncludeModel("models/hunter/blocks/cube025x150x025.mdl") 
+        findInSphere(Mount:pos(),200) 
+        findSortByDistance(Mount:pos())
+        Array = findToArray()
+        
+        Temp = findResult(1)
+        if(Temp:owner() == Me & Temp:type() == "gmod_wire_expression2" & Temp:model() == "models/hunter/blocks/cube025x150x025.mdl" )
+        {
+            Gun = Temp
+            timer("parent",250) 
+        }else
+        {
+            findExcludeEntity(Temp)
+        }
+    }
+}
+if(RTable["Color"+Gun:id(),vector] != holoEntity(4):getColor())
+{
+    holoColor(3,RTable["Color"+Gun:id(),vector])
+    holoColor(8,RTable["Color"+Gun:id(),vector])
+    holoColor(9,RTable["Color"+Gun:id(),vector])
+
+}
+if(clk("delay"))
+{
+    RTable["Mounted"+Gun:id(),number] = 0
+    Gun = noentity()
+}  
+if(last())
+{
+    Gun:deparent()
+}

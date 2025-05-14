@@ -1,0 +1,99 @@
+@name Gel Bucket
+@persist Vels:array Decay:array T
+@persist Start
+@model models/props_junk/MetalBucket01a.mdl
+interval(20)
+
+Space = 2
+Holos = 90
+Out = 15
+Delay = 50
+
+if(first())
+{
+for(I=1,Holos)
+{
+holoCreate(I)
+holoModel(I,"hqicosphere2")
+holoScale(I,vec(1,1,1)*0.5)   
+if(I%2)
+{
+holoColor(I,vec(100,100,255))
+#holoColor(I,vec(100,255,100))
+}
+#if(I%3)
+#{
+#holoColor(I,vec(100,255,100))   
+#}
+else
+{
+holoColor(I,vec(255,127,0))   
+}
+holoAng(I,ang(0,0,0))
+
+Ang = entity():angles()+ang(random(-Out,Out),0,random(-Out,Out))
+Vels[I,vector] = Ang:up()*Space
+Decay[I,number] = random(0,Delay)
+
+if(!holoEntity(I)|I>90)
+{
+T=I
+break   
+}
+if(I==Holos){Start=1}
+}   
+}
+
+if(T<Holos)
+{
+T++   
+
+holoCreate(T)
+holoModel(T,"hqicosphere2")
+holoScale(T,vec(1,1,1)*0.5)   
+if(T%2)
+{
+holoColor(T,vec(100,100,255))
+}
+else
+{
+holoColor(T,vec(255,127,0))   
+}
+holoAng(T,ang(0,0,0))    
+Ang = entity():angles()+ang(random(-Out,Out),0,random(-Out,Out))
+Vels[T,vector] = Ang:up()*Space
+Decay[T,number] = random(0,Delay)
+
+
+if(!holoEntity(T))
+{
+T--   
+}  
+elseif(T==Holos)
+{
+print("BANG")   
+Start = 1
+} 
+}
+
+if(Start)
+{
+for(I=1,Holos)
+{
+Decay[I,number]=Decay[I,number]+1
+Vel = Vels[I,vector]
+holoPos(I,holoEntity(I):toWorld(Vel))  
+
+Vels[I,vector]=Vels[I,vector]+vec(0,0,-0.1)
+Vels[I,vector]=Vels[I,vector]*0.99
+
+
+if(Decay[I,number]>=Delay)#|!holoEntity(I):pos():isInWorld())
+{
+holoPos(I,entity():pos())
+Ang = entity():angles()+ang(random(-Out,Out),0,random(-Out,Out))
+Vels[I,vector] = Ang:up()*Space
+Decay[I,number]=0   
+}
+}
+}

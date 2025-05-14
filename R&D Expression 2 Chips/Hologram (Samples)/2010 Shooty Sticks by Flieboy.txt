@@ -1,0 +1,71 @@
+@name Shooty Sticks
+@inputs 
+@outputs 
+@persist TA:array Holos:array Click ACount Dir:array
+@trigger 
+
+#[
+
+INFO:
+
+ Shoots off holo sticks that stick to things, throw them by left clicking. 
+
+]#
+
+runOnTick(1)
+Click = owner():keyAttack1()
+Speed = 10
+
+if(first())
+{
+for(I=1,100)
+{
+holoCreate(I)
+holoModel(I,"hqcylinder2")
+holoScaleUnits(I,vec(2,2,25))    
+Holos[I,entity] = holoEntity(I)
+}    
+print(Holos:count():toString())
+}
+
+if(Click&$Click)
+{
+ACount++
+Dir[ACount,vector] = owner():eye()
+holoPos(ACount,owner():shootPos())       
+holoEntity(ACount):setTrails(2,10,5,"trails/smoke",vec(255,255,255),255)
+}
+
+for(I=1,ACount)
+{
+if(ops()>4500){break}
+if(TA[I,number]==0)
+{
+Dire = Dir[I,vector]
+holoPos(I,holoEntity(I):pos()+Dire*Speed)
+holoAng(I,Dire:toAngle()+ang(90,0,0))  
+
+rangerHitWater(0)
+rangerHitEntities(1)
+rangerIgnoreWorld(0) 
+rangerFilter(owner()) 
+Ranger = rangerOffset(12.5,Holos[I,entity]:pos(),Holos[I,entity]:up()) 
+if(Ranger:hit())
+{
+holoParent(I,Ranger:entity())   
+
+Ranger:entity():applyOffsetForce(holoEntity(I):up()*Ranger:entity():mass()*1000,Ranger:position())
+
+TA[I,number]=1
+holoEntity(I):removeTrails()
+}
+}
+else
+{}
+}
+
+if(Holos:count()==ACount)
+{
+#print("Out of Ammo!")
+#reset() 
+}

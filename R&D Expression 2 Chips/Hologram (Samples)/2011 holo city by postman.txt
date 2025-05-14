@@ -1,0 +1,437 @@
+@name holo city
+@inputs 
+@outputs SX SY SZ CX CY CZ Meat Veat Eeat Moeat Maeat Jeat Seat Ueat Neat Peat
+@persist Time Thunder:array Marscave:array StartNova
+runOnTick(1)
+Chip = entity()
+Me = owner()
+ThunderChance=randint(1,300)
+CaveChance=randint(1,200)
+Time++
+#clamps#
+if(SX>=49){SX=49}
+if(SX<=1){SX=1}
+
+if(SY>=49){SY=49}
+if(SY<=1){SY=1}
+
+if(SZ>=49){SZ=49}
+if(SZ<=1){SZ=1}
+
+if(CX>=255){CX=255}
+if(CX<=1){CX=1}
+
+if(CY>=255){CY=255}
+if(CY<=1){CY=1}
+
+if(CZ>=255){CZ=255}
+if(CZ<=1){CZ=1}
+
+if (first())
+{
+hint("Made by [TEC TBU]THE POSTMAN",7)
+    #SUN GO SUPER NOVA TIME#
+    timer("NovaWait",30000)
+    Thunder=array(
+    "ambient/atmosphere/thunder1.wav",
+    "ambient/atmosphere/thunder2.wav",
+    "ambient/atmosphere/thunder3.wav",
+    "ambient/atmosphere/thunder4.wav",
+    "ambient/outro/thunder01.wav",
+    "ambient/outro/thunder02.wav",
+    "ambient/outro/thunder03.wav",
+    "ambient/outro/thunder04.wav",
+    "ambient/outro/thunder05.wav",
+    "ambient/outro/thunder06.wav",
+    "ambient/outro/thunder07.wav"
+    )
+    
+    Marscave=array(
+    "ambient/atmosphere/hole_hit1.wav",
+    "ambient/atmosphere/hole_hit2.wav",
+    "ambient/atmosphere/hole_hit3.wav",
+    "ambient/atmosphere/hole_hit4.wav",
+    "ambient/atmosphere/hole_hit5.wav",
+    "ambient/atmosphere/cave_hit1.wav",
+    "ambient/atmosphere/cave_hit2.wav",
+    "ambient/atmosphere/cave_hit3.wav",
+    "ambient/atmosphere/cave_hit4.wav",
+    "ambient/atmosphere/cave_hit5.wav",
+    "ambient/atmosphere/cave_hit6.wav"
+    )
+    #default sun size#
+    SX=40
+    SY=40
+    SZ=40
+    
+    CX=200
+    CY=200
+    CZ=0
+    
+    ##default planet rotation##
+    Meat=350
+    Veat=600
+    Eeat=1000
+    Moeat=190
+    Maeat=1500
+    Jeat=2200
+    Seat=2700
+    Ueat=3300
+    Neat=3700
+    Peat=4300
+    
+    
+holoCreate(1)
+holoCreate(2)
+holoCreate(3)
+holoCreate(4)
+holoCreate(5)
+holoCreate(6)
+holoCreate(7)
+holoCreate(8)
+holoCreate(9)
+holoCreate(10)
+holoCreate(11)
+holoCreate(12)
+holoCreate(13)
+holoCreate(14)
+holoCreate(15)
+holoCreate(16)
+holoCreate(17)
+holoCreate(18)
+holoCreate(19)
+holoCreate(20)
+holoCreate(21)
+holoCreate(22)
+
+##ambient EARTH##
+holoEntity(3):soundPlay(1,0,"ambient/atmosphere/station_ambience_loop2.wav")
+soundVolume(1,0.3)
+
+##ambient MERCURY##
+holoEntity(13):soundPlay(2,0,"ambient/fire/fire_small1.wav")
+soundVolume(2,0.2)
+
+#sun#
+holoModel(1,"hqsphere2")
+holoPos(1,Chip:pos()+vec(0,0,300))
+holoParent(1,Chip)
+
+#sun outer layer#
+holoModel(2,"hqsphere2") 
+holoPos(2,Chip:pos()+vec(0,0,300))
+holoColor(2,vec(255,255,255))
+holoMaterial(2,"models/props_lab/tank_glass001")
+holoParent(2, 1)
+
+
+##ground##
+holoModel(3,"hqicosphere2")
+holoScale(3, vec(14.5,14.5,0.2))
+holoAng(3,ang(0,15,0))
+holoColor(3, vec(0,100,0))
+
+#Atmosphere#
+holoModel(4,"hqicosphere2")
+holoScale(4,vec(15.4,15.4,15.4))
+holoPos(4,Chip:pos()+vec(0,0,10))
+holoColor(4,vec(0,100,200))
+holoAlpha(4,200)
+holoParent(4,3)
+
+#Dirt#
+holoModel(5,"dome")
+holoScale(5,vec(14.6,14.6,-14))
+holoColor(5,vec(81,55,8))
+holoPos(5,Chip:pos()+vec(0,0,0))
+holoParent(5,3)
+
+##EARTH BUILDINGS##
+
+##river##
+holoScale(6, vec(14.45,2,0.2))
+holoPos(6, holoEntity(3):pos())
+holoMaterial(6, "models/shadertest/shader3")
+holoColor(6, vec(255,255,255))
+holoParent(6, 3)
+
+##wood bridge##
+holoScale(7, vec(1,2.5,0.2))
+holoPos(7, holoEntity(3):pos()+vec(0,0,1))
+holoMaterial(7, "phoenix_storms/wood")
+holoParent(7, 3)
+
+##mall##
+holoScale(8, vec(2,1,1))
+holoPos(8, holoEntity(3):pos()+vec(-40,-28,5))
+holoParent(8, 3)
+
+##mall2##
+holoScale(9, vec(1.5,3,1))
+holoPos(9, holoEntity(3):pos()+vec(-19,-40,5))
+holoParent(9, 3)
+
+#road bridge
+holoScale(10, vec(0.8,4,0.1))
+holoPos(10, holoEntity(3):pos()+vec(35,0,1))
+holoParent(10, 3)
+holoMaterial(10,"phoenix_storms/indenttiles2")
+
+#small square building#
+holoScale(11,vec(2,2,1))
+holoPos(11,holoEntity(3):pos()+vec(-20,35,5))
+holoParent(11,3)
+
+##sky scraper##
+for (I = 1, 5)
+{
+    holoCreate(I*50)
+    holoScale(I*50, vec(1,1,1))
+    holoPos(I*50, holoEntity(3):pos()+vec(30,40,I*12-4))
+    holoMaterial(I*50,"models/props_debris/building_template012d")
+    holoParent(I*50, 3)
+}
+##END EARTH BUILDINGS##
+
+#moon#
+holoModel(12,"hqsphere2")
+holoScale(12,vec(3,3,3))
+holoMaterial(12,"models/props_wasteland/rockcliff02c")
+
+#mercury#
+holoModel(13,"hqsphere2")
+holoColor(13,vec(255,200,200))
+holoScale(13, vec(4,4,4))
+holoMaterial(13,"models/props_wasteland/rockcliff02c")
+
+#venus#
+holoModel(14,"hqsphere2")
+holoColor(14,vec(255,255,255))
+holoScale(14, vec(15,15,15))
+holoMaterial(14,"models/props_combine/com_shield001a")
+
+#mars#
+holoModel(15,"hqsphere2")
+holoScale(15, vec(9,9,9))
+holoMaterial(15,"models/weapons/v_crowbar/crowbar_cyl")
+
+#jupiter#
+holoModel(16,"hqsphere2")
+holoColor(16,vec(100,70,0))
+holoScale(16, vec(30,30,30))
+
+#saturn#
+holoModel(17,"hqsphere2")
+holoColor(17,vec(200,40,0))
+holoScale(17, vec(22,22,22))
+
+#sauturns rings#
+holoModel(18,"hqtorus2")
+holoColor(18,vec(0,0,0))
+holoScale(18, vec(31,31,1))
+holoParent(18, 17)
+
+#uranus#
+holoModel(19,"hqsphere")
+holoColor(19,vec(0,45,100))
+holoScale(19,vec(18,18,18))
+
+#uranus ring#
+holoModel(20,"hqtorus2")
+holoScale(20,vec(26,26,1))
+holoAng(20,ang(100,0,0))
+holoParent(20,19)
+
+#neptune#
+holoModel(21,"hqsphere2")
+holoColor(21,vec(0,100,255))
+holoScale(21,vec(17,17,17))
+
+#pluto#
+holoModel(22,"hqsphere2")
+holoScale(22, vec(0.4,0.4,0.4))
+
+}
+##thunder##
+if(changed(ThunderChance)&ThunderChance==100) 
+{
+soundStop(3)
+holoEntity(16):soundPlay(3,0,Thunder:string(randint(0,Thunder:count())))
+}
+
+#mars cave#
+if(changed(CaveChance)&CaveChance==101) 
+{
+soundStop(4)
+holoEntity(15):soundPlay(4,0,Marscave:string(randint(0,Marscave:count())))
+}
+
+
+#sun ambience#
+holoEntity(1):soundPlay(0,1,"ambient/atmosphere/cave_outdoor1.wav")
+
+##sun size##
+holoScale(1, vec(SX,SY,SZ))
+holoScale(2, vec(SX+1,SY+1,SZ+1))
+holoColor(1,vec(CX,CY,CZ))
+
+Y=sin(Time/2)*Meat#-mercuryY
+X=cos(Time/2)*Meat#-mercuryX
+Y1=sin(Time/5)*Veat#-veunsY
+X1=cos(Time/5)*Veat#-venusX
+Y2=sin(Time/10)*Eeat#-earthY
+X2=cos(Time/10)*Eeat#-earthX
+Y3=sin(Time/5)*Moeat#-moonY
+X3=cos(Time/5)*Moeat#-moonX
+Y4=sin(Time/12)*Maeat#-marsY
+X4=cos(Time/12)*Maeat#-marsX
+Y5=sin(Time/18)*Jeat#-jupiterY
+X5=cos(Time/18)*Jeat#-jupiterX
+Y6=sin(Time/17)*Seat#-saturnY
+X6=cos(Time/17)*Seat#-saturnX
+Y7=sin(Time/16)*Ueat#-uranusY
+X7=cos(Time/16)*Ueat#-uranusX
+Y8=sin(Time/15)*Neat#-neptuneY
+X8=cos(Time/15)*Neat#-neptuneX
+Y9=sin(Time/15)*Peat#-plutoY
+X9=cos(Time/10)*Peat#-plutoX
+
+
+
+    holoPos(3,Chip:pos()+vec(X2,Y2,300))#-Earth
+    
+    holoPos(12,holoEntity(3):pos()+vec(X3,Y3,0))#-Moon
+
+    holoPos(13,Chip:pos()+vec(X,Y,300))#-Mercury
+    
+    holoPos(14,Chip:pos()+vec(X1,Y1,300))#-Venus
+    
+    holoPos(15,Chip:pos()+vec(X4,Y4,300))#-Mars
+    
+    holoPos(16,Chip:pos()+vec(X5,Y5,300))#-Jupiter
+    
+    holoPos(17,Chip:pos()+vec(X6,Y6,300))#-Saturn
+    
+    holoPos(19,Chip:pos()+vec(X7,Y7,300))#-Uranus
+    
+    holoPos(21,Chip:pos()+vec(X8,Y8,300))#-Neptune
+    
+    holoPos(22,Chip:pos()+vec(X9,Y9,300))#-pluto
+
+
+#SUN GO SUPER NOVA BELOW#
+
+if(clk("NovaWait"))
+{
+    holoEntity(1):soundPlay(10,0,"ambient/energy/ion_cannon_shot1.wav")
+    SX=43
+    SY=43
+    SZ=43
+    
+    CX=230
+    CY=160
+    CZ=0
+    timer("NovaWait2",3000)
+    timer("waitShrink",600)
+}
+if(clk("NovaWait2"))
+{
+    holoEntity(1):soundPlay(11,0,"ambient/energy/ion_cannon_shot2.wav")
+    SX=46
+    SY=46
+    SZ=46
+    CX=240
+    CY=100
+    CZ=0
+    timer("waitIon3",1000)
+    timer("waitShrink2",700)
+}
+if(clk("waitShrink"))
+{
+    SX=40
+    SY=40
+    SZ=40
+}
+if(clk("waitShrink2"))
+{
+    SX=43
+    SY=43
+    SZ=43
+}
+if(clk("waitIon3"))
+{
+    holoEntity(1):soundPlay(12,0,"ambient/energy/ion_cannon_shot3.wav")
+    SX=47
+    SY=47
+    SZ=47
+    CX=250
+    CY=50
+    CZ=0
+    timer("waitIon4",500)
+}
+if(clk("waitIon4"))
+{
+    holoEntity(1):soundPlay(13,0,"ambient/energy/ion_cannon_shot1.wav")
+    SX=49
+    SY=49
+    SZ=49
+    CX=255
+    CY=0
+    CZ=0
+    StartNova=1
+}
+if($StartNova&StartNova)
+{
+    SX--
+    SY--
+    SZ--
+    CY-=10
+    CX--
+    CZ--
+    holoAng(1,ang(Time,Time,Time))
+    holoDelete(2)
+    soundStop(0)
+}
+if($CX&!CX)
+{
+    Meat--
+    Veat--
+    Eeat--
+    Moeat--
+    Maeat--
+    Jeat--
+    Seat--
+    Ueat--
+    Neat--
+    Peat--
+}
+if(changed(Meat)&Meat==340){soundPlay(10,0,"ambient/machines/teleport3.wav")}
+
+if(!Meat){holoDelete(13),SX=2,SY=2,SZ=2,soundStop(2)}
+if(!Veat){holoDelete(14),SX=4,SY=4,SZ=4}
+if(!Eeat)
+{
+    soundStop(1)
+    SX=8,SY=8,SZ=8
+    holoDelete(3)
+    holoDelete(4)
+    holoDelete(5)
+    holoDelete(6)
+    holoDelete(7)
+    holoDelete(8)
+    holoDelete(9)
+    holoDelete(10)
+    holoDelete(11)
+    holoDelete(50)
+    holoDelete(100)
+    holoDelete(150)
+    holoDelete(200)
+    holoDelete(250)
+}
+if(!Moeat){holoDelete(12),SX=16,SY=16,SZ=16}
+if(!Maeat){holoDelete(15),SX=25,SY=25,SZ=25,soundStop(4)}
+if(!Jeat){holoDelete(16),SX=30,SY=30,SZ=30,soundStop(3)}
+if(!Seat){holoDelete(17),holoDelete(18),SX=35,SY=35,SZ=35}
+if(!Ueat){holoDelete(19),holoDelete(20),SX=40,SY=40,SZ=40}
+if(!Neat){holoDelete(21),SX=49,SY=49,SZ=49,soundPurge()}
+if(!Peat){holoDelete(22),SX-=20,SY-=20,SZ-=20,selfDestruct()}

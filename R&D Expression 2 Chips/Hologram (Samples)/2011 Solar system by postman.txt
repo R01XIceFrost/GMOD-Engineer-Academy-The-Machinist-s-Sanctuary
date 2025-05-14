@@ -1,0 +1,174 @@
+@name Solar system
+@outputs X Y Time
+@persist Timer I
+runOnTick(1)
+Me=owner()
+Chip=entity()
+
+Timer=Timer+1*0.5
+T=Timer
+Time=Time+1
+I=I+1
+
+if(first()) 
+{
+hint("Made by [TEC TBU]THE POSTMAN",7)
+    holoCreate(1)
+    holoCreate(2)
+    holoCreate(3)
+    holoCreate(4)
+    holoCreate(5)
+    holoCreate(6)
+    holoCreate(7)
+    holoCreate(8)
+    holoCreate(9)
+    holoCreate(10)
+    holoCreate(11)
+    holoCreate(12)
+    holoCreate(13)
+    holoCreate(14)
+    holoCreate(15)
+    
+holoModel(1,"hqsphere2") #sun
+holoPos(1,Chip:pos()+vec(0,0,500))
+holoAng(1,ang(0,T,0))
+holoColor(1,vec(200,200,0))
+holoScale(1, vec(19,19,19))
+
+holoModel(2,"hqsphere2") #sun
+holoPos(2,Chip:pos()+vec(0,0,500))
+holoColor(2,vec(255,255,255))
+holoScale(2, vec(20,20,20))
+holoMaterial(2,"models/props_lab/tank_glass001")
+holoParent(2, 1)
+
+holoModel(3,"hqsphere2") #mercury
+holoPos(3,Chip:pos()+vec(0,0,500))
+holoColor(3,vec(255,255,255))
+holoScale(3, vec(0.7,0.7,0.7))
+holoMaterial(3,"models/props_wasteland/rockcliff02c")
+
+holoModel(4,"hqsphere2") #venus
+holoPos(4,Chip:pos()+vec(0,0,500))
+holoColor(4,vec(255,255,255))
+holoScale(4, vec(0.99,0.99,0.99))
+holoMaterial(4,"models/props_combine/com_shield001a")
+
+
+holoModel(5,"hqsphere2") #earth
+holoScale(5,vec(1,1,1))
+holoColor(5,vec(0,50,255))
+
+
+holoModel(6,"hqsphere2") #earth
+holoScale(6,vec(1.3,1.3,1.3))
+holoColor(6,vec(0,255,0))
+holoMaterial(6,"models/effects/comball_sphere")
+holoParent(6, 5)
+
+holoModel(7,"hqsphere2") #earth moon
+holoScale(7,vec(0.3,0.3,0.3))
+holoMaterial(7,"models/props_wasteland/rockcliff02c")
+
+holoModel(8,"hqsphere2")#mars
+holoPos(8,Chip:pos()+vec(0,0,500))
+holoColor(8,vec(255,255,255))
+holoScale(8, vec(0.9,0.9,0.9))
+holoMaterial(8,"models/weapons/v_crowbar/crowbar_cyl")
+
+holoModel(9,"hqsphere2") #saturn
+holoPos(9,Chip:pos()+vec(0,0,500))
+holoColor(9,vec(200,40,0))
+holoScale(9, vec(5,5,5))
+
+holoModel(10,"hqtorus2") #sauturns rings
+holoPos(10,Chip:pos()+vec(0,0,500))
+holoColor(10,vec(0,0,0))
+holoScale(10, vec(10,10,1))
+holoParent(10, 9)
+
+
+holoModel(11,"hqsphere2") #jupiter
+holoPos(11,Chip:pos()+vec(0,0,500))
+holoColor(11,vec(100,70,0))
+holoScale(11, vec(8,8,8))
+
+holoModel(12,"hqsphere2")#pluto
+holoPos(12,Chip:pos()+vec(0,0,500))
+holoColor(12,vec(255,255,255))
+holoScale(12, vec(0.4,0.4,0.4))
+
+holoModel(13,"hqsphere") #uranus
+holoPos(13,Chip:pos()+vec(0,0,500))
+holoColor(13,vec(0,45,100))
+holoScale(13,vec(3,3,3))
+
+holoModel(14,"hqtorus2")
+holoPos(14,Chip:pos()+vec(0,0,500))
+holoColor(14,vec(255,255,255))
+holoScale(14,vec(6,6,0.1))
+holoAng(14,ang(100,0,0))
+holoParent(14,13)
+
+#neptune#
+holoModel(15,"hqsphere2")
+holoPos(15,Chip:pos()+vec(0,0,500))
+holoColor(15,vec(0,100,255))
+holoScale(15,vec(6.2,6.2,6.2))
+
+}
+
+
+X3=cos(Time/0.2)*190
+Y3=sin(Time/0.2)*190
+X4=cos(Time/0.3)*290
+Y4=sin(Time/0.3)*290
+X5=cos(Time/0.5)*430
+Y5=sin(Time/0.5)*430
+X7=cos(Time*-60)*8
+Y7=sin(Time*-60)*8
+X8=cos(Time/0.7)*530
+Y8=sin(Time/0.7)*530
+X9=cos(Time/4)*1030
+Y9=sin(Time/4)*1030
+X11=cos(Time/5)*730
+Y11=sin(Time/5)*730
+X12=cos(Time/10)*1730
+Y12=sin(Time/10)*1730
+X13=cos(Time/13)*1330
+Y13=sin(Time/13)*1330
+X15=cos(Time/11)*1500
+Y15=sin(Time/11)*1500
+
+EP=holoEntity(5):pos() 
+
+
+    holoPos(3,entity():pos()+vec(X3,Y3,500))
+    holoAng(3,ang(0,T,0))
+    
+    holoPos(4,entity():pos()+vec(X4,Y4,500))
+    holoAng(4,ang(0,T,0))
+    
+    holoPos(5,entity():pos()+vec(X5,Y5,500))
+    holoAng(5,ang(0,I*0.09,0))
+    
+
+    holoPos(7,EP+vec(X7,Y7,0))
+    holoAng(7,ang(0,I*0.05,0))
+    
+    holoPos(8,entity():pos()+vec(X8,Y8,500))
+    holoAng(8,ang(0,I*0.09,0))
+    
+    holoPos(9,entity():pos()+vec(X9,Y9,500))
+    holoAng(9,ang(0,I*0.1,0))
+    
+    holoPos(11,entity():pos()+vec(X11,Y11,500))
+    holoAng(11,ang(0,I*0.1,0))
+    
+    holoPos(12,entity():pos()+vec(X12,Y12,500))
+    holoAng(12,ang(0,I*0.1,0))
+    
+    holoPos(13,entity():pos()+vec(X13,Y13,500))
+    
+    holoPos(15,entity():pos()+vec(X15,Y15,500))
+    holoAng(15,ang(0,T,0))

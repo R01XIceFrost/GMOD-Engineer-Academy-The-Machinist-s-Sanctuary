@@ -1,0 +1,98 @@
+@name Argon system
+@outputs X Y Time
+@persist 
+runOnTick(1)
+Me=owner()
+Chip=entity()
+
+Time=Time+1
+if(first()) 
+{
+hint("Made by [TEC TBU]THE POSTMAN",7)
+    holoCreate(1)
+    holoCreate(2)
+    holoCreate(3)
+    holoCreate(4)
+    holoCreate(5)
+    holoCreate(6)
+    holoCreate(7)
+    holoCreate(8)
+    holoCreate(9)
+    
+holoModel(1,"hqsphere2") #sun
+holoPos(1,Chip:pos()+vec(0,0,200))
+holoColor(1,vec(200,200,0))
+holoScale(1, vec(19,19,19))
+
+holoModel(2,"hqsphere2") #sun cover
+holoPos(2,Chip:pos()+vec(0,0,200))
+holoColor(2,vec(255,255,255))
+holoScale(2, vec(20,20,20))
+holoMaterial(2,"models/props_lab/tank_glass001")
+holoParent(2, 1)
+
+holoModel(3,"hqsphere2") #Planet1
+holoScale(3,vec(5,5,5))
+holoMaterial(3,"models/props_wasteland/rockcliff02c")
+
+holoModel(4,"hqsphere2") #planet1 cover
+holoPos(4,Chip:pos()+vec(0,0,0))
+holoScale(4,vec(5.2,5.2,5.2))
+holoMaterial(4,"models/props_combine/com_shield001a")
+holoParent(4,3)
+
+holoModel(5,"hqsphere2") #planet1 moon
+holoScale(5,vec(1,1,1))
+holoMaterial(5,"models/props_wasteland/rockcliff02c")
+
+holoModel(6,"hqsphere2")
+holoScale(6,vec(2,2,2))
+holoColor(6,vec(160,70,0))
+holoMaterial(6,"models/props_foliage/tree_deciduous_01a_trunk")
+
+holoModel(7,"hqsphere2")
+holoScale(7,vec(1.7,1.9,1.7))
+holoMaterial(7,"models/alyx/emptool_glow")
+
+holoModel(8,"hqsphere2")
+holoScale(8,vec(6,6,5.6))
+holoMaterial(8,"models/effects/splode_sheet")
+
+holoModel(9,"hqsphere2")
+holoScale(9,vec(3,3,3))
+holoMaterial(9,"models/XQM/squaredmat")
+
+}
+
+X=cos(Time/2)*200
+Y=sin(Time/2)*200
+X1=cos(Time*2)*40
+Y1=sin(Time*2)*40
+X2=cos(Time*3)*300
+Y2=sin(Time*3)*300
+X3=cos(Time*2.9)*360
+Y3=sin(Time*2.9)*360
+X4=cos(Time/3)*410
+Y4=sin(Time/3)*410
+X5=cos(Time/3)*680
+Y5=sin(Time/3)*680
+
+MP=holoEntity(3):pos() 
+    
+holoPos(3,Chip:pos()+vec(X,Y,200))
+holoAng(3,ang(0,Time*0.09,0))
+    
+holoPos(5,MP+vec(X1,Y1,0))
+holoAng(5,ang(0,Time*0.05,0))
+    
+holoPos(6,Chip:pos()+vec(X2,Y2,200))
+holoAng(6,ang(0,Time*0.09,0))
+
+holoPos(7,Chip:pos()+vec(X3,Y3,200))
+holoAng(7,ang(0,Time*-0.9,0))
+
+holoPos(8,Chip:pos()+vec(X4,Y4,200))
+holoAng(8,ang(Time*9,0,0))
+
+holoPos(9,Chip:pos()+vec(X5,Y5,200))
+holoAng(9,ang(0,Time*10,Time))

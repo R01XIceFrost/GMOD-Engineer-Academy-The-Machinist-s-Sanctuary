@@ -1,0 +1,330 @@
+@name xThaWolfx's HoloPimp
+@inputs Pod:wirelink
+@persist R I
+runOnTick(1)
+E=entity()
+
+A = Pod:number("A")
+D = Pod:number("D")
+Space = Pod:number("Space")
+Active = Pod:number("Active")
+
+if(Active){holoColor(6, vec(255,255,255)), holoColor(7, vec(255,255,255)), holoColor(8, vec(100,0,0)), holoColor(9, vec(100,0,0))}
+if(!Active){holoColor(6, vec(0,0,0)), holoColor(7, vec(0,0,0)), holoColor(8, vec(0,0,0)), holoColor(9, vec(0,0,0))}
+
+if(Active & !Space){holoColor(8, vec(255,0,0)), holoColor(9, vec(255,0,0))}
+if(Active & !Space){holoColor(8, vec(100,0,0)), holoColor(9, vec(100,0,0))}
+
+if(A){holoAng(15, E:toWorld(ang(10,0,60))), holoAng(14, E:toWorld(ang(10,0,60)))}
+if(!A & !D){holoAng(15, E:toWorld(ang(10,0,90))), holoAng(14, E:toWorld(ang(10,0,90)))}
+
+if(D){holoAng(15, E:toWorld(ang(10,0,120))), holoAng(14, E:toWorld(ang(10,0,120)))}
+
+if(A){!D}
+if(D){!A}
+
+
+if(first() | duped()){
+
+entity():isWeldedTo():setMaterial("Models/effects/vol_light001")
+
+holoMaterial(1, ("phoenix_storms/gear"))
+holoMaterial(2, ("phoenix_storms/gear"))
+holoMaterial(3, ("phoenix_storms/gear"))
+holoMaterial(4, ("phoenix_storms/gear"))
+holoMaterial(5, ("phoenix_storms/gear"))
+holoMaterial(6, ("phoenix_storms/gear"))
+holoMaterial(7, ("phoenix_storms/gear"))
+holoMaterial(8, ("phoenix_storms/gear"))
+holoMaterial(9, ("phoenix_storms/gear"))
+holoMaterial(10, ("phoenix_storms/gear"))
+holoMaterial(11, ("phoenix_storms/gear"))
+holoMaterial(16, ("phoenix_storms/gear"))
+holoMaterial(17, ("phoenix_storms/gear"))
+holoMaterial(18, ("phoenix_storms/gear"))
+holoMaterial(19, ("phoenix_storms/gear"))
+holoMaterial(20, ("phoenix_storms/gear"))
+holoMaterial(21, ("phoenix_storms/gear"))
+holoMaterial(22, ("phoenix_storms/gear"))
+holoMaterial(23, ("phoenix_storms/gear"))
+holoMaterial(24, ("phoenix_storms/gear"))
+holoMaterial(25, ("phoenix_storms/gear"))
+holoMaterial(26, ("phoenix_storms/gear"))
+holoMaterial(27, ("phoenix_storms/gear"))
+holoMaterial(29, ("Straw/StrawTile_diffuse"))
+holoMaterial(30, ("Straw/StrawTile_diffuse"))
+
+
+
+
+##Spoiler##
+holoCreate(1)
+holoScale(1, vec(1.5,7,0.5))
+holoModel(1, "hqcube")
+holoColor(1, vec(0,0,255))
+holoParent(1,E)
+holoPos(1, entity():toWorld(vec(-85,0,-130)))
+holoAng(1, entity():toWorld(ang(-40,0,0)))
+
+##Bumper##
+holoCreate(2)
+holoScale(2, vec(2.5,6.5,0.5))
+holoModel(2, ("hqcube"))
+holoColor(2, vec(0,0,255))
+holoParent(2,E)
+holoPos(2, entity():toWorld(vec(2,0,5)))
+holoAng(2, entity():toWorld(ang(0,0,0)))
+
+##RightSide##
+holoCreate(3)
+holoScale(3, vec(2.5,13,0.5))
+holoModel(3, ("hqcube"))
+holoColor(3, vec(0,0,255))
+holoParent(3,E)
+holoPos(3, entity():toWorld(vec(-11.2,36,-73)))
+holoAng(3, entity():toWorld(ang(10,0,90)))
+
+##LeftSide##
+holoCreate(4)
+holoScale(4, vec(2.5,13,0.5))
+holoModel(4, ("hqcube"))
+holoColor(4, vec(0,0,255))
+holoParent(4,E)
+holoPos(4, entity():toWorld(vec(-11.2,-36,-73)))
+holoAng(4, entity():toWorld(ang(10,0,90)))
+
+##BackBumper##
+holoCreate(5)
+holoScale(5, vec(2.5,5.5,1))
+holoModel(5, ("hqcube"))
+holoColor(5, vec(0,0,255))
+holoParent(5,E)
+holoPos(5, entity():toWorld(vec(-25,0,-150)))
+holoAng(5, entity():toWorld(ang(10,0,0)))
+
+##FrontLight Left##
+holoCreate(6)
+holoScale(6, vec(0.5,0.5,0.5))
+holoModel(6, ("hqcylinder"))
+holoParent(6,E)
+holoPos(6, E:toWorld(vec(0,20,10)))
+holoAng(6, E:toWorld(ang(0,0,0)))
+
+##FrontLight Right##
+holoCreate(7)
+holoScale(7, vec(0.5,0.5,0.5))
+holoModel(7, ("hqcylinder"))
+holoParent(7,E)
+holoPos(7, E:toWorld(vec(0,-20,10)))
+holoAng(7, E:toWorld(ang(0,0,0)))
+
+##RearLight Left##
+holoCreate(8)
+holoScale(8, vec(0.5,0.5,0.5))
+holoModel(8, ("hqcylinder"))
+holoParent(8,E)
+holoPos(8, E:toWorld(vec(-25,20,-155)))
+holoAng(8, E:toWorld(ang(10,0,0)))
+
+##RearLight Right##
+holoCreate(9)
+holoScale(9, vec(0.5,0.5,0.5))
+holoModel(9, ("hqcylinder"))
+holoParent(9,E)
+holoPos(9, E:toWorld(vec(-25,-20,-155)))
+holoAng(9, E:toWorld(ang(10,0,0)))
+
+##RearCover##
+holoCreate(10)
+holoScale(10, vec(4.5,1,1))
+holoModel(10, ("hqcube"))
+holoColor(10, vec(0,0,255))
+holoParent(10,E)
+holoPos(10, E:toWorld(vec(-60,0,-140)))
+holoAng(10, E:toWorld(ang(20,0,0)))
+
+##Exhaust##
+holoCreate(11)
+holoScale(11, vec(0.5,0.5,3))
+holoModel(11, ("hqtorus"))
+holoParent(11,E)
+holoPos(11, E:toWorld(vec(-15,-25,-158)))
+holoAng(11, E:toWorld(ang(10,0,0)))
+holoColor(11, vec(100,100,100))
+holoEntity(11):setTrails(30,30,20,"trails/smoke",vec(255,255,255),200)
+
+
+##RearWheelRight##
+holoCreate(12)
+holoModel(12, ("hqcylinder"))
+holoScale(12, vec(3.7,3.7,1.3))
+holoParent(12,E)
+holoPos(12, E:toWorld(vec(-21.5,-45,-147)))
+holoAng(12, E:toWorld(ang(10,0,90)))
+holoColor(12, vec(255,255,255))
+holoMaterial(12, ("phoenix_storms/car_tire"))
+
+##RearWheelLeft##
+holoCreate(13)
+holoModel(13, ("hqcylinder"))
+holoScale(13, vec(3.7,3.7,1.3))
+holoParent(13,E)
+holoPos(13, E:toWorld(vec(-21.5,45,-147)))
+holoAng(13, E:toWorld(ang(10,0,90)))
+holoColor(13, vec(255,255,255))
+holoMaterial(13, ("phoenix_storms/car_tire"))
+
+##FrontWheel Left##
+holoCreate(14)
+holoModel(14, ("hqcylinder"))
+holoScale(14, vec(3,3,1))
+holoParent(14,E)
+holoPos(14, E:toWorld(vec(10,44,0)))
+holoColor(14, vec(255,255,255))
+holoMaterial(14, ("phoenix_storms/car_tire"))
+
+##FrontWheelRight##
+holoCreate(15)
+holoModel(15, ("hqcylinder"))
+holoParent(15,E)
+holoScale(15, vec(3,3,1))
+holoPos(15, E:toWorld(vec(10,-44,0)))
+holoColor(15, vec(255,255,255))
+holoMaterial(15, ("phoenix_storms/car_tire"))
+
+##Hood##
+holoCreate(16)
+holoParent(16,E)
+holoModel(16, ("hqcube"))
+holoColor(16, vec(0,0,255))
+holoScale(16, vec(6.1,6.5,0.5))
+holoPos(16, E:toWorld(vec(-23,0,-30)))
+holoAng(16, E:toWorld(ang(110,0,0)))
+
+##Bottom##
+holoCreate(17)
+holoModel(17, ("hqcube"))
+holoColor(17, vec(0,0,255))
+holoParent(17,E)
+holoScale(17, vec(13.5,6,0.5))
+holoPos(17, E:toWorld(vec(0,0,-77)))
+holoAng(17, E:toWorld(ang(100,0,0)))
+
+##FrontClosure##
+holoCreate(18)
+holoModel(18, ("hqcube"))
+holoColor(18, vec(0,0,255))
+holoParent(18,E)
+holoScale(18, vec(3,6.45,0.5))
+holoPos(18, E:toWorld(vec(-15,0,-60)))
+holoAng(18, E:toWorld(ang(0,0,0)))
+
+##Engine##
+#Block#
+holoCreate(19)
+holoModel(19, ("hqcube"))
+holoColor(19, vec(50,50,50))
+holoParent(19,E)
+holoScale(19, vec(2,2,3))
+holoPos(19, E:toWorld(vec(-15,0,-15)))
+holoAng(19, E:toWorld(ang(10,0,0)))
+
+#ExhaustLB#
+holoCreate(20)
+holoModel(20, ("hqcylinder"))
+holoColor(20, vec(100,100,100))
+holoParent(20,E)
+holoScale(20, vec(0.3,0.3,1))
+holoPos(20, E:toWorld(vec(-28,15,-20)))
+holoAng(20, E:toWorld(ang(0,45,90)))
+
+#ExhaustLM#
+holoCreate(21)
+holoModel(21, ("hqcylinder"))
+holoColor(21, vec(100,100,100))
+holoParent(21,E)
+holoScale(21, vec(0.3,0.3,1))
+holoPos(21, E:toWorld(vec(-25,15,-10)))
+holoAng(21, E:toWorld(ang(0,45,90)))
+
+#ExhaustLF#
+holoCreate(22)
+holoModel(22, ("hqcylinder"))
+holoColor(22, vec(100,100,100))
+holoParent(22,E)
+holoScale(22, vec(0.3,0.3,1))
+holoPos(22, E:toWorld(vec(-22,15,0)))
+holoAng(22, E:toWorld(ang(0,45,90)))
+
+#ExhaustRB#
+holoCreate(23)
+holoModel(23, ("hqcylinder"))
+holoColor(23, vec(100,100,100))
+holoParent(23,E)
+holoScale(23, vec(0.3,0.3,1))
+holoPos(23, E:toWorld(vec(-28,-15,-20)))
+holoAng(23, E:toWorld(ang(0,135,90)))
+
+#ExhaustRM#
+holoCreate(24)
+holoModel(24, ("hqcylinder"))
+holoColor(24, vec(100,100,100))
+holoParent(24,E)
+holoScale(24, vec(0.3,0.3,1))
+holoPos(24, E:toWorld(vec(-25,-15,-10)))
+holoAng(24, E:toWorld(ang(0,135,90)))
+
+#ExhaustRF#
+holoCreate(25)
+holoModel(25, ("hqcylinder"))
+holoColor(25, vec(100,100,100))
+holoParent(25,E)
+holoScale(25, vec(0.3,0.3,1))
+holoPos(25, E:toWorld(vec(-22,-15,0)))
+holoAng(25, E:toWorld(ang(0,135,90)))
+
+##WindShield##
+#StickLeft#
+holoCreate(26)
+holoModel(26, ("hqcube"))
+holoColor(26, vec(0,0,255))
+holoParent(26,E)
+holoScale(26, vec(3,0.5,0.5))
+holoPos(26, E:toWorld(vec(-50,36,-67)))
+holoAng(26, E:toWorld(ang(-20,0,0)))
+
+#StickRight#
+holoCreate(27)
+holoModel(27, ("hqcube"))
+holoColor(27, vec(0,0,255))
+holoParent(27,E)
+holoScale(27, vec(3,0.5,0.5))
+holoPos(27, E:toWorld(vec(-50,-36,-67)))
+holoAng(27, E:toWorld(ang(-20,0,0)))
+
+#Glass#
+holoCreate(28)
+holoModel(28, ("hqcube"))
+holoColor(28, vec(255,255,255))
+holoParent(28,E)
+holoMaterial(28, ("models/props_combine/health_charger_glass"))
+holoScale(28, vec(3,5.5,0.5))
+holoPos(28, E:toWorld(vec(-50,0,-67)))
+holoAng(28, E:toWorld(ang(-20,0,0)))
+
+##Seat##
+holoCreate(29)
+holoModel(29, ("hqcube"))
+holoColor(29, vec(150,150,150))
+holoParent(29,E)
+holoScale(29, vec(1,2,2))
+holoPos(29, E:toWorld(vec(-10,9,-83)))
+holoAng(29, E:toWorld(ang(10,0,0)))
+
+holoCreate(30)
+holoModel(30, ("hqcube"))
+holoColor(30, vec(150,150,150))
+holoParent(30, E)
+holoScale(30, vec(3,2,0.5))
+holoPos(30, E:toWorld(vec(-20,9,-97)))
+}

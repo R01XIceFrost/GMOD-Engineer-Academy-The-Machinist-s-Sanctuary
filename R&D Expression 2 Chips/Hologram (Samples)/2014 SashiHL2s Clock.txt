@@ -1,0 +1,95 @@
+@name SashiHL2s Clock
+@persist Seconds Minutes Hours
+@trigger Seconds Minutes Hours
+
+    ####
+    # Holographic Clock
+    # Made by Sashi Degodeshi (SashiHL2)
+    # SteamID: STEAM_0:1:6453548
+    # Created: Febuary 3, 2014
+    # Updated: N/A
+    #
+    # Requires convar wire_holograms_modelany to be set to 1 or 2
+    # Also requires CS:S for tick sound
+    ####
+    
+
+# Chip settings
+E2 = entity()
+E2:setAlpha(0)
+
+# Unit conversion settings
+Hr = time("hour")
+Min = time("min")
+Sec = time("sec")
+
+Hours = Hr*30
+Minutes = Min*6
+Seconds = Sec*6
+
+
+if(first() | duped())
+{
+    #Clock Case
+    holoCreate(99, E2:toWorld(vec(0,0,1)), vec(1), E2:toWorld(ang(-90,0,0)))
+    holoModel(99, "models/props_trainstation/trainstation_clock001.mdl")
+    holoParent(99, E2)
+    
+    #Second
+    holoCreate(1, E2:toWorld(vec(0,0,0.5)), vec(0.35,0.35,0.1), E2:toWorld(ang(0,-180,0)))
+    holoColor(1, vec(100))
+    holoModel(1, "hq_cylinder")
+    holoParent(1, E2)
+
+    holoCreate(2, E2:toWorld(vec(10,0,1)), vec(0.01,0.05,2.5), E2:toWorld(ang(90,0,0)))
+    holoColor(2, vec(255,0,0))
+    holoParent(2, 1)
+    
+    #Minute
+    holoCreate(7, E2:toWorld(vec(0,0,0.5)), vec(0.35,0.35,0.1), E2:toWorld(ang(0,-180,0)))
+    holoColor(7, vec(100))
+    holoModel(7, "hq_cylinder")
+    holoParent(7, E2)
+
+    holoCreate(8, E2:toWorld(vec(10,0,0.8)), vec(0.01,0.05,2.25), E2:toWorld(ang(90,0,0)))
+    holoColor(8, vec(100))
+    holoParent(8, 7)
+    
+    #Hour
+    holoCreate(5, E2:toWorld(vec(0,0,0.5)), vec(0.35,0.35,0.1), E2:toWorld(ang(0,-180,0)))
+    holoColor(5, vec(100))
+    holoModel(5, "hq_cylinder")
+    holoParent(5, E2)
+
+    holoCreate(6, E2:toWorld(vec(10,0,0.4)), vec(0.01,0.05,2), E2:toWorld(ang(90,0,0)))
+    holoColor(6, vec(10))
+    holoParent(6, 5)
+    
+    holoCreate(9, E2:toWorld(vec(14,0,0.5)), vec(1,0.15,0.01), E2:toWorld(ang(0,-180,0)))
+    holoColor(9, vec(10))
+    holoModel(9, "hq_tube")
+    holoParent(9, 6)
+    
+    # Identity and debugging shit
+    concmd("say SashiHL2's Clock Loaded") # Let the server log your existance for easier identification incase you bork something up
+    if(owner():steamID() != "STEAM_0:1:6453548")
+    {
+        hint("Thank you for using my E2 code, I hope you enjoy it!", 2)
+        hint("http://steamcommunity.com/id/sashi - Visit my page!", 2)
+    }
+}
+
+runOnTick(1)
+if(changed(Sec))
+{
+    holoAng(1, E2:toWorld(ang(0,-Seconds,0)))
+    soundPlay(1, soundDuration("ambient/machines/tick1.wav"), "ambient/machines/tick1.wav")
+}
+if(changed(Min))
+{
+    holoAng(7, E2:toWorld(ang(0,-Minutes,0)))
+}
+if(changed(Hr))
+{
+    holoAng(5, E2:toWorld(ang(0,-Hours,0)))
+}

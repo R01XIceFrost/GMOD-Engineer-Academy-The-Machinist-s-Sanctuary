@@ -1,0 +1,62 @@
+@name BallSplosion
+@persist Click Worldsarray
+@trigger 
+
+#[
+
+INFO
+
+ When you right click a bunch of balls explode from the position, they have physics and roll around.
+
+]#
+
+runOnTick(1)
+
+Click = owner()keyAttack2()
+Holos = 25
+Scale = 0.5
+Space = 2
+
+if(first())
+{
+for(I=1,Holos)
+{
+holoCreate(I)
+holoModel(I,hqicosphere2)
+holoScale(I,vec(1,1,1)Scale)   
+}    
+}
+if(Click&$Click)
+{
+for(I=1,Holos)
+{
+holoPos(I,owner()aimPos())   
+
+Rand = randvec(-1,1)
+Worlds[I,vector] = (owner()aimNormal()+Rand)Space
+}
+   
+}
+
+
+for(I=1,Holos)
+{
+holoPos(I,holoEntity(I)toWorld(Worlds[I,vector]))    
+
+Worlds[I,vector]=Worlds[I,vector]-vec(0,0,0.05)
+Worlds[I,vector]=Worlds[I,vector]0.99
+
+RD = rangerOffset(6Scale,holoEntity(I)pos(),vec(0,0,-1))
+RV = rangerOffset(6Scale,holoEntity(I)pos(),Worlds[I,vector]setZ(0))
+
+if(RDhit())
+{
+Dir = RDposition()+vec(0,0,6Scale)-holoEntity(I)pos()
+Worlds[I,vector]=Worlds[I,vector]setZ(Dirz())
+}
+
+if(RVhit())
+{
+Worlds[I,vector]=Worlds[I,vector]+RVhitNormal()   
+}
+}

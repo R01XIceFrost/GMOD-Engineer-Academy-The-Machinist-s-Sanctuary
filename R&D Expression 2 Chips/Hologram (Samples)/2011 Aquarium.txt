@@ -1,0 +1,228 @@
+@name Aquarium
+@inputs 
+@outputs Holos:array On
+@persist [V1 V2]:vector Plate:entity Spawn Num NumC BugBaits:array BugBait:entity
+
+#[
+
+INFO:
+
+And now An aquarium
+Instructions:spawn and wait for all fish to spawn (changeable amount in chip)
+(also the fish like bug bait, throw one into the tank and watch em nom it.
+Code:
+
+]#
+
+
+
+interval(20)
+E=entity()
+
+V1=E:toWorld(vec(40,22,43))
+V2=E:toWorld(vec(-40,-22,12))
+
+propSpawnEffect(0)
+
+
+if(first())
+{
+    #make the bottom detection plate
+    Plate=propSpawn("models/hunter/blocks/cube1x2x025.mdl",E:pos()+vec(0,0,5),E:angles()+ang(0,90,0),1)
+    Plate:setMaterial("models/props/CS_militia/roofbeams01")
+    
+    
+    #on
+    On=1
+    Spawn=1
+    NumC=0
+    #number of fish
+    Num=10
+    
+    
+    #bottom
+    holoCreate(1)
+    #front
+    holoCreate(2)
+    #back
+    holoCreate(3)
+    #left
+    holoCreate(4)
+    #right
+    holoCreate(5)
+    #water 
+    holoCreate(6)
+    #water top
+    holoCreate(7)
+    #plant
+    holoCreate(8)
+    
+    
+    holoPos(1,E:toWorld(vec(0,0,10)))
+    holoPos(2,E:toWorld(vec(0,25,35.1)))
+    holoPos(3,E:toWorld(vec(0,-25,35.1)))
+    holoPos(4,E:toWorld(vec(-49.1,0,35.1)))
+    holoPos(5,E:toWorld(vec(49.1,0,35.1)))
+    holoPos(6,E:toWorld(vec(0,0,33)))
+    holoPos(7,E:toWorld(vec(0,0,54)))
+    holoPos(8,E:toWorld(vec(20,0,22)))
+    
+    
+    holoScale(1,vec(8.38,4.37,0.2))
+    holoScale(2,vec(8.38,0.2,4))
+    holoScale(3,vec(8.38,0.2,4))
+    holoScale(4,vec(0.2,4.37,4))
+    holoScale(5,vec(0.2,4.37,4))
+    holoScale(6,vec(8.18,4.17,3.6))
+    holoScale(7,vec(8.18,4.17,0.1))
+    holoScale(8,vec(0.4,0.4,0.4))
+    
+    
+    holoMaterial(1,"models/props_canal/metalwall005b")
+    holoMaterial(2,"models/props_combine/health_charger_glass")
+    holoMaterial(3,"models/props_combine/health_charger_glass")
+    holoMaterial(4,"models/props_combine/health_charger_glass")
+    holoMaterial(5,"models/props_combine/health_charger_glass")
+    holoAlpha(6,130)
+    holoMaterial(7,"models/shadertest/predator")
+    holoModel(8,"models/props/CS_militia/fern01.mdl")
+    
+    
+    holoParent(1,Plate)
+    holoParent(2,Plate)
+    holoParent(3,Plate)
+    holoParent(4,Plate)
+    holoParent(5,Plate)
+    holoParent(6,Plate)
+    holoParent(7,Plate)
+    holoParent(8,Plate)
+
+    timer("spawn",1000)
+}
+
+if(clk("spawn"))
+{
+    
+    if(NumC<Num&holoCanCreate()){NumC++,timer("spawn",1000)}elseif(!holoCanCreate()){timer("spawn",2000)}
+    
+    
+    #bodies
+    holoCreate(NumC+20)
+    holoScale(NumC+20,vec(0.43,0.14,0.34))
+    holoPos(NumC+20,randvec(V1,V2))
+    holoModel(NumC+20,"hqsphere")
+    holoColor(NumC+20,vec(255,136,0))
+    holoMaterial(NumC+20,"phoenix_storms/mat/mat_phx_metallic")
+    
+    #fins
+    holoCreate(NumC+80)
+    holoScale(NumC+80,vec(0.25,0.1,0.41))
+    holoPos(NumC+80,holoEntity(NumC+20):toWorld(vec(-2,0,0)))
+    holoAng(NumC+80,ang(90,0,0))
+    holoModel(NumC+80,"prism")
+    holoColor(NumC+80,vec(255,136,0))
+    holoMaterial(NumC+80,"phoenix_storms/mat/mat_phx_metallic")
+    holoParent(NumC+80,NumC+20)
+    
+    #eyes
+    holoCreate(NumC+140)
+    holoScale(NumC+140,vec(0.1,0.1,0.2))
+    holoPos(NumC+140,holoEntity(NumC+20):toWorld(vec(1,0,0.4)))
+    holoAng(NumC+140,ang(90,90,0))
+    holoColor(NumC+140,vec(0,0,0))
+    holoModel(NumC+140,"cylinder")
+    holoParent(NumC+140,NumC+20)
+    
+    #angle them fish
+    holoAng(NumC+20,ang(0,randint(-180,180),0))
+    
+    Holos:pushEntity(holoEntity(NumC+20))
+    
+    timer("turn"+NumC,randint(1000,10000))
+}
+
+
+#find food
+if(findCanQuery())
+{
+    findIncludeModel("models/weapons/w_bugbait.mdl")
+    findInBox(V1,V2)
+    BugBaits=findToArray()
+    BugBait=BugBaits[1,entity]
+}
+
+
+#on loop
+if(On)
+{
+    #run through the fish
+    for(I=1,Holos:count())
+    {
+        #ranger
+        Rng=rangerOffset(40,holoEntity(I+20):pos(),Plate:up()*-1)
+        
+        #goooooooo
+        if(holoEntity(I+20):pos():distance(BugBait:pos())>5+(I*2)|!BugBait)
+        {
+            holoPos(I+20,holoEntity(I+20):pos()+holoEntity(I+20):forward()*0.2)
+        }
+        
+        #go down if they go to far up
+        if(holoEntity(I+20):pos():z()>holoEntity(7):pos():z()-5){holoPos(I+20,holoEntity(I+20):pos()+holoEntity(I+20):up()*-1)}
+                
+        #go up if to far down
+        if(holoEntity(I+20):pos():z()<holoEntity(1):pos():z()+8){holoPos(I+20,holoEntity(I+20):pos()+holoEntity(I+20):up())}
+        
+        
+        
+        #turn if they hit a side
+        if(Rng:entity()!=Plate)
+        {
+            holoAng(I+20,(Plate:pos()-holoEntity(I+20):pos()):toAngle():setPitch(0))
+        }
+        
+        if(BugBait)
+        {
+            holoAng(I+20,(BugBait:pos()-holoEntity(I+20):pos()):toAngle())
+        }
+        
+        #random turning
+        if(clk("turn"+I))
+        {
+            Dir=randint(-1,1)
+            
+            timer("turn"+I,randint(1000,10000))
+            
+            #randomly turn
+            holoAng(I+20,ang(25*Dir,randint(-90,90),0))
+            
+            #randomly move verticaly
+            holoPos(I+20,holoEntity(I+20):pos()+holoEntity(I+20):up()*Dir)
+        }
+    }
+}
+
+
+
+#only work when frozen, or the fish break :/
+if(changed(Plate:isFrozen())&!Plate:isFrozen())
+{
+    for(I=1,Holos:count())
+    {
+        holoParent(I+20,Plate)
+        On=0
+    }
+    hint("freeze the tank please!",5)
+}
+elseif(changed(Plate:isFrozen())&Plate:isFrozen()&!first())
+{
+    for(I=1,Holos:count())
+    {
+        holoUnparent(I+20)
+        On=1
+    }
+}
+
+
+#delete e2 if bottom is gone
+if(!Plate&!first()){selfDestruct()}
