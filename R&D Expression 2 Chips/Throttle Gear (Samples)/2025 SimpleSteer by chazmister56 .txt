@@ -1,0 +1,83 @@
+@name chazmister56 - SimpleSteer 2025 Public V2
+@inputs A D Active Base:entity
+@outputs Speed TURN Smooth1 Smooth2
+@persist AntiWobbleAngle TURN_ANGLE TURN_RATE SpeedEffect Counter SLAVE:entity CASTER
+@model models/sprops/rectangles_thin/size_2/rect_12x12x1_5.mdl
+
+#Source: https://youtu.be/4FTykJ-CppA?si=dADsr9lSAoYLuAhz
+
+    #MADE BY chazmister56#
+    #youtube: https://www.youtube.com/@chazmister56
+
+    ########################################
+    ######## |||| INSTRUCTIONS |||| ########
+    ########################################
+    
+    #Always wire the chip up entirely BEFORE you ballsocket
+    #your wheels to it. If you do not do this, your
+    #wheels will likely snap 90 degrees to the wrong
+    #direction after you unfreeze your car.
+
+    #Wire Active to Active on your pod
+    #Base wires to the baseplate of your car
+    #A and D go to their respective keys on the pod
+    
+interval(Active ? 44 : 250)
+
+if(first()|dupefinished()){
+   
+    TURN_ANGLE = 45 #This sets the maximum angle your wheels can turn.
+    
+    CASTER = -0.2 #This pivots the angle the wheels steer at(forward/backward).
+                 #It can be 0, as it is not entirely necessary to run on cars in Gmod.
+                 #Make negative if the caster is leaning opposite of what you want.
+    
+    TURN_RATE = 2 #This sets the steering speed. Higher number for quicker steering.
+    
+    AntiWobbleAngle = 1.2 #This sets a "deadzone" in the steering that helps eliminate steering wobble when not steering.
+                          #I recommend you keep this setting between 0-1.5. Too big of a number can cause unwanted input behavior.
+                          #Soft/sloppy suspension may be the cause of your wobbles if you need a bigger number.
+    
+    Counter = 20 #This sets the countersteer power. A lower number will make it stronger, and the opposite makes it weaker.
+    
+    SpeedEffect = 700 #This slows steering based on speed. A lower number will make it stronger.(Same rules as Counter setting)
+                   
+    
+    ##DO NOT TOUCH BELOW THIS LINE##
+    
+    SLAVE=entity() #Do not touch
+    print("Thanks for using Simple Gyro Steering by chazmister56.")
+    print("Channel link: https://www.youtube.com/@chazmister56")
+}
+    #########################################
+    # |||| DO NOT TOUCH ANYTHING BELOW |||| #
+    #########################################
+    
+    function number customLerp(A:number, B:number, X:number){
+        return A * ( 1 - X ) + B * X
+    }
+
+    Smooth1 = customLerp(Smooth1, A, TURN_RATE * tickInterval())
+    Smooth2 = customLerp(Smooth2, D, TURN_RATE * tickInterval())
+    Smooth1 *= A
+    Smooth2 *= D
+    
+    Speed = Base:vel():length()/17.6 #Speed based in MPH
+
+    TURN += clamp((Smooth2-Smooth1)*TURN_ANGLE-TURN/15,-TURN_RATE,TURN_RATE)
+    TURN += Base:angVel():yaw()/Counter
+    TURN = clamp(TURN,-TURN_ANGLE,TURN_ANGLE)
+    TURN *= abs(TURN) < AntiWobbleAngle & (!A & !D) ? 0.5 : 1
+    TURN = TURN*(1-Speed/SpeedEffect)
+
+
+if(!SLAVE:isPlayerHolding()){
+    SLAVE:setAng(Base:toWorld(ang(0,-TURN,-TURN*CASTER)))
+    SLAVE:propFreeze(1)
+}
+
+
+if(~Base & Base:isValid()) {
+    reset()
+}
+
