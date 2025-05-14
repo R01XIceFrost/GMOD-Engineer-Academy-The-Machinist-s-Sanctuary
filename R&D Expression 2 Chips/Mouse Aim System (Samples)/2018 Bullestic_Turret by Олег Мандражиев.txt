@@ -1,0 +1,312 @@
+@name Bullestic_Turret
+@inputs [Pod,Cam,EGP,Eye]:wirelink [Gun,Chair,Base]:entity Active [Ready]:number  Shift PrevWeapon NextWeapon
+@outputs Gage2 Pitch FOV
+@persist [Trig,Satl,Pitch,Yaw,RotateSpeed,RealisticGunMovement,Elevation,Depression]:number  #Traj Part
+@persist [SetedAim,YAng,Zoom,,MouseSpeed,Smoth,Gage1,Gage2,DragF,AnalysF,CamHight,Angle_Clap]:number    #Aim Part
+@persist [Res,OEye,DEye]:vector2 [Inertia,Hold,CAng]:angle [SatlPos]:vector [Col1,Col2,Col3,Col4,Col5]:vector4
+@trigger all
+###########################################################################################################
+#Trajectory Made By Boush:Tinker /Turret Copy from EZtankTurret /Hud Disigned By Harling Honenhoff Homer
+###########################################################################################################
+
+#Source: https://youtu.be/oiAjehKVTM8?si=vfr2wY_5f-xzf8hh
+
+runOnTick(1)
+
+
+
+if (~PrevWeapon|~NextWeapon) {
+    FOV = clamp(FOV + (NextWeapon - PrevWeapon) * 10,5,90)
+}                                            #Change,Min,Max
+    #FOV reset when entering / exiting
+if (~Active&Active|~Active&!Active) {
+    FOV=90
+}
+
+if (Shift) {Trig = 1} else {Trig = 0}
+if(first()||dupefinished()){
+    ######################################SETTING PART#########################################
+    #
+    #   READ ME M8
+    #
+    #   step 1: [Trig]Velue is Setting Artillery's Bullestic Culcullate Mod
+    #   step 2: [Satl]Velue is Setting Useing Sattlite Cam or not
+    #   step 3: [Ang_Clp]Velue is Setting Turret's Angle clamp
+    #
+    ######################################READ PLZ##############################################
+
+         #0:Low Angle/1:High Angle Bullestic Culcullate Mod Setting
+    Satl = 1      #0:Not Using Satllite Cam/1:Using Satllite Cam
+    Ang_Clp = 1   #0:not clamp Angle 1: clamp the Angle
+    if(Ang_Clp){
+        Elevation = 90      #Highst Angle is [Elevation]
+        Depression = -5     #Lowst Angle is [Depression]
+        Yaw= 15           #Can Turn the Plus Minus [Yaw]
+        Pitch = 90          #Culculate Start Angle is [Pitch]
+    }
+    else{
+        #Do NOT CHANGE THIS M8
+        Elevation = 85
+        Depression = -5
+        Yaw= 180
+        Pitch  = 15
+        #OK?
+    }
+    RotateSpeed=4
+    RealisticGunMovement=1
+
+    #Hud    Col Data of Hud
+    Col1 = vec4(61,68,255,180)   
+    Col2 = vec4(86,86,255,120)  
+    Col3 = vec4(255,255,255,255) 
+    Col4 = vec4(61,68,255,255)     
+    Col5 = vec4(26,186,255,70)      
+    
+    #Cam
+    CamDist = 150
+    CamHight = 150
+    MouseSpeed = 0.15
+    Smoth = -0.01
+
+    #Gun
+    Inertia = ang(0,0,0)
+    Hold = entity():toLocal(Gun:angles())
+    
+    #EGP
+    EGP:egpClear()
+    
+    #Cam
+    OEye = Eye["XY",vector2]
+    Cam["Parent",entity]=entity()
+    Cam["Distance",number]=CamDist
+}
+########################################################################END THE SET##########################################################################
+
+if(Pod["Active",number]){
+    if(!SetedAim){
+        Cam["Activated",number]=1
+        Eye["Enable",number] = 1
+        soundPitch(1,0)
+        
+        #HUD Part
+        ##########################################################################################################################################################
+        Res = egpScrSize(Chair:driver())/2
+        EGP:egpCircleOutline(1,Res,vec2(15,15))
+        EGP:egpColor(1,Col2)
+        EGP:egpSize(1,2)
+        ArrayHud = array()
+        for(I = 0,9){
+            ArrayHud[I,vector2] = Res + 45*vec2(sin(45 + 45/5*I),cos(45 + 45/5*I))
+        }
+        EGP:egpLineStrip(2,ArrayHud)
+        EGP:egpColor(2,Col2)
+        EGP:egpSize(2,2)
+        ArrayHud = array()
+        for(I = 0,9){
+            ArrayHud[I,vector2] = Res + 45*vec2(sin(-135 + 45/5*I),cos(-135 + 45/5*I))
+        }
+        EGP:egpLineStrip(3,ArrayHud)
+        EGP:egpColor(3,Col2)
+        EGP:egpSize(3,2)
+        for(I = 0,19){
+            ArrayHud = array(Res + 120*vec2(sin(45 + 90/20*I),cos(45 + 90/20*I)),Res + 135*vec2(sin(45 + 90/20*I),cos(45 + 90/20*I)),Res + 135*vec2(sin(45 + 90/20*(I+1)),cos(45 + 90/20*(I+1))),Res + 120*vec2(sin(45 + 90/20*(I+1)),cos(45 + 90/20*(I+1))))
+            EGP:egpPoly(10+I,ArrayHud) #10~29
+            EGP:egpColor(10+I,Col5)
+            EGP:egpPolyOutline(30+I,ArrayHud) #30 ~ 59
+            EGP:egpColor(30+I,Col4)
+            EGP:egpSize(30+I,2)
+        }
+        for(I = 0,19){
+            ArrayHud = array(Res + 120*vec2(sin(-45 - 90/20*I),cos(-45 - 90/20*I)),Res + 135*vec2(sin(-45 - 90/20*I),cos(-45 - 90/20*I)),Res + 135*vec2(sin(-45 - 90/20*(I+1)),cos(-45 - 90/20*(I+1))),Res + 120*vec2(sin(-45 - 90/20*(I+1)),cos(-45 - 90/20*(I+1))))
+            EGP:egpPoly(60+I,ArrayHud) #60 ~ 79
+            EGP:egpColor(60+I,Col5)
+            EGP:egpPolyOutline(80+I,ArrayHud) #80 ~ 99
+            EGP:egpColor(80+I,Col4)
+            EGP:egpSize(80+I,2)
+        }
+            EGP:egpLine(100,Res + vec2(5,0),Res + vec2(45,0))
+            EGP:egpColor(100,Col2)
+            EGP:egpSize(100,2)
+            EGP:egpLine(101,Res + vec2(-5,0),Res + vec2(-45,0))
+            EGP:egpColor(101,Col2)
+            EGP:egpSize(101,2)
+            EGP:egpLine(102,Res + vec2(0,5),Res + vec2(0,15))
+            EGP:egpColor(102,Col2)
+            EGP:egpSize(102,2)
+            EGP:egpLine(103,Res + vec2(0,-5),Res + vec2(0,-15))
+            EGP:egpColor(103,Col2)
+            EGP:egpSize(103,2)
+            
+            EGP:egpLineStrip(104,Res + 135*vec2(sin(-135),cos(-135)),Res + 145*vec2(sin(-135),cos(-135)),Res + 145*vec2(sin(-135),cos(-135)) + vec2(-20,0))
+            EGP:egpColor(104,Col4)
+            EGP:egpSize(104,2)
+            EGP:egpText(105,"100%",Res  + vec2(-180,-110))
+            EGP:egpColor(105,Col3)
+            EGP:egpLineStrip(106,Res + 135*vec2(sin(-112.5),cos(-112.5)),Res + 145*vec2(sin(-112.5),cos(-112.5)),Res + 145*vec2(sin(-112.5),cos(-112.5)) + vec2(-10,0))
+            EGP:egpColor(106,Col4)
+            EGP:egpSize(106,2)
+            EGP:egpText(107,"75%",Res + vec2(-190,-65))
+            EGP:egpColor(107,Col3)
+            EGP:egpLine(108,Res + vec2(-135,0),Res + vec2(-145,0))
+            EGP:egpColor(108,Col4)
+            EGP:egpSize(108,2)
+            EGP:egpText(109,"50%",Res + vec2(-190,-10))
+            EGP:egpColor(109,Col3)
+            EGP:egpLineStrip(110,Res + 135*vec2(sin(-67.5),cos(-67.5)),Res + 145*vec2(sin(-67.5),cos(-67.5)),Res + 145*vec2(sin(-67.5),cos(-67.5)) + vec2(-10,0))
+            EGP:egpColor(110,Col4)
+            EGP:egpSize(110,2)
+            EGP:egpText(111,"25%",Res + vec2(-190,45))
+            EGP:egpColor(111,Col3)
+            EGP:egpLineStrip(112,Res + 135*vec2(sin(-45),cos(-45)),Res + 145*vec2(sin(-45),cos(-45)),Res + 145*vec2(sin(-45),cos(-45)) + vec2(-20,0))
+            EGP:egpColor(112,Col4)
+            EGP:egpSize(112,2)
+            EGP:egpText(113,"0%",Res + vec2(-160,90))
+            
+            EGP:egpLineStrip(114,Res + 135*vec2(sin(135),cos(135)),Res + 145*vec2(sin(135),cos(135)),Res + 145*vec2(sin(135),cos(135)) + vec2(20,0))
+            EGP:egpColor(114,Col4)
+            EGP:egpSize(114,2)
+            EGP:egpText(115,"90",Res  + vec2(130,-110))
+            EGP:egpColor(115,Col3)
+            EGP:egpLineStrip(116,Res + 135*vec2(sin(112.5),cos(112.5)),Res + 145*vec2(sin(112.5),cos(112.5)),Res + 145*vec2(sin(112.5),cos(112.5)) + vec2(10,0))
+            EGP:egpColor(116,Col4)
+            EGP:egpSize(116,2)
+            EGP:egpText(117,"45",Res + vec2(150,-65))
+            EGP:egpColor(117,Col3)
+            EGP:egpLine(118,Res + vec2(135,0),Res + vec2(145,0))
+            EGP:egpColor(118,Col4)
+            EGP:egpSize(118,2)
+            EGP:egpText(119,"0.0",Res + vec2(150,-10))
+            EGP:egpColor(119,Col3)
+            EGP:egpLineStrip(120,Res + 135*vec2(sin(67.5),cos(67.5)),Res + 145*vec2(sin(67.5),cos(67.5)),Res + 145*vec2(sin(67.5),cos(67.5)) + vec2(10,0))
+            EGP:egpColor(120,Col4)
+            EGP:egpSize(120,2)
+            EGP:egpText(121,"-45",Res + vec2(145,45))
+            EGP:egpColor(121,Col3)
+            EGP:egpLineStrip(122,Res + 135*vec2(sin(45),cos(45)),Res + 145*vec2(sin(45),cos(45)),Res + 145*vec2(sin(45),cos(45)) + vec2(20,0))
+            EGP:egpColor(122,Col4)
+            EGP:egpSize(122,2)
+            EGP:egpText(123,"-90",Res + vec2(125,90))
+            Gage1 = -1
+            Gage2 = 9
+        Inertia = shiftL(ang(Gun:inertia()))
+        SetedAim = 1
+    }
+    
+    #Cam["FOV",number]=100 - Zoom
+    CamPos = Base:pos() + vec(0,0,CamHight)
+    DEye = Smoth*DEye + (1-Smoth)*(Eye["XY",vector2] - OEye)
+    OEye = Eye["XY",vector2]
+    if(Pod["Mouse2",number] == 0){
+        Cam["Position",vector]= CamPos
+        PAng = clamp(CAng:pitch() - MouseSpeed*DEye:y(),-90,90)
+        YAng = CAng:yaw() - MouseSpeed*DEye:x()
+        CAng = ang(PAng,YAng,0)
+        Zoom = 0
+        SatlPos = Cam["HitPos",vector] + vec(0,0,7000)
+        Cam["FLIR",number] = 0
+        Cam["Angle",angle] = CAng
+    }
+    else{
+        Cam["FLIR",number] = 1
+        if(Satl == 1){
+            Zoom = clamp(Zoom + 1,0,30)
+            SatlPos += 40*MouseSpeed*vec(DEye:rotate(YAng - 90))
+            Cam["Position",vector] = SatlPos
+            Cam["Angle",angle] = ang(90,YAng,0)
+            }
+        else{
+            Zoom = clamp(Zoom + 1,0,80)
+            CAng = ang(clamp(CAng:pitch() - MouseSpeed*DEye:y(),-90,90),CAng:yaw() - MouseSpeed*DEye:x(),0)
+            Cam["Position",vector]= CamPos
+            Cam["Angle",angle] = CAng
+        }
+    }
+    AimPos = Cam["HitPos",vector]
+    
+    #HUD Gage Part
+    ######################################################################################################################################################
+    if(abs(1/DragF) > Gage1*5 + 2.5){
+        Gage1 = min(Gage1 + 1,19)
+    }
+    else{
+        Gage1 = max(Gage1 - 1,0)
+    }
+    EGP:egpColor(60 + Gage1,vec4(200,40,16,170))
+    if(Gage1 != 19&&$Gage1 == -1){EGP:egpColor(61 + Gage1,Col5)}
+    
+    if(Pitch > (Gage2 - 10)*9 + 9){
+        Gage2 = min(Gage2 + 1,19)
+    }
+    elseif(Pitch < (Gage2 - 10)*9){
+        Gage2 = max(Gage2 - 1,0)
+    }   
+    EGP:egpColor(10 + Gage2,vec4(240,240,16,170))
+    if(Gage2 != 0&&$Gage2 == 1){EGP:egpColor(9 + Gage2,Col5)}
+    if(Gage2 != 19&&$Gage2 == -1){EGP:egpColor(11 + Gage2,Col5)}
+    
+    if(~Ready&Ready){
+        EGP:egpColor(1,(Col2*1 + vec4(200,40,16,220)*0))
+        EGP:egpColor(102,(Col2*1 + vec4(200,40,16,220)*0))
+        EGP:egpColor(103,(Col2*1 + vec4(200,40,16,220)*0))
+    }
+    elseif(~Ready&!Ready){
+        EGP:egpColor(1,(Col2*0 + vec4(200,40,16,220)*1))
+        EGP:egpColor(102,(Col2*0 + vec4(200,40,16,220)*1))
+        EGP:egpColor(103,(Col2*0 + vec4(200,40,16,220)*1))
+    }
+
+    #BullesticPart
+    #####################################################################################################################################################
+    D = (Gun:acfCaliber()^2)*pi()/80
+    G = gravity()*0.01905
+    MuzzleVelocity = Gun:acfMuzzleVel()*0.761
+    MuzzleWeight = Gun:acfProjectileMass()*1000
+    if(MuzzleVelocity == 0||MuzzleWeight == 0){
+        MuzzleVelocity = 80
+        MuzzleWeight = 100*1000
+    }
+    K_D = MuzzleWeight/D
+    LocPos = (AimPos - Gun:pos())*0.01905
+    P = vec2(LocPos):length()
+    HLim = acos(P/(K_D*MuzzleVelocity))
+    LLim = atan(LocPos:z(),P)
+    CTP = 100*(!Trig - Trig)/MuzzleVelocity
+    #[
+    Elevation = HLim
+    Depression = LLim
+    CTP = 100/MuzzleVelocity
+    ]#
+    if(P < cos(Pitch)*K_D*MuzzleVelocity){
+        DragF = G*K_D^2*ln(1-P/(K_D*MuzzleVelocity*cos(Pitch))) + P*tan(Pitch) + P*K_D*G/(MuzzleVelocity*cos(Pitch)) - LocPos:z()
+    }
+
+    #Numerical Analysis part
+    #####################################################################################################################################################
+    DD_F = $DragF
+    D_P = $Pitch
+    #AnalysF = sign(DD_F/D_P)*max(abs(DD_F/D_P),10)
+    AnalysF = max(abs(DD_F/D_P),2.5)
+    if(Trig){
+        Pitch = clamp(Pitch - clamp(CTP*DragF/AnalysF,-1,1),(HLim + LLim)*0.5,HLim)
+    }
+    else{
+        Pitch = clamp(Pitch - clamp(CTP*DragF/AnalysF,-1,1),LLim,(HLim + LLim)*0.5)
+    }
+
+    #Bullestic END
+    #####################################################################################################################################################
+    GunAng = ang(-Pitch,LocPos:toAngle():yaw(),0)
+    LocalVel=entity():toLocal(Gun:angles()):yaw()
+    Hold = entity():toLocal(Gun:angles())
+}
+else{
+    Zoom = 0
+    Active = 0
+    GunAng = entity():toWorld(Hold)
+    SetedAim = 0
+}
+
+Force = Gun:toWorld(clamp(Gun:toLocal(GunAng),ang(-RotateSpeed),ang(RotateSpeed)))
+Clamped = clamp(entity():toLocal(Force),ang(-Elevation,-Yaw,-1),ang(-Depression,Yaw,1))
+LocalToGun = Gun:toLocal(entity():toWorld(Clamped))
+Gun:applyAngForce((LocalToGun * 200 - Gun:angVel() * 50 + entity():angVel() * 50 * (abs(Gun:toLocal(GunAng):yaw())>5)*RealisticGunMovement) * Inertia) #250, 47
