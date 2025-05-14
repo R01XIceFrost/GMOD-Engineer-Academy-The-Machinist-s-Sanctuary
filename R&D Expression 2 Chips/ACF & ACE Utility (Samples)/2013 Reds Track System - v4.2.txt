@@ -1,0 +1,438 @@
+@name Reds Track System - v4_2
+@inputs [La Ra]:wirelink
+@outputs Master:entity
+@persist [SprocketL SprocketR RSprocketL RSprocketR R1 R2 R3 R4 R5 R6 L1 L2 L3 L4 L5 L6]:entity F Wheelnumber Trackrun M AMod:angle Skin:string Sprsize Roadwheelsize Thickness Width RSprsize [Pos Up Right Fore RRPos LRPos LPos RPos]:vector Uhm Wheelmod Sprocketmod RSprocketmod Stretchmod Off TUV:vector
+@persist Index1 Index2 Index3 Index4 Vel:vector SkinC [A0l B0l A7l B7l]:vector
+
+#Source?: https://youtu.be/KoS5yGh5ERU?si=EsapHTiovKHy9Q54
+
+#[
+
+INFO:
+
+You might have to copy-paste into a notepad file and save that to your e2 folder. 
+These should be a tad less lag, a bit better when rolling slowly, and of course one can be used for single track vehicles like snowmobiles. 
+Or use multiples on bogies with suspension, like some of those interwar tanks with floating idlers and a reinforcing bar and shit. 
+Or if your tank only has to drive forward, straight at the enemy, because steering is for capitalists.
+
+]#
+
+Vel = entity():pos()
+if($Vel:length() < 5) {interval(400)} else {interval(150)}
+if(dupefinished()) {reset()}
+
+if(first())
+    {
+        #This is a naer-total rewrite of the old track chip with many optimizations.  it may look the same but it's totally different.
+        #the interface has been kept almost entirely the same, for commonality and ease of use.
+        #Added in 4.2: skin 0 lets you mat the chip itself and also fixed rotation of some links
+        #to use this, parent it upright, facing forward, to your vehicle.  Make sure the chip loads upright
+        #Scaling should be relatively automatic, use the variables to tweak them
+        #To use, link entity markers on one side from front to back, sprocket/roadwheels/idler
+        #it supports up to 6 roadwheels.  If you have other things linked to the adv entity marker
+        #you must manually specify the number of wheels
+        
+        Override = 0 #Override automatic roadwheel detection, for if you have other things linked to the adv e marker
+        Wheelnumber = 2 #if you are overriding the auto-selection, this is your # of wheels.  If not, it means nothing.
+        Sprmod = 3 #Fine-tune the size of the front sprocket
+        RSprmod = 3 #Fine-tune the size of the rear sprocket
+        Width = 1 #Width of the track's contact patch
+        Thickness = 0.15 #The thickness of the actual track.  Keep it between 0.1 and 0.3, usually 0.175 is enough.
+        Skinnum = 0 #Number to designate which skin to use
+        Roadwheelmod = 0 #Fine-tune the size of roadwheels
+        Stretch = 3 #Modifier of length for the first and last roadwheel track holos, to look smoother
+        Color = vec(255,255,255) #Color the treads
+        
+        #These should not need altering.
+        M = 0.089 #should be able to ignore, scaling for track connection
+        Uhm = Thickness*12 #trackrun above ground
+        TUV = vec(0,0,(Thickness*1.5)) #Thickness up multiplier.
+        AMod = ang(0,0,0) #Modifier for angles, do not use at this time
+        if(Skinnum == 0) {Skin = entity():getMaterial()} #Skin it to whatever you mat the track chip to.
+        if(Skinnum == 1) {Skin = "phoenix_storms/middle"} #A good solid jointed texture for ww2 and modern tanks
+        if(Skinnum == 2) {Skin = "phoenix_storms/metalset_1-2"} #A metallic texture, for early ww2 and ww1 tanks
+        if(Skinnum == 3) {Skin = "phoenix_storms/FuturisticTrackRamp_1-2"} #Another metallic texture, for early ww2 and ww1 tanks
+        if(Skinnum == 4) {Skin = "models/props_debris/metalwall001a.mdl"} #A fine-jointed metal skin like early ww2 tanks
+        if(Skinnum == 5) {Skin = "phoenix_storms/car_tire"} #A car tire skin some people like.  Ugly as sin.
+        if(Skinnum == 6) {Skin = "models/weapons/w_stunbaton/stunbaton"} #A weird scifi looking texture.
+        if(Skinnum == 7) {Skin = "hunter/myplastic"} #Default phx nomat skin, boxy but passable
+        if(Skinnum == 8) {Skin = "models/XQM/Rails/gumball_1"} #Rubber banded track skin, use dark colors.
+        if(Skinnum == 9) {Skin = "phoenix_storms/lag_sign"} #For entertainment only
+        
+        Off = 0 #it's not off when first spawned
+        Master = entity()
+        
+        if(Override == 0) {
+        Wheelnumber = 2 #defaults to three, then checks if it has 3, 4, 5, or 6 roadwheels
+        if(La:entity("Entity5"):mass() > 0) {Wheelnumber = 3} #if left track has 6 entities it has 4 roadwheels
+        if(La:entity("Entity6"):mass() > 0) {Wheelnumber = 4} #if left track has 6 entities it has 4 roadwheels
+        if(La:entity("Entity7"):mass() > 0) {Wheelnumber = 5} #If left track has 7 entities it has 5 roadwheels
+        if(La:entity("Entity8"):mass() > 0) {Wheelnumber = 6} #If left track has 8 entities it has 6 roadwheels
+        }
+        #A sarcastic safety check
+        if((inrange(Wheelnumber,2,6) ==0) & (Wheelnumber >0)) {print("You dun fucked up.  Wrong # of wheels.  2-6 only.")}       
+        #Deconstruct wire links, extracting that nougety entity goodness
+        #Initial defaults
+        SprocketL = La:entity("Entity1")
+        L1 = La:entity("Entity2")
+        L2 = La:entity("Entity3")
+        SprocketR = Ra:entity("Entity1")
+        R1 = Ra:entity("Entity2")
+        R2 = Ra:entity("Entity3")
+        if(Wheelnumber ==6)
+        {
+        #LEFT
+        L3 = La:entity("Entity4")
+        L4 = La:entity("Entity5")
+        L5 = La:entity("Entity6")
+        L6 = La:entity("Entity7")
+        RSprocketL = La:entity("Entity8")
+        #RIGHT
+        R3 = Ra:entity("Entity4")
+        R4 = Ra:entity("Entity5")
+        R5 = Ra:entity("Entity6")
+        R6 = Ra:entity("Entity7")
+        RSprocketR = Ra:entity("Entity8")
+        }
+        if(Wheelnumber ==5)
+        {
+        #LEFT
+        L3 = La:entity("Entity4")
+        L4 = La:entity("Entity5")
+        L5 = La:entity("Entity6")
+        RSprocketL = La:entity("Entity7")
+        #RIGHT
+        R3 = Ra:entity("Entity4")
+        R4 = Ra:entity("Entity5")
+        R5 = Ra:entity("Entity6")
+        RSprocketR = Ra:entity("Entity7")
+        }
+        if(Wheelnumber ==4)
+        {
+        #LEFT
+        L3 = La:entity("Entity4")
+        L4 = La:entity("Entity5")
+        RSprocketL = La:entity("Entity6")
+        #RIGHT
+        R3 = Ra:entity("Entity4")
+        R4 = Ra:entity("Entity5")
+        RSprocketR = Ra:entity("Entity6")
+        }
+        if(Wheelnumber ==3)
+        {
+        #LEFT
+        L3 = La:entity("Entity4")
+        RSprocketL = La:entity("Entity5")
+        #RIGHT
+        R3 = Ra:entity("Entity4")
+        RSprocketR = Ra:entity("Entity5")
+        }
+        if(Wheelnumber ==2)
+        {
+        #LEFT
+        RSprocketL = La:entity("Entity4")
+        #RIGHT
+        RSprocketR = Ra:entity("Entity4")
+        }
+        
+        
+        Roadwheelsize = (L1:boxSize():x() /2) + Roadwheelmod #Determines actual wheel size
+        Sprsize = (SprocketL:boxSize():x()/2) + Sprmod #Determines actual sprocket size
+        RSprsize = (RSprocketL:boxSize():x()/2) + RSprmod #Determines actual rear sprocekt size
+        Stretchmod = ((Roadwheelsize)/-4) - Stretch
+        #completely ignore these, storing a repreat value i don't need to tweak usually
+        Index1 = 0.8
+        Index2 = 0.75
+        Index3 = 0.3
+        Index4 = -0.2
+        A0l = entity():toLocal(SprocketR:massCenter() + (entity():up() * -(Sprsize)*Index1))
+        B0l = entity():toLocal(SprocketL:massCenter() + (entity():up() * -(Sprsize)*Index1))
+        A7l = entity():toLocal(RSprocketR:massCenter() + (entity():up() * -(RSprsize)*Index1) + (entity():forward()*(RSprsize*Index4)))
+        B7l = entity():toLocal(RSprocketL:massCenter() + (entity():up() * -(RSprsize)*Index1) + (entity():forward()*(RSprsize*Index4)))
+        A78 = entity():toLocal(SprocketR:massCenter() + (entity():forward() * (Sprsize*Index2)) + (entity():up()*-(Sprsize*Index3)))
+        B78 = entity():toLocal(SprocketL:massCenter() + (entity():forward() * (Sprsize*Index2)) + (entity():up()*-(Sprsize*Index3)))
+    }    
+    #Everything below here you can pretty much ignore.  It's just a wall of code.  
+    #Seriously do not fuck with this shit or i will find you and cut you
+if(Off==0) {
+#Variables to store for future indexing.
+Pos = entity():massCenter()
+Up = entity():up()
+Right = entity():right()
+Fore = entity():forward()
+LPos = SprocketL:massCenter()
+RPos = SprocketR:massCenter()
+LRPos = RSprocketL:massCenter()
+RRPos = RSprocketR:massCenter()
+
+#Now we detect our wheel positions and add scaling variables.
+#The first and last roadwheels have a stretch variable os the track wraps right
+#A1 = Roadwheel on ground 1, A2 is roadwheel on ground 2, etc.
+#Right track
+A0 = entity():toWorld(A0l) #Restoring saved value
+A1 = R1:massCenter() - (Up*Roadwheelsize) + (Up * Uhm) + (Fore*-Stretchmod) #Stretch contact of first wheel
+A2 = R2:massCenter() - (Up*Roadwheelsize) + (Up * Uhm)
+A3 = R3:massCenter() - (Up*Roadwheelsize) + (Up * Uhm)
+A4 = R4:massCenter() - (Up*Roadwheelsize) + (Up * Uhm)
+A5 = R5:massCenter() - (Up*Roadwheelsize) + (Up * Uhm)
+A6 = R6:massCenter() - (Up*Roadwheelsize) + (Up * Uhm) + (Fore*Stretchmod)} #Six is max roadwheels so stretch it
+A7 = entity():toWorld(A7l)
+A8 = entity():toWorld(A78)
+#Left track
+B0 = entity():toWorld(B0l) #Restoring saved value
+B1 = L1:massCenter() - (Up*Roadwheelsize) + (Up * Uhm) + (Fore*-Stretchmod) #Stretch contact of first wheel
+B2 = L2:massCenter() - (Up*Roadwheelsize) + (Up * Uhm) 
+B3 = L3:massCenter() - (Up*Roadwheelsize) + (Up * Uhm) 
+B4 = L4:massCenter() - (Up*Roadwheelsize) + (Up * Uhm) 
+B5 = L5:massCenter() - (Up*Roadwheelsize) + (Up * Uhm) 
+B6 = L6:massCenter() - (Up*Roadwheelsize) + (Up * Uhm) + (Fore*Stretchmod) #Six is max roadwheels so stretch it
+B7 = entity():toWorld(B7l)
+B8 = entity():toWorld(B78)
+#Wheelnumber modifier, to not compute shit you don't need!
+if(Wheelnumber ==2) {
+    A2 = A2+ (Fore*Stretchmod)
+    B2 = B2+ (Fore*Stretchmod)} #If 2nd wheel is last on ground stretch contact
+if(Wheelnumber ==3) {
+    A3 = A3+ (Fore*Stretchmod)
+    B3 = B3+ (Fore*Stretchmod)} #If 3rd wheel is last on ground stretch contact
+if(Wheelnumber ==4) {
+    A4 = A4+ (Fore*Stretchmod)
+    B4 = B4+ (Fore*Stretchmod)} #If 4th wheel is last on ground stretch contact
+if(Wheelnumber ==5) {
+    A5 = A5+ (Fore*Stretchmod)
+    B5 = B5+ (Fore*Stretchmod)} #If 5th wheel is last on ground stretch contact
+    
+#Ok we have a shitton of positions, fuck useful that is, right?
+#Welp, now we gotta make the holo doodads do their magicky goodness
+#We get some axises based off entity and holo goodness, converting positions to localized angles
+#Then we position the holo, angle it, and scale it.
+AxisA1 = entity():toLocalAxis(A0-A1)
+AxisB1 = entity():toLocalAxis(B0-B1)
+AtanA1 = atan(-AxisA1:z(), AxisA1:x())
+AtanB1 = atan(-AxisB1:z(), AxisB1:x())
+AxisA2 = entity():toLocalAxis(A1-A2)
+AxisB2 = entity():toLocalAxis(B1-B2)
+AtanA2 = atan(-AxisA2:z(), AxisA2:x())
+AtanB2 = atan(-AxisB2:z(), AxisB2:x())
+holoPos(1,(A0+A1+TUV)/2)
+holoPos(11,(B0+B1+TUV)/2)
+holoPos(2,(A1+A2+TUV)/2)
+holoPos(12,(B1+B2+TUV)/2)
+holoAng(1,entity():toWorld((ang(AtanA1,0,180)+AMod)))
+holoAng(11,entity():toWorld((ang(AtanB1,0,180)+AMod)))
+holoAng(2,entity():toWorld((ang(AtanA2,0,180)+AMod)))
+holoAng(12,entity():toWorld((ang(AtanB2,0,180)+AMod)))
+holoScale(1,vec(((A0-A1):length())*M,Width,Thickness))
+holoScale(11,vec(((B0-B1):length())*M,Width,Thickness))
+holoScale(2,vec(((A1-A2):length())*M,Width,Thickness))
+holoScale(12,vec(((B1-B2):length())*M,Width,Thickness))
+#Now we run an argument: if the wheel number means that this is not the last wheel, we stretch to another wheel.
+#if not, we link it to the sprocket.
+if(Wheelnumber >2) {#3 roadwheels
+    AxisA3 = entity():toLocalAxis(A2-A3)
+    AxisB3 = entity():toLocalAxis(B2-B3)
+    holoPos(3,(A2+A3+TUV)/2)
+    holoPos(13,(B2+B3+TUV)/2)
+    AtanA3 = atan(-AxisA3:z(), AxisA3:x())
+    AtanB3 = atan(-AxisB3:z(), AxisB3:x())
+    holoAng(3,entity():toWorld((ang(AtanA3,0,180)+AMod)))
+    holoAng(13,entity():toWorld((ang(AtanB3,0,180)+AMod)))
+    holoScale(3,vec(((A2-A3):length())*M,Width,Thickness))
+    holoScale(13,vec(((B2-B3):length())*M,Width,Thickness))
+    } else {#2 roadwheels
+    AxisA3 = entity():toLocalAxis(A2-A7)
+    AxisB3 = entity():toLocalAxis(B2-B7)
+    holoPos(3,(A2+A7+TUV)/2)
+    holoPos(13,(B2+B7+TUV)/2)
+    AtanA3 = atan(-AxisA3:z(), AxisA3:x())
+    AtanB3 = atan(-AxisB3:z(), AxisB3:x())
+    holoAng(3,entity():toWorld((ang(AtanA3,0,180)+AMod)))
+    holoAng(13,entity():toWorld((ang(AtanB3,0,180)+AMod)))
+    holoScale(3,vec(((A2-A7):length())*M,Width,Thickness))
+    holoScale(13,vec(((B2-B7):length())*M,Width,Thickness))
+    }
+if(Wheelnumber >3) {#4 roadwheels
+    AxisA4 = entity():toLocalAxis(A3-A4)
+    AxisB4 = entity():toLocalAxis(B3-B4)
+    holoPos(4,(A3+A4+TUV)/2)
+    holoPos(14,(B3+B4+TUV)/2)
+    AtanA4 = atan(-AxisA4:z(), AxisA4:x())
+    AtanB4 = atan(-AxisB4:z(), AxisB4:x())
+    holoAng(4,entity():toWorld((ang(AtanA4,0,180)+AMod)))
+    holoAng(14,entity():toWorld((ang(AtanB4,0,180)+AMod)))
+    holoScale(4,vec(((A3-A4):length())*M,Width,Thickness))
+    holoScale(14,vec(((B3-B4):length())*M,Width,Thickness))
+    } else { #3 roadwheels
+    AxisA4 = entity():toLocalAxis(A3-A7)
+    AxisB4 = entity():toLocalAxis(B3-B7)
+    holoPos(4,(A3+A7+TUV)/2)
+    holoPos(14,(B3+B7+TUV)/2)
+    AtanA4 = atan(-AxisA4:z(), AxisA4:x())
+    AtanB4 = atan(-AxisB4:z(), AxisB4:x())
+    holoAng(4,entity():toWorld((ang(AtanA4,0,180)+AMod)))
+    holoAng(14,entity():toWorld((ang(AtanB4,0,180)+AMod)))
+    holoScale(4,vec(((A3-A7):length())*M,Width,Thickness))
+    holoScale(14,vec(((B3-B7):length())*M,Width,Thickness))
+    }
+if(Wheelnumber >4) { #5 roadwheels
+    AxisA5 = entity():toLocalAxis(A4-A5)
+    AxisB5 = entity():toLocalAxis(B4-B5)
+    holoPos(5,(A4+A5+TUV)/2)
+    holoPos(15,(B4+B5+TUV)/2)
+    AtanA5 = atan(-AxisA5:z(), AxisA5:x())
+    AtanB5 = atan(-AxisB5:z(), AxisB5:x())
+    holoAng(5,entity():toWorld((ang(AtanA5,0,180)+AMod)))
+    holoAng(15,entity():toWorld((ang(AtanB5,0,180)+AMod)))
+    holoScale(5,vec(((A4-A5):length())*M,Width,Thickness))
+    holoScale(15,vec(((B4-B5):length())*M,Width,Thickness))
+    } else { #4 roadwheels
+    AxisA5 = entity():toLocalAxis(A4-A7)
+    AxisB5 = entity():toLocalAxis(B4-B7)
+    holoPos(5,(A4+A7+TUV)/2)
+    holoPos(15,(B4+B7+TUV)/2)
+    AtanA5 = atan(-AxisA5:z(), AxisA5:x())
+    AtanB5 = atan(-AxisB5:z(), AxisB5:x())
+    holoAng(5,entity():toWorld((ang(AtanA5,0,180)+AMod)))
+    holoAng(15,entity():toWorld((ang(AtanB5,0,180)+AMod)))
+    holoScale(5,vec(((A4-A7):length())*M,Width,Thickness))
+    holoScale(15,vec(((B4-B7):length())*M,Width,Thickness))
+    }
+if(Wheelnumber >5) { #6 roadwheels
+    AxisA6 = entity():toLocalAxis(A5-A6)
+    AxisB6 = entity():toLocalAxis(B5-B6)
+    holoPos(6,(A5+A6+TUV)/2)
+    holoPos(16,(B5+B6+TUV)/2)
+    AtanA6 = atan(-AxisA6:z(), AxisA6:x())
+    AtanB6 = atan(-AxisB6:z(), AxisB6:x())
+    holoAng(6,entity():toWorld((ang(AtanA6,0,180)+AMod)))
+    holoAng(16,entity():toWorld((ang(AtanB6,0,180)+AMod)))
+    holoScale(6,vec(((A5-A6):length())*M,Width,Thickness))
+    holoScale(16,vec(((B5-B6):length())*M,Width,Thickness))
+    AxisA7 = entity():toLocalAxis(A6-A7)
+    AxisB7 = entity():toLocalAxis(B6-B7)
+    holoPos(7,(A6+A7+TUV)/2)
+    holoPos(17,(B6+B7+TUV)/2)
+    AtanA7 = atan(-AxisA7:z(), AxisA7:x())
+    AtanB7 = atan(-AxisB7:z(), AxisB7:x())
+    holoAng(7,entity():toWorld((ang(AtanA7,0,180)+AMod)))
+    holoAng(17,entity():toWorld((ang(AtanB7,0,180)+AMod)))
+    holoScale(7,vec(((A6-A7):length())*M,Width,Thickness))
+    holoScale(17,vec(((B6-B7):length())*M,Width,Thickness))
+    #holoCreate(99,A5+A6+TUV)
+    
+    } else { #5 roadwheels
+    AxisA6 = entity():toLocalAxis(A5-A7)
+    AxisB6 = entity():toLocalAxis(B5-B7)
+    holoPos(6,(A5+A7+TUV)/2)
+    holoPos(16,(B5+B7+TUV)/2)
+    AtanA6 = atan(-AxisA6:z(), AxisA6:x())
+    AtanB6 = atan(-AxisB6:z(), AxisB6:x())
+    holoAng(6,entity():toWorld((ang(AtanA6,0,180)+AMod)))
+    holoAng(16,entity():toWorld((ang(AtanB6,0,180)+AMod)))
+    holoScale(6,vec(((A5-A7):length())*M,Width,Thickness))
+    holoScale(16,vec(((B5-B7):length())*M,Width,Thickness))
+    }
+#if(Wheelnumber ==6) {
+#    
+#    }
+####
+if(first())
+    {
+        #Positions for the rest of track run
+        A9 = RRPos + (Fore * (RSprsize*-0.7)) + (Up*-(RSprsize*0.3))
+        A10 = RRPos + (Fore*(RSprsize*-0.78)) + (Up*RSprsize*0.4)
+        A11 = RPos + (Fore*(Sprsize*0.1)) + (Up*(Sprsize*0.8))
+        A12 = RRPos + (Fore * (RSprsize*-0.1)) + (Up*(RSprsize*0.8))
+        A13 = RPos + (Fore * (Sprsize*0.7)) + (Up*(Sprsize*0.5))
+        Am = ((A12+A11)/2 -TUV)
+        
+        B9 = LRPos + (Fore * (RSprsize*-0.7)) + (Up*-(RSprsize*0.3))
+        B10 = LRPos + (Fore*(RSprsize*-0.78)) + (Up*RSprsize*0.4)
+        B11 = LPos + (Fore*(Sprsize*0.1)) + (Up*(Sprsize*0.8))
+        B12 = LRPos + (Fore * (RSprsize*-0.1)) + (Up*(RSprsize*0.8))
+        B13 = LPos + (Fore * (Sprsize*0.7)) + (Up*(Sprsize*0.5))
+        Bm = ((B12+B11)/2 -TUV)
+        #Creating the holos for the treads themselves.
+        holoCreate(1,entity():pos(),vec(1,1,1),entity():angles(),Color)
+        holoCreate(2,entity():pos(),vec(1,1,1),entity():angles(),Color)
+        holoCreate(3,entity():pos(),vec(1,1,1),entity():angles(),Color)
+        holoCreate(4,entity():pos(),vec(1,1,1),entity():angles(),Color)
+        holoCreate(5,entity():pos(),vec(1,1,1),entity():angles(),Color)
+        holoCreate(6,entity():pos(),vec(1,1,1),entity():angles(),Color)
+        holoCreate(7,entity():pos(),vec(1,1,1),entity():angles(),Color)
+        holoCreate(11,entity():pos(),vec(1,1,1),entity():angles(),Color)
+        holoCreate(12,entity():pos(),vec(1,1,1),entity():angles(),Color)
+        holoCreate(13,entity():pos(),vec(1,1,1),entity():angles(),Color)
+        holoCreate(14,entity():pos(),vec(1,1,1),entity():angles(),Color)
+        holoCreate(15,entity():pos(),vec(1,1,1),entity():angles(),Color)
+        holoCreate(16,entity():pos(),vec(1,1,1),entity():angles(),Color)
+        holoCreate(17,entity():pos(),vec(1,1,1),entity():angles(),Color)
+        #Creating sprocket parts    
+        Xm = 0.95
+        holoCreate(8,(A0+A8)/2,vec(((A0-A8):length())*M,Width,Thickness),((A0-A8):toAngle():setRoll(entity():angles():roll())),Color)
+        holoCreate(9,(A13+A8)/2,vec(((A13-A8):length())*M,Width,Thickness),((A13-A8):toAngle():setRoll(entity():angles():roll())),Color)
+        holoCreate(10,(A7+A9)/2,vec(((A7-A9):length())*M,Width,Thickness),((A7-A9):toAngle():setRoll(entity():angles():roll()+180)),Color)
+        holoCreate(18,(B0+B8)/2,vec(((B0-B8):length())*M,Width,Thickness),((B0-B8):toAngle():setRoll(entity():angles():roll())),Color)
+        holoCreate(19,(B13+B8)/2,vec(((B13-B8):length())*M,Width,Thickness),((B13-B8):toAngle():setRoll(entity():angles():roll())),Color)
+        holoCreate(20,(B7+B9)/2,vec(((B7-B9):length())*M,Width,Thickness),((B7-B9):toAngle():setRoll(entity():angles():roll()+180)),Color)
+        #More holo sprockets, moving up to higher numbers
+        holoCreate(21,(A13+A11)/2,vec(((A13-A11):length())*M,Width,Thickness),((A13-A11):toAngle():setRoll(entity():angles():roll()+180)),Color)
+        holoCreate(31,(B13+B11)/2,vec(((B13-B11):length())*M,Width,Thickness),((B13-B11):toAngle():setRoll(entity():angles():roll()+180)),Color)
+        holoCreate(22,(A12+A11)/2,vec((((A12-A11):length()*Xm)*M),Width,Thickness),((A12-A11):toAngle():setRoll(entity():angles():roll())),Color)
+        holoCreate(32,(B12+B11)/2,vec((((B12-B11):length()*Xm)*M),Width,Thickness),((B12-B11):toAngle():setRoll(entity():angles():roll())),Color)
+        holoCreate(23,(A12+A10)/2,vec(((A12-A10):length())*M,Width,Thickness),((A12-A10):toAngle():setRoll(entity():angles():roll()+180)),Color)
+        holoCreate(33,(B12+B10)/2,vec(((B12-B10):length())*M,Width,Thickness),((B12-B10):toAngle():setRoll(entity():angles():roll()+180)),Color)
+        holoCreate(24,(A9+A10)/2,vec(((A9-A10):length())*M,Width,Thickness),((A9-A10):toAngle():setRoll(entity():angles():roll()+180)),Color)
+        holoCreate(34,(B9+B10)/2,vec(((B9-B10):length())*M,Width,Thickness),((B9-B10):toAngle():setRoll(entity():angles():roll()+180)),Color)
+        
+        if(Wheelnumber <6)
+        {
+            holoDelete(7)
+            holoDelete(17)                 
+        }
+        if(Wheelnumber <5)
+        {
+            holoDelete(6)
+            holoDelete(16)                 
+        }
+        if(Wheelnumber <4)
+        {
+            holoDelete(5)
+            holoDelete(15)                 
+        }
+        if(Wheelnumber <3)
+        {
+            holoDelete(4)
+            holoDelete(14)                 
+        }
+           while(SkinC<40)
+        {
+            SkinC = SkinC+1
+            holoMaterial(SkinC,Skin)
+            holoParent(SkinC,entity())
+        }
+    }
+
+#cleanup on the fly
+if(lastSpoke() == entity():owner())
+    {
+        Chat = lastSaid()
+        if(Chat == "tracks off") {Off = 1}
+        if(Chat == "tracks on") {Off = 0}
+        if(Chat == "tracks reset")
+            {
+                print("...resetting...")
+                reset()
+            }
+            
+    }
+
+if(changed(Off))
+    {
+        if(changed(Off) & (Off ==0)) {hint("Turning on tracks.",3)
+            reset()
+        }
+        if(changed(Off) & (Off ==1)) {hint("Turning off tracks.",3)
+            holoDeleteAll()
+        }
+    }

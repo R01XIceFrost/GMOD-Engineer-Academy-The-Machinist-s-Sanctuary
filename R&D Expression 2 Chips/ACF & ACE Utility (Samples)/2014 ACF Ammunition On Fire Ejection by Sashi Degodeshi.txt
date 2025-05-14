@@ -1,0 +1,102 @@
+@name ACF Ammunition On Fire Ejection
+@inputs Fire Weld:wirelink Forcer1:wirelink Forcer2:wirelink
+@outputs Ejected
+@persist Counter
+@trigger Fire
+
+        ##
+        # ACF Ammunition On Fire Ejection
+        # Written By: Sashi Degodeshi (SashiHL2)
+        #
+        # This chip will guide a pair of wire forcers and a wire weld latch to eject a flaming piece
+        # of ammo box in to the air (or whatever direction you specify). Simply make sure your ammo
+        # box is only held in place by the wire weld latch. Also make sure the forcers are equidistant
+        # from eachother to provide efficent pushing force. Wire the Fire input to the On Fire output
+        # of the ACF ammo box and the weld latch and forcers via wirelink. I added an output that will
+        # indicate that the system should of ejected the hazardous ammo. Wire it to a sound emitter or
+        # pilot computer or whatever, but note that the value is temporary as the chip dies on the 11th
+        # count to prevent the chip from causing any unneeded lag.
+        ##
+        
+#[
+
+INFO:
+
+Hello forum!
+
+I play ACF a lot and I had an idea one day trying to build a mech (still can't build a mech, gets all jiggily and hates its existance :/ ). My idea was that if you held your ammunition on your arm or back (or in a tank or what have you) that if it caught fire it would be neat to see it fly in the air and explode safely so you can keep on fighting. My code runs at 2% at ~92ops and 400-600us. As you can see it's full of redundancy, mainly because my experience with E2 remembering values through condition changes is bad, but makes up for it by killing the E2 after the objective is completed.
+
+I hope you enjoy it! Please, if you have any ideas or ways to improve my code, let me know!
+
+]#
+
+if(Fire == 1) #Oh shit fire! Lets get this bomb outta here!
+{
+    interval(500) #Tick tock tick tock
+    
+    if(clk())
+    {
+        Counter++
+    }
+}
+elseif(Fire == 0)
+{
+    interval(0)
+}
+
+if(Counter <= 1) #Failsafe to prevent premature ejection, because nobody likes going off prematurely.
+{
+    Weld["Activate", number] = 1 #Keep our ammo in its box.
+    Forcer1["Force", number] = 0 #Don't push me bro!
+    Forcer1["Velocity", number] = 0 #I mean it, don't push me!
+    Forcer2["Force", number] = 0
+    Forcer2["Velocity", number] = 0 
+    Ejected = 0
+}
+if(Counter >= 2)
+{
+    Weld["Activate", number] = 1 #Hold it, hold it... Steady now...
+    Forcer1["Force", number] = 1 #Get ready to push!
+    Forcer1["Velocity", number] = 2000 #Really really hard, we don't want this bomb around our face.
+    Forcer2["Force", number] = 1
+    Forcer2["Velocity", number] = 2000
+    Ejected = 0
+}
+if(Counter >= 3)
+{
+    Weld["Activate", number] = 0 #We have liftoff!
+    Forcer1["Force", number] = 1 #Lets keep pushing for a second
+    Forcer1["Velocity", number] = 2000
+    Forcer2["Force", number] = 1
+    Forcer2["Velocity", number] = 2000
+    Ejected = 1 #Lets tell our pilot's computer his ammo is disposed of.
+}
+if(Counter >= 4)
+{
+    Weld["Activate", number] = 0 #Now we wait for it to explode and keep our weld terminated.
+    Forcer1["Force", number] = 0 #Calm down buddy.
+    Forcer1["Velocity", number] = 0 #Take a rest.
+    Forcer2["Force", number] = 0
+    Forcer2["Velocity", number] = 0
+    Ejected = 1 #Lets tell our pilot his ammo is disposed of.
+}
+if(Counter >= 10) #Give time for our ammo to explode, just in case.
+{
+    Weld["Activate", number] = 0
+    Forcer1["Force", number] = 0
+    Forcer1["Velocity", number] = 0
+    Forcer2["Force", number] = 0
+    Forcer2["Velocity", number] = 0
+    Ejected = 1
+}
+if(Counter >= 11) #Make sure clock is dead
+{
+    Weld["Activate", number] = 0
+    Forcer1["Force", number] = 0
+    Forcer1["Velocity", number] = 0
+    Forcer2["Force", number] = 0
+    Forcer2["Velocity", number] = 0
+    Ejected = 1
+    interval(0)
+    selfDestruct() #Release us to the ethereal plane of dead chips so our code doesn't cause lag!
+}
