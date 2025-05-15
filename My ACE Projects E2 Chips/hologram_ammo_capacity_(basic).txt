@@ -22,3 +22,12 @@ holoCreate(0,entity():pos() + vec(0,0,0), vec(1,1,B*0.0009), ang(entity():pos())
 holoParent(0,entity()) #Holo parented to E2 chip (Holo position will match to E2's current position)
 
 }
+
+
+#[
+
+LOGS:
+
+2025/05/14 LOG 1: B = Ammo:acfMunitions() *1 works too but remove @strict 
+
+]#
