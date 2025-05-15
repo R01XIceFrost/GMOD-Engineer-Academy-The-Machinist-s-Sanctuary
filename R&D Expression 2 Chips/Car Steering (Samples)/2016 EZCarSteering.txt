@@ -5,7 +5,7 @@
 @trigger none
 @model models/sprops/rectangles_thin/size_2/rect_12x12x1_5.mdl
 
-#Source: https://youtu.be/C0x_YI5V7h0?si=UrP7z24vufnolJsR by 
+#Source: https://youtu.be/C0x_YI5V7h0?si=UrP7z24vufnolJsR by GMODISM
 
 if(first() | dupefinished()){
     TurnLimit=50 #Max degrees in both directions your car can steer at low speeds.
