@@ -4,6 +4,8 @@
 @persist [RopeA RopeB]:entity [KillOnce WereWhitelisted]:array Sound SoundEnt ShootSoundTime ScanSpeed ScanAng ScanStage ScanDir ScanSoundTime
 @outputs Fire
 
+#INFO: Spawn 2 Wire Turrets then place the E2 
+
 #Source: https://youtu.be/KUGtYll17AE?si=mvKS2WumuE4Cww-v
 
 if(clk("fired")){
