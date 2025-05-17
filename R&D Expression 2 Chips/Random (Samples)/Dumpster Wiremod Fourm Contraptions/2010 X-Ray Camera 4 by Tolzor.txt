@@ -1,0 +1,118 @@
+@name X-Ray Camera 4
+@inputs Size Depth ScreenRes DepthRes Shutter Screen:wirelink Thickness
+@outputs Progress:string 
+@persist E:entity Scanning ScreenCell RangerZ Ranger:ranger CCD:array I MinMass MaxMass Mass DepthLength RangerX RangerY ScreenRes 
+@trigger 
+
+#[
+
+
+
+
+INFO:
+
+How to use
+
+1. Spawn the object you want to scan well away from the map (including the ground).
+2. Enclose it with the view-finding hologram using the "size" and "depth" constants.
+3. Set the resolution (bigger is slower; 256 means 256x256 res, 512 means 512x512 res, etc)
+4. Set the depth resolution (if you have the "depth" setting set up properly, anything above 255 is pointless using a grayscale display).
+5. Toggle the "ignore density setting". Unless you have given your props realistic mass, using the real xray algorithm will bleach out your picture.
+6. Press the shutter button and wait.
+7. If new players can't see the screen, refresh it using the refresh button.
+
+The dupe (latest version is "release 2"):
+
+I've had this idea in my head for over a year, I checked, and there are surprisingly no google results for it being done already so I finally got around to throwing it together this morning. (inb4 "I did that back in 07 with gates")
+
+It acts like a real xray in that the grayscale is dictated by thickness * density.
+
+Mechanical clock
+
+
+Random shapes
+
+
+4 cylinder inline 16v engine
+
+
+
+Gas turbine engine with hp and lp turbines & reheat
+
+
+Ships cannon
+
+
+V8
+
+Container Lorry complete with illegals
+
+
+
+
+
+
+
+Users can input screen resolution and depth resolution, scan area size and depth of scanning area. It outputs a progress percentage, which is needed, as high resolution scans can take a LONG time. It also has holos to show where the current trace is.
+
+It automatically adjusts contrast, so having a very dense object in shot will make less dense ones hard to see. There is an optional input to make the grayscale calculation ignore density to combat this.
+
+Scan time is increased by thickness of objects being scanned, and increasing either of the resolution inputs.
+
+Please post your pics made using my scanner in this thread, mine doesn't do it justice!
+
+]#
+
+runOnTick(1)
+if (first() | duped() | ~ScreenRes) {
+    E = entity()
+    Screen[1048574] = 1 # clear screen 
+    Screen[1048572] = ScreenRes
+    Screen[1048573] = ScreenRes
+    Screen[1048569] = 0 # grayscale mode
+    MinMass = 1e6
+    MaxMass = -1e6
+} 
+if (Shutter & ~Shutter) {
+    ScreenCell = I = 0
+    CCD = array()
+    Scanning = 1
+    RangerZ = 10
+    holoCreate(1)
+    holoCreate(2)
+    DepthLength = Depth / DepthRes  
+}
+while (Scanning == 1 & perf()) {
+    RangerX = (ScreenCell % ScreenRes / (ScreenRes / 2) - 1) 
+    RangerY = (floor(ScreenCell / ScreenRes) / (ScreenRes / 2) - 1) # x for y
+    Ranger = rangerOffset(E:toWorld(vec(RangerX * Size / 2, RangerY * Size / 2, RangerZ)), E:toWorld(vec(RangerX * Size / 2, RangerY * Size / 2, Depth + 10)))
+    holoPos(1, E:toWorld(vec(RangerX * Size / 2, RangerY * Size / 2, 10)))
+    holoPos(2, E:toWorld(vec(RangerX * Size / 2, RangerY * Size / 2, Depth + 10)))
+    RangerZ = E:toLocal(Ranger:position()):z()
+    if (RangerZ < Depth) {
+        if (Thickness) {
+            Mass += (DepthLength)
+            } else {
+            Mass += (DepthLength * Ranger:entity():mass() / Ranger:entity():volume()) # xray equation
+        }
+        RangerZ += DepthLength
+    } else {
+        CCD:pushNumber(Mass)
+        if (Mass > MaxMass) {MaxMass = Mass}
+        if (Mass < MinMass) {MinMass = Mass}
+        Mass = 0
+        RangerZ = 10
+        ScreenCell++
+        if (ScreenCell > ScreenRes^2) {
+            Scanning = 2
+            exit()
+        }
+    }
+}
+while (Scanning == 2 & I < ScreenRes^2 & perf()) {
+    Screen[I] = (CCD[I, number] - MinMass) * 255 / (MaxMass - MinMass)
+    I++
+}
+Progress = (ScreenCell ? round((ScreenCell * 100) / ScreenRes^2) : 0):toString() + "%"
+
+# made by Tolyzor
