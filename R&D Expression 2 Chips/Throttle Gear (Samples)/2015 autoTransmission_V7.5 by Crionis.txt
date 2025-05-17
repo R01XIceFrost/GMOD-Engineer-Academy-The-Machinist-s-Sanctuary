@@ -1,0 +1,174 @@
+@name auto/Transmission_V7_5
+@inputs Wheels:array Car:entity Pod:wirelink FlyWheel:vector2
+@outputs RPMout
+@persist [WhlsAxis, BridgeVal Transfer BridgeGrp GearBox]:array 
+@persist InvWhMass NumBridges NumDiffs BrigdeGear:vector2 GearLevel LockDiff AvrRPM AvrRMPC RPM
+@trigger none
+
+#[
+
+INFO:
+
+E2 Transmission(Differential + GearBox) 
+
+ by +Crionis+
+, 05-02-2015 at 12:37 PM (814 Views)
+
+    now I have no time to develop it more
+
+    How to use:
+    Inputs:
+    Wheels - array from the wire Adv Entity Marker.
+    Car - Base prop of the vehicle.
+    Pod - Pod controller.
+    FlyWheel - Data from engine, vec2(RPM, Torque(newton metre))
+
+    Configurations:
+    GearBox - Array with gearbox ratios.
+    BridgeGearRatio - Gear ratio for bridge
+    BridgeGrp - Hierarchy of connections differentials
+
+
+]#
+
+
+### INIT ###
+if(first() | dupefinished())
+{
+    WhEnt = Wheels:entity(1)
+    WhBxsz = WhEnt:boxSize()
+    WhDiam = max(WhBxsz:x(), max(WhBxsz:y(), WhBxsz:z()))
+    InvWhMass = WhEnt:mass() * -((WhDiam ^ 2 * 0.5) * 0.00300705)
+    
+    LockDiff = 0
+    GearLevel = 2
+    GearBox = array(-7, 0, 5, 4, 3, 2.5, 2, 1.7, 1.5, 1)
+
+    BridgeGearRatio = 5
+    BrigdeGear = vec2(1/BridgeGearRatio, BridgeGearRatio)
+    BridgeGrp = array(1, 2)
+    NumBridges = Wheels:count()/2
+    NumDiffs = BridgeGrp:count()/2
+ 
+    for(Aid = 1, Wheels:count()) { WhlsAxis[Aid, vector] = vec(0,1,0)*((Aid&&1) ? 1 : -1) }
+}
+
+### UPDATE ####
+runOnTick(1)
+
+Seat = Pod:entity("Entity")
+Driver = Seat:driver()
+
+Active          = Pod:number("Active")
+GearKey         = Pod:number("Mouse1") - Pod:number("Mouse2")
+BrakeKey        = Pod:number("Space")
+BlockDiffKey    = Driver:keyPressed("Alt")
+
+## GEAR BOX ##
+GearValue = GearBox:number(GearLevel)
+
+if(changed(GearKey) & GearKey) 
+{ 
+    GearLevel = clamp(GearLevel+GearKey, 1, GearBox:count()) 
+}
+
+if(changed(BlockDiffKey) & BlockDiffKey)
+{
+    LockDiff = !LockDiff
+    Seat:hintDriver((LockDiff) ? "Differntial locked" : "Differntial unlocked", 3)
+}
+
+## Calculations ##
+GearPair = vec2(1/abs(GearValue), GearValue)
+
+## Solve bridges ##
+for(BridgeId = 1, NumBridges)
+{    
+    WhlIdB = BridgeId*2
+    WhlA = Wheels:entity(WhlIdB-1)      
+    WhlB = Wheels:entity(WhlIdB)
+    AxisA = WhlsAxis:vector(WhlIdB-1) 
+    AxisB = WhlsAxis:vector(WhlIdB)
+    A = WhlA:angVelVector():dot(AxisA)
+    B = WhlB:angVelVector():dot(AxisB)
+    
+    MidWhaVel = (A+B)*0.5
+    AddTrq = MidWhaVel+BridgeVal:number(BridgeId)
+    
+    if(BrakeKey)
+    {
+        FrcA = InvWhMass * A
+        FrcB = InvWhMass * B
+        MidWhaVel = 0
+    }
+    else
+    {
+        Trf = Transfer:vector2(BridgeId) * BrigdeGear
+        RPMi = Trf:x()+100
+        Ants = abs(A)
+        Bnts = abs(B)
+        Tva = (Ants > clamp(abs(A/MidWhaVel), 0, 2)*RPMi)
+        Tvb = (Bnts > clamp(abs(B/MidWhaVel), 0, 2)*RPMi)
+        
+        if(LockDiff)
+        {
+            FrcA = (InvWhMass * (A-AddTrq)) + (Tva ? 0 : Trf:y())
+            FrcB = (InvWhMass * (B-AddTrq)) + (Tva ? 0 : Trf:y())
+            MidWhaVel = (abs(A) < abs(B)) ? A : B
+        }
+        else
+        {
+            FrcA = (InvWhMass * (B+A-AddTrq)) + (Tva ? 0 : Trf:y())
+            FrcB = (InvWhMass * (A+B-AddTrq)) + (Tvb ? 0 : Trf:y())
+        }
+    }
+    
+    BridgeVal:setNumber(BridgeId, MidWhaVel)
+    WhlA:applyTorque(AxisA * FrcA)
+    WhlB:applyTorque(AxisB * FrcB)
+}
+
+# Transfer case #
+for(DiffId = 1, NumDiffs)
+{
+    BrIdB = DiffId*2
+    WhIdA = BridgeGrp:number(BrIdB-1)
+    WhIdB = BridgeGrp:number(BrIdB)   
+    SubDiffId = NumBridges+DiffId
+        
+    WhAavel = BridgeVal:number(WhIdA) * BrigdeGear:y()
+    WhBavel = BridgeVal:number(WhIdB) * BrigdeGear:y()
+    Diffavel = BridgeVal:number(SubDiffId)
+    MainWhaVel = (WhAavel+WhBavel)*0.5
+    AddTrq = MainWhaVel+Diffavel
+    BridgeVal:setNumber(SubDiffId, (Active) ? MainWhaVel : 0)
+        
+    if(LockDiff)
+    {
+        BridgeVal:setNumber(WhIdA, (WhBavel-MainWhaVel) / BrigdeGear:y())
+        BridgeVal:setNumber(WhIdB, (WhAavel-MainWhaVel) / BrigdeGear:y())
+    }
+    else
+    {
+        BridgeVal:setNumber(WhIdA, -(WhBavel-AddTrq) / BrigdeGear:y())
+        BridgeVal:setNumber(WhIdB, -(WhAavel-AddTrq) / BrigdeGear:y())
+    }
+
+    Trf = Transfer:vector2(SubDiffId) * vec2(1, 0.5)
+    Transfer:setVector2(WhIdA, Trf)    
+    Transfer:setVector2(WhIdB, Trf) 
+}
+
+LastDiffId = BridgeVal:count()
+CDiff = BridgeVal:number(LastDiffId) 
+Transfer:setVector2(LastDiffId, vec2(FlyWheel:x()*6, FlyWheel:y()*52.49343)*GearPair)
+
+if(AvrRMPC > 5)
+{
+    RPM = abs(((AvrRPM/AvrRMPC)/6) * GearPair:y())
+    AvrRPM = AvrRMPC = 0
+}
+
+AvrRMPC += 1
+AvrRPM += abs(CDiff)
+RPMout = RPM
