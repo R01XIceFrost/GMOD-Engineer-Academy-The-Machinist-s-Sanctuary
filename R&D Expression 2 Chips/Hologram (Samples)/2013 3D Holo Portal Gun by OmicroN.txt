@@ -1,0 +1,638 @@
+@name 3D holo portal gun
+@inputs
+@outputs [Colors Light]:array On Mode Y Yaw Fire Bounce Fade Max Step Indexs:table
+@persist [Portal P P2 H E O]:entity Idx Display Scale Forks:array Effect Direction:vector Size:vector
+
+
+#[
+
+INFO:
+
+
+[E2] - Portal Gun (Visual Only) - OmicroN
+by
+OmicroN
+Published on 05-07-2013 10:53 PM
+0 Comments Comments
+Hey guys,
+
+I was asked to create a model of the Portal Gun, and I immediately said "No". But then later I made one anyway.
+
+About it:
+
+It's made entirely out of standard hologram models, and it functions without any outside addons. It will be able to spawn in any server that has an up to date version of wiremod.
+
+Controls:
+
+Step 1: To shoot the gun, you must first turn it On by hitting your Reload key. The Reload key is a toggle so it will turn it off and on.
+
+Step 2: Once the gun is On, hit Attack2(Mouse2) to swap the modes back and forth from Blue to Orange.
+
+Note: When you turn the gun Off again, the portals will disappear and wait for the next time they are spawned.
+
+
+There are 2 modes to use with it, 1 mode is "Display" and the other is "Use".
+
+Display:
+
+When it's in Display mode, it will sit above the E2 and wait for you to rotate it. It will still be able to shoot portals, but you'll have to turn it if you don't want them to go on top of one another.
+
+Use:
+
+When Display mode is set to 0, you'll be able to hold onto the gun. The weapons I chose to make invisible are the Gravity Gun, Tool Gun, andthe Crossbow.
+
+CODE:
+
+* IMPORTANT * Make sure that you don't just copy it into your E2 editor, it is too large to do that. You need to get the file into your expression2 folder inside gmod/gmod/data/expression2
+
+(Future |R-0-1-X|Ice Frost, it still works if you copy it into your E2 editor :) - May 17, 2025)
+
+]#
+
+
+if( first() )
+{
+    #reference @ http://www.1fotech.com/wp-content/gallery/portal-gun-vente/portal-gun-3.jpg
+    
+    # Choose weither to display it or hold it
+    Display = 1
+    
+    # Choose the scale of the gun
+    Scale = 1.5
+    
+    E = entity():isWeldedTo() ?: entity()
+    O = owner()
+    
+    function number getID( N )
+    {
+        Idx += N
+        return Idx
+    }
+    
+    Size = vec( 6-1, 18, 8 )
+    holoCreate( getID(1), E:toWorld( vec( 0, 0, 0 ) ), Scale * Size / 12, E:toWorld( ang( 0, 0, 0 ) ), vec( 255, 255, 255 ) )
+    holoModel( getID(0), "hq_dome" )
+    holoClipEnabled( getID(0), 1, 1 )
+    holoClip( getID(0), 1, Scale * vec(0,-1,0), vec(0,1,0):rotate(ang(0,0,15)), 0 )
+    holoClipEnabled( getID(0), 2, 1 )
+    holoClip( getID(0), 2, Scale * vec(0.1,0,0), vec(1,0,0), 0 )
+    holoMaterial( getID(0), "phoenix_storms/fender_white" )
+    holoParent( getID(0) , E )
+    
+        holoCreate( getID(1), E:toWorld( Scale * vec( 0, 0, 0.05 ) ), Scale * (Size-vec(0.1,0.1,0.15)) / 12, E:toWorld( ang( 0, 0, 0 ) ), vec( 255, 255, 255 )/4 )
+        holoModel( getID(0), "hq_dome" )
+        holoClipEnabled( getID(0), 1, 1 )
+        holoClip( getID(0), 1, Scale * vec(0,-1+0.4,0), vec(0,1,0):rotate(ang(0,0,15)), 0 )
+        #holoMaterial( getID(0), "phoenix_storms/fender_white" )
+        holoParent( getID(0) , 1 )
+        Light:pushNumber(getID(0))
+        
+    holoCreate( getID(1), E:toWorld( Scale * vec( 0, 0, 3.95 ) ), Scale * vec(0.8,0.8,0.25) / 12, E:toWorld( ang( 0, 0, 0 ) ), vec( 255, 255, 255 ) )
+    holoModel( getID(0), "hq_dome" )
+    holoClipEnabled( getID(0), 1, 1 )
+    holoClip( getID(0), 1, Scale * vec(0,0,0.1), vec(0,0,-1):rotate(ang(0,0,0)), 0 )
+    holoMaterial( getID(0), "phoenix_storms/fender_white" )
+    holoParent( getID(0) , 1 )
+    
+    holoCreate( getID(1), E:toWorld( Scale * vec( 0, 0, 3.95 ) ), Scale * vec(0.78,0.78,0.24) / 12, E:toWorld( ang( 0, 0, 0 ) ), vec( 255, 255, 255 ) )
+    holoModel( getID(0), "hq_dome" )
+    holoMaterial( getID(0), "phoenix_storms/fender_white" )
+    holoParent( getID(0) , 1 )
+    Light:pushNumber(getID(0))
+    
+    holoCreate( getID(1), E:toWorld( Scale * vec( 0, 0, 0 ) ), Scale * Size / 12, E:toWorld( ang( 0, 0, 0 ) ), vec( 255, 255, 255 ) )
+    holoModel( getID(0), "hq_dome" )
+    holoClipEnabled( getID(0), 1, 1 )
+    holoClip( getID(0), 1, Scale * vec(0,-1,0), vec(0,1,0):rotate(ang(0,0,15)), 0 )
+    holoClipEnabled( getID(0), 2, 1 )
+    holoClip( getID(0), 2, Scale * vec(-0.1,0,0), vec(-1,0,0), 0 )
+    holoMaterial( getID(0), "phoenix_storms/fender_white" )
+    holoParent( getID(0) , 1 )
+    
+        holoCreate( getID(1), E:toWorld( Scale * vec( 0, -1, 0 ) ), Scale * vec(5.95-1.05,8,5) / 12, E:toWorld( ang( 0, 0, -90+15 ) ), vec( 255, 255, 255 )/4 )
+        holoModel( getID(0), "hq_hdome_thin" )
+        holoClipEnabled( getID(0), 1, 1 )
+        holoClip( getID(0), 1, Scale * vec(0,0.01,0), vec(0,-1,0):rotate(ang(0,0,-15)), 0 )
+        holoParent( getID(0) , 1 )
+    
+    holoCreate( getID(1), E:toWorld( Scale * vec( 0, 0, 0 ) ), Scale * Size:setZ( 3 ) / 12, E:toWorld( ang( 180, 0, 0 ) ), vec( 255, 255, 255 ) )
+    holoModel( getID(0), "hq_dome" )
+    holoClipEnabled( getID(0), 1, 1 )
+    holoClip( getID(0), 1, Scale * vec(0,-1,0), vec(0,1,0):rotate(ang(0,0,-35)), 0 )
+    holoMaterial( getID(0), "phoenix_storms/fender_white" )
+    holoParent( getID(0) , 1 )
+    
+            holoCreate( getID(1), E:toWorld( Scale * vec( 0, -1.01, 0 ) ), Scale * vec(Size[1]-0.1,1.5,Size[2]) / 12, E:toWorld( ang( 0, 0, -90 ) ), vec( 255, 255, 255 )*0 )
+            holoModel( getID(0), "hq_dome" )
+            holoClipEnabled( getID(0), 1, 1 )
+            holoClip( getID(0), 1, Scale * vec(0,0,0), vec(0,-1,0), 0 )
+            holoMaterial( getID(0), "phoenix_storms/fender_white" )
+            holoParent( getID(0) , 1 )
+    
+        holoCreate( getID(1), E:toWorld( vec( 0, 0, 0 ) ), Scale * -Size:setZ( 2 ) / 12, E:toWorld( ang( 0, 0, 0 ) ), vec( 255, 255, 255 )/4 )
+        holoModel( getID(0), "hq_dome" )
+        holoClipEnabled( getID(0), 1, 1 )
+        holoClip( getID(0), 1, Scale * vec(0,-1,0), vec(0,1,0):rotate(ang(0,0,35)), 0 )
+        holoParent( getID(0) , 1 )
+        
+    holoCreate( getID(1), E:toWorld( Scale * vec( 0, -1, 0 ) ), Scale * ( Size - vec(0.5,14.5,-2) ) / 12, E:toWorld( ang( 0, 0, -90 ) ), vec( 255, 255, 255 )*0 )
+    holoModel( getID(0), "hq_dome" )
+    holoClipEnabled( getID(0), 1, 1 )
+    holoClip( getID(0), 1, Scale * vec(0,0,0), vec(0,1,0), 0 )
+    holoMaterial( getID(0), "phoenix_storms/fender_white" )
+    holoParent( getID(0) , 1 )
+    
+    holoCreate( getID(1), E:toWorld( Scale * vec( 0, -1, 1.5 ) ), Scale * vec( 2.5, 2.5, 12 ) / 12, E:toWorld( ang( 0, 0, 90 ) ), vec( 255, 255, 255 ) )
+    holoModel( getID(0), "hq_tube" )
+    holoMaterial( getID(0), "models/props_combine/pipes03" )
+    holoParent( getID(0) , 1 )
+    Light:pushNumber( getID(0) )
+    
+        holoCreate( getID(1), E:toWorld( Scale * vec( 0, -2, 1.5 ) ), Scale * vec( 2.65, 2.65, 0.75 ) / 12, E:toWorld( ang( 0, 0, 90 ) ), vec( 255, 255, 255 ) )
+        holoModel( getID(0), "hq_tube" )
+        holoMaterial( getID(0), "models/props_combine/pipes03" )
+        holoParent( getID(0) , 1 )
+        Light:pushNumber( getID(0) )
+    
+    holoCreate( getID(1), E:toWorld( Scale * vec( 0, -1, 1.5 ) ), Scale * vec( 1.5, 1.5, 12 ) / 12, E:toWorld( ang( 0, 0, 90 ) ), vec( 255, 255, 255 ) )
+    holoModel( getID(0), "hq_cylinder" )
+    holoMaterial( getID(0), "models/shiny" )
+    holoParent( getID(0) , 1 )
+    Light:pushNumber( getID(0) )
+    
+    holoCreate( getID(1), E:toWorld( Scale * vec( 0, -3, 0.1 ) ), Scale * vec( 2, 1.5, 10 ) / 12, E:toWorld( ang( 0, 0, 90 ) ), vec() )
+    holoModel( getID(0), "hq_cylinder" )
+    holoMaterial( getID(0), "phoenix_storms/fender_white" )
+    holoParent( getID(0) , 1 )
+    
+    holoCreate( getID(1), E:toWorld( Scale * vec( 0, -9+3, 1.5 ) ), Scale * vec( 4.5, 4.5, 3 ) / 12, E:toWorld( ang( 0, 0, -90 ) ), vec() )
+    holoModel( getID(0), "hq_cone" )
+    holoClipEnabled( getID(0), 1, 1 )
+    holoClip( getID(0), 1, Scale * vec(0,0,-0.2), vec(0,0,-1), 0 )
+    holoMaterial( getID(0), "phoenix_storms/fender_white" )
+    holoParent( getID(0) , 1 )
+    
+    ForkBase = holoCreate( getID(1), E:toWorld( Scale * vec( 0, -9+0.78, 1.5 ) ), Scale * vec( 4.5, 4.5, 1.5 ) / 12, E:toWorld( ang( 0, 0, -90 ) ), vec() )
+    holoModel( getID(0), "hq_cylinder" )
+    holoMaterial( getID(0), "phoenix_storms/fender_white" )
+    holoParent( getID(0) , 1 )
+    
+    holoCreate( getID(1), E:toWorld( Scale * vec( 0, -10.45, 1.5 ) ), Scale * vec( 4.25, 4.25, 3 ) / 12, E:toWorld( ang( 0, 0, 90 ) ), vec() )
+    holoModel( getID(0), "hq_cone" )
+    holoClipEnabled( getID(0), 1, 1 )
+    holoClip( getID(0), 1, Scale * vec(0,0,-0.2), vec(0,0,-1), 0 )
+    holoMaterial( getID(0), "phoenix_storms/fender_white" )
+    holoParent( getID(0) , 1 )
+    
+    holoCreate( getID(1), E:toWorld( Scale * vec( 0, -11, 1.5 ) ), Scale * vec( 2.5, 2.5, 1.75 ) / 12, E:toWorld( ang( 0, 0, -90 ) ), vec() )
+    holoModel( getID(0), "hq_tube" )
+    holoMaterial( getID(0), "phoenix_storms/fender_white" )
+    holoParent( getID(0) , 1 )
+    
+    holoCreate( getID(1), E:toWorld( Scale * vec( 0, -11, 1.5 ) ), Scale * vec( 2.75, 2.75, 1 ) / 12, E:toWorld( ang( 0, 0, -90 ) ), vec() )
+    holoModel( getID(0), "hq_cylinder" )
+    holoMaterial( getID(0), "phoenix_storms/fender_white" )
+    holoParent( getID(0) , 1 )
+    
+    holoCreate( getID(1), E:toWorld( Scale * vec( 0, -13.25, 1.5 ) ), Scale * vec( 3, 3, 3 ) / 12, E:toWorld( ang( 0, 0, 90 ) ), vec() )
+    holoModel( getID(0), "hq_cone" )
+    holoClipEnabled( getID(0), 1, 1 )
+    holoClip( getID(0), 1, Scale * vec(0,0,-1), vec(0,0,-1), 0 )
+    holoMaterial( getID(0), "phoenix_storms/fender_white" )
+    holoParent( getID(0) , 1 )
+    
+        holoCreate( getID(1), E:toWorld( Scale * vec( 0, -13.25, 1.5 ) ), Scale * -vec( 2.9, 2.9, 3 ) / 12, E:toWorld( ang( 0, 0, -90 ) ), vec()+75 )
+        holoModel( getID(0), "hq_cone" )
+        holoClipEnabled( getID(0), 1, 1 )
+        holoClip( getID(0), 1, Scale * vec(0,0,1), vec(0,0,1), 0 )
+        holoMaterial( getID(0), "phoenix_storms/fender_white" )
+        holoParent( getID(0) , 1 )
+        Light:pushNumber( getID(0) )
+    
+    for(I=1,-1,-2)
+    {
+        holoCreate( getID(1), E:toWorld( Scale * vec( 0, -9+0.75, 0.5 ) ), Scale * I*vec( 5.5, 4, 8.5 ) / 12, E:toWorld( ang( 0, 0, 90 ) ), vec() + ( I>0 ? 255 : 75 ) )
+        holoModel( getID(0), "hq_sphere" )
+        holoClipEnabled( getID(0), 1, 1 )
+        holoClip( getID(0), 1, Scale * vec(0,0,3.5), vec(0,0,-1):rotate(ang(0,0,-45)), 0 )
+        holoClipEnabled( getID(0), 2, 1 )
+        holoClip( getID(0), 2, Scale * vec(0,0,-2-0.25), vec(0,0,1):rotate(ang(0,0,45)), 0 )
+        holoClipEnabled( getID(0), 3, 1 )
+        holoClip( getID(0), 3, Scale * vec(0,1,0), vec(0,-1,0):rotate(ang(0,0,0)), 0 )
+        holoClipEnabled( getID(0), 4, 1 )
+        holoClip( getID(0), 4, Scale * vec(0,1.2,1.5), vec(0,-1,0):rotate(ang(0,0,25)), 0 )
+        holoClipEnabled( getID(0), 5, 1 )
+        holoClip( getID(0), 5, Scale * vec(0,1.2,-0.2), vec(0,-1,0):rotate(ang(0,0,-25)), 0 )
+        holoMaterial( getID(0), "phoenix_storms/fender_white" )
+        holoParent( getID(0) , 1 )
+        
+        if( I>0 )
+        {
+            H = holoCreate( getID(1), E:toWorld( Scale * vec( -1.8*I, -1.5, 2.5 ) ), Scale * vec(1,1,2) / 12, toWorldAng(vec(),ang(0,0,15),vec(),E:toWorld( ang( I*25, 0, -90 ) )), vec( 255, 255, 255 ) )
+            holoModel( getID(0), "hq_dome" )
+            holoClipEnabled( getID(0), 1, 1 )
+            holoClip( getID(0), 1, vec(0,0,0), vec(-I,0,0), 0 )
+            holoMaterial( getID(0), "phoenix_storms/fender_white" )
+            holoParent( getID(0) , 1 )
+            
+            H = holoCreate( getID(1), H:toWorld( Scale * vec( -0.25+0.1, -2.4, 0.1 ) ), Scale * vec(5,5,5) / 12, toWorldAng( vec(), ang(-12,0,0), vec(), H:toWorld( ang( 90, 20, 20 ) ) ), vec() )
+            holoModel( getID(0), "hq_torus_thin" )
+            holoClipEnabled( getID(0), 1, 1 )
+            holoClip( getID(0), 1, vec(0,0,0), vec(0,1,0), 0 )
+            holoClipEnabled( getID(0), 2, 1 )
+            holoClip( getID(0), 2, vec(0,0,0), vec(1,0,0), 0 )
+            holoMaterial( getID(0), "phoenix_storms/fender_white" )
+            holoParent( getID(0) , 1 )
+            
+            holoCreate( getID(1), H:toWorld( Scale * vec( 5-0.275, 0.1, 0 ) ), Scale * vec(5,5,5) / 12, H:toWorld( ang( 0, 0, 0 ) ), vec() )
+            holoModel( getID(0), "hq_torus_thin" )
+            holoClipEnabled( getID(0), 1, 1 )
+            holoClip( getID(0), 1, vec(0,0,0), vec(0,-1,0), 0 )
+            holoMaterial( getID(0), "phoenix_storms/fender_white" )
+            holoParent( getID(0) , 1 )
+        }
+        
+        holoCreate( getID(1), E:toWorld( Scale * vec( -2.15*I, -0.2, -0.65 ) ), Scale * vec(1,1,2) / 12, toWorldAng(vec(),ang(0,0,15),vec(),E:toWorld( ang( I*-40, 0, -90 ) )), vec( 255, 255, 255 ) )
+        holoModel( getID(0), "hq_dome" )
+        holoClipEnabled( getID(0), 1, 1 )
+        holoClip( getID(0), 1, vec(0,0,0), vec(-I,0,0), 0 )
+        holoMaterial( getID(0), "phoenix_storms/fender_white" )
+        holoParent( getID(0) , 1 )
+    }
+    H = holoEntity( getID(0)-2 )
+    H2 = holoEntity( getID(0) )
+
+
+    H = holoCreate( getID(1), H:toWorld( Scale * vec( -2, 1.5, -0.4 ) ), Scale * vec(5,6,5) / 12, toWorldAng( vec(), ang(50,-25,-10), vec(), H:toWorld( ang( 0, 90, 90 ) ) ), vec() )
+    holoPos( getID(0), H:toWorld(Scale * vec(-0.1,-0.5,-0.2)) )
+    holoModel( getID(0), "hq_torus_thin" )
+    holoClipEnabled( getID(0), 1, 1 )
+    holoClip( getID(0), 1, vec(0,0,0), vec(0,-1,0):rotate(ang(0,-15+8,0)), 0 )
+    holoClipEnabled( getID(0), 2, 1 )
+    holoClip( getID(0), 2, vec(0,0,0), vec(-1,0,0), 0 )
+    holoMaterial( getID(0), "phoenix_storms/fender_white" )
+    holoParent( getID(0) , 1 )
+    
+    holoCreate( getID(1), H:toWorld( Scale * vec( -0.5, -6+0.36, 0 ) ), Scale * vec(5,6,5) / 12, toWorldAng( vec(), ang(0,-20,0), vec(), H:toWorld( ang( 0, 0, 0 ) ) ), vec() )
+    holoModel( getID(0), "hq_torus_thin" )
+    holoClipEnabled( getID(0), 1, 1 )
+    holoClip( getID(0), 1, vec(0,0,0), vec(1,0,0):rotate(ang(0,14,0)), 0 )
+    holoMaterial( getID(0), "phoenix_storms/fender_white" )
+    holoParent( getID(0) , getID(0)-1 )
+    
+    holoAng( holoIndex(H), H:toWorld(ang(0,-14,0)) )
+    holoPos( holoIndex(H), H:pos() + E:toWorldAxis(Scale * vec(0.1,-0.3,0)) )
+    
+    local Ang = H:toWorld( ang( -15, 10, -5 ) )
+    
+        H = holoCreate( getID(1), toWorld( Scale * vec(2.5,0,0.15), ang(), H2:pos(), Ang ), Scale * vec(5,6,5) / 12, Ang, vec() )
+        holoModel( getID(0), "hq_torus_thin" )
+        holoClipEnabled( getID(0), 1, 1 )
+        holoClip( getID(0), 1, vec(0,0,0), vec(0,-1,0):rotate(ang(0,4,0)), 0 )
+        holoClipEnabled( getID(0), 2, 1 )
+        holoClip( getID(0), 2, vec(0,0,0), vec(-1,0,0), 0 )
+        holoMaterial( getID(0), "phoenix_storms/fender_white" )
+        holoParent( getID(0) , 1 )
+        
+        holoCreate( getID(1), toWorld( Scale * vec(0,-5.7+0.1,-0.745-0.01), ang(0,0,0), H:pos(), Ang ), Scale * vec(5,6,5) / 12, toWorldAng( vec(), ang(0,0,15), vec(), Ang ), vec() )
+        holoModel( getID(0), "hq_torus_thin" )
+        holoClipEnabled( getID(0), 1, 1 )
+        holoClip( getID(0), 1, Scale * vec(-0.1,0,0), vec(1,0,0):rotate(ang(0,-1,0)), 0 )
+        #holoClipEnabled( getID(0), 2, 1 )
+        #holoClip( getID(0), 2, vec(0,0,0), vec(-1,0,0), 0 )
+        holoMaterial( getID(0), "phoenix_storms/fender_white" )
+        holoParent( getID(0) , getID(0)-1 )
+        
+        holoAng( holoIndex(H), H:toWorld(ang(3,-15,0)) )
+        holoPos( holoIndex(H), H:pos()+E:toWorldAxis(Scale * vec(-0.1,-0.2,0.05)) )
+        
+    H = ForkBase
+    
+    function makeLogo( Model:string )
+    {
+        Size = shiftL( vec( 5.5, 4, 8.5 ) )
+        #holoCreate( getID(1), E:toWorld( vec( 0, 0, 0 ) ), (Size) / 12, E:toWorld( ang( 0, 0, 0 ) ), vec()+255 )
+        #holoModel( getID(0), Model )
+        #holoParent( getID(0), E )
+        
+        Max = 2
+        Step = 360 / Max
+        
+        Max2 = 8
+        Step2 = 360/Max2
+        
+        Angles = ang(0,85,0)
+        for(Id=1,Max2)
+        {
+            holoCreate( getID(1), E:toWorld( Scale * vec( 0, -9+0.75, 0.5 ) ), Scale * ( Size + 0.05 ) / 12, E:toWorld( ang( 0, 0, 0 ) ), vec(255,0,0) )
+            holoModel( getID(0), Model )
+            holoMaterial( getID(0), "phoenix_storms/fender_white" )
+            
+            for(I=1,Max)
+            {
+                local Rot = Max2+Step2*Id
+                local Add = -0.15
+                Rotate = ang( 0, Rot + Step*(I+0.35), 0 )
+                holoClipEnabled( getID(0), 1, 1 )
+                holoClip( getID(0), 1, Scale * vec(0,4.5-1/2+Add,0):rotate(Rotate), vec(0,1,0):rotate(Rotate+Angles), 0 )
+                
+                Rotate = ang( 0, Rot + Step*(I+0.1), 0 )
+                holoClipEnabled( getID(0), 2, 1 )
+                holoClip( getID(0), 2, Scale * vec(0,4-1/2-Add,0):rotate(Rotate), vec(0,-1,0):rotate(Rotate+Angles), 0 )
+                
+                Rotate = ang( 0, Rot + Step*(I+0.1)+72, 0 )
+                holoClipEnabled( getID(0), 3, 1 )
+                holoClip( getID(0), 3, Scale * vec(0,5.32-Add,0):rotate(Rotate), vec(0,-1,0):rotate(Rotate+Angles), 0 )
+            }
+            holoAng( getID(0), holoEntity(getID(0)):toWorld(ang(90,0,0)) )
+            holoParent( getID(0) , 1 )
+            holoDisableShading( getID(0), 1 )
+            Light:pushNumber( getID(0) )
+        }
+    }
+    makeLogo( "hq_sphere" )
+    
+    holoPos( 1, holoEntity(1):toWorld(Scale * vec(0,0,10)) )
+    
+    Mode = 2
+    
+    function setLights( N1, N2 )
+    {
+        for(I=1,Light:count())
+        {
+            local N = Light[I,number]
+            local L = On ? 1 : 0.2
+            holoDisableShading( N, On )
+            holoColor( N, select( Mode, hsv2rgb(200,1,L), hsv2rgb(40,1,L) ) )
+        }
+    }
+    setLights( On, Mode )
+    
+    function setGun(S:string)
+    {
+        holoUnparent( 1 )
+        O = owner()
+        Attach = "anim_attachment_rh"
+        local Offset = ang(0,90 - ( S:find("phys") ? 10 : 0 ),0)
+        Angle = matrix( O:attachmentAng(Attach) ) * matrix( Offset )
+        local Offset = ang(0,0,-13)
+        Angle = Angle * matrix( Offset )
+        Pos = O:attachmentPos(Attach) + Angle*(Scale * vec(0,-8,1))
+        holoPos( 1, Pos )
+        holoAng( 1, ( Angle * matrix(ang(-15,0,0))):toAngle() )
+        holoParentAttachment( 1, O, Attach )
+    }
+    
+    Tool = select( 3, "weapon_physcannon", "gmod_tool", "weapon_crossbow" )
+    
+    if( !Display )
+    {
+        setGun(Tool)
+    }
+    
+    for(I=1,3)
+    {
+        local Weap = owner():weapon(select( I, "weapon_physcannon", "gmod_tool", "weapon_crossbow" ))
+        if( Weap )
+        {
+            Weap:setAlpha(Display*255)
+        }
+    }
+    entity():setAlpha( !Display*255 )
+    
+    holoCreate( getID(1), H:toWorld(vec(0,0,-8)), Scale * -vec(4,4,4) / 12, H:toWorld( ang(0,0,0) ), vec() )
+    holoModel( getID(0), "hq_sphere" )
+    holoMaterial( getID(0), "phoenix_storms/fender_white" )
+    holoParent( getID(0), H )
+    Light:pushNumber( getID(0) )
+    Effect = getID(0)
+    
+    timer("forks",100)
+}
+elseif( clk("forks") )
+{
+    Step = 360/3
+    for(I=1,3)
+    {
+        local Add = select( I, 0.15, -0.15, 0 )
+        local Yaw = Step * ( I + 0.25 + Add ) - Step
+        S = holoCreate( getID(1), H:toWorld( Scale * vec( I<3 ? 3 : 2.2, 0, -0.35 ):rotate(ang(0,Yaw,0)) ), Scale * vec(0.5,0.75,0.75) / 12, H:toWorld( ang(0,Yaw,0) ), vec() )
+        holoModel( getID(0), "hq_sphere" )
+        holoMaterial( getID(0), "phoenix_storms/fender_white" )
+        holoParent( getID(0) , H )
+        Forks:pushVector2( vec2(getID(0),Yaw) )
+        
+        F = holoCreate( getID(1), S:pos(), Scale * vec(1/3,1/4,3) / 12, S:toWorld( ang(90+45,0,0) ), vec() )
+        holoPos( getID(0), F:toWorld( Scale * vec(0,0,1.5) ) )
+        holoModel( getID(0), "hq_rcube_thin" )
+        holoMaterial( getID(0), "phoenix_storms/fender_white" )
+        holoParent( getID(0) , S )
+        
+            FF = holoCreate( getID(1), F:toWorld(Scale * vec(0,0,1.5-0.1)), Scale * vec(1/2,1/2,1/3) / 12, S:toWorld( ang(60,0,90) ), vec() )
+            holoPos( getID(0), FF:toWorld( Scale * vec(0,0,0) ) )
+            holoModel( getID(0), "hq_cylinder" )
+            holoMaterial( getID(0), "phoenix_storms/fender_white" )
+            holoParent( getID(0) , S )
+        
+        F = holoCreate( getID(1), F:toWorld(Scale * vec(0,0,1.5-0.1)), Scale * vec(1/3,1/4,3) / 12, F:toWorld( ang(60,0,0) ), vec() )
+        holoPos( getID(0), F:toWorld( Scale * vec(0,0,1.4) ) )
+        holoModel( getID(0), "hq_rcube_thin" )
+        holoMaterial( getID(0), "phoenix_storms/fender_white" )
+        holoParent( getID(0) , FF )
+        
+            FF = holoCreate( getID(1), F:toWorld(Scale * vec(0,0,1.4)), Scale * vec(2/5,2/5,1/3) / 12, S:toWorld( ang(35,0,90) ), vec() )
+            holoPos( getID(0), FF:toWorld( Scale * vec(0,0,0) ) )
+            holoModel( getID(0), "hq_cylinder" )
+            holoMaterial( getID(0), "phoenix_storms/fender_white" )
+            holoParent( getID(0) , F )
+        
+        F = holoCreate( getID(1), F:toWorld(Scale * vec(0,0,1.4)), Scale * vec(1/3,1/4+0.05,1.5) / 12, F:toWorld( ang(35,0,0) ), vec() )
+        holoPos( getID(0), F:toWorld( Scale * vec(0,0,1.4/2) ) )
+        holoModel( getID(0), "prism" )
+        holoMaterial( getID(0), "phoenix_storms/fender_white" )
+        holoParent( getID(0) , FF )
+    }
+    
+    Size = vec(60,25,0.1)*1.5
+    
+    P = holoCreate( getID(1), E:toWorld( vec( 0, 0, 0.1 ) ), Size / 12, E:toWorld( ang( 0, 0, 0 ) ), vec( 0, 0, 0 ) )
+    holoModel( getID(0), "hq_cylinder" )
+    holoMaterial(getID(0),"models/dog/eyeglass")
+    holoAlpha( getID(0), 0 )
+    #holoDisableShading(getID(0),1)
+    
+    P2 = holoCreate( getID(1), E:toWorld( vec( 0, 0, 0.1 ) ), Size / 12, E:toWorld( ang( 0, 0, 0 ) ), vec( 0, 0, 0 ) )
+    holoModel( getID(0), "hq_cylinder" )
+    holoMaterial(getID(0),"models/dog/eyeglass")
+    holoAlpha( getID(0), 0 )
+    #holoDisableShading(getID(0),1)
+    
+    local Array = array()
+    Max = 5
+    Step = 360 / Max
+    for(I=1,Max)
+    {
+        holoCreate( getID(1), E:pos(), vec(), E:angles() )
+        holoParent( getID(0), P )
+        Array:pushNumber(getID(0))
+    }
+    Indexs[P:id()+"",array] = Array
+    
+    Array = array()
+    for(I=1,Max)
+    {
+        holoCreate( getID(1), E:pos(), vec(), E:angles() )
+        holoParent( getID(0), P2 )
+        Array:pushNumber(getID(0))
+    }
+    Indexs[P2:id()+"",array] = Array
+    
+    Portal = P
+    
+    Fire = Mode = 1
+}
+
+
+interval( On ? 10 : 100 )
+
+
+Atk = O:keyAttack1()
+
+
+if( On & changed(Atk) & Atk )
+{
+    Fire = 1
+    Bounce = 180
+    Fade = Bounce
+    H:soundPlay("shoot",0,"npc/dog/DogPhrase16.wav")
+    #soundPitch("shoot",250*2)
+    Direction = O:aimPos() - H:toWorld(vec(0,0,-8))
+}
+
+
+if( Fire )
+{
+    Bounce-=Bounce/10
+    Cos = (1+cos(90+Bounce))/2
+    Sin = (1+sin(90+Bounce))/2
+    for(I=1,3)
+    {
+        local V2 = Forks[I,vector2]
+        local Mang = matrix(H:toWorld(ang(0,V2[2],0)))*matrix(ang(Cos*22.5 + 0,0,0))
+        holoAng( V2[1], Mang:toAngle() )
+        holoAng( V2[1]+2, holoEntity(V2[1]):toWorld(ang(60+Sin*20,0,90)) )
+        holoAng( V2[1]+4, holoEntity(V2[1]+2):toWorld(ang(0,25+Cos*12.5,0)) )
+    }
+    Fade-=Fade/2
+    holoAlpha( Effect, (255/180)*Fade )
+    holoScale( Effect, Scale * -(vec()+(15/180)*(180-Fade)) / 12 )
+    Fire = round(Bounce) > 0
+}
+
+
+if( Display )
+{
+    Y = O:eyeAngles()[2]
+    Yaw+=O:keyUse()*$Y
+    #Yaw = curtime()*50
+    holoAng( 1, E:toWorld(ang(0,Yaw,0)) )
+}
+
+
+Clk = O:keyReload()
+
+
+if( changed(Clk) & Clk )
+{
+    On = !On
+    setLights( On, Mode )
+    soundPlay("on"+curtime(),0,"weapons/ar2/ar2_reload_push.wav",0.1)
+}
+
+
+Swap = O:keyAttack2()
+
+
+if( changed(Swap) & Swap )
+{
+    Mode = Mode%2+1
+    setLights( On, Mode )
+    soundPlay("swap"+curtime(),0,"weapons/ar2/ar2_reload_rotate.wav",0.1)
+    Portal = Mode==1 ? P : P2
+}
+
+
+if( On )
+{
+    Weapon = O:weapon():type()
+
+
+    if( changed(Weapon) & !Display )
+    {
+        setGun(Weapon)
+    }
+
+
+    if( changed(Atk) & Atk )
+    {
+        if( Display )
+        {
+            Ro = rangerOffset( 16000, H:pos(), -H:up() )
+            Pos = Ro:position()
+            An = Ro:hitNormal()
+        }
+        else
+        {
+            Pos = O:aimPos()
+            An = O:aimNormal()
+        }
+        MAngle = ( matrix( An:toAngle() ) * matrix( ang( 90, 0, 0 ) ) ):toAngle()
+        holoPos(holoIndex(Portal),Pos+An/2)
+        holoAng(holoIndex(Portal),MAngle)
+        Portal:setAlpha(255)
+        timer("trail",100)
+        timer("opsfix",100)
+    }
+    
+    if( clk("trail") )
+    {
+        for(I=1,Max)
+        {
+            local Array = Indexs[Portal:id()+"",array]
+            local Idx = Array[I,number]
+            holoEntity(Idx):removeTrails()
+            holoEntity(Idx):setTrails(10,8,2, I<Max/2 ? "trails/physbeam" : "trails/plasma",select( Mode, hsv2rgb(200,1,1), hsv2rgb(30,1,1) ),255)
+        }
+    }
+    
+    if( clk("opsfix") )
+    {
+        for(I=1,Max)
+        {
+            local R1 = Indexs[P:id()+"",array]
+            local R2 = Indexs[P2:id()+"",array]
+            local Id1 = R1[I,number]
+            local Id2 = R2[I,number]
+            Cos = cos(curtime()*200+Step*I)
+            Sin = sin(curtime()*200+Step*I)
+            if( P:getAlpha() )
+            {
+                holoPos( Id1, P:toWorld(vec(Sin*Size[1],Cos*Size[2],0.5)/2) )
+            }
+            if( P2:getAlpha() )
+            {
+                holoPos( Id2, P2:toWorld(vec(Cos*Size[1],Sin*Size[2],0.5)/2) )
+            }
+        }
+        timer("opsfix",100)
+    }
+}
+
+
+if( changed(On) )
+{
+    P:setAlpha(0)
+    P2:setAlpha(0)
+}
+
+
