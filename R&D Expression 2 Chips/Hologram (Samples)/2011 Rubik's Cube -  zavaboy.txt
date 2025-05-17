@@ -1,0 +1,681 @@
+#Source: https://youtu.be/AjcWpWHUO3w?si=Ys2AZfFF_YhE-Thb
+
+
+#---------------------------------------------------------------------#
+#    ___       __   _ __          _____     __                        #
+#   / _ \__ __/ /  (_) /__ ___   / ___/_ __/ /  ___                   #
+#  / , _/ // / _ \/ /  '_/(_-<  / /__/ // / _ \/ -_)                  #
+# /_/|_|\_,_/_.__/_/_/\_\/___/  \___/\_,_/_.__/\__/                   #
+#                                                                     #
+# v1.1 (Feb 10, 2011)         by zavaboy <zavaboy-at-zavaboy-dot-com> #
+#---------------------------------------------------------------------#
+# LATEST VERSION                                                      #
+#                                                                     #
+#  http://zavaboy.com/gmod_wire_e2_rubikscube_by_zavaboy.txt          #
+#                                                                     #
+#  Note: To obtain the latest version automatically, just duplicate   #
+#  a Rubiks Cube. Let a friend dupe it to give them the latest copy.  #
+#                                                                     #
+# Have fun!                                                           #
+#---------------------------------------------------------------------#
+# If you publicly release a modification of this expression chip, you #
+# must keep this entire box intact to retain proper credit to the     #
+# original author. Lines 24 and on may be modified as you see fit.    #
+# If you have any questions, please contact me at the email above.    #
+#---------------------------------------------------------------------#
+
+#
+# IMPORTANT NOTE
+#
+#  With the default wiremod hologram limits, you should have no issues.
+#  Each cube spwned requires 66 holograms. If you plan to spawn
+#  multiple cubes, make sure to increase wire_holograms_max
+#  accordingly.
+#
+# INSTRUCTIONS
+#
+# Inputs:
+#  ExecMoves   - A string of moves to execute. ie: "U F' R2 B2 L"
+#  Scramble    - A number indicating how many random moves to execute.
+#  Solve       - Non-zero will query solvemycube.com for an answer.
+#                (This sometimes takes awhile, so don't get impatient.)
+#  U/R/F/D/L/B - Use the following values:
+#                   1 - 90 degree turn clockwise
+#                   2 - 180 degree turn clockwise
+#                  -1 - 90 degree turn counterclockwise
+#                  (any other non-zero value returns 90 deg. turn CW)
+#                ie: R = -1 is equivlent to ExecMoves = "R'"
+#
+# Outputs:
+#  CurMove     - Returns the current move being executed. ie: "U'"
+#  Permutation - Returns the current permutation, a string indicating
+#                where all the faces are.
+#                (Not very useful for most people.)
+#
+# Special Features:
+#  Material    - Use the material tool to change the material of the
+#                cube. Use secondary on the material tool to reset.
+#  Color       - Use the colour tool to change the color of the
+#                facelets (or stickers) to a color of your choice. Use
+#                secondary on the colour tool to reset. The color you
+#                will change is based on the side you set. If the side
+#                you set has red in the center, all other red stickers
+#                will turn to your chosen color disregarding placement.
+#  Update      - Simply duplicating a Rubiks Cube will automatically
+#                save a copy of the latest version in your e2shared.
+#
+# CHANGELOG: The changelog is at the end of this file.
+#
+
+# Header stuffs:
+@name Rubiks Cube
+@model models/hunter/blocks/cube075x075x075.mdl
+@inputs ExecMoves:string Scramble:number Solve:number
+@inputs U:number R:number F:number D:number L:number B:number
+@outputs CurMove:string Permutation:string
+@persist [Init CRot CDir EndMove IsUsed]:number [EPos ECol Size]:vector
+@persist [EAng]:angle [EMat MovesQueue CurMove Perm]:string
+@persist [CPos CAng CCol CPrm CTrn CTnA Bg MMod MMov]:array
+@persist [CNam CMov]:table
+interval(100)
+
+# We need this to prevent this expression chip from exceeding the tick
+# quota.
+Ops = opcounter()
+if (Ops > 1000){ exit() }
+
+# If this expression is duped, the player will get the latest version.
+if (duped()){ E = entity() }
+if (duped() & !entity()["wasduped",number]){
+    E["wasduped",number] = 1
+    runOnHTTP(1)
+    httpRequest("http://zavaboy.com/"+
+        "gmod_wire_e2_rubikscube_by_zavaboy.txt")
+    exit()
+}
+# When the new version arrives, save it to e2shared.
+if (httpClk()
+ & httpRequestUrl() == "http://zavaboy.com/"+
+ "gmod_wire_e2_rubikscube_by_zavaboy.txt"){
+    fileWrite(
+        ">e2shared/gmod_wire_e2_rubikscube_by_zavaboy.txt",
+        httpData()
+    )
+    print("The latest version of Rubiks Cube"
+        +" has been saved to your e2shared.")
+    selfDestruct()
+    exit()
+}
+if (E["wasduped",number]){ exit() }
+
+# First execution
+if (first()) {
+    # Start setting up the cube
+    entity():setMaterial("")
+    entity():setColor(vec(64,64,64),255)
+    EPos = entity():pos()
+    EAng = entity():angles()
+    EMat = "phoenix_storms/metalfloor_2-3"
+    ECol = vec()
+    Size = vec(1, 1, 1)
+    
+    # OPTION: Starting Moves
+    # The moves defined here will be executed immediately after the
+    # chip completes loading after it has been spawned or reset.
+    MovesQueue = ""  # ie: "U F' R2 B2 L"
+    
+    # Setup variables
+    CurMove = ""
+    EndMove = 0
+    Perm = "uuuuuuuuurrrrrrrrrfffffffffdddddddddlllllllllbbbbbbbbb"
+    MMod = array()
+    MMod[-1,string] = "'"
+    MMod[2,string] = "2"
+    MMov = array("U","R","F","D","L","B","","'","2")
+    CNam = invert(array("U","R","F","D","L","B"))
+    CPos = array(vec(0,0,18),vec(0,18,0),vec(18,0,0),
+            vec(0,0,-18),vec(0,-18,0),vec(-18,0,0))
+    CAng = array(ang(0,0,0),ang(90,90,0),ang(90,0,0),
+            ang(180,0,0),ang(90,-90,0),ang(90,180,0))
+    CCol = array(vec(255,255,0),vec(0,204,0),vec(255,0,0),
+            vec(255,255,255),vec(0,0,255),vec(255,160,0))
+    CPrm = array(
+        "1:3,2:6,3:9,4:2,6:8,7:1,8:4,9:7,19:37,20:38,21:39,37:46,38:47"
+        +",39:48,46:10,47:11,48:12,10:19,11:20,12:21","10:12,11:15,12:"
+        +"18,13:11,15:17,16:10,17:13,18:16,9:46,6:49,3:52,46:36,49:33,"
+        +"52:30,36:27,33:24,30:21,27:9,24:6,21:3","19:21,20:24,21:27,2"
+        +"2:20,24:26,25:19,26:22,27:25,7:10,8:13,9:16,10:30,13:29,16:2"
+        +"8,30:45,29:42,28:39,45:7,42:8,39:9","28:30,29:33,30:36,31:29"
+        +",33:35,34:28,35:31,36:34,25:16,26:17,27:18,16:52,17:53,18:54"
+        +",52:43,53:44,54:45,43:25,44:26,45:27","37:39,38:42,39:45,40:"
+        +"38,42:44,43:37,44:40,45:43,1:19,4:22,7:25,19:28,22:31,25:34,"
+        +"28:54,31:51,34:48,54:1,51:4,48:7","46:48,47:51,48:54,49:47,5"
+        +"1:53,52:46,53:49,54:52,1:43,2:40,3:37,43:36,40:35,37:34,36:1"
+        +"2,35:15,34:18,12:1,15:2,18:3"
+    )
+    CTrn = array(0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,
+        21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,
+        42,43,44,45,46,47,48,49,50,51,52,53
+    )
+    CTnA = array()
+    for (I=1,6){ for (J=1,9){ CTnA:pushAngle(CAng[I,angle]) } }
+    CRot = 0
+    CDir = 0
+    Bg = array()
+    IsUsed = 0
+    
+    # Begin initiation
+    Init = 1
+    
+    exit()
+}
+
+# Init: Part 1: Stages 1 to 54
+if (Init >= 1 & Init <= 54){
+    # Slow down interval a bit so we don't exceed
+    # wire_holograms_burst_amount
+    interval(100)
+    # Figure out where we are based on Init stage
+    N = Init-1
+    I = ceil(Init/9)
+    X = (floor(N/3)%3)-1
+    Y = (N%3)-1
+    # If we can no longer make holos, say so and we will kill it later.
+    if (!holoCanCreate()){ NoHolos = 1 }
+    # Let's make a hologram.
+    holoCreate(
+        N,
+        entity():toWorld(
+            CPos[I,vector] + vec(12*X,12*Y,0):rotate(CAng[I,angle])
+        ),
+        Size,
+        CAng[I,angle]:rotateAroundAxis(
+            vec(1,0,0),EAng:roll()
+        ):rotateAroundAxis(
+            vec(0,1,0),EAng:pitch()
+        ):rotateAroundAxis(
+            vec(0,0,1),EAng:yaw()
+        ),
+        CCol[I,vector]
+    )
+    holoModel(N, "plane")
+    holoMaterial(N, EMat)
+    holoAlpha(N,0)
+}
+
+# Init: Part 2: Stages 55 to 66
+if (Init >= 55 & Init <= 66){
+    # Slow down interval a bit so we don't exceed
+    # wire_holograms_burst_amount
+    interval(200)
+    # Figure out where we are based on Init stage
+    N = Init-1
+    I = ceil((Init-54)/2)
+    J = (Init-54)%2
+    # If we can no longer make holos, say so and we will kill it later.
+    if (!holoCanCreate()){ NoHolos = 1 }
+    # These holograms are used when executing turns. They are black
+    # surfaces to emulate a solid cube and not an empty one.
+    if (J){
+        # This one faces away from the center of the cube.
+        # It is the stationary part when a turn is executed.
+        holoCreate(
+            N,
+            entity():toWorld(CPos[I,vector]/3),
+            Size*3,
+            CAng[I,angle]:rotateAroundAxis(
+                vec(1,0,0),EAng:roll()
+            ):rotateAroundAxis(
+                vec(0,1,0),EAng:pitch()
+            ):rotateAroundAxis(
+                vec(0,0,1),EAng:yaw()
+            ),
+            vec(30,30,30)
+        )
+    }else{
+        # This one faces toward the center of the cube.
+        # It is the rotating part when a turn is executed.
+        holoCreate(
+            N,
+            entity():toWorld(CPos[I,vector]/3),
+            Size*3*vec(1,-1,1),
+            CAng[I,angle]:rotateAroundAxis(
+                vec(1,0,0),EAng:roll()
+            ):rotateAroundAxis(
+                vec(0,1,0),EAng:pitch()
+            ):rotateAroundAxis(
+                vec(0,0,1),EAng:yaw()
+            ),
+            vec(30,30,30)
+        )
+    }
+    holoModel(N, "plane")
+    holoMaterial(N, EMat)
+    holoAlpha(N,0)
+    Bg:pushNumber(N)
+}
+
+# Handle finish of each Init stage.
+if (Init > 0){
+    if (Init > 66){
+        # We are done, pack up and go home. Wait. What?
+        for (N=0,53){
+            holoAlpha(N, 255)
+        }
+        entity():setMaterial(EMat)
+        entity():setAlpha(0)
+        ECol = vec(32,32,32)
+        print(_HUD_PRINTCENTER,"[ Done ]")
+        Init = 0 # Done initiating.
+    }else{
+        # We are not done, there is much work left to do.
+        if (Init == 66){
+            # Actually, yes, we are done.
+            interval(500)
+            print(_HUD_PRINTCENTER,"[ 100% ]")
+        }elseif (NoHolos){
+            # Not enough holos was reported, lets scream and die.
+            print(_HUD_PRINTCENTER,"[ Not happening. ]")
+            print("ERROR: Not enough holograms!")
+            selfDestruct()
+        }else{
+            # We have much more to do. Can't give up now.
+            print(_HUD_PRINTCENTER,"[ "+floor((Init/66)*100)+"% ]")
+            # This part here is purely for visual effect when loading.
+            if (Init < 55){
+                # If we are in part 1 of the Init, lets show the cube
+                # in the color of the current side being processed.
+                # Let's also make it more intense as that side
+                # progresses.
+                entity():setColor(
+                    CCol[ceil(Init/9),vector]*(
+                        (Init-((ceil(Init/9)-1)*9))/9
+                    )
+                )
+            }else{
+                # If we are in part 2 of the Init, lets make the cube
+                # have a "flashing" effect of dark grays.
+                if (Init%2){
+                    entity():setColor(vec(32,32,32))
+                }else{
+                    entity():setColor(vec(64,64,64))
+                }
+            }
+        }
+        # Prepare for next Init stage.
+        Init++
+    }
+    exit()
+}
+
+# Set the permutation for output
+Permutation = Perm
+
+# If the material of the chip has been changed, apply it to all the
+# holograms.
+if (EMat != entity():getMaterial()){
+    if (entity():getMaterial()){
+        EMat = entity():getMaterial()
+    }else{
+        EMat = "phoenix_storms/metalfloor_2-3"
+    }
+    for (N=0,54){
+        holoMaterial(N, EMat)
+    }
+    I = Bg:count()
+    for (N=1,I){
+        holoMaterial(Bg[N,number], EMat)
+    }
+    exit()
+}
+
+# If the color of the chip has been changed, apply it to the facelets
+# originating from the side the player coloring is pointing at.
+if (ECol != entity():getColor()){
+    Players = players()
+    PlayerCount = Players:count()
+    for (I=1,PlayerCount){
+        Player = Players[I,entity]
+        if (
+         Player:aimEntity() == entity()
+         & Player:tool() == "colour"
+         & (Player:keyAttack1() | Player:keyAttack2())
+        ){
+            FoundPlayer = Player
+            break
+        }
+    }
+    if (FoundPlayer){
+        Distance = array()
+        Pos1 = round(entity():toLocal(FoundPlayer:aimPos()),2)
+        for (I=1,6){
+            Pos2 = round(
+                CPos[I,vector] + vec():rotate(CAng[I,angle])
+                ,2
+            )
+            Distance:pushNumber(Pos1:distance(Pos2))
+        }
+        I = Distance:minIndex()
+        if (FoundPlayer:keyAttack1()){
+            Color = entity():getColor()
+        }else{
+            Color = CCol[I,vector]
+        }
+        for (J=1,9){
+            N = ((I-1)*9)+(J-1)
+            holoColor(N,Color)
+        }
+    }
+    entity():setColor(ECol,0)
+    exit()
+}
+
+# If the color of the chip has been changed, apply it to the facelets
+# originating from the side the player coloring is pointing at.
+Players = players()
+PlayerCount = Players:count()
+for (I=1,PlayerCount){
+    Player = Players[I,entity]
+    if (
+     Player:aimEntity() == entity()
+     & Player:keyUse()
+     & Player:pos():distance(entity():pos()) < 100
+    ){
+        FoundPlayer = Player
+        break
+    }
+}
+# Did we find a player that is pressing USE on the cube?
+if (FoundPlayer){
+    if (!IsUsed){
+        if (!FoundPlayer:keyAttack1() & !FoundPlayer:keyAttack2()){
+            Distance = array()
+            Pos1 = round(entity():toLocal(FoundPlayer:aimPos()),2)
+            for (I=1,6){
+                Pos2 = round(
+                    CPos[I,vector] + vec():rotate(CAng[I,angle])
+                    ,2
+                )
+                Distance:pushNumber(Pos1:distance(Pos2))
+            }
+            I = Distance:minIndex()
+            MovesQueue += MMov[I,string]
+        }
+        IsUsed = 1
+        exit()
+    }
+}else{
+    IsUsed = 0
+}
+
+# If we just finished a move, lets make some complicated stuff happen.
+if (EndMove & CurMove:length() > 0){
+    Move = CNam[CurMove[1],number]
+    Axis = CPos[Move,vector]
+    Faces = CPrm[CNam[CurMove[1],number],string]:explode(",")
+    J = Faces:count()
+    CTrn2 = CTrn:clone()
+    Perm2 = Perm
+    for (I=1,J){
+        Face = Faces[I,string]:explode(":")
+        PtA = Face[1,string]:toNumber()
+        PtB = Face[2,string]:toNumber()
+        if (CurMove[2] == "'"){
+            CTrn[PtA,number] = CTrn2[PtB,number]
+            Perm = Perm:sub(1,PtA-1)+Perm2:index(PtB)+Perm:sub(PtA+1)
+        }else{
+            CTrn[PtB,number] = CTrn2[PtA,number]
+            Perm = Perm:sub(1,PtB-1)+Perm2:index(PtA)+Perm:sub(PtB+1)
+        }
+        Ang = CTnA[CTrn2[PtA,number]+1,angle]
+        CTnA[CTrn2[PtA,number]+1,angle] = Ang:rotateAroundAxis(
+            Axis,round(CRot/90)*90
+        )
+    }
+    CTnA[(Move*9)-4,angle] = CTnA[(Move*9)-4,angle]:rotateAroundAxis(
+        Axis,CRot
+    )
+    CTrn2 = CTrn:clone()
+    Perm2 = Perm
+    if (CurMove[2] == "2"){
+        for (I=1,J){
+            Face = Faces[I,string]:explode(":")
+            PtA = Face[1,string]:toNumber()
+            PtB = Face[2,string]:toNumber()
+            CTrn[PtB,number] = CTrn2[PtA,number]
+            Perm = Perm:sub(1,PtB-1)+Perm2:index(PtA)+Perm:sub(PtB+1)
+        }
+    }
+    CurMove = ""
+    CRot = 0
+    CDir = 0
+    CMov = table()
+    holoAlpha(Bg[(Move*2)-1,number],0)
+    holoAlpha(Bg[Move*2,number],0)
+    EndMove = 0
+    exit()
+}
+
+# Hey, we can't have a Rubik's Cube without a way to mix it up!
+if (~Scramble & Scramble){
+    if (clk()){ Scramble = 32 }
+    if (Scramble<0){ Scramble *= -1 }
+    if (Scramble > 64){
+        print(
+            _HUD_PRINTCENTER,
+            "You can only scramble up to 64 moves. Sorry."
+        )
+        Scramble = 64
+    }
+    Mvs = array()
+    Mv = ""
+    SMv = ""
+    RMod = array("","'","2")
+    for (I=1,Scramble){
+        if (Mvs:count() > 0){
+            N = CNam[Mv[1],number]
+            M = 0
+            if (Mvs:count() > 1
+             & N-3 == CNam[Mvs[2,string][1],number]){
+                M = N-3
+            }elseif (Mvs:count() > 1
+             & N+3 == CNam[Mvs[2,string][1],number]){
+                M = N+3
+            }
+            Inc = array()
+            for (J=1,6){
+                if (J != N & J != M){
+                    Inc[Inc:count()+1,number] = J
+                }
+            }
+        }else{
+            Inc = array(1,2,3,4,5,6)
+        }
+        Mv = MMov[Inc[randint(1,Inc:count()),number],string]
+        Mv += RMod[randint(1,3),string]
+        Mvs:unshiftString(Mv)
+        MovesQueue += Mv
+        if (SMv == ""){
+            SMv = Mv
+        }else{
+            SMv += " "+Mv
+        }
+    }
+    print("Scramble: "+SMv)
+    exit()
+}
+
+# We can use solvemycube.com to solve our cube if it's mixed up at all.
+if (~Solve & Solve & MovesQueue:length() == 0 & httpCanRequest()
+ & Perm != "uuuuuuuuurrrrrrrrrfffffffffdddddddddlllllllllbbbbbbbbb"){
+    print("Finding a solution...")
+    runOnHTTP(1)
+    httpRequest("http://solvemycube.com/plain?"+Perm)
+    exit()
+}
+# When we get a solution back from solvemycube.com.
+if (httpClk()
+ & httpRequestUrl():left(29) == "http://solvemycube.com/plain?"){
+    print("Solution found.")
+    print("Solution: "+httpData())
+    MovesQueue += httpData()
+}
+
+# For if you want to move individual sides
+# Acceptable values would be:
+#   -1 (X' - 90 degree CCW turn)
+#    0 (do nothing)
+#    1 (X  - 90 degree CW turn)
+#    2 (X2 - 180 degree CW turn)
+if (~U & U){ MovesQueue += "U"+MMod[U,string] }
+if (~R & R){ MovesQueue += "R"+MMod[R,string] }
+if (~F & F){ MovesQueue += "F"+MMod[F,string] }
+if (~D & D){ MovesQueue += "D"+MMod[D,string] }
+if (~L & L){ MovesQueue += "L"+MMod[L,string] }
+if (~B & B){ MovesQueue += "B"+MMod[B,string] }
+
+# Send a string of moves
+# Anything not valid will simply be ignored and truncated later
+if (~ExecMoves & ExecMoves:length() > 0) {
+    MovesQueue += ExecMoves:upper()
+}
+
+# Ok, if a move has been finished and we have moves left to do,
+# let's get the next move from the queue!
+if (CurMove:length() == 0 & MovesQueue:length() > 0) {
+    MoveIdx = MovesQueue:findRE("[URFDLB]")
+    if (MoveIdx){
+        CurMove = MovesQueue:sub(MoveIdx,MoveIdx+1)
+        if (CurMove[2] == "'" | CurMove[2] == "2"){
+            MovesQueue = MovesQueue:sub(MoveIdx+2)
+        }else{
+            MovesQueue = MovesQueue:sub(MoveIdx+1)
+            CurMove = CurMove[1]
+        }
+        if (CurMove[2] == "'"){
+            CDir = 1
+        }else{
+            CDir = -1
+        }
+        MoveList = array()
+        Faces = CPrm[CNam[CurMove[1],number],string]:explode(",")
+        J = Faces:count()
+        for (I=1,J){
+            Face = Faces[I,string]:explode(":")
+            MoveList:pushString(Face[1,string])
+        }
+        CMov = invert(MoveList)
+    }else{
+        MovesQueue = ""
+    }
+    exit()
+}
+
+# If the cube is moved or we are in the middle of a move,
+# we need to make sure the holograms keep up.
+if (EPos != entity():pos() | EAng != entity():angles()
+ | CurMove:length() > 0) {
+    EPos = entity():pos()
+    EAng = entity():angles()
+    N=0
+    
+    # If we are in the middle of a move, we need to keep animating.
+    if (CurMove:length() > 0){
+        Move = CNam[CurMove[1],number]
+        CRot += CDir*11.25
+        Axis = CPos[Move,vector]
+        
+        if ((CurMove[2] == "'" & CRot >= 90)
+         | (CurMove[2] == "2" & CRot <= -180)
+         | (CurMove[2] != "2" & CRot <= -90)){
+            EndMove = 1
+        }
+        holoPos(Bg[(Move*2)-1,number],
+            entity():toWorld(CPos[Move,vector]/3)
+        )
+        holoAng(Bg[(Move*2)-1,number],
+            CAng[Move,angle]:rotateAroundAxis(
+                vec(1,0,0),EAng:roll()
+            ):rotateAroundAxis(
+                vec(0,1,0),EAng:pitch()
+            ):rotateAroundAxis(
+                vec(0,0,1),EAng:yaw()
+            )
+        )
+        holoAlpha(Bg[(Move*2)-1,number],255)
+        
+        holoPos(Bg[Move*2,number],
+            entity():toWorld(CPos[Move,vector]/3)
+        )
+        holoAng(Bg[Move*2,number],
+            CTnA[(Move*9)-4,angle]:rotateAroundAxis(
+                Axis,CRot
+            ):rotateAroundAxis(
+                vec(1,0,0),EAng:roll()
+            ):rotateAroundAxis(
+                vec(0,1,0),EAng:pitch()
+            ):rotateAroundAxis(
+                vec(0,0,1),EAng:yaw()
+            )
+        )
+        holoAlpha(Bg[Move*2,number],255)
+    }
+    
+    # This is where all that magic happens. Don't get too excited
+    # like I did. I jizzed in my pants when that happened. :(
+    for (I=1,6){
+        for (X=-1,1){
+            for (Y=-1,1){
+                if (CurMove:length() > 0
+                 & (Move == I | CMov[toString(N+1),number] > 0)) {
+                    FAxs = Axis
+                    FRot = CRot
+                }else{
+                    FAxs = vec(0,0,0)
+                    FRot = 0
+                }
+                holoPos(
+                    CTrn[N+1,number],
+                    entity():toWorld(
+                        (
+                            CPos[I,vector] + vec(12*X,12*Y,0):rotate(
+                                CAng[I,angle]
+                            )
+                        ):rotate(
+                            ang():rotateAroundAxis(
+                                FAxs,FRot
+                            )
+                        )
+                    )
+                )
+                holoAng(
+                    CTrn[N+1,number],
+                    CTnA[CTrn[N+1,number]+1,angle]:rotateAroundAxis(
+                        FAxs,FRot
+                    ):rotateAroundAxis(
+                        vec(1,0,0),EAng:roll()
+                    ):rotateAroundAxis(
+                        vec(0,1,0),EAng:pitch()
+                    ):rotateAroundAxis(
+                        vec(0,0,1),EAng:yaw()
+                    )
+                )
+                N++
+            }
+        }
+    }
+}
+# This is the end. No more code.
+# And yes, I totally had to put a comment here to tell you that.
+
+#----------------------------------------------------------------------
+# CHANGELOG
+#----------------------------------------------------------------------
+#  1.0 (Feb 7, 2011)
+#   - Initial release.
+#  1.1 (Feb 10, 2011)
+#   - Added changelog.
+#   - Fixed a rotational issue with the inner holograms (the black ones
+#     you see during a turn). This eliminated several lines as well.
+#   - Optimized @persist headers. (Suggested by Elmo the Emo Emperor)
+#
