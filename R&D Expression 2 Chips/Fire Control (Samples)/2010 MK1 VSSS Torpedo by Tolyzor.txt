@@ -1,0 +1,205 @@
+@name MK1 VSSS Torpedo
+@inputs Screen:wirelink InitialDir:vector WaterLevel AttackMode# 1 = surface attack, 2 = submerged attack
+@outputs Thrust Detonate 
+@persist Dir:vector Roll Angle AngVel:angle Axis:vector TargetDir:vector Timer
+@persist AverageX AverageY TargetLock #seeker
+@persist TickRate E:entity XTorque YTorque ZTorque DetTimer
+@persist Resolution Range Ranger:ranger RangerX RangerY RangerZ ScreenX ScreenY ScreenCell Iterations # seeker
+@persist [RangerDir Colour]:vector # seeker
+@persist [TargetXArray TargetYArray]:array TargetPriority TargetRank Fov# seeker
+@persist SeekerWidth SeekerHeight # fov stuff
+@trigger 
+@model models/props_phx/ww2bomb.mdl
+
+#Video: https://youtu.be/u8eKbbaTBQ0?si=kcynf3sFRBmgEc4g
+
+#[
+
+INFO:
+
+VSSS - video scanning sonar seeker
+
+This torpedo uses a process involving video feed image processing in order to find, designate and target submarines and surface vessels in Gmod. The "sonar video feed", is supplied by a ranger scanner which is realistically limited to only see below the waterline.
+
+All of this seemingly needless complexity combines to make this by far the most realistic torpedo ever made in Gmod (to my knowledge). It is susceptible to loosing target lock on fast or small targets, countermeasures, and requires rough initial aiming (either physically or by the optional initial target input).
+
+
+
+Attack modes
+
+MK1 VSSS Torpedo-torpedo-attack-modes.jpg
+
+Submerged attack mode: The torpedo will follow a straight line course until it identifies a target, and then engage it. The seeker adopts a 1:1 aspect ratio for this role.
+
+Surface attack mode: After clearing the launch position, the torpedo will pitch to achieve cruise depth. It will then continue on this course until it identifies a target using its 3:1 panoramic aspect ratio seeker.
+
+Target prioritisation
+
+The torpedo will attempt to hit the centre of the highest priority target it can see (the blue dot in the video, calculated via image processing). Targets are ranked in the following way to give the highest probability of a kill against a ship or submarine rather than a decoy/random prop;
+1. Constrained moving prop
+2. Constrained non frozen prop
+3. Non constrained moving prop
+4. Player
+5. Non constrained non frozen prop
+6. Frozen prop
+
+Inputs and outputs
+
+WaterLevel: the world z coordinate of the waterline
+
+AttackMode: 1 for surface, 2 for submerged.
+
+InitialDir: optional direction vector input which the torpedo will aim for until it finds a target (useful if the launch vehicle has its own targeting system that has already identified a target).
+
+Screen[wirelink]: optional visual output of the seeker camera, with overlaid target point and target priority colour coding.
+
+Applications
+
+The torpedo is approx 2:1 scale, in order to be most useful in gmod's small waters. It can be dropped by air, or launched by a surface ship or submerged vessel.
+
+Many variables are customisable at the top of the e2, such as seeker fov(in each attack mode), resolution and fps. Also torpedo cruise depth and arming time.
+
+Use of code and future work
+
+The seeker portion of this torpedo is still very much a WIP of mine, I plan on further optimisation and incorporation into missiles. I would therefore appreciate it if it wasn't used, until I have had the chance to do so.
+
+The applyTorque guidance that this torpedo uses was 100% my design and is rather elegant I feel, so please do use it however you want.
+
+I plan on releasing a MK2 version of this torpedo, which will include search patterns, intelligent proximity detonation including ship keel targetting, and a target priority ignore input.
+
+The torpedo dupe: mk1 vsss torpedo.txt
+
+The test target from the video: torpedo target 6.txt
+
+
+
+]#
+
+if (first() | duped()) {
+    TickRate = 66.566669
+    E = entity()
+    E:setColor(45, 60, 45, 255)
+    #####seeker#####
+    Resolution = 441 # odd square number
+    Range = 10000 # ranger range
+    ScreenCell = 3
+    TargetPriority = TargetRank = 7
+    #####seeker#####
+    exit()
+    }
+if (~AttackMode) {
+    if (AttackMode == 1) {
+        Fov = 55 #degrees 
+        SeekerWidth = sqrt(Resolution) * 3
+        SeekerHeight = sqrt(Resolution) / 3
+    }
+    elseif (AttackMode == 2) {
+        Fov = 50 #degrees
+        SeekerWidth = sqrt(Resolution)
+        SeekerHeight = sqrt(Resolution)
+    }
+    Screen[1048574] = 1 # clear screen 
+    Screen[1048572] = SeekerWidth
+    Screen[1048573] = SeekerWidth
+    Screen[1048569] = 1 # vector rgb colourmode
+    RangerX = int(SeekerWidth / 2)
+    RangerY = int(-SeekerHeight / 2)
+    RangerZ = RangerX / tan(Fov / 2)
+}
+if (AttackMode) {
+    runOnTick(1)
+    Thrust = 1
+    Timer++
+    Dir = E:angles():forward()
+    if (AttackMode == 1) {
+        if (Timer == 1) {TargetDir = Dir} 
+        elseif (Timer > 100 & !TargetLock) {TargetDir = Dir:setZ(clamp((WaterLevel - 300 - E:pos():z()) / 1500, -0.5, 0.5)):normalized()} 
+        # after 300 ticks pitch to get to cruise depth of 50 then level out
+    } elseif (AttackMode == 2) {
+    if (Timer == 1) {TargetDir = Dir} 
+    #elseif (Timer == 200 & InitialDir) {TargetDir = InitialDir} # after 200 go to user inputted bearing
+    #elseif (Timer > 800) {TargetDir = } # spiral search pattern
+    }
+    if (Timer > 300 & perf()) { # arm seeker system #############################################################
+        
+      
+        for (Iterations = 0, 20) {
+            RangerDir = E:toWorldAxis(vec(RangerZ, RangerX, -RangerY):normalized())
+            Ranger = rangerOffset(Range, entity():toWorld(vec(32, 0, 5.95)), RangerDir)
+                
+            ############ Target priorities ##################
+            if (!Ranger:entity() | Ranger:position():z() > WaterLevel) {TargetPriority = 7, Colour = vec(0, 0, 0)} # ignore if ranger is hitting nothing or something above the water
+            elseif (Ranger:entity():isPlayer()) {TargetPriority = 4, Colour = vec(0, 255, 0)}
+            elseif (Ranger:entity():isFrozen()) {TargetPriority = 6, Colour = vec(100, 100, 100)}
+            elseif (Ranger:entity():isConstrained()) { 
+                TargetPriority = 2, Colour = vec(255, 0, 255)
+                if (Ranger:entity():vel()) {TargetPriority = 1, Colour = vec(255, 0, 0)}# should check if vel is less than torpedo vel?
+            } 
+            elseif (Ranger:entity():vel()) {TargetPriority = 3, Colour = vec(255, 100, 100)}
+            else {TargetPriority = 5, Colour = vec(255, 255, 255)}
+            
+            if (TargetPriority == TargetRank & TargetPriority != 7) {
+                TargetXArray:pushNumber(ScreenX)# save x value to TargetXArray
+                TargetYArray:pushNumber(ScreenY)# save y value to TargetYArray
+            } elseif (TargetPriority < TargetRank) {
+                TargetRank = TargetPriority
+                TargetXArray = array()
+                TargetYArray = array()
+                TargetXArray:pushNumber(ScreenX)# save x value to TargetXArray
+                TargetYArray:pushNumber(ScreenY)# save y value to TargetYArray
+            }
+            #################################################
+            Screen[ScreenCell, vector] = Colour
+        
+            RangerX--
+            ScreenX++
+            if (RangerX < -SeekerWidth / 2) {
+            RangerX = int(SeekerWidth / 2)
+            ScreenX = 0
+            RangerY++
+            ScreenY++
+            }
+            if (RangerY > SeekerHeight / 2) {
+            RangerX = int(SeekerWidth / 2)
+            RangerY = int(-SeekerHeight / 2)
+            ScreenX = ScreenY = 0
+            if (TargetXArray:count()) {
+                TargetLock = 1
+                AverageX = round(TargetXArray:average())
+                AverageY = round(TargetYArray:average())
+                Screen[(AverageX + SeekerWidth * AverageY) * 3, vector] = vec(0, 0, 255) # target point is blue
+                TargetDir = E:toWorldAxis(vec(RangerZ, -(AverageX - SeekerWidth / 2) , -(AverageY - SeekerHeight / 2)):normalized())
+            } else {TargetLock = 0}
+        
+            TargetPriority = TargetRank = 7 # where 7 is lowest priority
+            TargetXArray = array()
+            TargetYArray = array()
+            }
+            ScreenCell = (ScreenX + SeekerWidth * ScreenY) * 3 
+        }
+        if (findInSphere(E:pos(), 100) > 3) {Detonate = 1}# detonate when there are more entities than just the torpedo
+    }##################################################################################################
+    ######### guidance control ###########
+    Angle = acos(Dir:dot(TargetDir))
+    Axis = E:toLocalAxis(Dir:cross(TargetDir):normalized())
+        
+    AngVel = E:angVel()
+    XTorque = (-E:angles():roll() - AngVel:roll() * 0.4) * 4000
+    YTorque = Angle * Axis:y() * 120000 - AngVel:pitch() * 105000
+    ZTorque = Angle * Axis:z() * 120000 - AngVel:yaw() * 105000
+    
+    E:applyTorque(vec(XTorque, YTorque, ZTorque) / TickRate) # guidance physics
+}
+if (Detonate) {
+    DetTimer++
+    if (DetTimer > 30) {selfDestructAll()}
+    }
+
+# made by Tolyzor, released @ the wiremod forums.
+
+# Please feel free to use part or all of the guidance control code,
+# note for non-submerged aplications the constants will need reducing by 100x or so
+
+# At this time I would rather not have the video-scanning-seeker or target priority code modified or used elsewhere
+# as it is still very much a work in progress (hence the messyness of the code).
+# I shall release an optimised version which I'd be happy to share in the future.
