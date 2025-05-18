@@ -1,0 +1,470 @@
+@name Redbull gives you wings
+@persist Anim AnimSpeed [Base LJoint1 RJoint1 LJoint2 RJoint2 Player]:entity
+@persist Flying GravityMult FlySpeed ForceMult AirFrictionMult
+@persist W A S D Space Shift Ctrl
+@persist DoubleTap DoubleTapSpeed DoubleTapTime
+@persist WingFoldLerp FoldLerpSpeed
+
+
+#Source: https://youtu.be/dA3weLS5zCQ?si=n_tCcD3UVcAauADC
+#Made by Jacbo/JaCoB123456798
+#INFO: Press space twice to activate the wings
+if(duped()){selfDestruct()}
+if(chatClk(owner()) & lastSaid() == "!wings"){
+    hideChat(1)
+    selfDestruct()
+}
+if(first()){
+    runOnChat(1)
+    DoubleTapSpeed = 0.5
+    FlySpeed = 1000
+	#Couldn't manage to get it consistent across different tick rates
+    #66.6666 server tick rate (fps)
+    #[ForceMult = 2500 * tickInterval()^2 * 40
+    FoldLerpSpeed = 5 * tickInterval()
+    AirFrictionMult = 0.05 * tickInterval() * 30
+    GravityMult = 2.15
+    AnimSpeed = 0.5 * tickInterval()^0.5 * 15
+    #]#
+    
+    #30 server tick rate (fps)
+    ForceMult = 2500 * tickInterval()^2 * 20
+    FoldLerpSpeed = 5 * tickInterval()
+    AirFrictionMult = 0.05 * tickInterval() * 30
+    GravityMult = 2.15 / 1.85
+    AnimSpeed = 0.5 * tickInterval() * 60
+    #]#
+    
+    #40 server tick rate (fps)
+    #[ForceMult = 2500 * tickInterval()^2 * 20
+    FoldLerpSpeed = 5 * tickInterval()
+    AirFrictionMult = 0.05 * tickInterval() * 30
+    GravityMult = 2.15 / (60 * tickInterval())
+    AnimSpeed = 0.5 * tickInterval() * 60
+    #]#
+    Length = 50
+    Player = owner()
+    V = Player:attachmentPos("chest")
+    Ang = Player:attachmentAng("chest")
+    Base = holoCreate(0, toWorld(vec(-7,0,0), ang(), V, Ang))
+    holoAng(0, Ang)
+    holoParentAttachment(0, Player, "chest")
+    holoAlpha(0, 0)
+    
+    LJoint1 = holoCreate(1, Base:toWorld(vec(0, 5, 0)))
+    holoAng(1, Ang)
+    holoParent(1, 0)
+    
+    RJoint1 = holoCreate(2, Base:toWorld(vec(0, -5, 0)))
+    holoAng(2, toWorldAng(vec(), ang(0, 0, 180), vec(), Ang))
+    holoParent(2, 0)
+    
+    LJoint2 = holoCreate(3, LJoint1:toWorld(vec(0, Length, 0)))
+    holoAng(3, Ang)
+    holoParent(3, 1)
+    
+    RJoint2 = holoCreate(4, RJoint1:toWorld(vec(0, Length, 0)))
+    holoAng(4, RJoint1:angles())
+    holoParent(4, 2)
+    
+    for(I = 0, 4){
+        holoAlpha(I, 0)
+        holoScale(I, vec(0))
+        holoDisableShading(I, 1)
+        holoShadow(I, 0)
+    }
+    
+    #First half
+    #Left
+    Length2 = Length * 1.075
+    holoCreate(10, LJoint1:toWorld(vec(0, Length2/2, 0)))
+    holoScaleUnits(10, vec(1, Length2, 5))
+    holoModel(10, "icosphere")
+    holoParent(10, 1)
+    holoAng(10, LJoint1:angles())
+    
+    V1 = LJoint1:pos()
+    A1 = LJoint1:angles()
+    A2 = ang(0, 2.5, 5)
+    A3 = LJoint1:toWorld(A2)
+    holoCreate(11, toWorld(vec(0, Length2/2, 0), ang(), V1, A3))
+    holoScaleUnits(11, vec(1, Length2, 5))
+    holoModel(11, "icosphere")
+    holoParent(11, 1)
+    holoAng(11, A3)
+    
+    A2 = ang(0, 2.5, -5)
+    A3 = LJoint1:toWorld(A2)
+    holoCreate(12, toWorld(vec(0, Length2/2, 0), ang(), V1, A3))
+    holoScaleUnits(12, vec(1, Length2, 5))
+    holoModel(12, "icosphere")
+    holoParent(12, 1)
+    holoAng(12, A3)
+    
+    A2 = ang(0, -2.5, 10)
+    A3 = LJoint1:toWorld(A2)
+    holoCreate(13, toWorld(vec(0, Length2/2, 0), ang(), V1, A3))
+    holoScaleUnits(13, vec(1, Length2, 5))
+    holoModel(13, "icosphere")
+    holoParent(13, 1)
+    holoAng(13, A3)
+    
+    A2 = ang(0, -2.5, -10)
+    A3 = LJoint1:toWorld(A2)
+    holoCreate(14, toWorld(vec(0, Length2/2, 0), ang(), V1, A3))
+    holoScaleUnits(14, vec(1, Length2, 5))
+    holoModel(14, "icosphere")
+    holoParent(14, 1)
+    holoAng(14, A3)
+    
+    A2 = ang(0, 0, -5)
+    A3 = LJoint1:toWorld(A2)
+    holoCreate(15, toWorld(vec(0, Length2/2, 0), ang(), V1, A3))
+    holoScaleUnits(15, vec(1, Length2, 5))
+    holoModel(15, "icosphere")
+    holoParent(15, 1)
+    holoAng(15, A3)
+    
+    A2 = ang(0, 0, 5)
+    A3 = LJoint1:toWorld(A2)
+    holoCreate(16, toWorld(vec(0, Length2/2, 0), ang(), V1, A3))
+    holoScaleUnits(16, vec(1, Length2, 5))
+    holoModel(16, "icosphere")
+    holoParent(16, 1)
+    holoAng(16, A3)
+    
+    A2 = ang(0, -2.5, 0)
+    A3 = LJoint1:toWorld(A2)
+    holoCreate(17, toWorld(vec(0, Length2/2, 0), ang(), V1, A3))
+    holoScaleUnits(17, vec(1, Length2, 5))
+    holoModel(17, "icosphere")
+    holoParent(17, 1)
+    holoAng(17, A3)
+    
+    
+    #Right
+    holoCreate(30, RJoint1:toWorld(vec(0, Length2/2, 0)))
+    holoScaleUnits(30, vec(1, Length2, 5))
+    holoModel(30, "icosphere")
+    holoParent(30, 2)
+    holoAng(30, RJoint1:angles())
+    
+    V1 = RJoint1:pos()
+    A1 = RJoint1:angles()
+    A2 = ang(0, 2.5, 5)
+    A3 = RJoint1:toWorld(A2)
+    holoCreate(31, toWorld(vec(0, Length2/2, 0), ang(), V1, A3))
+    holoScaleUnits(31, vec(1, Length2, 5))
+    holoModel(31, "icosphere")
+    holoParent(31, 2)
+    holoAng(31, A3)
+    
+    A2 = ang(0, 2.5, -5)
+    A3 = RJoint1:toWorld(A2)
+    holoCreate(32, toWorld(vec(0, Length2/2, 0), ang(), V1, A3))
+    holoScaleUnits(32, vec(1, Length2, 5))
+    holoModel(32, "icosphere")
+    holoParent(32, 2)
+    holoAng(32, A3)
+    
+    A2 = ang(0, -2.5, 10)
+    A3 = RJoint1:toWorld(A2)
+    holoCreate(33, toWorld(vec(0, Length2/2, 0), ang(), V1, A3))
+    holoScaleUnits(33, vec(1, Length2, 5))
+    holoModel(33, "icosphere")
+    holoParent(33, 2)
+    holoAng(33, A3)
+    
+    A2 = ang(0, -2.5, -10)
+    A3 = RJoint1:toWorld(A2)
+    holoCreate(34, toWorld(vec(0, Length2/2, 0), ang(), V1, A3))
+    holoScaleUnits(34, vec(1, Length2, 5))
+    holoModel(34, "icosphere")
+    holoParent(34, 2)
+    holoAng(34, A3)
+    
+    A2 = ang(0, 0, -5)
+    A3 = RJoint1:toWorld(A2)
+    holoCreate(35, toWorld(vec(0, Length2/2, 0), ang(), V1, A3))
+    holoScaleUnits(35, vec(1, Length2, 5))
+    holoModel(35, "icosphere")
+    holoParent(35, 2)
+    holoAng(35, A3)
+    
+    A2 = ang(0, 0, 5)
+    A3 = RJoint1:toWorld(A2)
+    holoCreate(36, toWorld(vec(0, Length2/2, 0), ang(), V1, A3))
+    holoScaleUnits(36, vec(1, Length2, 5))
+    holoModel(36, "icosphere")
+    holoParent(36, 2)
+    holoAng(36, A3)
+    
+    A2 = ang(0, -2.5, 0)
+    A3 = RJoint1:toWorld(A2)
+    holoCreate(37, toWorld(vec(0, Length2/2, 0), ang(), V1, A3))
+    holoScaleUnits(37, vec(1, Length2, 5))
+    holoModel(37, "icosphere")
+    holoParent(37, 2)
+    holoAng(37, A3)
+    
+    
+    #Second half
+    #Left
+    holoCreate(50, LJoint2:toWorld(vec(0, Length2/2, 0)))
+    holoScaleUnits(50, vec(1, Length2, 5))
+    holoModel(50, "icosphere")
+    holoParent(50, 3)
+    holoAng(50, LJoint2:angles())
+    
+    V1 = LJoint2:pos()
+    A1 = LJoint2:angles()
+    V3 = LJoint2:toWorld(vec(0, 0, 3))
+    A2 = ang(0, 2.5, 7.5)
+    A3 = LJoint2:toWorld(A2)
+    holoCreate(51, toWorld(vec(0, Length2/2, 0), ang(), V3, A3))
+    holoScaleUnits(51, vec(1, Length2, 5))
+    holoModel(51, "icosphere")
+    holoParent(51, 3)
+    holoAng(51, A3)
+    
+    V3 = LJoint2:toWorld(vec(0, 0, -3))
+    A2 = ang(0, 2.5, -7.5)
+    A3 = LJoint2:toWorld(A2)
+    holoCreate(52, toWorld(vec(0, Length2/2, 0), ang(), V3, A3))
+    holoScaleUnits(52, vec(1, Length2, 5))
+    holoModel(52, "icosphere")
+    holoParent(52, 3)
+    holoAng(52, A3)
+    
+    V3 = LJoint2:toWorld(vec(0, 0, -6))
+    A2 = ang(0, -2.5, -10)
+    A3 = LJoint2:toWorld(A2)
+    holoCreate(53, toWorld(vec(0, Length2/2, 0), ang(), V3, A3))
+    holoScaleUnits(53, vec(1, Length2, 5))
+    holoModel(53, "icosphere")
+    holoParent(53, 3)
+    holoAng(53, A3)
+    
+    V3 = LJoint2:toWorld(vec(0, 0, 6))
+    A2 = ang(0, -2.5, 10)
+    A3 = LJoint2:toWorld(A2)
+    holoCreate(54, toWorld(vec(0, Length2/2, 0), ang(), V3, A3))
+    holoScaleUnits(54, vec(1, Length2, 5))
+    holoModel(54, "icosphere")
+    holoParent(54, 3)
+    holoAng(54, A3)
+    
+    V3 = LJoint2:toWorld(vec(0, 0, -1.5))
+    A2 = ang(0, 0, -5)
+    A3 = LJoint2:toWorld(A2)
+    holoCreate(55, toWorld(vec(0, Length2/2, 0), ang(), V3, A3))
+    holoScaleUnits(55, vec(1, Length2, 5))
+    holoModel(55, "icosphere")
+    holoParent(55, 3)
+    holoAng(55, A3)
+    
+    V3 = LJoint2:toWorld(vec(0, 0, 1.5))
+    A2 = ang(0, 0, 5)
+    A3 = LJoint2:toWorld(A2)
+    holoCreate(56, toWorld(vec(0, Length2/2, 0), ang(), V3, A3))
+    holoScaleUnits(56, vec(1, Length2, 5))
+    holoModel(56, "icosphere")
+    holoParent(56, 3)
+    holoAng(56, A3)
+    
+    
+    #Right
+    holoCreate(70, RJoint2:toWorld(vec(0, Length2/2, 0)))
+    holoScaleUnits(70, vec(1, Length2, 5))
+    holoModel(70, "icosphere")
+    holoParent(70, 4)
+    holoAng(70, RJoint2:angles())
+    
+    V1 = RJoint2:pos()
+    A1 = RJoint2:angles()
+    V3 = RJoint2:toWorld(vec(0, 0, 3))
+    A2 = ang(0, 2.5, 7.5)
+    A3 = RJoint2:toWorld(A2)
+    holoCreate(71, toWorld(vec(0, Length2/2, 0), ang(), V3, A3))
+    holoScaleUnits(71, vec(1, Length2, 5))
+    holoModel(71, "icosphere")
+    holoParent(71, 4)
+    holoAng(71, A3)
+    
+    V3 = RJoint2:toWorld(vec(0, 0, -3))
+    A2 = ang(0, 2.5, -7.5)
+    A3 = RJoint2:toWorld(A2)
+    holoCreate(72, toWorld(vec(0, Length2/2, 0), ang(), V3, A3))
+    holoScaleUnits(72, vec(1, Length2, 5))
+    holoModel(72, "icosphere")
+    holoParent(72, 4)
+    holoAng(72, A3)
+    
+    V3 = RJoint2:toWorld(vec(0, 0, -6))
+    A2 = ang(0, -2.5, -10)
+    A3 = RJoint2:toWorld(A2)
+    holoCreate(73, toWorld(vec(0, Length2/2, 0), ang(), V3, A3))
+    holoScaleUnits(73, vec(1, Length2, 5))
+    holoModel(73, "icosphere")
+    holoParent(73, 4)
+    holoAng(73, A3)
+    
+    V3 = RJoint2:toWorld(vec(0, 0, 6))
+    A2 = ang(0, -2.5, 10)
+    A3 = RJoint2:toWorld(A2)
+    holoCreate(74, toWorld(vec(0, Length2/2, 0), ang(), V3, A3))
+    holoScaleUnits(74, vec(1, Length2, 5))
+    holoModel(74, "icosphere")
+    holoParent(74, 4)
+    holoAng(74, A3)
+    
+    V3 = RJoint2:toWorld(vec(0, 0, -1.5))
+    A2 = ang(0, 0, -5)
+    A3 = RJoint2:toWorld(A2)
+    holoCreate(75, toWorld(vec(0, Length2/2, 0), ang(), V3, A3))
+    holoScaleUnits(75, vec(1, Length2, 5))
+    holoModel(75, "icosphere")
+    holoParent(75, 4)
+    holoAng(75, A3)
+    
+    V3 = RJoint2:toWorld(vec(0, 0, 1.5))
+    A2 = ang(0, 0, 5)
+    A3 = RJoint2:toWorld(A2)
+    holoCreate(76, toWorld(vec(0, Length2/2, 0), ang(), V3, A3))
+    holoScaleUnits(76, vec(1, Length2, 5))
+    holoModel(76, "icosphere")
+    holoParent(76, 4)
+    holoAng(76, A3)
+    
+    #
+    
+    runOnTick(1)
+    runOnKeys(Player, 1)
+    
+    Flying = 0
+}
+
+I = keyClk(Player)
+if(I){
+    if(I==-1){I = 0}
+    switch(keyClkPressedBind()){
+        default, break
+        case "forward", W = I break
+        case "moveleft", A = I break
+        case "back", S = I break
+        case "moveright", D = I break
+        case "jump", Space = I break
+        case "speed", Shift = I break
+        case "duck", Ctrl = I break
+    }
+}
+
+Noclip = Player:inNoclip()
+if(Flying){
+    if(!Player | !Player:isAlive() | Player:isOnGround()){
+        Flying = 0
+    }
+}
+if(DoubleTap & systime()-DoubleTapTime>=DoubleTapSpeed){
+    DoubleTap = 0
+}
+if(keyClk(Player)==1 & keyClkPressedBind()=="jump"){
+    if(DoubleTap){
+        DoubleTap = 0
+        Flying = !Flying
+    }else{
+        DoubleTap = 1
+        DoubleTapTime = systime()
+    }
+}
+if(changed(Player:inNoclip()) | (Noclip & !Flying)){
+    Flying = Noclip
+}
+if(tickClk()){
+    if(Flying & WingFoldLerp){
+        WingFoldLerp = max(0, WingFoldLerp - FoldLerpSpeed)
+        LAng1F = 80
+        RAng1F = -80
+        LAng2F = -170
+        RAng2F = -170
+        
+        Anim2 = ((Anim-0.25^(1/3)/1.539)*1.539)^3
+        Anim2 = (Anim + 3*Anim2) / 4
+        WingAng = -20 + (0 + 30) * sin(-Anim * 360 - 22.5)
+        
+        LAng1O = 45 * sin(Anim2 * 360)
+        RAng1O = -45 * sin(Anim2 * 360)
+        LAng2O = WingAng
+        RAng2O = WingAng
+        
+        holoAng(1, Base:toWorld(ang(0, LAng1O + (LAng1F - LAng1O) * WingFoldLerp, 0)))
+        holoAng(2, Base:toWorld(ang(0, RAng1O + (RAng1F - RAng1O) * WingFoldLerp, 180)))
+        holoAng(3, LJoint1:toWorld(ang(0, LAng2O + (LAng2F - LAng2O) * WingFoldLerp, 0)))
+        holoAng(4, RJoint1:toWorld(ang(0, RAng2O + (RAng2F - RAng2O) * WingFoldLerp, 0)))
+    }elseif(!Flying & WingFoldLerp < 1){
+        WingFoldLerp = min(1, WingFoldLerp + FoldLerpSpeed)
+        LAng1F = 80
+        RAng1F = -80
+        LAng2F = -170
+        RAng2F = -170
+        
+        Anim2 = ((Anim-0.25^(1/3)/1.539)*1.539)^3
+        Anim2 = (Anim + 3*Anim2) / 4
+        WingAng = -20 + (0 + 30) * sin(-Anim * 360 - 22.5)
+        
+        LAng1O = 45 * sin(Anim2 * 360)
+        RAng1O = -45 * sin(Anim2 * 360)
+        LAng2O = WingAng
+        RAng2O = WingAng
+        
+        #holoAng(1, Base:toWorld(ang(0, LAng1F, -90)))
+        
+        holoAng(1, Base:toWorld(ang(0, LAng1O + (LAng1F - LAng1O) * WingFoldLerp, 0)))
+        holoAng(2, Base:toWorld(ang(0, RAng1O + (RAng1F - RAng1O) * WingFoldLerp, 180)))
+        holoAng(3, LJoint1:toWorld(ang(0, LAng2O + (LAng2F - LAng2O) * WingFoldLerp, 0)))
+        holoAng(4, RJoint1:toWorld(ang(0, RAng2O + (RAng2F - RAng2O) * WingFoldLerp, 0)))
+    }elseif(Flying){
+        Anim = (Anim + AnimSpeed * tickInterval()) % 1
+        Anim2 = ((Anim-0.25^(1/3)/1.539)*1.539)^3
+        Anim2 = (Anim + 3*Anim2) / 4
+    
+        holoAng(1, Base:toWorld(ang(0, 45 * sin(Anim2 * 360), 0)))
+        holoAng(2, Base:toWorld(ang(0, -45 * sin(Anim2 * 360), 180)))
+    
+        WingAng = -20 + (0 + 30) * sin(-Anim * 360 - 22.5)
+        holoAng(3, LJoint1:toWorld(ang(0, WingAng, 0)))
+        holoAng(4, RJoint1:toWorld(ang(0, WingAng, 0)))
+        
+        Vel = Player:vel()
+        VelL = toLocal(Vel, ang(), vec(), Player:eyeAngles())
+        Eye = Player:eye()
+        
+        Force = -Player:vel() * AirFrictionMult + vec(0, 0, gravity() * tickInterval() * GravityMult)
+        Force2 = vec()
+    
+        Forward = (W - S) * (Shift + 1) * FlySpeed
+            if(Forward > 0 & Forward > VelL:x()){
+            Force2 += Eye
+        }elseif(Forward < 0 & Forward < VelL:x()){
+            Force2 -= Eye
+        }
+    
+        Right = (D - A) * (Shift + 1) * FlySpeed
+        if(Right > 0 & Right > VelL:y()){
+            Force2 += Eye:cross(vec(0,0,1))
+        }elseif(Right < 0 & Right < VelL:y()){
+            Force2 -= Eye:cross(vec(0,0,1))
+        }
+            
+        Up = (Space - Ctrl) * (Shift + 1) * FlySpeed
+        if(Up > 0 & Up > Vel:z()){
+            Force2 += vec(0, 0, 1)
+        }elseif(Up < 0 & Up < Vel:z()){
+            Force2 -= vec(0, 0, 1)
+        }
+            
+        Force2 = Force2:normalized() * ForceMult * (Shift * 0.5 + 1)
+        
+        Player:applyPlayerForce(Force + Force2)
+    }
+}
