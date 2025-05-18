@@ -1,0 +1,417 @@
+@name Automatic Missile Launcher
+@persist OldBase:entity BaseCenterL:vector BaseHeight [Color Color2]:vector [Material Material2]:string Stage AnimTime1 AnimTime2 AnimSpeed AnimTiming:array AnimLength1 AnimLength2
+@persist OldBasePos:vector OldBaseAng:angle CoverPos LeftAnimStage RightAnimStage MissileSpeed Sound
+@persist LeftArmsAng RightArmsAng CoverHeight [LeftArmJoint RightArmJoint LeftHoloMissile RightHoloMissile]:entity FireLoopLength Missiles:array MissileIndex MissileBoxCenterL:vector
+@inputs Base:entity Fire
+
+#Source: https://youtu.be/CJEAfK0V0pc?si=75dVbuT_V3PVKuC8
+#INFO: Spawn any base prop and wire it then connect it to button
+
+#models/props_phx/amraam.mdl
+Time = curtime()
+if(first()){
+    propSpawnUndo(0)
+    propSpawnEffect(0)
+    #Changeables-------------------
+    MissileSpeed = 3000
+    AnimTiming = array(1,1,0.25,1)
+    AnimSpeed = 1
+    Color = vec(214,199,166)
+    Material = "models/XQM/CellShadedCamo_diffuse"
+    Color2 = vec(255)
+    Material2 = "sprops/textures/sprops_chrome2"
+    #------------------------------
+    FireLoopLength = AnimTiming[2,number]*2+AnimTiming[3,number]*2+AnimTiming[4,number]
+    CoverHeight = 15
+    runOnTick(1)
+}
+if(OldBase!=Base){
+    if(Base){
+        #Spawn
+        BaseCenterL = Base:boxCenter()
+        BaseHeight = Base:aabbSize():z()
+        
+        #Left arms joint
+        LeftArmJoint = holoCreate(102,Base:toWorld(BaseCenterL+vec((47.45/2-1)/2,0,BaseHeight/2+0.5)))
+        #Right arms joint
+        RightArmJoint = holoCreate(103,Base:toWorld(BaseCenterL+vec(-(47.45/2-1)/2,0,BaseHeight/2+0.5)))
+        
+        Ang = Base:angles()
+        for(I=100,103){
+            holoAlpha(I,0)
+            holoScale(I,vec())
+            holoAng(I,Ang)
+            holoParent(I,Base)
+        }
+        
+        holoCreate(1,Base:toWorld(BaseCenterL+vec(0,0,BaseHeight/2+0.5)))
+        holoAng(1,Base:angles())
+        holoScaleUnits(1,vec(47.45-2,47.45*2-2,1))
+        holoDisableShading(1,1)
+        holoColor(1,vec())
+        
+        holoCreate(2,Base:toWorld(BaseCenterL+vec(0,0,BaseHeight/2-0.5)))
+        holoAng(2,Base:angles())
+        holoScaleUnits(2,vec(47.45-2,47.45*2-2,1))
+        
+        holoCreate(3,Base:toWorld(BaseCenterL+vec(47.45/2-0.5,0,BaseHeight/2+2)))
+        holoAng(3,Base:angles())
+        holoScaleUnits(3,vec(1,47.45*2-2,4))
+        
+        holoCreate(4,Base:toWorld(BaseCenterL+vec(-47.45/2+0.5,0,BaseHeight/2+2)))
+        holoAng(4,Base:angles())
+        holoScaleUnits(4,vec(1,47.45*2-2,4))
+        
+        holoCreate(5,Base:toWorld(BaseCenterL+vec(0,47.45-0.5,BaseHeight/2+2)))
+        holoAng(5,Base:angles())
+        holoScaleUnits(5,vec(47.45,1,4))
+        
+        holoCreate(6,Base:toWorld(BaseCenterL+vec(0,-47.45+0.5,BaseHeight/2+2)))
+        holoAng(6,Base:angles())
+        holoScaleUnits(6,vec(47.45,1,4))
+        
+        holoCreate(7,Base:toWorld(BaseCenterL+vec(0,0,BaseHeight/2+4.5)))
+        holoAng(7,Base:angles())
+        holoScaleUnits(7,vec(47.45,47.45*2,1))
+        
+        #models/mechanics/robotics/claw2.mdl
+        E = holoCreate(9,Base:toWorld(BaseCenterL+vec((47.45/3-2),(47.45-1)/2,BaseHeight/2+0.5)))
+        holoModel(9,"models/mechanics/robotics/claw2.mdl")
+        holoScaleUnits(9,vec(47.45/3,47.45/1.5,5))
+        holoAng(9,Base:toWorld(ang(0,0,-90)))
+        Offset = E:boxCenter()*holoScale(9)
+        holoPos(9,E:toWorld(-Offset))
+        holoClipEnabled(9,1,1)
+        holoClipEnabled(9,2,1)
+        holoClip(9,1,Offset,vec(0,-1,0),0)
+        holoParent(9,102)
+        
+        Ang = Base:toWorld(ang(0,0,-90))
+        holoCreate(10,toWorld(-Offset,ang(),Base:toWorld(BaseCenterL+vec((47.45/3-2),-(47.45-1)/2,BaseHeight/2+0.5)),Ang))
+        holoModel(10,"models/mechanics/robotics/claw2.mdl")
+        holoScaleUnits(10,vec(47.45/3,47.45/1.5,5))
+        holoAng(10,Ang)
+        holoClipEnabled(10,1,1)
+        holoClipEnabled(10,2,1)
+        holoClip(10,1,Offset,vec(0,-1,0),0)
+        holoParent(10,102)
+        
+        Ang = Base:toWorld(ang(0,180,-90))
+        holoCreate(11,toWorld(-Offset,ang(),Base:toWorld(BaseCenterL+vec(-(47.45/3-2),(47.45-1)/2,BaseHeight/2+0.5)),Ang))
+        holoModel(11,"models/mechanics/robotics/claw2.mdl")
+        holoScaleUnits(11,vec(47.45/3,47.45/1.5,5))
+        holoAng(11,Ang)
+        holoClipEnabled(11,1,1)
+        holoClipEnabled(11,2,1)
+        holoClip(11,1,Offset,vec(0,-1,0),0)
+        holoParent(11,103)
+        
+        Ang = Base:toWorld(ang(0,180,-90))
+        holoCreate(12,toWorld(-Offset,ang(),Base:toWorld(BaseCenterL+vec(-(47.45/3-2),-(47.45-1)/2,BaseHeight/2+0.5)),Ang))
+        holoModel(12,"models/mechanics/robotics/claw2.mdl")
+        holoScaleUnits(12,vec(47.45/3,47.45/1.5,5))
+        holoAng(12,Ang)
+        holoClipEnabled(12,1,1)
+        holoClipEnabled(12,2,1)
+        holoClip(12,1,Offset,vec(0,-1,0),0)
+        holoParent(12,103)
+        
+        holoCreate(13,Base:toWorld(BaseCenterL+vec(47.45/2-0.5,47.45-0.5,BaseHeight/2+4-CoverHeight/2)))
+        holoAng(13,Base:angles())
+        holoScaleUnits(13,vec(0.75,0.75,CoverHeight))
+        holoClipEnabled(13,1)
+        holoParent(13,7)
+        
+        holoCreate(14,Base:toWorld(BaseCenterL+vec(-47.45/2+0.5,47.45-0.5,BaseHeight/2+4-CoverHeight/2)))
+        holoAng(14,Base:angles())
+        holoScaleUnits(14,vec(0.75,0.75,CoverHeight))
+        holoClipEnabled(14,1)
+        holoParent(14,7)
+        
+        holoCreate(15,Base:toWorld(BaseCenterL+vec(47.45/2-0.5,-47.45+0.5,BaseHeight/2+4-CoverHeight/2)))
+        holoAng(15,Base:angles())
+        holoScaleUnits(15,vec(0.75,0.75,CoverHeight))
+        holoClipEnabled(15,1)
+        holoParent(15,7)
+        
+        holoCreate(16,Base:toWorld(BaseCenterL+vec(-47.45/2+0.5,-47.45+0.5,BaseHeight/2+4-CoverHeight/2)))
+        holoAng(16,Base:angles())
+        holoScaleUnits(16,vec(0.75,0.75,CoverHeight))
+        holoClipEnabled(16,1)
+        holoParent(16,7)
+        
+        #models/props_phx/amraam.mdl
+        LeftHoloMissile = holoCreate(50,LeftArmJoint:toWorld(vec(47.45/3.875,0,47.45/4.3)))
+        holoAng(50,LeftArmJoint:toWorld(ang(0,-90,0)))
+        holoModel(50,"models/props_phx/amraam.mdl")
+        MissileBoxCenterL = LeftHoloMissile:boxCenter()
+        holoScale(50,vec(0.55))
+        holoPos(50,LeftHoloMissile:toWorld(-LeftHoloMissile:boxCenter()*holoScale(50)))
+        holoClipEnabled(50,1)
+        holoParent(50,102)
+        
+        RightHoloMissile = holoCreate(51,RightArmJoint:toWorld(vec(-47.45/3.875,0,47.45/4.3)))
+        holoAng(51,RightArmJoint:toWorld(ang(0,-90,0)))
+        holoModel(51,"models/props_phx/amraam.mdl")
+        holoScale(51,vec(0.55))
+        holoPos(51,RightHoloMissile:toWorld(-RightHoloMissile:boxCenter()*holoScale(51)))
+        holoClipEnabled(51,1)
+        holoParent(51,103)
+        
+        OldBasePos = vec(inf())
+        OldBaseAng = ang(inf())
+        
+        for(I=1,7){
+            holoParent(I,Base)
+        }
+        for(I=2,8){
+            holoMaterial(I,Material)
+            holoColor(I,Color)
+        }
+        for(I=9,16){
+            holoMaterial(I,Material2)
+            holoColor(I,Color2)
+        }
+        Stage = 0
+        holoAng(102,Base:toWorld(ang(-135,0,0)))
+        holoAng(103,Base:toWorld(ang(135,0,0)))
+        holoPos(102,Base:toWorld(BaseCenterL+vec(47.45/2.7,0,BaseHeight/2+0.5-47.45/6+1.5)))
+        holoPos(103,Base:toWorld(BaseCenterL+vec(-47.45/2.7,0,BaseHeight/2+0.5-47.45/6+1.5)))
+        LeftArmsAng = -135
+        RightArmsAng = 135
+    }else{
+        #Despawn
+        for(I=1,16){holoDelete(I)}
+        holoDelete(50)
+        holoDelete(51)
+        holoDelete(102)
+        holoDelete(103)
+    }
+    OldBase = Base
+}
+if(Base){
+    V = Base:pos()
+    Ang = Base:angles()
+    if(V!=OldBasePos | Ang!=OldBaseAng){
+        OldBasePos = V
+        OldBaseAng = Ang
+        holoClip(9,2,Base:boxCenterW(),Base:up(),1)
+        holoClip(10,2,Base:boxCenterW(),Base:up(),1)
+        holoClip(11,2,Base:boxCenterW(),Base:up(),1)
+        holoClip(12,2,Base:boxCenterW(),Base:up(),1)
+        holoClip(13,Base:boxCenterW(),Base:up(),1)
+        holoClip(14,Base:boxCenterW(),Base:up(),1)
+        holoClip(15,Base:boxCenterW(),Base:up(),1)
+        holoClip(16,Base:boxCenterW(),Base:up(),1)
+        holoClip(50,Base:boxCenterW(),Base:up(),1)
+        holoClip(51,Base:boxCenterW(),Base:up(),1)
+    }
+    switch(Stage){
+        default,
+        if(!Fire){
+            AnimLength1 = AnimTiming[2,number]/AnimSpeed
+            AnimTime1 = Time+AnimLength1
+            Stage = -2
+        }
+        break
+        case -2,#Retract arms
+        Perc = clamp((AnimTime1-Time)/AnimLength1,0,1)
+        AngN = (1-Perc)*135
+        LeftArmsAng = min(LeftArmsAng,-AngN)
+        holoAng(102,Base:toWorld(ang(LeftArmsAng,0,0)))
+        RightArmsAng = max(RightArmsAng,AngN)
+        holoAng(103,Base:toWorld(ang(RightArmsAng,0,0)))
+        if(Time>=AnimTime1){
+            Stage++
+            AnimLength1 = AnimTiming[1,number]/AnimSpeed
+            AnimTime1 += AnimLength1
+        }
+        break
+        case -1,#Lower cover
+        Perc = clamp((AnimTime1-Time)/AnimLength1,0,1)
+        CoverPos = min(CoverPos,Perc*CoverHeight)
+        holoPos(7,Base:toWorld(BaseCenterL+vec(0,0,BaseHeight/2+4.5+CoverPos)))
+        if(Time>=AnimTime1){
+            Stage++
+        }
+        break
+        case 0,#Idle
+        if(Fire){
+            Stage++
+            AnimLength1 = AnimTiming[1,number]/AnimSpeed
+            AnimTime1 = Time+AnimLength1
+        }
+        break
+        case 1,#Raise cover
+        Perc = clamp((AnimTime1-Time)/AnimLength1,0,1)
+        CoverPos = max(CoverPos,(1-Perc)*CoverHeight)
+        holoPos(7,Base:toWorld(BaseCenterL+vec(0,0,BaseHeight/2+4.5+CoverPos)))
+        if(Time>=AnimTime1){
+            Stage++
+            AnimLength1 = AnimTiming[2,number]/AnimSpeed
+            AnimTime1 += AnimLength1
+            holoAlpha(50,255)
+            holoAlpha(51,255)
+        }
+        if(!Fire){
+            AnimLength1 = AnimTiming[1,number]/AnimSpeed
+            AnimTime1 = Time+AnimLength1*CoverPos/CoverHeight
+            Stage = -1
+        }
+        break
+        case 2,#Raise arms
+        Perc = clamp((AnimTime1-Time)/AnimLength1,0,1)
+        AngN = Perc*135
+        LeftArmsAng = max(LeftArmsAng,-AngN)
+        holoAng(102,Base:toWorld(ang(LeftArmsAng,0,0)))
+        RightArmsAng = min(RightArmsAng,AngN)
+        holoAng(103,Base:toWorld(ang(RightArmsAng,0,0)))
+        if(Time>=AnimTime1){
+            #Fire A,fire B,go down,idle,go up
+            if(random()<0.5){
+                LeftAnimStage = 1
+                RightAnimStage = 1
+                AnimTime1 = Time
+                AnimTime2 = Time+FireLoopLength/2/AnimSpeed
+            }else{
+                LeftAnimStage = 1
+                RightAnimStage = 1
+                AnimTime1 = Time+FireLoopLength/2/AnimSpeed
+                AnimTime2 = Time
+            }
+            Stage++
+        }
+        if(!Fire){
+            AnimLength1 = AnimTiming[2,number]/AnimSpeed
+            AnimTime1 = Time+AnimLength1*(1-max(-LeftArmsAng,RightArmsAng)/135)
+            Stage = -2
+        }
+        break
+        case 3,#Animate
+        if(!Fire){
+            AnimLength1 = AnimTiming[2,number]/AnimSpeed
+            AnimTime1 = Time+AnimLength1
+            Stage = -2
+        }
+        switch(LeftAnimStage){
+            default, LeftAnimStage = 1 break
+            case 1,#Fire A
+            if(Time>=AnimTime1){
+                #Fire
+                if(propCanCreate()){
+                    Ang = LeftHoloMissile:angles()
+                    E = propSpawn("models/props_phx/amraam.mdl",toWorld(-MissileBoxCenterL,ang(),LeftHoloMissile:boxCenterW(),Ang),Ang,0)
+                    Sound++
+                    E:soundPlay(Sound,0,"weapons/rpg/rocketfire1.wav")
+                    E:propGravity(0)
+                    E:propDrag(0)
+                    Missiles:pushEntity(E)
+                }
+                holoAlpha(50,0)
+                LeftAnimStage++
+                AnimTime1 += AnimTiming[3,number]/AnimSpeed
+            }
+            break
+            case 2,#Fire B
+            if(Time>=AnimTime1){
+                LeftAnimStage++
+                AnimLength1 = AnimTiming[2,number]/AnimSpeed
+                AnimTime1 += AnimLength1
+            }
+            break
+            case 3,#Lower arm
+            Perc = clamp((AnimTime1-Time)/AnimLength1,0,1)
+            LeftArmsAng = min(LeftArmsAng,-(1-Perc)*135)
+            holoAng(102,Base:toWorld(ang(LeftArmsAng,0,0)))
+            if(Time>=AnimTime1){
+                LeftAnimStage++
+                AnimTime1 += AnimTiming[4,number]/AnimSpeed
+            }
+            break
+            case 4,#Idle
+            if(Time>=AnimTime1){
+                holoAlpha(50,255)
+                LeftAnimStage++
+                AnimLength1 = AnimTiming[2,number]/AnimSpeed
+                AnimTime1 += AnimLength1
+            }
+            break
+            case 5,#Raise arm
+            Perc = clamp((AnimTime1-Time)/AnimLength1,0,1)
+            LeftArmsAng = max(LeftArmsAng,-Perc*135)
+            holoAng(102,Base:toWorld(ang(LeftArmsAng,0,0)))
+            if(Time>=AnimTime1){
+                LeftAnimStage = 1
+                AnimTime1 += AnimTiming[3,number]/AnimSpeed
+            }
+            break
+        }
+        switch(RightAnimStage){
+            default, RightAnimStage = 1 break
+            case 1,#Fire A
+            if(Time>=AnimTime2){
+                #Fire
+                if(propCanCreate()){
+                    Ang = RightHoloMissile:angles()
+                    E = propSpawn("models/props_phx/amraam.mdl",toWorld(-MissileBoxCenterL,ang(),RightHoloMissile:boxCenterW(),Ang),Ang,0)
+                    Sound++
+                    E:soundPlay(Sound,0,"weapons/rpg/rocketfire1.wav")
+                    E:propGravity(0)
+                    E:propDrag(0)
+                    Missiles:pushEntity(E)
+                }
+                holoAlpha(51,0)
+                RightAnimStage++
+                AnimTime2 += AnimTiming[3,number]/AnimSpeed
+            }
+            break
+            case 2,#Fire B
+            if(Time>=AnimTime2){
+                RightAnimStage++
+                AnimLength2 = AnimTiming[2,number]/AnimSpeed
+                AnimTime2 += AnimLength2
+            }
+            break
+            case 3,#Lower arm
+            Perc = clamp((AnimTime2-Time)/AnimLength2,0,1)
+            RightArmsAng = max(RightArmsAng,(1-Perc)*135)
+            holoAng(103,Base:toWorld(ang(RightArmsAng,0,0)))
+            if(Time>=AnimTime2){
+                RightAnimStage++
+                AnimTime2 += AnimTiming[4,number]/AnimSpeed
+            }
+            break
+            case 4,#Idle
+            if(Time>=AnimTime2){
+                holoAlpha(51,255)
+                RightAnimStage++
+                AnimLength2 = AnimTiming[2,number]/AnimSpeed
+                AnimTime2 += AnimLength2
+            }
+            break
+            case 5,#Raise arm
+            Perc = clamp((AnimTime2-Time)/AnimLength2,0,1)
+            RightArmsAng = min(RightArmsAng,Perc*135)
+            holoAng(103,Base:toWorld(ang(RightArmsAng,0,0)))
+            if(Time>=AnimTime2){
+                RightAnimStage = 1
+                AnimTime2 += AnimTiming[3,number]/AnimSpeed
+            }
+            break
+        }
+        break
+    }
+}
+Count = Missiles:count()
+Runs = Count
+while(Runs>0 & perf()){
+    Runs--
+    MissileIndex = (MissileIndex+Count)%Count+1
+    Missile = Missiles[MissileIndex,entity]
+    if(Missile){
+        Missile:propSetVelocity(Missile:forward()*MissileSpeed)
+    }else{
+        Missiles:remove(MissileIndex)
+        MissileIndex--
+    }
+}
