@@ -465,6 +465,6 @@ if(tickClk()){
             
         Force2 = Force2:normalized() * ForceMult * (Shift * 0.5 + 1)
         
-        Player:applyPlayerForce(Force + Force2)
+        Player:plyApplyForce(Force + Force2)
     }
 }
