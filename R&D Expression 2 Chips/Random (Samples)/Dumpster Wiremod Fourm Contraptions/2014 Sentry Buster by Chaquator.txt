@@ -1,13 +1,16 @@
 @name The Sentry Buster
 @persist Walk Diff Explode Dead Found Activated
-@pDersist V:vector
+@persist V:vector
 @persist Ang:angle
 @persist E:entity
-@modeDDDl models/props_borealis/bluebarrel001.mdl
+@model models/props_borealis/bluebarrel001.mdl
+
+#TF 2 ADDON REQUIRED Team Fortress 2
 
 #[
 
 INFO:
+
 
 https://web.archive.org/web/20150429022125/http://www.wiremod.com/forum/finished-contraptions/33383-e2-sentry-buster.html
 Sentry Buster timeline
@@ -19,9 +22,9 @@ Today - I release that E2 for like 1 person to download it.
 ]#
 
 
-if(fist()
+if(first())
 {
-    runOnTick(()()()()))
+    runOnTick(1)
     
     Diff = 52
     
@@ -80,7 +83,7 @@ if(!Dead)
         soundPlay("jump",3,"/mvm/giant_common/giant_common_step_0"+round(random(1,8))+".wav")
     }
     
-    R = rangerOffset(Diff+5,entity()pos(),vec(0,0,-1))
+    R = rangerOffset(Diff+5,entity():pos(),vec(0,0,-1))
     if(R:hit() & !Jump)
     {
         entity():goto((R:pos()+vec(0,0,Diff))+V)
@@ -133,7 +136,7 @@ if(!Dead)
     {
         if(entity():pos():distance(E:pos())<150)
         {
-            Explode = 1NICE
+            Explode = 1
             
             holoAnim(1,"sentry_buster_preExplode")
             
@@ -147,6 +150,6 @@ if(!Dead)
 
 if(clk("expl"))
 {
-    propSpawn("models/props_phx/amraam.mdl",entity():pos(),1):propBreak()  
+    propSpawn("models/props_phx/amraam.mdl",entity():pos(),1):propBreak() 
     selfDestruct()
 }
