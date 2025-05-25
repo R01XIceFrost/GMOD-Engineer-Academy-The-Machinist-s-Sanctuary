@@ -1,0 +1,58 @@
+@name Propcore Fun Exercise #1 
+@inputs Button Button2 Button3
+@outputs F G H
+@persist A:entity B C D 
+
+
+#May 18 - 19 2025
+
+#Wired E2 to buttons (B1, B2, B3, aka button & button 2 & button 3)
+
+#[
+NOTE:
+
+@persist Ang:angle
+Ang = ang(0,0,0)
+A:setAng(Ang)
+
+This works too but why make it complicatd? Shit ChatGPT suggestion for beginner GMOD E2 Wiremod players
+
+]#
+
+if(first()) {
+    
+A = propSpawn("models/props_junk/TrafficCone001a.mdl", 1) #Spawned Orange Traffic Cone (A)
+
+A:setPos(entity():pos() + vec(0,0,50))  #50 units prop above E2 chip
+A:parentTo(entity()) #parent prop to E2 chip
+
+}
+
+event tick(){
+
+if(Button > 0) { #if button pressed, go spin Z
+    B = B + 1
+    F = cos(B) + 1 #spin the number
+    A:setAng(ang(0,0,360*F)) #Rotate Z 
+}
+
+if(Button2 > 0) { #if button pressed, go spin Y
+    C = C + 1
+    G = cos(C) + 1 #spin the number
+    A:setAng(ang(0,360*G,0)) #Rotate Y
+
+}
+
+if(Button3 > 0) { #if button pressed, go spin X
+    D = D + 1
+    H = cos(D) + 1 #spin the number
+    A:setAng(ang(360*H,0,0)) #Rotate X
+}}
+
+
+
+
+
+
+
+

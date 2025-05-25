@@ -1,0 +1,13 @@
+@name Find Library 101 #3
+@outputs A
+@strict
+
+#May 21, 2025
+
+#Wired Screen to E2 & start spawning random prop to test it!
+
+timer("update", 0.5,0, function(){ #Scans the map to find prop every 0.5 sec
+
+A = findByClass("prop_physics") #Count how many props on the map to screen
+ }
+)

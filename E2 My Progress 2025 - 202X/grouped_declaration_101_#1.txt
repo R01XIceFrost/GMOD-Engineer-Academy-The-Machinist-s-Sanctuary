@@ -1,0 +1,13 @@
+@name Grouped Declaration 101 #1
+@inputs [A B C]:string
+@outputs Out:string
+
+#Source: Discord Wiremod by user named blackness for good example
+
+#May 22, 2025
+
+#Wired strings like constant value to E2
+
+Out = A + B + C
+
+

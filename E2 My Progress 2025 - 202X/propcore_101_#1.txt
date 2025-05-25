@@ -1,0 +1,13 @@
+@name Propcore 101 #1
+@inputs 
+@persist A:entity
+
+#May 16, 2025
+
+
+if (first()) {
+A = propSpawn("models/Cranes/crane_frame.mdl",vec(0,0,100) + entity():pos(), 1) #spawns crane prop with a heigh of 100 units above to E2 chip position center
+A:parentTo(entity()) #parented to E2 chip
+
+}
+
