@@ -1,0 +1,67 @@
+@name Aim direction coordinates 101 #1
+@inputs Gimbal:wirelink
+@outputs B:angle 
+
+#May 21 - 24 2025
+
+#[
+
+#Wire E2 "Gimbal" input to Gimbal Tool (Plug & Play!)
+
+INFO:
+
+Place the E2 chip on the ground, ensuring its arrow/dash (small red modern E2 skin) is aligned with the green arrow of the origin prop. 
+This helps achieve proper calibration.
+In other words, find the map north direction and 
+rotate the E2 chip (if necessary) so its arrow point to the right.
+If aligned correctly, you can delete the origin prop.
+
+]#
+
+if(first()) {
+    propSpawn("models/sprops/misc/origin.mdl",1) #spawns origin prop of sprop
+    Gimbal["On", number] = 1  #Wires Input "On" 
+
+}
+
+event tick() { #replacement deprecated function runOnTick()
+    B = entity():toLocal(owner():eyeAngles())
+    Gimbal["Angle", angle] = B #Wires Input "Angel [ANGLE]" 
+    print(B) #remove this line if you don't want to debug this chip for angle and stuff
+    
+   
+}
+
+#[
+
+Prototype 1:
+
+@name Aim direction coordinates 101 #1
+@inputs A:entity
+@outputs B:string
+
+event tick() {
+    B = toString(round(A:eyeAngles()))
+    print(B)
+}
+
+]#
+
+#----------------------------------------------------------------------------------
+
+#[
+
+Prototype 2:
+
+@name Aim direction coordinates 101 #1
+@inputs A:entity
+@outputs B:angle
+@persist 
+
+event tick() {
+    B = A:toLocal((A:owner():eyeAngles()))
+    print(B)
+}
+
+]#
+
