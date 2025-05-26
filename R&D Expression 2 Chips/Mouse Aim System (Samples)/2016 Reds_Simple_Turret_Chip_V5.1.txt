@@ -1,0 +1,345 @@
+@name Reds Simple Turret Chip V5.1
+@inputs [Active]:number [Gun]:entity [CamController Pod]:wirelink [RemoteFire]:number [RemoteAimpos]:vector
+@outputs [Fire]:number [Aimpos]:vector
+@persist [Gunner Seat]:entity [Inertia Neg Pos Spd Ang]:angle [FireTrigger ACF_DRAG_DIV]:number
+@persist [Muzvel RangefinderIndex UpdateScopeTick TimeOfSwitch SplitTick UsePID Manned Curtime CamAvailable DegreesPerSecond Cam UpdateTick]:number
+@persist [FCS_PID_Proportion FCS_PID_Integral]:array [Color CamOffset]:vector
+@trigger Active
+
+#Source: https://youtu.be/oRBLVgnpOtI?si=cjsB-2QIOQLSkX-w
+
+#[
+This was made by redreaper, of FRS.  Our IP is 70.42.74.154:27015.
+Feel free to redistribute this e2 freely.
+It is an extremely capable turret e2 with very low impact on servers, where the gun does rotate with the hull
+It can handle guns that aren't mounted around their mass center, is very smooth, and can operate as a remote turret
+Furthermore, it has a simple but very accurate ballistic system that is useful for medium-range engagements
+V5.1 improves the cam and holo syncing, by one-time rendering, so it shouldn't bounce around and your cam is now parented
+to the master holo for the sight.  This means way better performance over rough ground, and faster shooting.
+They work as before for if you don't have a cam controller, but with one it's a one-time draw of chevrons and gun
+
+HOW TO SET IT UP:
+Parent it upright, facing a direction.
+Your gun limits and angles will be based off that.
+Active is just if the e2 runs or idles
+Gun is, obviously, the gun entity.
+If you use a cam controller, set "Coordinates local to Parent" and "Client side movement to ON, and set "Localized movement" to OFF.  Other settings you can select or deselect as you choose.
+
+If you are using it as a primary turret chip, wire Pod to a pod controller, and CamController to a cam controller if you're using one.
+If you are using it as a remote turret, wire remotefire to the input for firing the weapon and remoteaimpos to what world coordinate to aim at.
+If you are using ita s a remote turret but you want someone to be able to get in the seat and override the remote inputs, wire all of the above.
+What it will do is, when nobody is in the seat, act as a remote turret.  If someone gets in, they'll override the remote aim (good for second turrets/optional multicrew).
+
+#HOW TO LIMIT SPEED AND ANGLES AND CUSTOMIZE:
+You must set the depression, elevation, yaw, and speed limits below where it says depression/elevation/yaw/degrees per second
+For example an M1's turret would be like 8 depression, 15 elevation, 360 yaw, and maybe 30 degrees per second.
+A cold war or earlier tank's turret rotation should be between 15-20 degrees per second, a more modern tank is 25-30, and a SPAAG anywhere from 40-80.
+If your gun is mounted by mass center, like a simple ball mount, you can set "usePID" to 0.  This is good for small, auxiliary turrets; it reduces lag slightly.
+You can change the color of the sights, by just setting "color" to a different vector, and you can change the cam position by changing "CamOffset".
+
+HOW TO USE THE STRADIAMETRIC RANGING:
+Each # corresponds to the vertical size of a person standing (roughly equal to many tanks, 72u) at 100-400m, from the 1-4
+You line up the target's bottom or estimated bottom, and the upper #'s bottom to range.
+This is the same as the sradiametric rangefinder on a SVD sniper rifle's PSO sight, or on many cold war AFVs
+From there, you use the small strichs for drop, to estimate drop, and fire.
+If you change ammo types the e2 will recalculate the range table automatically after a second.
+It is limited in range both for purposes of low impact and because stradiametrics aren't accurate for ranging past 300-400m
+
+This uses the same range-table based ballistics system as MPFC, and is, to my knowledge, the most accurate non-repeat-iterative method possible.
+This is the same method that artillery fire was computed for many years, and is reliable, portable, and has virtually zero server impact (it's a one-time calculation)
+]#
+
+interval(80)
+runOnKeys(Gunner,1)
+
+if(dupefinished() | duped() | first())
+{
+    Depression = 5                    #Degrees down your gun points
+    Elevation = 30                   #Degrees up your gun pounts
+    Yaw = 190                         #Degrees of yaw your gun will slew--360 is a full circle
+    DegreesPerSecond = 60                   #Degrees per second
+    UsePID = 0                          #Use PID for stuff that's unbalanced or heavy, don't need it for simple ball turrets
+    Color = vec(255,128,0)
+    CamOffset = vec(0,0,10)
+    #DONT EDIT BELOW THIS
+    Neg = ang(-Elevation,-Yaw/2,0)#negative angle limit
+    Pos = ang(Depression,Yaw/2,0)#positive angle limit
+    Seat = Pod:entity("Entity")
+    CamAvailable = CamController:entity():isValid()
+    ACF_DRAG_DIV = 80
+    #ifdef acfDragDiv()
+    ACF_DRAG_DIV = acfDragDiv()
+    #endif    
+    Inertia = shiftL(ang(Gun:inertia() / Gun:mass()))*-20#inertia of the gun
+    local Self = entity():getConstraints()
+    rangerPersist(1)
+    rangerHitWater(1)
+    rangerFilter(Self)
+    CamController["FilterEntities",array] = Self
+
+    #Aims the gun itself
+    #moves gun and updates a floating angular value
+    function angle aimGun(Neg:angle,Pos:angle,DegreesPerSecond:number,Aimpos:vector,DeltaCurtime:number,OldAngle:angle,Gun:entity,Inertia:angle,PIDArrayIndex:number)
+    {
+        #Fixing degrees per second to run on adjusted timescale
+        local Speed = DeltaCurtime * DegreesPerSecond
+        #Setting a start angle for modification
+        local Ang = OldAngle
+        #Inputs
+        local AngleInput = -heading(Gun:pos(),entity():toWorld(Ang),Aimpos)
+        #Traverse
+        local Ang = Ang:rotateAroundAxis(Ang:up(),clamp(AngleInput:yaw(),-Speed,Speed))
+        #Elevation
+        local Ang = Ang:rotateAroundAxis(Ang:right(),-clamp(AngleInput:pitch(),-Speed,Speed))
+        #Clamping
+        local Ang = clamp(Ang,Neg,Pos)
+        #Damping setting
+        local Damping = 1
+        #PID
+        local Proportion = Gun:toLocal(entity():toWorld(Ang)) * 10
+        local PID = Proportion  #presetting for encapsulation
+        if(PIDArrayIndex)
+        {
+            local Integral = clamp(FCS_PID_Integral[PIDArrayIndex,angle] + (Proportion * 0.2),-20,20)
+            local Derivative = (Proportion - FCS_PID_Proportion[PIDArrayIndex,angle]) * DeltaCurtime * 5
+            PID = Proportion + Integral + Derivative
+            Damping = 1.2
+            #data updating off PID functions to globally stored FCS arrays--messy but aids encapsulation, this does come from a big e2 with lots of these running
+            FCS_PID_Proportion[PIDArrayIndex,angle] = Proportion
+            FCS_PID_Integral[PIDArrayIndex,angle] = Integral
+        }
+        Gun:applyAngForce(((Gun:angVel() * Damping) - PID):setRoll(0) * Inertia * Gun:mass()) #I know I can precache mass for performance increase but it screws up missiles.
+        return Ang
+    }
+    
+    #createsa  range table with 100-400m drops in proportion (normalized)
+    function array buildDropTable(Gun:entity,N:number)
+    {
+        #Early setup
+        #A reference holo
+        holoCreate(N,vec(),vec(),ang())
+        holoAlpha(N,0)
+        local ReferenceEntity = holoEntity(N)
+        #Primary setups
+        local Muzvel = Gun:acfMuzzleVel()
+        local DragConstant = ( (3.1416 * (Gun:acfCaliber()/2)^2 )/10000)/(100*Gun:acfProjectileMass())
+        local ACCEL = vec(0,0,-gravity())
+        local Timescale = 0.1 #Timescale.  Perfect accuracy is at 0.066.  Drift will increase in proprtion to timescale accumulation errors; direct recreation is often excessive.
+        local Coordinates = array()
+        #Initial flight setup
+        local Flight = ReferenceEntity:forward():setZ(0) * (Muzvel * 39.37)
+        local Pos = ReferenceEntity:pos()
+        local Drag = vec()
+        local NextPos = Drag    #vec()
+        #Flags for data, will use for interpolation & storage later
+        local TableIncrements = 100  #Range Increments
+        local TableMaxRange = 400   #Maximum range, should never need to exceed 400
+        local TableSlot = 1         #Slot it's attempting to insert data, start at 1
+        #
+        local Distance = 0
+        #Backup to prevent failure on empty guns
+        if(!Muzvel) {return Coordinates}
+        #Actual ballistics calculation
+        #This will return 4 points in an array, encoded with LOCALIZED & NORMALIZED X/Y/Z, and time for the 4th axis.
+        #It is for all intents and purposes perfectly accurate, and is capped at a flight time of 7.5s.  It is recommended not to fuck with this.  Flight time = S * 15.1 * (Timescale/0.66)
+        for(Val=1,151)
+        {
+            Drag = Flight:normalized()*(DragConstant*Flight:length2())/ACF_DRAG_DIV
+            NextPos = Pos + Flight*Timescale
+            Flight = Flight + (ACCEL-Drag)*Timescale
+            #Array building--if we pass a certain point, it flags the condition being met, averages the point & its predecessor, and stores it.
+            Distance = ((NextPos - vec()):setZ(0):length()) / 39.37 #This converts to meters
+            if(Distance > (TableIncrements*TableSlot))
+            {
+                Coordinates:pushNumber(Pos:z() / 39.37 / Distance)
+                TableSlot++
+            }
+            if(Distance > TableMaxRange)
+            {
+                holoDelete(N)
+                return Coordinates
+            }
+            Pos = NextPos
+        }
+        #If we somehow, i don't even know how, failed to build a range-table, it'll return what it managed to build
+        holoDelete(N) #Cleaning up our reference holo--I know it's a messy solution, it works though.
+        return Coordinates
+    }
+    
+    function void drawChevrons(Gun:entity,Index:number,Position:vector,Parent:entity,User:entity,Color:vector)
+    {
+        #This is a mashup of an old function and a new one, so it's a bit of a mess.
+        local Right = vec(0,-1,0)
+        local Forward = vec(1,0,0)
+        local Up = vec(0,0,1)
+        local Scale = 5
+        local Angle = ang()
+        local StradiaOffset = (Right * -0.5) + (Up * -0.4)
+        #sight master
+        holoCreate(Index,Position,(vec()),ang())
+        local Master = holoEntity(Index)
+        #lateral cross bar
+        holoCreate(Index+1,Position + (ang():forward() * 50),vec(0.01,2,0.01),ang())
+        #vertical bar
+        holoCreate(Index+2,Position + (ang(3.5,0,0):forward() * 50),vec(0.01,0.01,0.5),ang())
+        #drop chevrons
+        for(I=1,4)
+        {
+            holoCreate(Index+2+I,Position + (ang():forward() * 50) + vec(0,0,-I),vec(0.03),ang(0,90,0))
+            holoModel(Index+2+I,"prism")
+        }
+        #ranging scale
+        #flat bar at bottom
+        local StradiaIndexOffset = 7
+        holoCreate(Index+StradiaIndexOffset,Position + (((Forward * 10) + StradiaOffset) * Scale),Scale * vec(0.001,0.04,0.001),Angle)
+        #stradia
+        for(N=1,4)
+        {
+            local Ratio = 1/N
+            local Pos = Position + (((Forward * 10) + StradiaOffset + (Up * 0.03) + (Right * (2.5-N) * -0.13) + (Up * Ratio * 0.2)) * Scale) #+ (Up * 0.03) --for aiming off bottom of # instead of center
+            holoCreate(Index+StradiaIndexOffset+N,Pos,(vec(7,5,5) * Scale) / 1000,Master:toWorld(ang(0,90,0)))
+            holoModel(Index+StradiaIndexOffset+N,"models/sprops/misc/alphanum/alphanum_"+N+".mdl")
+        }
+        #coloring and parenting
+        for(I=Index,Index+12)
+        {
+            if(I != Index) {holoParent(I,Index)}
+            holoDisableShading(I,1)
+            holoColor(I,vec4(Color,160))
+        }
+        holoParent(Index,Parent)
+        holoAng(Index,Gun:forward():toAngle())
+    }
+    
+    function number updateChevrons(Gun:entity,Index:number,LastUpdateReturn:number)
+    {
+        if(!(LastUpdateReturn % 5)) {holoAng(Index,Gun:forward():toAngle())}
+        #holoPos(Index,Position)
+        if(LastUpdateReturn == 20)
+        {
+            local BallisticsReturn = buildDropTable(Gun,Index+13)
+            local SightHead = holoEntity(Index)
+            local SightHeadAngle = SightHead:angles()
+            local SightPosWithForward = SightHead:pos() + (SightHeadAngle:forward() * 50)
+            holoPos(Index+3,SightPosWithForward + (SightHeadAngle:up() * (BallisticsReturn[1,number] * 50)))
+            holoPos(Index+4,SightPosWithForward + (SightHeadAngle:up() * (BallisticsReturn[2,number] * 50)))
+            holoPos(Index+5,SightPosWithForward + (SightHeadAngle:up() * (BallisticsReturn[3,number] * 50)))
+            holoPos(Index+6,SightPosWithForward + (SightHeadAngle:up() * (BallisticsReturn[4,number] * 50)))
+            return 0
+        }
+        else
+        {
+            return LastUpdateReturn+1
+        }
+    }
+    
+    function void updateChevronsVisible(User:entity,Index:number)
+    {
+        local OtherPlayers = array()
+        local Players = players()
+        local UserisPlayer = User:isPlayer()
+        if(UserisPlayer)
+        {
+            #ents
+            foreach(K,V:entity = Players)
+            {
+                if(V != User) {OtherPlayers:pushEntity(V)}
+            }
+        }
+        else
+        {
+            OtherPlayers = Players
+        }
+        for(I=Index,Index+12)
+        {
+            holoVisible(I,OtherPlayers,0)
+            if(UserisPlayer) {holoVisible(I,User,1)}
+        }
+    }
+    if(CamAvailable)
+    {
+        drawChevrons(Gun,1,Gun:pos() + ((entity():toWorld(CamOffset))-entity():pos()),Gun,entity(),Color)
+        updateChevronsVisible(noentity(),1)
+        CamController["Parent",entity] = holoEntity(1)
+    }
+}
+
+elseif(inputClk())
+{
+    if(!Active)
+    {
+        for(N=1,20) {holoVisible(N,Gunner,0)}
+        FireTrigger = 0
+        Fire = 0
+        Gunner = noentity()
+        updateChevronsVisible(Gunner,1)
+        Manned = 0
+    }
+    else
+    {
+        Ang = entity():toLocal(Gun:angles())
+    }
+    Curtime = curtime()   #eh, kinda messy.
+}
+
+elseif(keyClk())
+{
+    if(Gunner:keyUse())
+    {
+        if(Gunner:keyAttack2())
+        {
+            Seat:ejectPod()   #Holding e but can't eject?  Hold mouse2 with it--it'll kick you out!
+        }
+    }
+    FireTrigger = Gunner:keyAttack1()
+}
+
+elseif(Active)
+{
+    Manned = Pod["Active",number]
+    if(Manned) #Someone is controlling the aim directly, in a seat
+    {
+        if($Manned | (Gunner:keyAttack2() & Gunner:keyReload()))
+        {
+            Seat:hintDriver("M1 to fire, M2+E to eject from seat",5)
+            Gunner = Seat:driver()
+            if(CamAvailable)
+            {
+                #drawChevrons(Gun,1,Gun:pos() + ((entity():toWorld(CamOffset))-entity():pos()),Gun,entity(),Color)
+                CamController["Activated",number] = Manned
+            }
+            else
+            {
+                drawChevrons(Gun,1,Gunner:shootPos(),Seat,Gunner,Color)
+            }
+            updateChevronsVisible(Gunner,1)
+        }                
+        if(CamAvailable)
+        {
+            #ShootPos = CamController["CamPos",vector]
+            Aimpos = CamController["HitPos",vector]
+        }
+        else
+        {
+            #ShootPos = Gunner:shootPos()
+            Aimpos = rangerOffset(50000,Gunner:shootPos(),Gunner:eye()):position()
+        }
+        UpdateTick = updateChevrons(Gun,1,UpdateTick)
+    }
+    else #nobody is in turret, but it's still active, so we pass through remote inputs
+    {
+        if(changed(Manned) & !Manned)
+        {
+            Gunner = noentity()
+            updateChevronsVisible(noentity(),1)
+        }
+        FireTrigger = RemoteFire
+        Aimpos = RemoteAimpos
+    }
+    
+    Curtime = curtime()
+    #Aiming gun is done all the time
+    Ang = aimGun(Neg,Pos,DegreesPerSecond,Aimpos,$Curtime,Ang,Gun,Inertia,UsePID)
+    if(FireTrigger) {Fire = inrange(entity():heading(Aimpos)*ang(-1,1,0),Neg,Pos)} else {Fire = 0}
+}
+

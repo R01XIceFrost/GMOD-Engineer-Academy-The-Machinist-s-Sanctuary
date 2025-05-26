@@ -1,0 +1,157 @@
+@name Simple Turret Chip V1.5
+@inputs Active Aimpos:vector [Gun CamController]:wirelink Seat:entity BarrelLocked RemoteTurretFire SeatDriverFire
+@outputs Fire Activated Self:entity BarrelLatch CannonAimpoint:vector
+@persist Base:entity Cam TurretRingRun [Inertia LockAngle LimitedVersion Adjustment]:angle Driver:entity OverrideFire
+@persist [Out Neg Pos Spd]:angle
+
+#Source: https://youtu.be/Ob3uSJsdVwk?si=guAkSB2N02g3wXc2 & https://web.archive.org/web/20150419052926/http://www.wiremod.com/forum/finished-contraptions/34281-e2-simple-multipurpose-aim-e2.html#post286997
+
+#[
+
+INFO:
+
+This is a simple, uncomplicated aim E2 for either directly or remotely controlled turrets. Intended for newbie use, remote turret use, or for the basis for modification later on. I tried to make it as simple and uncomplicated as possible.
+
+Features:
+
+    Simple holo crosshair
+    Remote operation for auxiliary turrets
+    No offset on aim
+    Rotates with the hull (WOT/WT style aim)
+    Easy setup
+    limited aim angles & speed
+    intelligent firing system
+
+
+
+Instructions are included on the e2, or you can read this:
+
+To set it up, wire Active to your pod's active or comparable. Wire gun to your gun, and wire the gun's fire to your chip's fire.
+Now, if you want to use as a regular turret chip, wire camcontroller if you have one (you don't need cam, it is purely optional), seat to your seat entity (usually off pod controller), and Seatdriverfire to the key to fire the gun (usually Mouse1 on pod controller).
+However, if you want to use it as a remote turret chip, wire Aimpos to the aim point of your primary turret chip, and remoteturretfire to the key to fire this turret.
+If you want it to be a remote turret when there's nobody in the seat, but when someone sits down they take over control, do both above steps. It will default to remote operation, but when someone sits down, switch to their controls.
+
+The variables in it are simple enough to use. Depression, elevation, and yaw control the limits of the gun angles relative to the e2. Rotationspeed is self-explanatory. Overridefire is a nice variable for remote turrets; if on, this will only output fire if you are both pushing the button wired to fire AND your aim is within the limited angles of your traverse.
+
+So, without further ado, the goods:
+
+]#
+
+#Yep.  It works now.
+#This turret chip is provided courtesy of RedReaper and the server "Fast Red Snail".
+#To use it as a remote turret chip, wire Aimpos to the aim point of your primary turret chip, and remoteturretfire to the key to fire this turret
+#To use as a regular turret chip, wire camcontroller if you have one (you don't need cam!), seat to a seat, and Seatdriverfire to the key to fire the gun.
+#On both, wire gun to your gun and wire the gun's fire to the chip's fire.
+#You can ignore "activated" and "self"
+
+if(dupefinished()) {reset()}
+elseif(first())
+    {
+        Depression = 180                      #Degrees down your gun points
+        Elevation = 180                      #Degrees up your gun pounts
+        Yaw = 360                            #Degrees of yaw your gun will slew--360 is a full circle
+        Rotationspeed = 180                  #Degrees per second that the turret rotates
+        OverrideFire = 1                    #If this is on, it will not fire unless aiming within the aim point--keep this on normally
+        #TurretRingRun = 0                   #Does ti apply sideways force on the gun to help aim?  useful for forward mounted guns, don't use it on casemates
+        LockAngle = ang(0,0,0)              #Angle it locks at when not in use
+        #DONT EDIT BELOW THIS
+        rangerFilter(entity():getConstraints():pushEntity(Gun:entity("Entity")))
+        rangerPersist(1)
+        Cam = CamController:entity():isValid() #Does it use a camera?
+        Self = entity()#Self
+        Base = Gun:entity("Entity")#Gun
+        Inertia = shiftL(ang(Base:inertia()))*-25#inertia of the gun
+        Neg = ang(-Elevation,-Yaw/2,0)#negative angle limit
+        Pos = ang(Depression,Yaw/2,0)#positive angle limit
+        SpdPerAngle = Rotationspeed/10#Speed of slew per axis per tick
+        Spd = ang(SpdPerAngle,SpdPerAngle,SpdPerAngle)#Speed of slew mixed
+        LockAngle = clamp(LockAngle,Neg,Pos)
+        CamController["Position",vector] = entity():toWorld(vec(0,0,50))
+        #Functions for cursor
+        function void makeCursor(Index:number)
+            {
+                holoCreate(Index,entity():pos(),vec(0.1,0.1,0.1))
+                holoAng(Index,entity():toWorld(LockAngle+ang(90,0,0)))
+                holoParent(Index,entity())
+                holoModel(1,"cone")
+                holoMaterial(1,"models/wireframe")
+                holoColor(1,vec4(255,255,0,255))
+            }
+        function void updateCursor(Index:number,Point:vector)
+            {
+                holoPos(Index,Point)
+                #You can add additional bits here
+            }                
+    }
+
+runOnKeys(Driver,1)
+if(keyClk())
+    {
+        if(Driver:keyUse()&Driver:keyAttack2()) {Seat:ejectPod()} #Holding e but can't eject?  Hold mouse2 with it--it'll kick you out!
+    }
+
+elseif(Active)
+    {
+        interval(50)
+        
+        Driver = Seat:driver()#Manually reedeclaring this per-tick on purpose!  It isn't sloppy code!
+        Valid = Driver:isValid() | CamController:number("On")
+        if(Valid) #Someone is controlling the aim directly, in a seat
+            {
+                if(Cam)#Using a cam controller
+                    {
+                        CamController["Activated",number] = 1
+                        Aimp = CamController:vector("HitPos")
+                        updateCursor(1,CamController:vector("CamPos") + (CamController:vector("CamDir") * 20))
+                    }
+                else
+                    {#Not using a cam controller
+                        #Temp vars
+                        Eye = Driver:eye()
+                        ShootPos = Driver:shootPos()
+                        Aimp = ShootPos + rangerOffset(50000,ShootPos,Eye):position()
+                        updateCursor(1,ShootPos + (Eye * 20))
+                    }
+                Shoot = SeatDriverFire
+            }
+        else
+            {#Taking input from another e2
+                Aimp = Aimpos
+                Shoot = RemoteTurretFire
+            }
+        
+        if(changed(Valid)) {if(Valid) {makeCursor(1)} else {holoDelete(1)}}
+
+    if(BarrelLocked)
+        {
+            Aimp = Base:pos() + (entity():toWorld(LockAngle):forward() * 999999999999999)
+            Fire = 0
+        }
+    else
+        {
+            if(OverrideFire) {Fire = (inrange(-entity():heading(Aimp),Neg,Pos) ) *Shoot} else {Fire = Shoot} #if your aim is within the angles it will work within, it will fire.  If not, it will not fire, saving you ammo!
+        }        
+            Offset = entity():pos() - Base:pos()
+            AimAngle = clamp(entity():heading(Aimp+Offset),Neg,Pos)#Localized to base aim, limited
+            Adjustment = heading(Base:pos(),-LimitedVersion,Base:pos()+ (AimAngle:forward() * 999999999999999))#This is what has to be clamped
+            LimitedVersion = (LimitedVersion + clamp(Adjustment,-Spd,Spd))#Speed adjustment
+            Out = entity():toWorld(LimitedVersion)
+            #CannonAimpoint = Out:forward() * 9999999999999
+            GunHeading = -Base:toLocal(Out):setRoll(0)#Base:heading(CannonAimpoint)
+            #print(round(Base:toLocal(Out)))
+            Base:applyAngForce( ((Base:angVel()* (Inertia)) + (GunHeading * ((Inertia) * 10))):setRoll(0))
+    }
+
+if(changed(Active))
+    {
+        if(!Active)
+            {
+                Fire = 0 #Cuts off firing if we leave the pod
+                CamController["Activated",number] = 0
+                reset()
+            }
+        else
+            {
+                CamController["Activated",number] = 1
+            }
+    }
