@@ -1,0 +1,53 @@
+@name Hotchkiss_engine_chip_v4
+@inputs [RWheel LWheel]:entity Pod:wirelink Base:entity
+@outputs Active
+@persist Throttle Active
+
+#Source: https://youtu.be/Jh1_dQSB40Y?si=_PXGnm1zxFN6Dac9
+
+#Language in Russian
+
+interval(1)
+
+#tank edition
+
+Power = 1000
+SpeedLimit = 600
+
+PowerAng = ang(90,0,0)
+
+Speed = Base:vel():length()
+
+W = Pod["W", number]
+A = Pod["A", number]
+S = Pod["S", number]
+D = Pod["D", number]
+
+R = Pod["Driver", entity]:keyPressed("H")
+PodActive = Pod["Active", number]
+
+if(changed(R) && R){Active = !Active}
+
+if(Active){
+    if(Speed < SpeedLimit){  
+        if(W && !(A || D)){
+            RWheel:applyAngForce(PowerAng*Power)
+            LWheel:applyAngForce(PowerAng*Power)
+        }
+        if(S && !(A || D)){
+            RWheel:applyAngForce(-PowerAng*Power)
+            LWheel:applyAngForce(-PowerAng*Power)
+        }
+    }
+    
+    if(Base:angVel():yaw() < TurnSpeedLimit){
+        if(A){
+            RWheel:applyAngForce(PowerAng*TurnPower)
+            LWheel:applyAngForce(-PowerAng*TurnPower)
+        }
+        if(D){
+            RWheel:applyAngForce(-PowerAng*TurnPower)
+            LWheel:applyAngForce(PowerAng*TurnPower)
+        }
+    }
+}
