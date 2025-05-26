@@ -1,0 +1,267 @@
+@name Genetic Algorithm
+@outputs State:string [Child1 Child2 Child3 Parent1 Parent2]:array
+@persist ChanceToGrow ChanceToShrink MaxOrgansPerOrganism ChanceToMutate StartingOrgans DeadedUpGood
+#[Description:
+This is a system which illustrates a genetic algorithm in realtime using holographic entities rendered via the wiremod holo framework.
+On spawn it creates three holographic organisms, expressing chromosomes as simple holo models, like organs.  These are roughly similar to
+simple multicellular organisms.
+By pressing the left, down, or right arrow keys, you the user elect which organism is killed--you are natural selection.
+The surviving two creatures reproduce by a randomized mixing of genetics, as well as a set 3-point mutation chance.
+They are then recreated in holo, and the cycle begins anew.
+
+There are three types of mutation: deletion, addition, and rewriting of the chromosome.
+Deletion (ChanceToShrink) means removing an organ, and that chromosome is removed from the array holder.  It only deletes the last chromosome.
+This is to ensure you can "track" the expression of genes more readily.
+Addition (ChanceToGrow) means the chance of adding a randomized organ to the existing genetic structure.  This is simply plopped on the end of whatever exists.
+This is again to ensure you can "track" the expression of genes, and tends to lead to stringlike, bacteria-looking creations.
+Mutation (ChanceToMutate) means one random organ randomly is overwritten.  This is basic gene mutation at its finest, a "copying error" so to speak.
+]#
+
+
+if(State != "SELECTION") {interval(500)}
+runOnKeys(owner(),1)
+
+if(first())
+    {
+        #Mutation presets, run 0-100
+        ChanceToGrow = 45
+        ChanceToShrink = 10
+        ChanceToMutate = 10
+        #Organ presets, do not exceed 50 else instability may occur
+        StartingOrgans = 5
+        MaxOrgansPerOrganism = 45
+        
+        #EVOLUTION AND REPRODUCTION FUNCTIONS
+        #Random new DNA strand
+        function string randomChromo()
+            {
+                local Chromo = ""
+                #model code
+                Chromo = Chromo + (randint(4)-1):toString()
+                #relative base
+                for(I=1,3) {Chromo = Chromo + (randint(10)-1):toString()}
+                #color code
+                Chromo = Chromo + (randint(6)-1):toString()
+                #Angles
+                for(I=1,3) {Chromo = Chromo + (randint(10)-1):toString()}
+                return Chromo
+            }
+        #Inheritance
+        function array childDNA(ParentDNA1:array,ParentDNA2:array)
+            {
+                #temp variable for iteration over array
+                local T = 1
+                #determines our starting length, based off our parents.  50/50 shot of being the smaller or larger parent
+                if(randint(100) >= 50) {ChildDNALength = ceil((ParentDNA1:count() + ParentDNA2:count()) / 2)} else {ChildDNALength = floor((ParentDNA1:count() + ParentDNA2:count()) / 2)}
+                local RandMutation = randint(100) #Determines if we grow or shrink
+                if(RandMutation >= (100-ChanceToGrow)) {ChildDNALength++}
+                elseif(RandMutation <= ChanceToShrink) {ChildDNALength--}
+                ChildDNALength = clamp(ChildDNALength,1,MaxOrgansPerOrganism-1)   #hardset clamp to prevent killing an entire species
+                #array intialization, no need for indexing memory to ChildDNALength due to language specifics (basically a list not an array)
+                local ChildDNA = array()
+                #dna mixup similar to the 50/50 spread of gametes, if the parent is missing a chromosome we will take the other parent's chromosome
+                #if both are missing a chromo for it to fill out the length determined, we'll just throw a random chromosome on there
+                while(T <= ChildDNALength)
+                    {
+                        local TakeFromParent1 = (randint(2) == 1) #50% chance
+                        local DNATaken = 0
+                        if(TakeFromParent1)
+                            {
+                                if(ParentDNA1[T,string]:length() != 0)
+                                    {ChildDNA:pushString(ParentDNA1[T,string])
+                                    DNATaken++}
+                            }
+                        #either we failed to take dna from parent 1 or we weren't supposed to
+                        if(!DNATaken)
+                            {
+                                if(ParentDNA2[T,string]:length() != 0)
+                                    {ChildDNA:pushString(ParentDNA2[T,string])
+                                    DNATaken++}
+                            }
+                        #We still have no DNA--both parents were missing their DNA, so we add a random strand
+                        if(!DNATaken)
+                            {
+                                ChildDNA:pushString(randomChromo())
+                                DNATaken++
+                            }
+                        T++
+                    }
+                return ChildDNA
+            }
+        #Evolves dna--if it mutates, it'll mutate one chromosome into something random, else it'll just pass the input array back out
+        function array evolvedDNA(DNA:array)
+            {
+                local Mutation = randint(100) < ChanceToMutate
+                if(Mutation)
+                    {
+                        local SelectedNode = randint(DNA:count())
+                        DNA[SelectedNode,string] = randomChromo()
+                    }
+                return DNA
+            }
+        
+        #CHROMOSOMAL-HOLO DECODING FUNCTIONS
+        function string chromoToModel(Chromosome:string)
+            {
+                local C = Chromosome:explode(""):string(1):toNumber()
+                if(C == 1) {return "hq_icosphere"}
+                elseif(C == 2) {return "hq_rcylinder_thick"}
+                elseif(C == 3) {return "hq_rcube_thick"}
+                else {return "hq_rcylinder"}
+            }
+        function vector chromoToVector(Chromosome:string,E:entity)
+            {
+                local ChromoExploded = Chromosome:explode("")
+                local X = ChromoExploded[2,string]:toNumber()
+                local Y = ChromoExploded[3,string]:toNumber()
+                local Z = ChromoExploded[4,string]:toNumber()
+                return E:toWorld(vec(X,Y,Z) * 1.25)
+            }
+        function vector chromoToColor(Chromosome:string)
+            {
+                local C = Chromosome:explode(""):string(5):toNumber()
+                if(C == 0) {return vec(255,0,0)}
+                elseif(C == 1) {return vec(255,255,0)}
+                elseif(C == 2) {return vec(255,0,255)}
+                elseif(C == 3) {return vec(0,255,255)}
+                elseif(C == 4) {return vec(0,0,255)}
+                else {return vec(0,255,0)}
+            }
+        function angle chromoToAngle(Chromosome:string,E:entity)
+            {
+                local ChromoExploded = Chromosome:explode("")
+                local P = ChromoExploded[6,string]:toNumber()
+                local Y = ChromoExploded[7,string]:toNumber()
+                local R = ChromoExploded[8,string]:toNumber()
+                return E:toLocal(ang(P*10,Y*10,R*10))
+            }
+        
+        #RENDERING FUNCTIONS
+        #create holo organs
+        function void createNode(Chromosome:string,Index:number,AllocatedHoloIndex:number)
+            {
+                local LastNodeEntity = holoEntity(AllocatedHoloIndex-1)
+                local LastNodeIndex = AllocatedHoloIndex-1
+                holoCreate(AllocatedHoloIndex)
+                holoModel(AllocatedHoloIndex,chromoToModel(Chromosome))
+                holoPos(AllocatedHoloIndex,chromoToVector(Chromosome,LastNodeEntity))
+                holoColor(AllocatedHoloIndex,chromoToColor(Chromosome))
+                holoAng(AllocatedHoloIndex,chromoToAngle(Chromosome,LastNodeEntity))
+                holoParent(AllocatedHoloIndex,LastNodeEntity)
+            }            
+        #Creating the entire organism
+        function void renderOrganism(DNA:array,AllocatedHoloIndex:number,Position:vector)
+            {
+                #creating an invisible master root organelle
+                holoCreate(AllocatedHoloIndex,Position,vec(0,0,0))
+                holoParent(AllocatedHoloIndex,entity())
+                #rendering the entire organism
+                for(I=1,DNA:count()) #this works because arrays start from one in this language due to its lua-based roots
+                    {
+                        local Chromosome = DNA[I,string]
+                        local OrganHoloIndex = AllocatedHoloIndex + I
+                        createNode(Chromosome,I,OrganHoloIndex)
+                    }
+            }
+        #Visual effect of killing an organism
+        function void killOrganism(DNA:array,AllocatedHoloIndex:number)
+            {
+                #[for(I=0,DNA:count())
+                    {
+                        holoColor(AllocatedHoloIndex+I,vec4(0,0,0,128))
+                    }]#
+                holoPos(300,holoEntity(AllocatedHoloIndex):pos())
+            }
+        
+        #State machine
+        State = "SEED"
+    }
+
+#State in which we "start up" the system
+elseif(State == "SEED")
+    {
+        #our parents are randomly generated children.  Let's say they hitched a ride on a comet, and are here to do what we dream of having to do to save our species ;)
+        Child1 = array()
+        Child2 = array()
+        Child3 = array()
+        #feeding the starting chromosomes
+        for(I=1,StartingOrgans)
+            {
+                Child1:pushString(randomChromo())
+                Child2:pushString(randomChromo())
+                Child3:pushString(randomChromo())
+            }
+        #just a simple thing ot show which one we're gonna select next.
+        holoCreate(300,entity():pos(),vec(10,10,10))
+        holoModel(300,"hq_icosphere")
+        holoColor(300,vec4(255,0,0,16))
+        holoDisableShading(300,1)
+        holoParent(300,entity())
+        #State machine
+        State = "RENDER"
+    }
+
+#unnatural selection
+elseif(State == "SELECTION")
+    {
+        DeadedUpGood = 0
+        #Selecting which one to kill
+        if(owner():keyPressed("left"))
+            {killOrganism(Child1,1)
+            DeadedUpGood = 1}
+        elseif(owner():keyPressed("down"))
+            {killOrganism(Child2,1+MaxOrgansPerOrganism)
+            DeadedUpGood = 2}
+        elseif(owner():keyPressed("right"))
+            {killOrganism(Child3,1+(MaxOrgansPerOrganism*2))
+            DeadedUpGood = 3}
+        #if you killed something it passes on, if nto it ignores.
+        if(DeadedUpGood)
+            {hint("Killed Organism "+DeadedUpGood+"!",5)
+            State = "BREED"}
+    }
+
+#Recombination
+elseif(State == "BREED")
+    {
+        #Dead organisms cannot breed--no benefit to switch case
+        if(DeadedUpGood == 1)
+            {Parent1 = Child2
+            Parent2 = Child3}
+        elseif(DeadedUpGood == 2)
+            {Parent1 = Child1
+            Parent2 = Child3}
+        elseif(DeadedUpGood == 3)
+            {Parent1 = Child1
+            Parent2 = Child2}
+        #Breeding the surviving organisms, and adds mutation
+        Child1 = evolvedDNA(childDNA(Parent1,Parent2))
+        Child2 = evolvedDNA(childDNA(Parent1,Parent2))
+        Child3 = evolvedDNA(childDNA(Parent1,Parent2))
+        #State machine
+        State = "DERENDER"
+    }
+
+#Derendering
+elseif(State == "DERENDER")
+    {
+        for(I=1,299) {holoDelete(I)}
+        State = "RENDER"
+    }
+
+#Drawing the organisms with holographic rendering functions
+elseif(State == "RENDER") 
+    {
+        #Position to render organisms
+        local Position1 = entity():toWorld(vec(0,100,0))
+        local Position2 = entity():toWorld(vec(0,0,0))
+        local Position3 = entity():toWorld(vec(0,-100,0))
+        #Rendering them
+        renderOrganism(Child1,1,Position1)
+        renderOrganism(Child2,1+MaxOrgansPerOrganism,Position2)
+        renderOrganism(Child3,1+(MaxOrgansPerOrganism*2),Position3)
+        #Pushing the state machine
+        State = "SELECTION"
+    }
+
+setName("Genetic Algorithm\n"+State)
