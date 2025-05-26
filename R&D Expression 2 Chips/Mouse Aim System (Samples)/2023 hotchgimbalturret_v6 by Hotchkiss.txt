@@ -1,0 +1,66 @@
+@name HotchGimbalTurret_v6
+@inputs Base:entity Cam:wirelink Tar:entity AimBase:entity Active
+@outputs [Vang Hang]:angle Fire
+@persist Vspeed Hspeed Vmax Vmin Hmax Hmin P Y Dist Vec:vector
+@trigger 
+
+#Source: https://youtu.be/wavxYnSXY24?si=uOAy4oQeTNRCbmZ3 time stamp 17:30 
+#Language in Russian
+
+runOnTick(5)
+
+if(first()||dupefinished()){
+    
+    #   SETUP SECTION START
+    Vspeed = 1 #Vertical aim speed of the turret
+    Hspeed = 1 #Horizontal aim speed of the turret
+    
+    Vmax = 45
+    Vmin = 5   #Vertical aim angle limits
+    
+    Hmax = 20
+    Hmin = 20 #Horizontal aim angle limits
+    #   SETUP SECTION END
+    
+    Fire = 0
+    P = 0
+    Y = 0
+}
+
+
+if(Active){
+    Hpos = Cam["HitPos", vector]
+    
+    if(Tar:isValid()){
+        CamAng = ang(-AimBase:elevation(Tar:pos()), -AimBase:bearing(Tar:pos()), 0)
+    }else{
+        CamAng = ang(-AimBase:elevation(Hpos), -AimBase:bearing(Hpos), 0)
+    }
+    
+    Cp = CamAng:pitch()
+    Cy = CamAng:yaw()
+    
+    if(abs(Cp - P) > Vspeed + 3){
+        P = P + sign(Cp - P)*Vspeed
+    }else{
+        P = P + (Cp - P)*Vspeed
+    }
+    
+    if(abs(Cy - Y) > Hspeed + 3){
+        Y = Y + sign(Cy - Y)*Hspeed
+    }else{
+        Y = Y + (Cy - Y)*Hspeed
+    }
+    
+    if(inrange(Y, -Hmax, Hmin) && inrange(P, -Vmax, Vmin)){
+        Fire = 1
+    }else{
+        Fire = 0
+    }
+    
+    Y = clamp(Y, -Hmax, Hmin)
+    P = clamp(P, -Vmax, Vmin)
+}
+
+Vang = Base:toWorld(ang(P,Y,0))
+Hang = Base:toWorld(ang(0,Y,0))
