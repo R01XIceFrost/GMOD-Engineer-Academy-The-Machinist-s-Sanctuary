@@ -1,0 +1,310 @@
+@name RayCaster r7
+@inputs On Reset [Screen LightGPS]:wirelink
+@outputs Pct
+@persist X Y RGB:vector Grey Cell Color ResX ResY DMax DMin DAvg
+@persist [RD RDTL RDTR RDBL RDBR]:array
+@persist [DataPos DataDist DataColor DataNormals DataLighting DataTex]:array
+@persist Finished Scanned RangingDone ColorDone LightingDone RenderDone
+@persist Length NumCells Invert FOV AA CamDir:vector Res2 DA Resolution
+@outputs [Err TexList]:array
+@trigger On Reset Screen LightGPS
+@model models/beer/wiremod/gate_e2_mini.mdl
+
+#Source: https://youtu.be/WFKBLxX03fo?si=X9fwX24mNi3KDU-q
+
+# [   Written by Fervidusletum   ]
+# [ youtube.com/user/fervidusletum ]
+
+
+# make sure the digital screen is upright ( (90,0,0) for a phx plate screen)
+# paste chip into middle, arrow should point down to bottom of screen
+# put a toggle and non-toggle numpad input on, these are On and Reset, respectively
+# point screen at what you want to scan and turn it on
+
+
+# you can change:
+#  resolution from 1x1 pixels to 512x512 pixels, but note that doubling size quadruples time
+#  trace distance with Length.  shorter lengths will act as a cutoff
+#  FOV. field of view, defaults to 90.
+#  AA (anti-aliasing, blurs jagged edges at the cost of a significant increase in time
+
+
+if (first()|duped()|dupefinished() | (Reset&~Reset) | ~Screen | ~LightGPS)
+{
+
+#  DO NOT GO OVER 512 RESOLUTION
+
+    #edit these
+    Resolution = 128 #resolution, 1 to 512
+    Length = 16384*3 #distance cutoff
+    FOV = 90 #field of view
+    AA = 1 #1=on, 0=off
+    
+    # ---- avoid editing beyond this line ---- #
+    
+    #screen setup
+    Screen[1048573]=ResX = Screen[1048572]=ResY=clamp(Resolution,1,512)
+    Screen[1048569] = 2 #24bit mode
+    Screen[1048574] = 1 #hardware clear screen
+    Screen[1048575] = 1 #clk
+    NumCells=ResX*ResY
+    Res2 = ResX/2
+    
+    #camera setup
+    X = 0,Y = 0, Invert=0
+    DAvg = DMax = 0
+    DMin = Length
+    FOV/=2
+    DA = (FOV*sin(FOV*(1-Res2)/(Res2)) - FOV*sin(FOV*(0-Res2)/(Res2)))/2
+    
+    #calculation setup
+    Scanned=0
+    RangingDone = 0
+    LightingDone = 0
+    RenderDone = 0
+    Finished = 0
+    
+    #trace setup
+    rangerPersist(1)
+    rangerFilter(entity())
+    rangerFilter(entity():getConstraints())
+    rangerFilter(LightGPS:entity())
+    
+    #AA = AA&!(ResX>512)
+    
+    function vector getTexColor(Tex:string) {
+        #convert to lookup table
+        if (Tex == "**studio**") {
+            return vec(255)
+        } elseif (Tex == "**displacement**") {
+            return vec(212,255,192)
+        } elseif (Tex == "TOOLS/TOOLSSKYBOX") {
+            return vec(156,199,255)
+        } elseif (Tex == "GM_CONSTRUCT/GRASS") {
+            return vec(100,122,63)
+        } elseif (Tex == "CONCRETE/CONCRETEFLOOR001A") {
+            return vec(155)
+        } elseif (Tex == "CONCRETE/CONCRETEFLOOR011A") {
+            return vec(158,158,150)
+        } elseif (Tex == "CONCRETE/CONCRETEFLOOR036A") {
+            return vec(116,115,114)
+        } elseif (Tex == "CONCRETE/CONCRETEFLOOR038A") {
+            return vec(109,106,97)
+        } elseif (Tex == "PROPS/METALSTAINLESS01") {
+            return vec(103,105,101)
+        } elseif (Tex == "METAL/METALGRATE014A") {
+            return vec(103,105,101)
+        } elseif (Tex:find("gm_construct/wall_bottom")) {
+            return vec(172,118,112)
+        } elseif (Tex:find("gm_construct/wall_top")) {
+            return vec(255,243,222)
+        } elseif (Tex:find("concrete/concretefloor028a")) {
+            return vec(146,145,140)
+        } elseif (Tex:find("TOOLS/TOOLSSKYBOX")) {
+            return vec(255)
+        } elseif (Tex:find("TOOLS/TOOLSSKYBOX")) {
+            return vec(255)
+        } elseif (Tex:find("TOOLS/TOOLSSKYBOX")) {
+            return vec(255)
+        } else {
+            Found = 0
+            foreach(K,V:string = Err) {
+                if (V == Tex) {
+                    Found = 1
+                    break
+                }
+            }
+            if (!Found) {
+                Err[Err:count()+1,string] = Tex
+                print(Tex)
+            }
+        }
+        return vec(255)
+    }
+}
+
+if (!On&~On) { Finished=Scanned=RangingDone=ColorDone=LightingDone=RenderDone=0 }
+
+if (On) {
+    if (!Finished) {
+        interval(10)
+        if (!Scanned) {
+            # [Ray Casting] fires off traces to collect data
+            while(perf()) {
+                Cell = Y*ResY+X
+                Pct = Cell/NumCells #percent complete
+                Screen[ResY*(Res2-4)+floor(ResX*Pct)]=16711680 #progress bar, red
+                
+                Pitch = FOV * sin(FOV*(Y-Res2)/(Res2))
+                Yaw = FOV * sin(FOV*(X-Res2)/(Res2))
+                
+                #quincunx anti-aliasing traces
+                RD[Cell,ranger] = rangerAngle(Length,Yaw,Pitch)
+                if (AA) {
+                    RDTL[Cell,ranger] = rangerAngle(Length,Yaw-DA,Pitch-DA)
+                    RDTR[Cell,ranger] = rangerAngle(Length,Yaw+DA,Pitch-DA)
+                    RDBL[Cell,ranger] = rangerAngle(Length,Yaw-DA,Pitch+DA)
+                    RDBR[Cell,ranger] = rangerAngle(Length,Yaw+DA,Pitch+DA)
+                }
+                
+                X++
+                if (X >= ResX) { Y+=1, X=0 }
+                if (Y >= ResY) {
+                    Scanned=1
+                    Cell=0
+                    CamDir = entity():up()
+                    exit()
+                }
+            }
+            
+            
+        } elseif (!RangingDone) {
+            # [Ranging Calculation] calculates per pixel distance, and quincunx AA
+            while(perf()&(Cell<NumCells)) {
+                
+                if (AA) {
+                    #quincunx anti-aliasing averaging
+                    DataDist[Cell,number] = Dist = (1/5) * (
+                        RD[Cell,ranger]:distance()
+                        +RDTL[Cell,ranger]:distance()
+                        +RDTR[Cell,ranger]:distance()
+                        +RDBL[Cell,ranger]:distance()
+                        +RDBR[Cell,ranger]:distance()
+                    )
+                    
+                    DataNormals[Cell,vector] = (1/5) * (
+                        RD[Cell,ranger]:hitNormal()
+                        +RDTL[Cell,ranger]:hitNormal()
+                        +RDTR[Cell,ranger]:hitNormal()
+                        +RDBL[Cell,ranger]:hitNormal()
+                        +RDBR[Cell,ranger]:hitNormal()
+                    )
+                    
+                    if (->LightGPS) {
+                        DataPos[Cell,vector] = (1/5) * (
+                            RD[Cell,ranger]:position()
+                            +RDTL[Cell,ranger]:position()
+                            +RDTR[Cell,ranger]:position()
+                            +RDBL[Cell,ranger]:position()
+                            +RDBR[Cell,ranger]:position()
+                        )
+                    }
+                } else {
+                    DataDist[Cell,number] = Dist =  RD[Cell,ranger]:distance()
+                    DataNormals[Cell,vector] = RD[Cell,ranger]:hitNormal()
+                    if (->LightGPS) { DataPos[Cell,vector] = RD[Cell,ranger]:position() }
+                }
+                #get min/max distance
+                if (Dist > DMax) { DMax = Dist }
+                if (Dist < DMin) { DMin = Dist }
+                
+                Pct = Cell/NumCells #percent complete
+                Screen[ResY*(Res2-2)+floor(ResX*Pct)]=2162496 #progress bar, green
+                Cell++
+            }
+            if (Cell<NumCells) { 
+                exit()
+            } else { 
+                Cell = 0
+                RangingDone = 1
+                exit()
+            }
+            
+            
+        } elseif (!ColorDone) {
+            # [Color Calculation] calculates color based on texture or applied color
+            while(perf()&(Cell<NumCells)) {
+                if (AA) {
+                    Col = RD[Cell,ranger]:entity() ? (RD[Cell,ranger]:entity():getColor() ?: vec(255)) : getTexColor(RD[Cell,ranger]:hitTexture())
+                    Col += RDTL[Cell,ranger]:entity() ? (RDTL[Cell,ranger]:entity():getColor() ?: vec(255)) : getTexColor(RDTL[Cell,ranger]:hitTexture())
+                    Col += RDTR[Cell,ranger]:entity() ? (RDTR[Cell,ranger]:entity():getColor() ?: vec(255)) : getTexColor(RDTR[Cell,ranger]:hitTexture())
+                    Col += RDBL[Cell,ranger]:entity() ? (RDBL[Cell,ranger]:entity():getColor() ?: vec(255)) : getTexColor(RDBL[Cell,ranger]:hitTexture())
+                    Col += RDBR[Cell,ranger]:entity() ? (RDBR[Cell,ranger]:entity():getColor() ?: vec(255)) : getTexColor(RDBR[Cell,ranger]:hitTexture())
+                    DataColor[Cell,vector] = Col / 5
+                } else {
+                    DataColor[Cell,vector] = RD[Cell,ranger]:entity() ? (RD[Cell,ranger]:entity():getColor() ?: vec(255)) : getTexColor(RD[Cell,ranger]:hitTexture())
+                }
+                
+                Pct = Cell/NumCells #percent complete
+                Screen[ResY*(Res2)+floor(ResX*Pct)]=65535 #progress bar, teal
+                Cell++
+            }
+            if (Cell<NumCells) { 
+                exit()
+            } else { 
+                Cell = 0
+                ColorDone = 1
+                exit()
+            }
+            
+            
+        } elseif (!LightingDone) {
+            # [Lighting Calculation] calculates simple lighting based on face normals
+            while(perf()&(Cell<NumCells)) {
+                #light normals facing cam only
+                #DataLighting[Cell,number] = abs(min(CamDir:dot(DataNormals[Cell,vector]:normalized()),0))
+                
+                #backlighting
+                #DataLighting[Cell,number] = CamDir:dot(DataNormals[Cell,vector]:normalized())
+                
+                #cam flash; darken normals facing away, brighten normals facing toward
+                #DataLighting[Cell,number] = -CamDir:dot(DataNormals[Cell,vector]:normalized())
+                
+                #lighting emitted from LightGPS
+                LDir = (DataPos[Cell,number] - LightGPS["Vector",vector]):normalized()
+                DataLighting[Cell,number] = LDir:dot(DataNormals[Cell,vector]:normalized())
+                
+                Pct = Cell/NumCells #percent complete
+                Screen[ResY*(Res2+2)+floor(ResX*Pct)]=2113791 #progress bar, blue
+                Cell++
+            }
+            if (Cell<NumCells) { 
+                exit()
+            } else { 
+                Cell = 0
+                LightingDone = 1
+                exit()
+            }
+            
+            
+        } elseif (!RenderDone) {
+            # [Render] calculates final pixel values and draws to screen
+            while(perf()) {
+                Pct=Cell/NumCells
+                
+                #no shading
+                #Grey = 255
+                
+                #distance based shading
+                Linear = 255-255*(DataDist[Cell,number]-DMin)/(DMax-DMin)
+                
+                #mix distance shading with lighting @ 25-75 ratio, + 50% ambient
+                Grey = 127+0.5*(Linear*(0.25+0.75*DataLighting[Cell,number]))
+                
+                #distance only debug view
+                #Grey = Linear
+                
+                #lighting only debug view
+                #Grey = 255*DataLighting[Cell,number]
+                
+                #greyscale only
+                #Color = Grey*65536+Grey*256+Grey
+                
+                #24 bit color handling, R*65536 + G*256 + B
+                RGB = DataColor[Cell,vector]*Grey/255
+                Color = floor(RGB:x())*65536+floor(RGB:y())*256+floor(RGB:z())
+                
+                #render to screen
+                Screen[NumCells-Cell-1] = Color
+                Cell++
+            }
+            if (Cell<NumCells) { 
+                exit()
+            } else { 
+                RenderDone=1
+                Finished=1
+                exit()
+            }
+        }
+    }
+}

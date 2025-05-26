@@ -1,0 +1,566 @@
+@name EGP Maker v2.1
+@inputs EGP:wirelink Seat:entity
+@outputs [CommandTable]:table User:entity [Angle Curtime Index ObjectMode Size Fontsize CompilerIndex MaxIndex SpeedMod FileTimeoutTime DrawnIndex]:number [Position Scale]:vector2 [Args ObjectModeStack]:array Color:vector4  [Name State CompiledOutput Filename Text Font ChipName Comment]:string
+@autoupdate on
+#[CHANGELOG:
+Update 4/3:
+    -added state machine to better protect expansion of code
+    -cleaned up output groupings partially, moved to persist
+    -added naming
+    -file save/load
+        -note: save/load is NOT the same as compiling!
+        -compiling produces OUTPUT CODE, save/load saves the data in a format EGPMaker can read!
+        -EGPMaker can NOT read raw egp code!  because I'm lazy.
+    -naming now more flexible
+    -added comments to output code
+    -added index deletion
+    -added compiler and drawing support for blank indexes, indexes now capped at 100 for speed and sanity
+
+#This code is provided to you by RedReaper!  RedReaper on wiremod, redreaper2020 on youtube.
+#Brought to you by FRS, our IP is 70.42.74.154:27015.
+#type "help" for help
+]#
+
+runOnKeys(User,1)
+interval(20)
+runOnChat(1)
+runOnFile(1)
+Curtime = curtime()
+
+if(dupefinished())
+{
+    reset()
+}
+
+elseif(first())
+{
+    #initializing the screen
+    EGP:egpClear()
+    ChipName = entity():getName()
+    ObjectModeStack = array("Box","BoxOutline","RoundedBox","RoundedBoxOutline","Circle","CircleOutline","Wedge","WedgeOutline","Text","Triangle","TriangleOutline")
+    
+    #starting values
+    function void resetArgs()
+    {
+        Index = 1
+        Position = vec2()
+        Scale = vec2(25)
+        Color = vec4(255)
+        Text = "YOUR_TEXT_HERE"
+        Fontsize = 24
+        Angle = 0
+        Size = 1
+        Comment = ""
+    }
+    
+    #updates argument array that is passed to functions
+    function void updateArgs()
+    {
+        Args = array(ObjectModeStack[ObjectMode,string],Index,Position,Scale,Color,Text,Font,Fontsize,Angle,Size,Comment)
+        if(Index >= MaxIndex) {MaxIndex = Index}
+    }
+    #updates cursor and postiion
+    function void updatePosition()
+    {
+        #gets position
+        Position = EGP:egpCursor(User)
+    }
+    #update scale
+    function void updateScale()
+    {
+        Scale = clamp(Scale + (vec2(User:keyLeft() - User:keyRight(),User:keyForward() - User:keyBack()) * $Curtime * SpeedMod),vec2(),vec2(1024,1024))
+    }
+    #update angle
+    function void updateAngle()
+    {
+        Angle = angnorm(Angle + ((User:keyPressed("right") - User:keyPressed("left") + User:keyPressed("mouse_5") - User:keyPressed("mouse_4")) * $Curtime * SpeedMod * 0.5)) * !User:keyReload()
+    }
+    #update size
+    function void updateSize()
+    {
+        Size = clamp(Size + ((User:keyPressed("up") - User:keyPressed("down")) * $Curtime * SpeedMod * 0.25),0,500)
+    }
+    
+    #update user
+    function void updateUser()
+    {
+        User = Seat:driver()
+        if(changed(User))
+        {
+            Seat:hintDriver("User detected: "+User:name()+"\nChat 'help' for chat hints!",3)
+        }        
+    }
+    #updates arguments off table--we pass thsi when changing index reference
+    function void updateArgsOffTable()
+    {
+        local NewArgs = CommandTable[Index,array]
+        if(NewArgs[1,number])
+        {
+            Args = NewArgs
+        }
+        else
+        {
+            updateArgs()
+        }
+    }
+    
+    #redraws current object, according to args.
+    #Type (from modestack, 1:1 correspondance with api calls)
+    #Args format is [Type,Index,Position,Size,Color,Text,Font,Fontsize,Angle,Size]
+    function void updateCurrentObject()
+    {
+        local Type = Args[1,string]
+        #render code
+        if(Type == "Box")
+        {
+            EGP:egpBox(Args[2,number],Args[3,vector2],Args[4,vector2])
+        }
+        elseif(Type == "BoxOutline")
+        {
+            EGP:egpBoxOutline(Args[2,number],Args[3,vector2],Args[4,vector2])
+        }
+        elseif(Type == "RoundedBox")
+        {
+            EGP:egpRoundedBox(Args[2,number],Args[3,vector2],Args[4,vector2])
+        }
+        elseif(Type == "RoundedBoxOutline")
+        {
+            EGP:egpRoundedBoxOutline(Args[2,number],Args[3,vector2],Args[4,vector2])
+        }elseif(Type == "Circle")
+        {
+            EGP:egpCircle(Args[2,number],Args[3,vector2],Args[4,vector2] / 2)
+        }
+        elseif(Type == "CircleOutline")
+        {
+            EGP:egpCircleOutline(Args[2,number],Args[3,vector2],Args[4,vector2] / 2)
+        }
+        elseif(Type == "Wedge")
+        {
+            EGP:egpWedge(Args[2,number],Args[3,vector2],Args[4,vector2] / 2)
+            EGP:egpSize(Args[2,number],Args[10,number])
+        }
+        elseif(Type == "WedgeOutline")
+        {
+            EGP:egpWedgeOutline(Args[2,number],Args[3,vector2],Args[4,vector2] / 2)
+            EGP:egpSize(Args[2,number],Args[10,number])
+        }
+        elseif(Type == "Text")
+        {
+            EGP:egpText(Args[2,number],Args[6,string],Args[3,vector2])
+            EGP:egpFont(Args[2,number],Args[7,string],Args[8,number])
+        }
+        elseif(Type == "Triangle")
+        {
+            local P1 = Args[3,vector2] + vec2(0,Args[4,vector2]:y())
+            local P2 = Args[3,vector2] + vec2(Args[4,vector2]:x() / 2,0)
+            local P3 = Args[3,vector2] + vec2(-Args[4,vector2]:x() / 2,0)
+            EGP:egpTriangle(Args[2,number],P1,P2,P3)
+        }
+        elseif(Type == "TriangleOutline")
+        {
+            local P1 = Args[3,vector2] + vec2(0,Args[4,vector2]:y())
+            local P2 = Args[3,vector2] + vec2(Args[4,vector2]:x() / 2,0)
+            local P3 = Args[3,vector2] + vec2(-Args[4,vector2]:x() / 2,0)
+            EGP:egpTriangleOutline(Args[2,number],P1,P2,P3)
+        }
+        #colorizing code
+        EGP:egpAngle(Args[2,number],Args[9,number])
+        EGP:egpColor(Args[2,number],Args[5,vector4])
+    }
+    
+    #provides output of parsed data
+    function string compiledInstruction(Input:array)
+    {
+        local String = "\n"
+        #building local vars off array passed to us, and sanitizing them
+        local ParsedIndex = Input[2,number]
+        local ParsedType = Input[1,string]
+        local ParsedPosition = round(Input[3,vector2])
+        local ParsedScale = round(Input[4,vector2])
+        local ParsedColor = Input[5,vector4]
+        local ParsedText = Input[6,string]
+        local ParsedFont = Input[7,string]
+        local ParsedFontsize = Input[8,number]
+        local ParsedAngle = round(Input[9,number])
+        local ParsedSize = round(Input[10,number])
+        local ParsedComment = Input[11,string]
+        #adding comments first
+        if(ParsedComment)
+        {
+            String = String = "\n#" + ParsedComment + "\n"
+        }
+        #identifying modification code
+        local ParsedObjCode = 0
+        for(Ptr=1,ObjectModeStack:count())
+        {
+            if(ParsedType == ObjectModeStack[Ptr,string])
+            {
+                ParsedObjCode = Ptr
+            }
+        }
+        if(ParsedObjCode)
+        {
+            #string building for the command
+            #building string for box and boxlike code
+            if(inrange(ParsedObjCode,1,4))
+            {
+                String = String + "EGP:egp"+ParsedType+"("+ParsedIndex+",vec2("+ParsedPosition:x()+","+ParsedPosition:y()+"),"+"vec2("+ParsedScale:x()+","+ParsedScale:y()+"))"
+            }
+            #building string for circle and circlelike code
+            elseif(inrange(ParsedObjCode,5,6))
+            {
+                String = String + "EGP:egp"+ParsedType+"("+ParsedIndex+",vec2("+ParsedPosition:x()+","+ParsedPosition:y()+"),"+"vec2("+ParsedScale:x()/2+","+ParsedScale:y()/2+"))"
+            }
+            elseif(inrange(ParsedObjCode,7,8))
+            {
+                String = String + "EGP:egp"+ParsedType+"("+ParsedIndex+",vec2("+ParsedPosition:x()+","+ParsedPosition:y()+"),"+"vec2("+ParsedScale:x()/2+","+ParsedScale:y()/2+"))"
+                String = String + "\nEGP:egpSize("+ParsedIndex+","+ParsedSize+")"
+            }
+            #building string for text code
+            elseif(ParsedObjCode == 9)
+            {
+                String = String + "EGP:egp"+ParsedType+"("+ParsedIndex+",\""+ParsedText+"\",vec2("+ParsedPosition:x()+","+ParsedPosition:y()+"))\n"
+                String = String + "EGP:egpFont("+ParsedIndex+",\""+ParsedFont+"\","+ParsedFontsize+")"
+            }
+            elseif(inrange(ParsedObjCode,10,11))
+            {
+                local P1 = ParsedPosition + vec2(0,ParsedScale:y())
+                local P2 = ParsedPosition + vec2(ParsedScale:x() / 2,0)
+                local P3 = ParsedPosition + vec2(-ParsedScale:x() / 2,0)
+                String = String + "EGP:egp"+ParsedType+"("+ParsedIndex+",vec2("+P1:x()+","+P1:y()+"),vec2("+P2:x()+","+P2:y()+"),vec2("+P3:x()+","+P3:y()+"))"
+            }
+            
+            #adding angle
+            if(ParsedAngle & inrange(ParsedObjCode,1,9))
+            {
+                String = String + "\nEGP:egpAngle("+ParsedIndex+","+ParsedAngle+")"
+            }            
+            #adding colorization
+            String = String + "\nEGP:egpColor("+ParsedIndex+",vec4("+ParsedColor:x()+","+ParsedColor:y()+","+ParsedColor:z()+","+ParsedColor:w()+"))"
+        }
+        
+        return String
+    }
+    
+    resetArgs()
+    Name = "untitled"
+    State = "design"
+}
+
+#key event based
+elseif(keyClk())
+{
+    if(State == "design")
+    {
+        #processing key event
+        local KeyPressed = keyClkPressed()
+        local KeyDown = 0
+        if(Seat:driver():keyPressed(KeyPressed))
+        {
+            KeyDown++
+        }
+        
+        if(KeyDown)
+        {
+            #mode cycle
+            if(KeyPressed == "mouse_right")
+            {
+                ObjectMode = (ObjectMode + 1) * (ObjectMode < ObjectModeStack:count())
+                if(!ObjectMode) {ObjectMode = 1}    #backcheck because it'll otherwise index 0
+                Seat:hintDriver("Obj: "+ObjectModeStack[ObjectMode,string],3)
+            }
+            
+            #passing vars into command table
+            elseif(KeyPressed == "mouse_left")
+            {
+                #actual passing of vars to parse table            
+                CommandTable[Index,array] = Args
+                Index++
+                #resets our comments
+                Comment = ""
+                #checks if we have anything at updated index to load, if not it just ignores and holds onto the same args as before
+                updateArgsOffTable()
+                Seat:hintDriver("Command table updated!",3)
+            }
+        }
+        
+        #speed modifier
+        SpeedMod = (1 + (User:keySprint() * 3) - (User:keyWalk() * 0.75)) * 100
+    }
+}
+
+#chat event based
+elseif(chatClk(User))
+{
+    if(State == "design")
+    {
+        #getting chat input
+        local Said = User:lastSaid():lower():explode(" ")
+        #changes color
+        if(Said[1,string]:lower() == "color")
+        {
+            hideChat(1)
+            local Transparency = Said[5,string]:toNumber()
+            if(!Transparency) {Transparency = 255}  #lets us use an XYZ input for an XYZW coloring system, saving user time--especially since default will often be no transparency, just opaque
+            Color = vec4(Said[2,string]:toNumber(),Said[3,string]:toNumber(),Said[4,string]:toNumber(),Transparency)
+            Seat:hintDriver("Color set to R"+Color:x()+" G"+Color:y()+" B"+Color:z()+" A"+Color:w(),3)
+        }
+        #starts compiling process
+        elseif((Said[1,string]:lower() == "compile") & !CompilerIndex)
+        {
+            hideChat(1)
+            CompilerIndex = 1
+            State = "compile"
+            Seat:hintDriver(ChipName+": Compiling...",3)
+        }
+        #changing index
+        elseif(Said[1,string]:lower() == "index")
+        {
+            hideChat(1)
+            if(Said[2,string])
+            {
+                EGP:egpRemove(Index)
+                Index = Said[2,string]:toNumber()
+                Seat:hintDriver("Index: "+Index,3)
+                updateArgsOffTable()
+            }
+            else
+            {
+                print(ChipName+": index selected is "+Index)
+            }
+        }
+        #setting input for text
+        elseif(Said[1,string] == "text")
+        {
+            hideChat(1)
+            Text = ""
+            local SaidSanitized = User:lastSaid():explode(" ")  #sanitized input
+            for(I=2,SaidSanitized:count()) {Text = Text + " " + SaidSanitized[I,string]}
+        }
+        #setting input for font
+        elseif(Said[1,string] == "font")
+        {
+            hideChat(1)
+            Font = User:lastSaid():explode(" ")[2,string]
+        }
+        elseif(Said[1,string] == "fontsize")
+        {
+            hideChat(1)
+            Fontsize = Said[2,string]:toNumber()
+        }
+        elseif(Said[1,string] == "size")
+        {
+            hideChat(1)
+            Size = Said[2,string]:toNumber()
+        }
+        elseif((Said[1,string] == "comment") | Said[1,string] == "#")
+        {
+            hideChat(1)
+            Comment = ""
+            local RawLastSaid = User:lastSaid():explode(" ")
+            for(Word=1,Said:count())
+            {
+                if(Word != 1)
+                {
+                    Comment = Comment + " " + RawLastSaid[Word,string]
+                }
+            }
+            print("Comment Added:\n#"+Comment)
+        }
+        elseif(Said[1,string] == "name")
+        {
+            hideChat(1)
+            Name = ""
+            for(Word=1,Said:count())
+            {
+                if(Word != 1)
+                {
+                    Name = Name + User:lastSaid():explode(" ")[Word,string]
+                    if(Word != Said:count())
+                    {
+                        Name = Name + " "
+                    }
+                }
+            }
+            print("Name: "+Name)
+        }
+        elseif(Said[1,string] == "delete")
+        {
+            hideChat(1)
+            local DeletedIndex = Said[2,string]:toNumber()
+            CommandTable[DeletedIndex,array] = array()
+            EGP:egpRemove(DeletedIndex)
+            print("Deleted EGP entity "+DeletedIndex)
+        }
+        elseif(Said[1,string] == "save")
+        {
+            hideChat(1)
+            if(fileCanWrite())  #execution will be successful, uses vON for encoding.  vON is bigger than a custom parsed string, but it doesn't require much work and it's easier to cross-platform
+            {
+                if(Said[2,string])
+                {
+                    Name = ""
+                    for(Word=2,Said:count())
+                    {
+                        Name = Name + Said[Word,string]
+                        if(Word != Said:count())    #adding word spacing except on last word
+                        {
+                            Name = Name + " "
+                        }
+                    }
+                }
+                local SaveName = Name+".txt"
+                fileWrite(SaveName,vonEncode(CommandTable))
+                print(ChipName+": saved "+SaveName+"!")
+            }
+            else    #failed to execute
+            {
+                print(ChipName+": can't save, unknown error!")
+            }
+        }
+        elseif(Said[1,string] == "load")
+        {
+            hideChat(1)
+            if(fileCanLoad())
+            {
+                local LoadName = ""   #getting file name to load
+                for(Word=2,Said:count())
+                {
+                    LoadName = LoadName + User:lastSaid():explode(" ")[Word,string]
+                    if(Word != Said:count())
+                    {
+                        LoadName = LoadName + " "
+                    }
+                }
+                fileLoad(LoadName)
+                State = "loading"    #updating our finite state
+                print(ChipName+": loading new file "+LoadName+"!")
+                FileTimeoutTime = curtime() + 5
+            }
+            else
+            {
+                print(entity():getName()+": failed to load file!")
+            }
+        }
+        elseif(Said[1,string] == "reset")
+        {
+            hideChat(1)
+            reset()
+        }
+        elseif(Said[1,string] == "help")
+        {
+            hideChat(1)
+            print("KEYS: WASD -> scale, Mouse -> position, M1 -> places, M2 -> changes type L/R arrows -> rotate, Up/down -> wedge mouth size, shift/alt -> control adj speed")
+            print("CHAT: color -> sets color RGBA (ex: \"color 255 0 0 128\" = red, 50% alpha) delete -> deletes index (ex: delete 3 deletes indexed entity 3)")
+            print("index -> selects an index to modify, if you have no # after \"index\" then it tells you what current index is, text -> type input text after (ex: text YOUR TEXT) font -> font to use (ex: font Lucida Console), fontsize -> fontsize (ex: fontsize 64) reset -> reset e2, compile -> outputs to e2files folder")
+            print("save -> saves to disk as name.txt, load -> loads and draws on screen second param (ex: load myFile.txt, with the txt included) # qor comment -> adds a comment to output.")
+        }
+    }
+}
+
+#realtime updates -- note that this is as close as a main() as this program has
+elseif(State == "design")
+{
+    updatePosition()
+    updateScale()
+    updateAngle()
+    updateSize()
+    updateUser()
+    updateArgs()
+    updateCurrentObject()
+}
+
+#loading
+elseif(State == "loading")
+{
+    if(fileClk()) #incredibly, incredibly rare chance of this screwing up.
+    {
+        soundPlay(1,0,"buttons/bell1.wav")
+        Name = fileName():explode(".")[1,string]    #resetting our saved name.
+        print(ChipName+": loaded "+fileName()+"!")
+        CommandTable = vonDecodeTable(fileRead())
+        State = "redraw"
+    }
+    elseif(FileTimeoutTime < curtime())
+    {
+        soundPlay(1,0,"buttons/button11.wav")
+        print("Timed out, reverting to designer mode!")
+        State = "design"
+    }
+}
+
+#redrawing
+elseif(State == "redraw")
+{
+    #resetting index and clearing screen for redraw.
+    if(changed(State))
+    {
+        Index = 1
+        EGP:egpClear()
+        DrawnIndex = Index
+    }
+    elseif(Index <= 100)#CommandTable:count())
+    {
+        local ArgArray = CommandTable[Index,array]
+        if(ArgArray:count())
+        {
+            DrawnIndex = Index  #guarantees we start at the last accessed index properly
+        }
+        for(ObjectCode=1,ObjectModeStack:count())
+        {
+            if(ArgArray[1,string] == ObjectModeStack[ObjectCode,string])
+            {
+                ObjectMode = ObjectCode
+                break
+            }
+        }
+        Position = ArgArray[3,vector2]
+        Scale = ArgArray[4,vector2]
+        Color = ArgArray[5,vector4]
+        Text = ArgArray[6,string]
+        Font = ArgArray[7,string]
+        Fontsize = ArgArray[8,number]
+        Angle = ArgArray[9,number]
+        Size = ArgArray[10,number]
+        updateArgs()
+        updateCurrentObject()
+        Index++
+    }
+    else
+    {
+        print(ChipName+": redrawing complete, changing to designer state!")
+        State = "design"
+        resetArgs()
+        Index = DrawnIndex + 1  #sets our index to the next fresh index
+    }
+}
+
+#compiling for output
+elseif(State == "compile")
+{
+    #building the actual file as a string
+    if(CompilerIndex == 1)
+    {
+        #header is added to compile output file
+        Filename = "EGPMAKER OUTPUT-"+Name
+        CompiledOutput =
+        "@name "+Filename+"\n@inputs EGP:wirelink\n#This code was generated by a tool.\nif(dupefinished()) {reset()} elseif(first())\n{EGP:egpClear()"
+    }
+    if(CommandTable[CompilerIndex,array]:count()) #if there's something in our compiled command index.  This lets us skip indexes smoothly.
+    {
+        #linking additional lines of parsed data output, parsed on the fly
+        CompiledOutput = CompiledOutput + compiledInstruction(CommandTable[CompilerIndex,array])
+    }
+    
+    #incrementing index
+    CompilerIndex++
+    if(CompilerIndex > 100)
+    {
+        CompiledOutput = CompiledOutput + "}\n#Compiled with Red's EGPMaker!"
+        Seat:hintDriver("Output Compiled, writing to data/e2files/"+Filename+".txt...",7)
+        fileWrite(Filename+".txt",CompiledOutput)
+        CompilerIndex = 0
+        State = "design"
+        print(ChipName+": compiling completed, returning to design mode!")
+    }
+}
