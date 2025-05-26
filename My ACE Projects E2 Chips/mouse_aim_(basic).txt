@@ -20,12 +20,13 @@ If aligned correctly, you can delete the origin prop.
 
 if(first()) {
     propSpawn("models/sprops/misc/origin.mdl",1) #spawns origin prop of sprop
-    Gimbal["On", number] = 1  #Wires Input "On" 
+     
 
 }
 
 event tick() { #replacement deprecated function runOnTick()
     B = entity():toLocal(owner():eyeAngles()) #Grabs your eye angle coordinates based on the E2 position (beware of positioning the chip!!)
+    Gimbal["On", number] = 1  #Wires Input "On"
     Gimbal["Angle", angle] = B #Wires Input "Angel [ANGLE]" 
     print(B) #remove this line if you don't want to debug this chip for angle and stuff
     
