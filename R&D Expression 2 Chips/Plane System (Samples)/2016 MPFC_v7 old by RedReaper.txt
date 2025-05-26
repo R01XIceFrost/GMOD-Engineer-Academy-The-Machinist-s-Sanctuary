@@ -1,0 +1,3058 @@
+@name MPFC v7.1
+#Control and setup inputs
+@inputs [Pod Cam]:wirelink InstrumentPanelEntity:entity [VarLib ExtraBases]:array Input_PrevWeapon Input_NextWeapon [Rotor1 Rotor2 TailRotor Prop1 Prop2 Prop3 Prop4]:vector # [ExternalAutopilotCommand]:string
+@inputs [Cannon1 Cannon2 Cannon3]:entity [BombardierAimpos]:vector [BombardierDropInput]:number [OptionalFlightStickPosition OptionalCollectivePosition OptionalThrottlePosition]:vector
+@outputs [FireCannon1 FireCannon2 FireCannon3 FireMissile1 FireMissile2 DropBombs]:number Reload [Aimpos BallisticSolution]:vector Gear_Brakes WEP ThrustReverser Gear_Down WS AD LR UD FB FCS_SuperElevation:angle Pilot:entity [AuxOut1 AuxOut2 EngagementRange SightLockStatus]:number
+#Changing vars
+@persist PrevWeapon NextWeapon Locked [FlightCPUAngle]:angle [W A S D R Alt Space Shift Mouse1 Mouse2 MouseUp MouseDown Engine_Ignition]:number  #control based core values
+@persist [ControlRatio Plane_Lift_Adjustment Lift_Ratio Collective_Force Thrust_Force]:number [FlightCPUP FlightCPUI]:angle #mostly preaches, I should sort these
+#core loads for flight control/module accessing
+@persist [Position BaseVel Velocity Forward LocalVel]:vector [Angle]:angle #these are far easier to just reference.
+#Static performance variables
+@persist [Smoothers CollectiveSmoother ThrustSmoother StickLimits]:number
+@persist [Sounds]:array ANGULAR_FORCE ANGULAR_DAMPING VECTOR_DAMPING
+@persist [Bases Inertias Unwelded]:array [CamParent Seat]:entity [Masses]:array
+@persist FLAP_EFFECTIVENESS Flap_Dampening 
+#Static flight template
+#@persist ManeuverabilityMultiplier:angle [VectorFlightMultiplier VectorDampingMultiplier]:vector Winglift RollOnYaw CollectiveThrottleBlending CyclicTailMixing StallEnabled [FlightModelName]:string
+#Camera, View, and Ergonomic persists
+@persist SplitTickTimer Interval100Timer Interval200Timer Interval400Timer Interval800Timer CoreTimer Rotorrate CamOffset CamThroughGunsight [AimLoc]:vector EyeMul FLIR ZoomLevel CamDist AimTrace:ranger ThirdPerson [SightHeadPos]:vector SightHeadActive [SightHeadMaster]:entity
+#Holo persists
+@persist RatePercentage HoloRotorsMode Index [RotorA RotorB]:entity [Propellor_Directions]:array Number_Of_Propellors Scale:vector RotorBlades TailScale:vector TailRotorBlades TailAngleSwap PropellorScale PropellorBlades
+#Autopilot module
+@persist [AP_Waypoints AP_OPCodes]:array AP_CurrentIndex AP_RECORD_KEY:string AP_Record AP_Pushpoint AP_TargetSpeed AP_Flypos:vector AP_AscentRate
+#semiautomatic control
+@persist AutoLevelIntegral AutoLevelProportional LevelZ AutoLevelCollectiveBoost
+#Ground hugging
+@outputs [TerrainFollowingOn]:number Flypos:vector
+#Override for autopilot for aiming
+@persist Indexed_Aimpos:vector
+#Damage
+@persist DamageSystemSpeed DamageBaseCount 
+#Bombsight
+@persist BombVel:vector BombKg:number BombRangeTable:array
+#Simple efficiency improvements
+@persist IS_ARMED UsedSmoother Piloted Base:entity DarkBacking InstrumentPanelScale AvionicsData:array
+#Triggers
+@trigger Input_PrevWeapon Input_NextWeapon
+
+#NEW FOR V7
+@persist State:string FlightModel:table Tickrate:number [BallisticComputerModeChar MISSILE_TYPE_1 MISSILE_TYPE_2 GearModel]:string [CannonRangeTable Missile1RangeTable Missile2RangeTable]:array WeaponSelected CannonSelected:entity LeadFloatingValue:angle Lead:angle
+@persist [LandingGear LandingGearWeights Cannon1Crates Cannon2Crates Cannon3Crates BombCrates Missile1Crates Missile2Crates]:array [CANNON1_STARTING_AMMO CANNON2_STARTING_AMMO CANNON3_STARTING_AMMO BOMB_STARTING_AMMO MISSILE1_STARTING_AMMO MISSILE2_STARTING_AMMO MISSILE_1_GUIDED MISSILE_2_GUIDED BombCCRPWindow InstrumentsBacklit FlapVolume BestCCRPDistance]:number
+@persist [GroundEffectValue AltitudeEffectValue]:number
+@persist [DEFAULT_HUDINSTRUMENT_COLOR]:vector [CYCLIC_LOW_LIMIT CYCLIC_HIGH_LIMIT FLIGHT_CPU_INTEGRAL_LOWER_LIMIT FLIGHT_CPU_INTEGRAL_UPPER_LIMIT]:angle [FLIGHT_CPU_INTEGRAL_GAIN MIN_CONTROL_VALUE]:number
+@persist [EnginePitch DustKickingUp ACF_DRAG_DIV]:number TaxiMultiplier:number
+#ifdef effect:setMagnitude(number)
+@persist [DustEffect WaterEffect]:effect
+#endif
+@autoupdate on 
+
+
+#Source: https://youtu.be/AcCaPFeNKpc?si=GTdOEgWav8M3cypn
+
+#[THIS CODE IS PROVIDED TO YOU COURTESY OF RED AND FRS.  OUR IP IS 70.42.74.154:27015.
+CONTROLS
+
+COMMON:
+R+Enter         ->      Ignition
+LControl        ->      Switches control from keyboard to mouse
+Mouse1          ->      Fires weapons
+Mouse2          ->      Cycles weapons of type (ex: gun1 -> gun2, missile1 -> missile2)
+R+Mouse2        ->      Reload weapons
+I               ->      Lase for range
+Light           ->      Infrared FLIR
+V               ->      Changes [V]iew between 1st & 3rd person
+R+V             ->      Changes [V]iew to gunsight cam--if you have the holo sight off the button model, cam goes from there, else it goes from below and forward on airframe
+B               ->      Selects [B]ombs
+G or C          ->      Selects [G]uns & [C]annons
+M               ->      Selects [M]issiles
+Alt             ->      Hold Aimpos (for fire & forget or cancelling lead on strafing ground targets)
+L               ->      Raise/lower [L]anding gear
+[               ->      Aux output 1
+]               ->      Aux output 2
+R+LControl      ->      Toggle TERCOM on/off
+
+KEYBOARD:
+WASD            ->      Up/down/left/right
+Space/Shift     ->      Up-down Collective/Adjust flaps
+R+A/D           ->      Pylon turn left/right (like AC-130)
+R+W/S           ->      Throttle up/down
+
+MOUSE:
+Mouse           ->      Flight Direction
+Space/Shift     ->      Adjust Collective/Flaps
+W/S             ->      Adjust Throttle
+A/D             ->      Roll left/right
+A+D             ->      Fly level/taxiing
+
+AUTOPILOT COMMANDS:
+ap on/off       ->      Autopilot on/off
+Numpad 0-9      ->      Add waypoint of index key pressed, at x/y aimpos with current altitude z
+ap set [alt][#] ->      Sets a waypoint [alt] units above ground for index [#]
+    Ex: ap set 2500 3 makes coordinate 3 in autopilot aimpos + 2500z
+ap cur [alt][#] ->      Sets a waypoint [alt] units above or below current altitude, at aimpos, for index [#]
+    Ex: ap cur -500 5 makes coordinate 5 in autopilot aimpos but 500 units below current altitude
+ap loop [#1][#2]->      Index #2+1 is to loop back to one
+    Ex: ap loop 3 5 makes autopilot fly to point 5, then point 3, then 4, then 5, and back to 3, flying a loop
+More documentation on autopilot can be found in the actual code
+
+SETUP:
+Place upright, facing forward, and weld to your base.  Then, parent it, making sure it retains the weld.
+Cam controller and pod, are to be wired to linked controllers for the pilot, parented with nocollides, and close to the e2.
+If applicable, use GPSes to mark the location for holo propellors, rotors, etc, and parent them to your base, then wire them.
+Input_Next/PrevWeapon should autowire if you reset the e2; if this fails, you can do it manually.
+Adjust variables in a separate e2--varlib, enclosed below--and wire it.  This e2 will read the settings in that, and use them.
+Because it's in a separate e2, you can use @autoupdate, to smoothly integrate newer versions without having to update your wire--wire does it automatically.
+Note you can also get a holo "sight" cam by having parented wth a nocollide on your vehicle a prop with the model "models/xqm/button2.mdl"
+
+
+CAM SETTINGS
+Local to Parent: YES
+Clientside move: YES
+Localized move:  NO
+Clientside zoom: NO
+All others: your choice.
+
+OTHER VARS:
+Fire1/Fire2/Fire3/Fire4 can be linked to guns, obviously.  "Beacon" is for a nav beacon, ballistics computer, etc--just a general purpose vector input
+Gear_down/brakes are for if you have your own landing gear with hydraulics and weld latches (or similar system); they are only outputs
+Trigger_Beacon is for things like ballistics computers or nav beacons, it sends a 1 when you're displaying beacon.  Used to turn on ballistics computers usually.
+AuxOutput1/2 are just for more misc. crap, like hatches, cockpits, winches, etc.
+WEP, or Wartime Emegency Power, is for if you want to weld a thruster to your arse (afterburner), or display some effect like smoke.
+WS/AD/LR/UD/FB are your controls, for if you want to use holo control sticks.  I omitted them, in the interest of providing a timely release.
+
+#holo index map
+0               camera/gunsight master
+45-50           holo cam sight
+50-59           autopilot holo indicators
+60-68           airplane propellors
+100-149         helicopter rotors
+160-181         holo instrument panel
+182-190         hud
+191-198         flight controls
+450             ref ent for rangetable building
+
+]#
+interval(Tickrate)
+runOnChat(1)
+runOnKeys(Pilot,1)
+
+if(dupefinished())
+{
+    reset()
+}
+elseif(changed(State))
+{
+    setName("MPFC v7\n"+State:upper())
+    LevelZ = Position:z() + (Velocity:z() * 0.25)
+    if(State == "SIM") {Cam["Activated",number] = 0} else {Cam["Activated",number] = Pilot:isValid()}
+}
+#setting initial variables, processing flight template, saving ammo, declaring camera functions, pre-setting variables
+if(first() | duped())
+{
+    #State-setting
+    State = "BOOTING-1"   
+    Tickrate = 1000
+    
+    #THIS IS THE ONLY THING YOU SHOULD EVER MODIFY ON MPFC DIRECTLY EVER EVER EVER#
+    #This is your DEFAULT color setting for hud instruments, assuming you don't use another thingy
+    DEFAULT_HUDINSTRUMENT_COLOR = vec(255,64,0)
+    
+    #ASSEMBLING VARIABLE LIBRARY--takes our external datacore, and saves it to local memory.
+    #Performance
+    Maneuverability = VarLib:number(1)  	#modifier for maneuverability
+    Thrust = VarLib:number(2) 			#forward or lateral thrust, it's all meshed the same
+    Lift = VarLib:number(3)			#Lift force ratio, may adjust to work with some autohovering governor
+    Cruisespeed = VarLib:number(4)				#max lift at this, used to create stall ratios
+    Typeofvehicle = VarLib:number(5)			#selects flight model
+    #Personal preferences
+    Smoothers = VarLib:number(6)		#Smooths inputs of angles
+    CollectiveSmoother = VarLib:number(7) 	#smoother for collective only, reduced to 50% purely to make varlibs easier to default.
+    ThrustSmoother = VarLib:number(8)	#smoother for thrust only
+    #Sounds
+    CockpitSound = VarLib:string(11)			#Sound that plays in the cockpit
+    EngineSound = VarLib:string(12)				#Sound that plays from engine, pitches with load.
+    PropSound = VarLib:string(13)				#Sound that plays from rotors or thrusting, static and unchanging.
+    #Optional holo
+    Scale = VarLib:vector(18)          #Scale of your main rotors
+    RotorBlades = VarLib:number(19)   #Blades on main rotors
+    TailScale = VarLib:vector(20)      #Scale of your tail rotor
+    TailRotorBlades = VarLib:number(21) #Blades on tail rotor
+    TailAngleSwap = VarLib:number(24) #Swaps the angle of the tail rotor
+    PropellorScale = VarLib:number(22)  #Size of your propellors
+    PropellorBlades = VarLib:number(23) #Blades on your propellors
+    #Cam
+    CamOffset = VarLib:vector(25):z() #change from MPFC
+    #stick limits
+    StickLimits = VarLib:number(26)   #AAAAAAAAAAAAAAAAAAA
+    #bomb caliber system
+    BombKg = VarLib:number(27)
+    #holo instruments
+    DarkBacking = VarLib:number(28)
+    InstrumentPanelScale = VarLib:number(29)
+    #Missile ballistic data
+    MISSILE_TYPE_1 = VarLib:string(30):upper()
+    MISSILE_TYPE_2 = VarLib:string(31):upper()
+    #landing gear model
+    GearModel = VarLib:string(32)
+    
+    #Global static variables
+    ANGULAR_FORCE = 12 #Angular correction force, default 10, slightly too high because landing gear/guns
+    ANGULAR_DAMPING = 3 #Angular damping force, default 2, slightly too high because landing gear/guns
+    VECTOR_DAMPING = 0.04 #Damping of 3-dimensional movement, simulates inertia/air resistance
+    CYCLIC_LOW_LIMIT = ang(-30,0,-30)
+    CYCLIC_HIGH_LIMIT = ang(30,0,30)
+    FLIGHT_CPU_INTEGRAL_LOWER_LIMIT = ang(-5)
+    FLIGHT_CPU_INTEGRAL_UPPER_LIMIT = ang(5)
+    FLIGHT_CPU_INTEGRAL_GAIN = 0.05
+    MIN_CONTROL_VALUE = 0.25
+    FLAP_EFFECTIVENESS = 0.25 #at 1, flaps will be magic, at 0, they do nothing.  Determines a percentage to lower the effect of stall & an increase in lift at once.
+    IS_ARMED = Cannon1:isValid() | MISSILE_TYPE_1 | BombKg #guns, bombs, missiles
+    ACF_DRAG_DIV = 80 #setting to default acf drag div at time of use, we're adding an e2 func to check it though
+    #ifdef acfDragDiv()
+    ACF_DRAG_DIV = acfDragDiv()
+    #endif
+    BallisticComputerModeChar = "N"   #NOT ARMED
+    #Hard controls
+    AP_RECORD_KEY = "pad_enter"
+    Seat = Pod:entity("Entity")
+    
+    #also note, this is a default backup for legacy operation; you should now set it in varlib
+    
+    #Startup error checks
+    Typeofvehicle = clamp(Typeofvehicle,0,9) #Eliminates errors possibly accumulated from idiot chip users who go out of bounds.
+    
+    #FLIGHT MODEL TEMPLATES--this is where we process flight models
+    #Flight model templates - You can analyze these and make more, if you're a competent programmer.  Which you're probably not, if you're bothering to look through this boilerlate.
+    if(Typeofvehicle ==0)
+    {
+        ManeuverabilityMultiplier = ang(1,0.5,4)
+        VectorFlightMultiplier = vec(0,0,1.2)
+        VectorDampingMultiplier = vec(0.01,5,1)
+        Winglift = 1
+        ForeThrust = 0
+        CyclicEnabled = 0
+        CollectiveEnabled = 0
+        RollOnYaw = 1
+        CollectiveThrottleBlending = 0
+        CyclicTailMixing = 0
+        StallEnabled = 1
+        SelfLeveling = 0
+        GroundEffectMultiplier = 1
+        FlightModelName = "glider"
+    }
+    elseif(Typeofvehicle ==1)
+    {
+        ManeuverabilityMultiplier = ang(1.4,0.5,7)
+        VectorFlightMultiplier = vec(0.4,0,2)
+        VectorDampingMultiplier = vec(0.45,5,3)
+        Winglift = 1
+        ForeThrust = 1
+        CyclicEnabled = 0
+        CollectiveEnabled = 0
+        RollOnYaw = 1
+        CollectiveThrottleBlending = 0
+        CyclicTailMixing = 0
+        StallEnabled = 1
+        SelfLeveling = 0
+        GroundEffectMultiplier = 0.4  #biplanes get a bit less ground effect because they have two wings, one higher
+        FlightModelName = "biplane"
+    }
+    elseif(Typeofvehicle ==2)
+    {
+        ManeuverabilityMultiplier = ang(1.3,0.5,6.5)
+        VectorFlightMultiplier = vec(0.5,0,1.6)
+        VectorDampingMultiplier = vec(0.4,5,2.5)
+        Winglift = 1
+        ForeThrust = 1
+        CyclicEnabled = 0
+        CollectiveEnabled = 0
+        RollOnYaw = 1
+        CollectiveThrottleBlending = 0
+        CyclicTailMixing = 0
+        StallEnabled = 1
+        SelfLeveling = 0
+        GroundEffectMultiplier = 0.6 #highwings have a higher wing, reduces ground effect slightly
+        FlightModelName = "highwing"
+    }
+    elseif(Typeofvehicle ==3)
+    {
+        ManeuverabilityMultiplier = ang(1.2,0.6,6)
+        VectorFlightMultiplier = vec(0.6,0,1)
+        VectorDampingMultiplier = vec(0.35,5,2)
+        Winglift = 1
+        ForeThrust = 1
+        CyclicEnabled = 0
+        CollectiveEnabled = 0
+        RollOnYaw = 1
+        CollectiveThrottleBlending = 0
+        CyclicTailMixing = 0
+        StallEnabled = 1
+        SelfLeveling = 0
+        GroundEffectMultiplier = 0.8
+        FlightModelName = "plane"
+    }
+    elseif(Typeofvehicle ==4)
+    {
+        ManeuverabilityMultiplier = ang(1.2,0.6,4)
+        VectorFlightMultiplier = vec(0.4,0,1.5)
+        VectorDampingMultiplier = vec(0.4,5,1.25)
+        Winglift = 1
+        ForeThrust = 1
+        CyclicEnabled = 0
+        CollectiveEnabled = 1
+        RollOnYaw = 1
+        CollectiveThrottleBlending = 0.5
+        CyclicTailMixing = 0
+        StallEnabled = 1
+        SelfLeveling = 0
+        GroundEffectMultiplier = 0.8
+        FlightModelName = "jumpjet"
+    }
+    elseif(Typeofvehicle ==5)
+    {
+        ManeuverabilityMultiplier = ang(0.25,0.25,0.25)
+        VectorFlightMultiplier = vec(0.5,0.5,1)
+        VectorDampingMultiplier = vec(2,2,2)
+        Winglift = 0
+        ForeThrust = 1
+        CyclicEnabled = 0
+        CollectiveEnabled = 1
+        RollOnYaw = 0
+        CollectiveThrottleBlending = 0
+        CyclicTailMixing = 0
+        StallEnabled = 0
+        SelfLeveling = 1
+        GroundEffectMultiplier = 0.1
+        FlightModelName = "airship"
+    }
+    elseif(Typeofvehicle ==6)
+    {
+        ManeuverabilityMultiplier = ang(1,0.9,1.2)
+        VectorFlightMultiplier = vec(0.4,0.4,1.75)    #was 1,0.3,1.75
+        VectorDampingMultiplier = vec(0.4,1.5,1)  #was 0.7, 0.7, 1
+        Winglift = 0
+        ForeThrust = 0
+        CyclicEnabled = 1
+        CollectiveEnabled = 1
+        RollOnYaw = 0
+        CollectiveThrottleBlending = 0
+        CyclicTailMixing = 2
+        StallEnabled = 0
+        SelfLeveling = 1
+        GroundEffectMultiplier = 0.8
+        FlightModelName = "helicopter"
+    }
+    elseif(Typeofvehicle ==7)
+    {
+        ManeuverabilityMultiplier = ang(1,0.7,1.2)
+        VectorFlightMultiplier = vec(0.5,0.2,1.5)
+        VectorDampingMultiplier = vec(0.3,2,1)
+        Winglift = 0
+        ForeThrust = 1
+        CyclicEnabled = 1
+        CollectiveEnabled = 1
+        RollOnYaw = 0
+        CollectiveThrottleBlending = 0.3
+        CyclicTailMixing = 2
+        StallEnabled = 0
+        SelfLeveling = 1
+        GroundEffectMultiplier = 0.7
+        FlightModelName = "gyrodyne"
+    }
+    elseif(Typeofvehicle ==8)
+    {
+        ManeuverabilityMultiplier = ang(1.0,1.1,1.25)
+        VectorFlightMultiplier = vec(0.8,0.2,1)
+        VectorDampingMultiplier = vec(1,2,1.5)
+        Winglift = 1
+        ForeThrust = 1
+        CyclicEnabled = 1
+        CollectiveEnabled = 0
+        RollOnYaw = 1
+        CollectiveThrottleBlending = 0
+        CyclicTailMixing = 1
+        StallEnabled = 1
+        SelfLeveling = 1
+        GroundEffectMultiplier = 1.3
+        FlightModelName = "autogyro"
+        #custom piece of adjustment
+        Cruisespeed = Cruisespeed / 2
+    }
+    elseif(Typeofvehicle ==9)
+    {
+        ManeuverabilityMultiplier = ang(0.5,2,1)
+        VectorFlightMultiplier = vec(0.05,0,0.5)
+        VectorDampingMultiplier = vec(0.02,5,3)
+        Winglift = 0.1
+        ForeThrust = 1
+        CyclicEnabled = 0
+        CollectiveEnabled = 0
+        RollOnYaw = 0
+        CollectiveThrottleBlending = 0
+        CyclicTailMixing = 0
+        StallEnabled = 1
+        SelfLeveling = 1
+        GroundEffectMultiplier = 5  #this is its primary method of lift
+        FlightModelName = "ekranoplan"
+        #custom piece of adjustment
+        Cruisespeed = Cruisespeed / 2
+    }
+    
+    #normalization.  Do not break this.  If you do I will fucking cut you.  I'm serious--don't screw with this.
+    local Pool = Maneuverability+Thrust+Lift
+    local PoolLimit = 3.5
+    local PoolRatio = clamp(PoolLimit/Pool,0,1)
+    Maneuverability = Maneuverability * PoolRatio
+    Thrust = Thrust * PoolRatio
+    Lift = Lift * PoolRatio
+    
+    #compiling flight templates into a useable model--pass-throughs and direct arithmatic first, then application-specific evaluations
+    FlightModel = table()
+    FlightModel["name",string] = FlightModelName
+    FlightModel["maneuverability",angle] = ManeuverabilityMultiplier * Maneuverability * 1.5
+    FlightModel["thrust",vector] = VectorFlightMultiplier * (vec(Thrust*1.25,Thrust*1.25,Lift*0.75)* 50)
+    FlightModel["stall",number] = Cruisespeed * StallEnabled
+    FlightModel["damping",vector] = -VECTOR_DAMPING * VectorDampingMultiplier
+    FlightModel["wings",number] = Winglift
+    FlightModel["forward engine thrust",number] = ForeThrust
+    FlightModel["cyclic",number] = CyclicEnabled
+    FlightModel["collective",number] = CollectiveEnabled
+    FlightModel["cyclic or collective",number] = clamp(CyclicEnabled+CollectiveEnabled,0,1)
+    FlightModel["collective throttle blending",number] = CollectiveThrottleBlending
+    FlightModel["cyclic tail mixing",number] = CyclicTailMixing
+    FlightModel["self leveling",number] = SelfLeveling
+    FlightModel["roll on yaw",number] = RollOnYaw
+    FlightModel["pitch-yaw mul",number] = FlightModel["maneuverability",angle]:pitch()/FlightModel["maneuverability",angle]:yaw()
+    FlightModel["cyclic ratio",number] = FlightModel["cyclic",number] & FlightModel["self leveling",number]
+    FlightModel["ground effect multiplier",number] = GroundEffectMultiplier
+    
+    
+    #CAMERA FUNCTIONS
+    #Renders FOV to a power of magnification, estimated off a 90 degree fov.
+    #scrolls back as well
+    function number updateCamSettings(Cam:wirelink,ThirdPerson:number,ZoomIn:number,ZoomOut:number)
+    {
+        CamDist = clamp(CamDist + ((ZoomIn - ZoomOut) * 100),-400,(ThirdPerson != 0)*1000)
+        local ZoomLevel = clamp((-CamDist / 100) + 1,1,5)
+        if(ThirdPerson & !ZoomLevel)
+        {
+            Cam["FOV",number] = 100
+        }
+        else
+        {
+            local FOV = ZoomLevel^2
+            Cam["FOV",number] = (2 * atan(2 / (2 * FOV)))
+        }
+        Cam["Distance",number] = clamp(CamDist,0,1000)
+        return CamDist
+    }
+    
+    #These are the function pair for a holographic sight head, which is admittedly more for tanks but works great on attack aircraft
+    #creates a holographic sight head, more fun than generic shitty floatycams :D
+    function void createHoloSightHead(Index:number,Master:entity)
+    {
+        local Scale = 0.8
+        local Angle = Master:angles()
+        #simple tree search for a parent
+        local Parent = Master
+        local Finalized = 0
+        while(!Finalized)
+        {
+            local PossibleMaster = Parent:parent()
+            if(PossibleMaster) {Parent = PossibleMaster} else {Finalized++}
+        }
+        #box
+        holoCreate(Index,Master:toWorld(vec(0,0,4) * Scale),vec(0.7) * Scale,Angle)
+        holoModel(Index,"models/props_lab/powerbox02c.mdl")
+        holoMaterial(Index,Master:getMaterial())
+        holoColor(Index,Master:getColor())
+        holoParent(Index,Parent)
+        #glass
+        holoCreate(Index+1,Master:toWorld(vec(1.7,0,4.8) * Scale),vec(Scale),Master:toWorld(ang(90,0,0)))
+        holoModel(Index+1,"models/sprops/rectangles/size_1_5/rect_6x6x3.mdl")
+        holoMaterial(Index+1,"phoenix_storms/window")
+        #holoColor(Index+1,vec(128))
+        #holoDisableShading(Index+1,1)
+        holoParent(Index+1,Index)
+    }
+    function void updateHoloSightHead(Index:number,Master:entity,Aimpos:vector,Mat:number)
+    {
+        if(Mat)
+        {
+            holoMaterial(Index,Master:getMaterial())
+            holoColor(Index,Master:getColor())
+            #holoMaterial(Index+1,"phoenix_storms/window")
+            #holoColor(Index+1,vec(255))
+        }
+        holoAng(Index,holoEntity(Index):toWorld(ang(0,holoEntity(Index):bearing(Aimpos) * -0.8,0)))
+    }
+    
+    #COMPILING OUR SOUNDS INTO A PROPER ARRAY TODO: why do we have this?  I mean, it's a stupid design decision.  It saves like zero overhead, just makes it a bitch to access.
+    Sounds = array(CockpitSound,EngineSound,PropSound)
+    
+    #PRE-SETTING IMPORTANT VARIABLES TO THEIR DEFAULT SETTINGS WHICH WILL BE ADJUSTED IN USE
+    Plane_Lift_Adjustment = 1
+    Flap_Dampening = 1
+    AP_CurrentIndex = 1
+    Gear_Down = 1
+    AutoLevelIntegral = Lift * 0.66
+    
+    #Gets players other than the inputted player
+    function array getOtherPlayers(User:entity)
+    {
+        local Players = players()
+        local TempOutput = array()
+        foreach(K,V:entity = Players)
+            {if(V != User) {TempOutput:pushEntity(V)}}
+        return TempOutput
+    }
+    
+    #Global function for autopilot updating
+    function void addAPIndicator(Autopilot_Waypoint_Index,Autopilot_Waypoint:vector,Pilot:entity)
+    {
+        Autopilot_Non_Pilot_Players = getOtherPlayers(Pilot)
+        local HoloIndex = 50+Autopilot_Waypoint_Index
+        holoCreate(HoloIndex,Autopilot_Waypoint,vec(5,5,5))
+        holoModel(HoloIndex,"models/sprops/misc/alphanum/alphanum_"+Autopilot_Waypoint_Index:toString()+".mdl")
+        holoVisible(HoloIndex,Autopilot_Non_Pilot_Players,0)
+        holoVisible(HoloIndex,Pilot,1)
+        holoDisableShading(HoloIndex,1)
+        holoMaterial(HoloIndex,"models/wireframe")
+        holoColor(HoloIndex,vec4(255,255,0,255))
+    }
+    
+    if((Maneuverability + Thrust + Lift) > 4)
+    {
+        #ifdef concmd(string)
+        concmd("\say I'M A SHITTER WHO TRIES TO BREAK REDS CODE ILLEGALLY!")
+        selfDestructAll()
+        #endif
+    }
+    
+    #[This updates the autopilot with a command, referencing the aligned AP_ globals
+    Commands are stored as two-part operations, coordinates and op codes, loosely based off ASM
+    Command syntax is "AP [OPERATION] [MODIFIER] [INDEX] [SECONDARY MODIFIERS]"
+    For example, ap cur 500 3 would save command PNT and coord cur + 500z, or ap loop 3 5 would save cmomand JMP 3 at index 5
+    Currently we have:
+        cur   ->    current + offset modifier   <-      PNT
+        set   ->    aimpos + offset             <-      PNT
+        dir   ->    aimdir * offset             <-      PNT
+        loop  ->    loop back to offset         <-      JMP
+        *off  ->    turns off                   <-      OFF
+        *on   ->    turns on                    <-      ON
+        *land ->    land sqnc, start/end 1-2    <-      LND
+        *tkoff->    takeoff, start/end 1-2      <-      LND (operates in reverse of LND)
+        
+        * = NOT IMPLEMENTED YET
+
+    ]#
+    function void updateAutopilot(Command:string)
+    {
+        #breaking string into array of discrete commands
+        local Autopilot_Command = Command:explode(" ")
+        #removing formatting if we have accessed autopilot by chat command
+        if(Autopilot_Command[1,string]:lower() == "ap")
+        {
+            Autopilot_Command:removeString(1)
+        }
+        #gathering information
+        local AP_Aimpos = Aimpos    #semi-encapsulation, lets us modifiy ap_aimpos
+        local AP_Waypoint = vec()
+        local AP_RefIndex = Autopilot_Command[3,string]:toNumber()
+        local AP_OPCode = "ERROR" #should be overwritten
+        local AP_Mod1 = Autopilot_Command[2,string]:toNumber()
+        local AP_Mod2 = Autopilot_Command[4,string]:toNumber()
+        local AP_Mod3 = Autopilot_Command[5,string]:toNumber()
+        local AP_Mod4 = Autopilot_Command[6,string]:toNumber()
+        
+        AP_Flypos = vec()
+        AP_TargetSpeed = 0
+        
+        #Command code, the type of command processed by the management system
+        Command_Code = Autopilot_Command[1,string]        
+        
+        #turns on and off
+        if(Command_Code == "on")
+        {
+            State = "AUTO"
+        }
+        elseif(Command_Code == "off")
+        {
+            if(State == "AUTO") {State = "KEY"}
+        }
+        
+        #jumps the pointer, just an override
+        elseif(Command_Code == "index")
+        {
+            AP_CurrentIndex = AP_Mod1
+        }
+        
+        #handles assisted waypoint setting
+        elseif((Command_Code == "set") | (Command_Code == "cur") | (Command_Code == "dir"))
+        {
+            #"set" command, sets a coordinate off aim + vertical offset
+            if(Command_Code == "set")
+            {
+                AP_Waypoint = AP_Aimpos + vec(0,0,AP_Mod1)
+            }
+            #"cur" command, sets a coordinate at position aimed at + vertical offset relative to current altitude
+            elseif(Command_Code == "cur")
+            {
+                AP_Waypoint = AP_Aimpos:setZ(Position:z() + AP_Mod1)
+            }
+            #"dir" command, sets a waypoint a certain distance forward of us the specified distance
+            elseif(Command_Code == "dir")
+            {
+                AP_Waypoint = Position + ((AP_Aimpos-Position):normalized() * AP_Mod1)
+            }
+            AP_OPCode = "PNT"
+        }
+        
+        #manual waypoint setting, for external use
+        elseif(Command_Code == "point")
+        {
+            Ap_Waypoint = vec(Autopilot_Command[4,string]:toNumber(),Autopilot_Command[5,string]:toNumber(),Autopilot_Command[6,string]:toNumber())
+            AP_OPCode = "PNT"
+        }
+        
+        #direct raw command override, for external use
+        elseif(Command_Code == "ovrd")
+        {
+            AP_Flypos = vec(Autopilot_Command[2,string]:toNumber(),Autopilot_Command[3,string]:toNumber(),Autopilot_Command[4,string]:toNumber())
+            AP_TargetSpeed = Autopilot_Command[5,string]:toNumber()
+            if(AP_Flypos) {State = "AUTO"}    #if we recieve an override command, the autopilot immediately engages
+            AP_OPCode = "PNT"
+        }
+        
+        #sets looping behavior
+        elseif(Command_Code == "loop")
+        {
+            Seat:hintDriver("Looping "+AP_Mod1+" to "+AP_RefIndex+"!",5)
+            AP_OPCode = "JMP"
+        }
+        
+        #system dump, purges all indexes
+        elseif((Command_Code == "clr") | Command_Code == "dump" | Command_Code == "wipe")
+        {
+            AP_Waypoints = array()
+            for(I=1,AP_Waypoints:count())
+            {
+                AP_Waypoints:pop()
+                AP_OPCodes:pop()
+            }
+            for(I=50,60) {holoDelete(I)}
+            AP_Loop = vec2()    #clearing loop struct
+            Seat:hintDriver("Autopilot data dump complete!",5)
+        }
+        
+        #Opcode processing
+        AP_OPCode = AP_OPCode:upper() #case checking
+        #Pushing to array any added waypoints
+        if(AP_OPCode == "PNT")
+        {
+            AP_Waypoints[AP_RefIndex,vector] = AP_Waypoint
+            AP_OPCodes[AP_RefIndex,string] = AP_OPCode
+            if(AP_RefIndex < 10) {addAPIndicator(AP_RefIndex,AP_Waypoint,Pilot)}
+            Seat:hintDriver("Waypoint "+AP_RefIndex+" set!",3)
+        }
+        #loop behavior
+        elseif(AP_OPCode == "JMP")
+        {
+            #this is stupidly backwards, but backwards compatibility is king
+            AP_OPCodes[AP_RefIndex+1,string] = AP_OPCode
+            AP_Waypoints[AP_RefIndex+1,number] = AP_Mod1   #arrays are actually lists like python in e2.
+        }
+    }
+    
+}
+
+#SELF-WIRING, BASE PROP FINDING, RANGER FLAGGING, CAM SETUP, BALLISTICS TABLE FUNCTION DECLARATION
+elseif(State == "BOOTING-1")
+{
+    State = "BOOTING-2"
+    
+    #SELF-WIRING
+    Self = entity():getConstraints()
+    #ifdef entity:createWire(entity,string,string)
+        TempDist = 50
+        foreach(K,V:entity = Self)
+        {
+            if(V:type() == "gmod_wire_pod")
+            {
+                TempDist = clamp((V:pos() - entity():pos()):length(),0,TempDist)
+                if((V:pos() - entity():pos()):length() == TempDist) {ToLink = V}
+            }
+        }
+        entity():createWire(ToLink,"Input_NextWeapon","NextWeapon")
+        entity():createWire(ToLink,"Input_PrevWeapon","PrevWeapon")
+    #endif
+    #handling landing gear
+    foreach(K,V:entity = Self)
+    {
+        local Model = V:model():lower()
+        if(Model == GearModel)
+        {
+            LandingGear:pushEntity(V)
+            LandingGearWeights:pushNumber(V:mass())
+        }
+        elseif(Model == "models/xqm/button2.mdl")
+        {
+            SightHeadMaster = V
+            #ifdef entity:setMass(number)
+            SightHeadMaster:setMass(5)
+            #endif
+            SightHeadActive = 1
+            createHoloSightHead(45,V)
+            SightHeadPos = SightHeadMaster:toLocal(holoEntity(45):pos())
+        }
+    }
+    
+    #BASE PROP FINDING
+    local BaseValid = 0
+    Base = entity():isWeldedTo()
+    if(Base:isValid()) {BaseValid = 1}
+    Bases[BaseValid,entity] = Base #welded to + array
+    Inertias[1,vector] = (Base:inertia()*-ANGULAR_FORCE)/Base:mass()
+    Masses:setNumber(1,Base:mass()) #retained commented otu code because of the whole array access vs :mass() shit.
+    Unwelded:setNumber(1,0)
+    #Here we can scan through all other constrained props, determine if they are applicable as bases, and collect information of them.
+    #note this loop is shifted because of the preloading of hte array an e2's weirdness, just, accept it.
+    local X = 2-(!BaseValid)
+    while(ExtraBases:entity(X-BaseValid):isValid())
+    {
+        Selected = ExtraBases:entity(X-1)
+        if(Selected != entity():isWeldedTo())#quick check to make sure some fucktard didn't link to base
+        {
+            Inertias:setVector(X,(Selected:inertia()*-ANGULAR_FORCE)/Selected:mass())
+            Masses:setNumber(X,Selected:mass())
+            Bases:setEntity(X,Selected)
+            Unwelded:setNumber(X,!Bases:entity(X):isWeldedTo():isValid()) #NOTE: checks for ANY weld, not if it's welded TO THE AIRFRAME
+        }
+        X++
+    }
+    #SETTING UP RANGERS
+    rangerPersist(1)
+    rangerFilter(entity():getConstraints())
+    rangerHitWater(1)
+    
+    #SETTING UP CAMERA
+    #resetting our cam
+    Cam["Activated",number] = 0
+    #holo master for camera
+    holoCreate(0,vec(),vec(),entity():angles())
+    holoParent(0,entity())
+    CamParent = holoEntity(0)
+    Cam["Parent",entity] = CamParent
+    
+}
+
+#NON-BALLISTIC HOLO FUNCTIONS, AUXILIARY FUNCTIONS, CREATING AUXILIARY HOLOS
+elseif(State == "BOOTING-2")
+{
+    State = "BOOTING-3"
+    #HOLOGRAPHIC FUNCTIONS--CREATING AND UPDATING THINGS IN HOLO
+    #holographic rotors, this code is refurbished from pre-MPFC 3! :D
+    function array createRotors(Index:number,Rotor1:vector,Rotor2:vector,TailRotor:vector,Scale:vector,RotorBlades:number,TailScale:vector,TailRotorBlades:number)
+    {
+        #First a debug check
+        local RotorBlades = clamp(RotorBlades,0,24)
+        local TailRotorBlades = clamp(TailRotorBlades,0,24)
+        
+        #Checks for modes
+        #Mode 0 = nothing
+        local HoloRotorsMode = 0
+        #Checks if it has a main rotor, returns notar
+        if(Rotor1 != vec(0,0,0)) {HoloRotorsMode = 1}
+        #Checks if it has another main rotor, returns coaxial
+        if(Rotor2 != vec(0,0,0)) {HoloRotorsMode = 2}
+        #Checks if it has a tail rotor, returns regular
+        if(TailRotor != vec(0,0,0)) {HoloRotorsMode = 3}
+        #Checks if it has properly offset rotors & tailless, returns synchro
+        local OffsetRotor1 = entity():toLocal(Rotor1):y()
+        local OffsetRotor2 = entity():toLocal(Rotor2):y()
+        #This is related tot he above, checks which DIRECTION to tilt those rotors
+        if(OffsetRotor1 > 0) {TiltForSynchroPerSide = vec2(-10,10)} else {TiltForSynchroPerSide = vec2(10,-10)}
+        if((Rotor1 != vec(0,0,0)) & (Rotor2 != vec(0,0,0)) & (TailRotor == vec(0,0,0))) {if(inrange(abs(OffsetRotor1),5,abs(OffsetRotor2*1.1))) {HoloRotorsMode = 4}} #final check for synchro
+        #Index for second rotor
+        local IndexB = Index+25
+        #Index for discs
+        local Circle = Index+48
+        local CircleB = Index+49
+        #Making main rotor
+        if(HoloRotorsMode > 0)
+        {
+            holoCreate(Index,Rotor1,vec(0.4,0.4,1) * Scale:setY(Scale:x()))
+            holoAng(Index,entity():toWorld(ang(0,0,(HoloRotorsMode == 4) * TiltForSynchroPerSide:x())))
+            holoModel(Index,"hq_cylinder")
+            holoParent(Index,entity())
+            local N = 1
+            while(N <= RotorBlades)
+            {
+                local Ang = (N/RotorBlades * 360)
+                local HoloAng = holoEntity(Index):toWorld(ang(0,Ang,0))
+                #Making main blade
+                holoCreate(Index+N,holoEntity(Index):pos() + (HoloAng:forward() * (Scale:x() * 44)))
+                holoScale(Index+N,vec(7,0.5,0.01) * Scale)
+                holoAng(Index+N,HoloAng)
+                holoAng(Index+N,holoEntity(Index+N):toWorld(ang(0,0,10)))
+                holoParent(Index+N,Index)
+                holoModel(Index+N,"hq_rcube")
+                #Making its control rod
+                #[holoCreate(Index+N+RotorBlades,holoEntity(Index):pos() + (HoloAng:forward() * (Scale:x() * 3)) + (HoloAng:right() * (Scale:y() * 2.5)) + (HoloAng:up() * (Scale:z() * -0.75)))
+                holoModel(Index+N+RotorBlades,"models/sprops/trans/misc/shock_1.mdl")
+                holoScale(Index+N+RotorBlades,Scale:setY(Scale:x())*0.4)
+                holoAng(Index+N+RotorBlades,HoloAng)
+                holoAng(Index+N+RotorBlades,holoEntity(Index+N+RotorBlades):toWorld(ang(1,0,0)))
+                holoBodygroup(Index+N+RotorBlades,0,2)
+                holoParent(Index+N+RotorBlades,Index)]#
+                N++
+            }
+            holoCreate(Circle,Rotor1,vec(14.2,14.2,0.05) * (Scale:setY(Scale:x())))
+            holoAng(Circle,holoEntity(Index):angles())
+            holoModel(Circle,"hq_cylinder")
+            holoAlpha(Circle,0)
+            holoParent(Circle,Index)
+        }
+        #Making coaxial rotor
+        if((HoloRotorsMode == 2) | (HoloRotorsMode == 4))
+        {
+            holoCreate(IndexB,Rotor2,vec(0.4,0.4,1) * Scale:setY(Scale:x()))
+            holoAng(IndexB,entity():toWorld(ang(0,0,(HoloRotorsMode == 4) * TiltForSynchroPerSide:y())))
+            holoModel(IndexB,"hq_cylinder")
+            holoParent(IndexB,entity())
+            local N = 1
+            while(N <= RotorBlades)
+            {
+                local Ang = (N/RotorBlades * 360)
+                local HoloAng = holoEntity(IndexB):toWorld(ang(0,Ang,0))
+                #Making main rotor
+                holoCreate(IndexB+N,holoEntity(IndexB):pos() + (HoloAng:forward() * (Scale:x() * 44)))
+                holoScale(IndexB+N,vec(7,0.5,0.01) * Scale)
+                holoAng(IndexB+N,HoloAng)
+                holoAng(IndexB+N,holoEntity(IndexB+N):toWorld(ang(0,0,-10)))
+                holoParent(IndexB+N,IndexB)
+                holoModel(IndexB+N,"hq_rcube")
+                #Making control rods
+                #[holoCreate(IndexB+N+RotorBlades,holoEntity(IndexB):pos() + (HoloAng:forward() * (Scale:x() * 3)) + (HoloAng:right() * (Scale:y() * 2.5)) + (HoloAng:up() * (Scale:z() * 0.25)))
+                holoModel(IndexB+N+RotorBlades,"models/sprops/trans/misc/shock_1.mdl")
+                holoScale(IndexB+N+RotorBlades,Scale:setY(Scale:x())*0.4)
+                holoAng(IndexB+N+RotorBlades,HoloAng)
+                holoAng(IndexB+N+RotorBlades,holoEntity(IndexB+N+RotorBlades):toWorld(ang(1,0,0)))
+                holoBodygroup(IndexB+N+RotorBlades,0,2)
+                holoParent(IndexB+N+RotorBlades,IndexB)]#
+                N++
+            }
+        }
+        #Making tail rotor
+        elseif(HoloRotorsMode == 3)
+        {
+            holoCreate(IndexB,TailRotor,vec(TailScale:x()*0.2,TailScale:x()*0.2,TailScale:z()*0.5))
+            holoAng(IndexB,entity():toWorld(ang(0,0,(1-(TailAngleSwap*2))*90)))
+            holoModel(IndexB,"hq_cylinder")
+            holoParent(IndexB,entity())
+            local N = 1
+            while(N <= TailRotorBlades)
+            {
+                local Ang = (N/TailRotorBlades * 360)
+                local HoloAng = holoEntity(IndexB):toWorld(ang(0,Ang,0))
+                #Making tail rotor
+                holoCreate(IndexB+N,holoEntity(IndexB):pos() + (HoloAng:forward() * (TailScale:x() * 9.5)))
+                holoScale(IndexB+N,vec(1.5,0.175,0.01) * TailScale)
+                holoAng(IndexB+N,HoloAng)
+                holoAng(IndexB+N,holoEntity(IndexB+N):toWorld(ang(0,0,-10)))
+                holoParent(IndexB+N,IndexB)
+                holoModel(IndexB+N,"hq_rcube_thick")
+                #Making tail control rods
+                #[
+                holoCreate(IndexB+N+TailRotorBlades,holoEntity(IndexB):pos() + (HoloAng:forward() * (TailScale:x() * 1.25)) + (HoloAng:right() * (TailScale:y() * 1)))
+                holoModel(IndexB+N+TailRotorBlades,"models/sprops/trans/misc/shock_1.mdl")
+                holoScale(IndexB+N+TailRotorBlades,vec(TailScale:x()*0.3,TailScale:x()*0.3,TailScale:z()*0.25))
+                holoAng(IndexB+N+TailRotorBlades,HoloAng)
+                holoAng(IndexB+N+TailRotorBlades,holoEntity(IndexB+N+TailRotorBlades):toWorld(ang(1,0,0)))
+                holoBodygroup(IndexB+N+TailRotorBlades,0,2)
+                holoParent(IndexB+N+TailRotorBlades,IndexB)]#
+                N++
+            }
+        }
+        #making sure our synchromesh rotors don't slap each other to bits, not a perfect algorithm but it'll do.
+        if(HoloRotorsMode == 4) {holoAng(IndexB,holoEntity(IndexB):toWorld(ang(0,1/RotorBlades,0)))}
+        #Indexing for future use our holo entities
+        RotorA = holoEntity(Index)
+        RotorB = holoEntity(IndexB)
+        #Finally coloring & matting
+        local Color = vec(96,96,96)
+        local Material = "models/props_lab/door_klab01"
+        local N = 0
+        while(N <= CircleB)
+        {
+            if(holoEntity(Index+N):isValid())
+            {
+                holoColor(Index+N,Color)
+                holoMaterial(Index+N,Material)
+            }
+            N++
+        }
+        #output array
+        return array(HoloRotorsMode,Index,RotorA,RotorB)
+    }
+    #Updating the rotors to make them turn
+    function void rotateRotors(HoloRotorsMode:number,Index:number,RotorA:entity,RotorB:entity,RatePercentage:number)
+    {
+        #Updating holograms
+        local Doublealpha = (HoloRotorsMode ==3) * 0.75
+        holoAng(Index,RotorA:toWorld(ang(0,150*RatePercentage,0)))                
+        holoAng(Index+25,RotorB:toWorld(ang(0,-150*RatePercentage*(1-(Doublealpha*3)),0)))
+        return void
+    }
+    #Function to create a single propellor
+    function number createPropellor(Index:number,Position:vector,Size:number,Blades:number)
+    {
+        #Getting blades and model
+        local ActualBlades = clamp(Blades,2,5) #Keeps it working with sprops
+        local Model = "models/sprops/trans/air/prop_"+ActualBlades:toString()+"b_m.mdl"
+        #Making propellor itself
+        holoCreate(Index,Position,vec(Size))
+        holoModel(Index,Model)
+        holoColor(Index,vec(128,128,128))
+        holoParent(Index,entity())
+        #Making the little circle around it
+        holoCreate(Index+1,Position,vec(Size,Size,Size*0.05)*6.4)
+        holoModel(Index+1,"hq_sphere")
+        holoAng(Index+1,entity():toWorld(ang(90,0,0)))
+        holoAlpha(Index+1,0)
+        holoColor(Index+1,vec(63,63,63))
+        holoParent(Index+1,entity())
+        #Getting direction it spins
+        local Direction = clamp(ceil(entity():toLocal(Position):y()),-1,1)
+        if(Direction == 0) {Direction = 1}
+        return Direction
+    }
+    #Function to rotate said propellor
+    function void rotatePropellor(Index,Direction,Rate)
+    {
+        holoAng(Index,holoEntity(Index):toWorld(ang(0,0,Direction*Rate*80)))
+        if(Rate < 1)
+        {
+            holoAlpha(Index+1,Rate*96)
+            holoAlpha(Index,(1 - (Rate/1.2)) * 255)
+        }
+    }
+    
+    #AUXILIARY FUNCTIONS
+    
+    #declaring a function for just smoothing raw control inputs
+    function number getSmoothedOutput(Var,Change,Smoother)
+    {
+        return clamp(clamp(clamp(Change,-1,1),Var-Smoother,Var+Smoother),-1,1)
+    }
+    #declaring a function for a smoothed adjusted persist control
+    function number getAccumulatedValue(Var,Change,Rate,LowRange,HighRange)
+    {
+        return clamp(Var+(clamp(Change,-1,1)*Rate),LowRange,HighRange)
+    }
+    #This function rotate an angle around Pitch/Yaw/Roll, ignoring all gymbal lock.  VERY useful. Used for rotating our angle master
+    function angle freeRotateAngle(Angle:angle,Pitch,Yaw,Roll)
+    {
+        local A = Angle
+        A = A:rotateAroundAxis(A:forward(),Roll)
+        A = A:rotateAroundAxis(A:up(),Yaw)
+        A = A:rotateAroundAxis(A:right(),Pitch)
+        return A
+    }
+    
+    #declaring function for heading with autoroll, this is used in mouse flight mode
+    function angle getHeadingAutoroll(Aimpos:vector,Anglimit,FlightCPUAngle:angle,SelfLeveling,CyclicRatio,Position:vector,FlightModel:table,LevelNow:number)
+    {
+        local Roll = 0
+        local Ang = clamp((heading(entity():pos(),FlightCPUAngle,Aimpos)),ang(-Anglimit,-Anglimit,0),ang(Anglimit,Anglimit,0))/Anglimit
+        #Autroll for planes
+        if(!CyclicRatio)
+        {
+            local Yaw = Ang:yaw()
+            local YawNorm = clamp(Yaw / 2,-1,1)
+            Roll = (Yaw - (YawNorm)) * (1 - clamp((1-(abs(Yaw)/3)),-1,1))
+        }
+        #Autoroll for autogyro, thanks ferv!  He did this!
+        elseif(FlightModel["name",string] == "autogyro")
+        {
+            local Yaw = Ang:yaw()
+            Roll = Yaw  * (1 - clamp((1-(abs(Yaw)/4)),-0.75,0.75))#Add some smoother here to fix this shit.
+        }
+        #Autoroll for helis
+        else
+        {
+            local Yaw = Ang:yaw()
+            #local PitchFixed = clamp(abs(-FlightCPUAngle:pitch())-5,0,20)
+            local VelocityModifier = clamp(abs(LocalVel:x()) - 300,0,900)/900
+            Roll = (Yaw  * (1 - clamp((1-(abs(Yaw)/5)),-1,1))) * (VelocityModifier * 5)#Clamps max roll at around 20 degrees
+        }
+        if(LevelNow) {Roll = 0}
+        if(SelfLeveling & !CyclicRatio & !LevelNow) {return Ang} else {return Ang:setRoll(Roll)}
+    }
+    
+    #CREATING OUR AUXILIARY HOLOS
+    #TODO: CLEAN UP
+    #These are the rotors
+    Data = createRotors(100,Rotor1,Rotor2,TailRotor,Scale,RotorBlades,TailScale,TailRotorBlades)
+    HoloRotorsMode = Data:number(1)
+    Index = Data:number(2)
+    RotorA = Data:entity(3)
+    RotorB = Data:entity(4)
+    #These are the propellors
+    Temp_Propellors = array(Prop1,Prop2,Prop3,Prop4) #Making an array of all the possible propellor spots
+    foreach(K,V:vector = Temp_Propellors)
+    {
+        if(V)
+        {
+            Number_Of_Propellors++
+            Propellor_Directions:pushNumber(createPropellor(60+(Number_Of_Propellors*2),V,PropellorScale,PropellorBlades))
+        }
+    }
+}
+
+elseif(State == "BOOTING-3")
+{
+    State = "IDLE"
+    
+    #BOMB BALLISTICS FUNCTIONS AND RANGE-TABLE BUILDING
+    #[building range tables off values precomputed
+    In case you were curious how i got these magic hacky numbers, and what they mean, they are the trajectory of a bomb stationary
+    and thent he trajectory of a bomb dropped at average airspeeds, divided by speed.  It makes a very "AX+B" sort of arrangement.
+    I got them by dropping bombs of the calibers and then tracking their forward offset at 20m increments.  If you're curious
+    or you want to add more weapons, PM me sometime.  And yes I'm missing the 1t bomb, and no, it's not an oversight, fuck you 1t spammers
+    
+    Also note, it adds a variable called "bomb_ccrp_window"; this is for CCRP, the upper bound of how close it has to be to drop
+    This is 1/2 the splash radius, to ensure reliable target destruction]#
+    local BOMB_DROP_TABLES = table()
+    BOMB_DROP_TABLES[50,array] = array(vec2(106.62,1.77),vec2(148.55,2.64),vec2(179.8,3.31),vec2(204.84,3.87),vec2(225.85,4.357),vec2(244.58,4.79),vec2(260.09,5.2),vec2(274.43,5.56),vec2(287.16,5.9),vec2(298.9,6.24),vec2(309.29,6.56),vec2(318.5,6.89),vec2(327.37,7.18),vec2(335.21,7.48),vec2(342.14,7.76))
+    BOMB_DROP_TABLES[100,array] = array(vec2(167.27,1.66),vec2(279.41,2.41),vec2(323.42,3.06),vec2(322.21,3.64),vec2(292.08,4.19),vec2(243.58,4.68),vec2(182.41,4.6),vec2(110.39,5.62),vec2(30.64,6.07),vec2(-54.14,6.52),vec2(-141.62,6.95),vec2(-229.91,7.36),vec2(-322.73,7.77),vec2(-413.98,8.17),vec2(-508.22,8.57))
+    BOMB_DROP_TABLES[250,array] = array(vec2(148.98,1.5),vec2(249.13,2.1),vec2(293.88,2.7),vec2(301.5,3.3),vec2(293.16,3.8),vec2(247.26,4.2),vec2(198.83,4.7),vec2(139.76,5.1),vec2(72.95,5.6),vec2(1.03,6),vec2(-69.64,6.4),vec2(-149.39,6.8),vec2(-224.49,7.2),vec2(-302.49,7.5),vec2(-382.87,7.9))
+    BOMB_DROP_TABLES[500,array] = array(vec2(127.2,1.64),vec2(237.8,2.33),vec2(370.1,2.86),vec2(505.4,3.29),vec2(636,3.68),vec2(757.4,4.04),vec2(870.7,4.37),vec2(978.9,4.68),vec2(1076.8,4.98),vec2(1164.5,5.28),vec2(1251.2,5.55),vec2(1337.1,5.81),vec2(1413.2,6.07),vec2(1493.1,6.32),vec2(1563.7,6.55))
+    BOMB_DROP_TABLES[1000,array] = array(vec2(118.9,1.62),vec2(192.9,2.3342),vec2(286.3,2.877),vec2(406.5,3.324),vec2(558.7,3.7),vec2(730.4,4.041),vec2(923.5,4.324),vec2(1131.4,4.5866),vec2(1347.2,4.98),vec2(1574.6,5.064),vec2(1810.3,5.27),vec2(2039.9,5.48),vec2(2282.5,5.677),vec2(2525.1,5.866),vec2(2778.4,10.705))
+    local BOMB_CCRP_TABLE = array()
+    BOMB_CCRP_TABLE[50,number] = 4#8.77/2
+    BOMB_CCRP_TABLE[100,number] = 5#16.74/2
+    BOMB_CCRP_TABLE[250,number] = 6#22/2
+    BOMB_CCRP_TABLE[500,number] = 8#47.8/2
+    BOMB_CCRP_TABLE[1000,number] = 10#58.8/2
+    #pushing to instance use
+    BombRangeTable = BOMB_DROP_TABLES[BombKg,array]
+    BombCCRPWindow = BOMB_CCRP_TABLE[BombKg,number]
+    #default backup
+    if(!BombCCRPWindow)
+    {
+        BombRangeTable = array(vec2(137.5175,1.6425),vec2(228.7225,2.37),vec2(291.8,2.9825),vec2(333.4875,3.525),vec2(361.7725,4.00675),vec2(373.205,4.4275),vec2(378.0075,4.7175),vec2(375.87,5.24),vec2(366.8875,5.6375),vec2(352.5725,6.01),vec2(337.3075,6.365),vec2(319.075,6.715),vec2(298.3375,7.055),vec2(277.96,7.3675),vec2(253.6875,7.69))
+        BombCCRPWindow = 5
+    }
+    function vector bombCCIPWithGivenAltitude(Rack:entity, RangeTable:array, Altitude:number, Round20:number)
+    {
+        local DataLookup = vec2()
+        #for flexible use
+        if(!Round20)
+        {
+            local AltToIndex = Altitude / 20    #converts altitude to a range-table value; this is not a raw index, but a float for linear interpolation
+            local DataIndex1 = ceil(AltToIndex)   #loewr bound index
+            local DataIndex2 = floor(AltToIndex)    #upper bound index
+            local Diff = AltToIndex-DataIndex2  #interpolation value
+            DataLookup = (RangeTable[DataIndex1,vector2] * (1-Diff))+(RangeTable[DataIndex2,vector2] * Diff)
+        }
+        else
+        {
+            #start high-efficiency loop version
+            DataLookup = RangeTable[int(Altitude / 20),vector2]
+        }
+        #rest of code is the same
+        local ForwardStaticComponent = Rack:forward() * DataLookup:x()#forward drop, not moving
+        local ForwardVelocityComponent = Rack:forward() * (DataLookup:y() * Rack:velL():x())  #forward drop, moving, per unit of velocity
+        local VerticalComponent = vec(0,0,-Altitude * 39.37)    #down
+        return Rack:pos() + (VerticalComponent + ForwardStaticComponent + ForwardVelocityComponent)    #down + forward stationary drop + (velocity multiplier at range * velocity)
+    }
+    
+    #[MISSILE BALLISTICS FUNCTIONS AND RANGE-TABLE BUILDING
+    In case you were curious how i got these magic hacky numbers, and what they mean, they are the trajectory of a missile fired
+    at level, in the angle of drop and the time of flight.  Because missiles have significant spread, I averaged it over multiple fires
+    The info is local to the rack, but it should be efficient enough for acf combat.]#
+    local MISSILE_RANGE_TABLES = table()
+    MISSILE_RANGE_TABLES["S-24",array] = array(vec2(-1.9,0.3),vec2(-1.7,0.5),vec2(-1.7,0.6),vec2(-1.6,0.7),vec2(-1.6,0.8),vec2(-1.5,0.9),vec2(-1.5,1),vec2(-1.5,1.1),vec2(-1.4,1.2),vec2(-1.4,1.3),vec2(-1.4,1.4),vec2(-1.4,1.5),vec2(-1.4,1.6),vec2(-1.4,1.7),vec2(-1.3,1.8),vec2(-1.3,1.8),vec2(-1.3,1.9),vec2(-1.4,2),vec2(-1.4,2.1),vec2(-1.4,2.3),vec2(-1.5,2.4),vec2(-1.5,2.5),vec2(-1.6,2.6),vec2(-1.7,2.7),vec2(-1.7,2.9),vec2(-1.8,3),vec2(-1.9,3.1),vec2(-2,3.3),vec2(-2.1,3.4),vec2(-2.1,3.6),vec2(-2.2,3.8),vec2(-2.3,3.9),vec2(-2.4,4.1),vec2(-2.5,4.3),vec2(-2.6,4.5),vec2(-2.8,4.7),vec2(-2.9,4.9),vec2(-3,5.1),vec2(-3.1,5.3),vec2(-3.2,5.6))
+    MISSILE_RANGE_TABLES["S-24 LOWVEL",array] = array(vec2(-1.8,0.3),vec2(-1.7,0.5),vec2(-1.8,0.6),vec2(-1.9,0.8),vec2(-2.2,0.9),vec2(-2.4,1.1),vec2(-2.6,1.2),vec2(-2.8,1.4),vec2(-3.1,1.6),vec2(-3.3,1.8),vec2(-3.5,2),vec2(-3.7,2.2),vec2(-4,2.4),vec2(-4.2,2.6),vec2(-4.4,2.9),vec2(-4.6,3.1),vec2(-4.9,3.3),vec2(-5.1,3.6),vec2(-5.3,3.9),vec2(-5.5,4.2),vec2(-5.8,4.4),vec2(-6,4.8),vec2(-6.2,5.1),vec2(-6.5,5.4),vec2(-6.7,5.7),vec2(-7,6.1),vec2(-4.6,4.3),vec2(-2.4,2.3))
+    MISSILE_RANGE_TABLES["HVAR HE",array] = array(vec2(-1.2,0.3),vec2(-1.2,0.4),vec2(-1.1,0.5),vec2(-1.1,0.6),vec2(-1.1,0.7),vec2(-1.1,0.8),vec2(-1.1,0.8),vec2(-1.1,0.9),vec2(-1.1,1),vec2(-1.1,1.1),vec2(-1.1,1.2),vec2(-1.2,1.3),vec2(-1.2,1.4),vec2(-1.3,1.4),vec2(-1.3,1.5),vec2(-1.4,1.6),vec2(-1.5,1.7),vec2(-1.6,1.8),vec2(-1.7,2),vec2(-1.8,2.1),vec2(-1.9,2.2),vec2(-2,2.3),vec2(-2.1,2.4),vec2(-2.2,2.6),vec2(-2.3,2.7),vec2(-2.4,2.8),vec2(-2.6,3),vec2(-2.7,3.1),vec2(-2.8,3.3),vec2(-3,3.4),vec2(-3.1,3.6),vec2(-3.2,3.7),vec2(-3.4,3.9),vec2(-3.5,4.1),vec2(-3.7,4.2),vec2(-3.8,4.4),vec2(-4,4.6),vec2(-4.2,4.8),vec2(-4.4,5),vec2(-4.5,5.2))
+    MISSILE_RANGE_TABLES["HVAR HEAT",array] = array(vec2(-0.8,0.2),vec2(-0.8,0.3),vec2(-0.8,0.3),vec2(-0.8,0.4),vec2(-0.8,0.4),vec2(-0.8,0.5),vec2(-0.7,0.6),vec2(-0.7,0.6),vec2(-0.7,0.7),vec2(-0.7,0.7),vec2(-0.8,0.8),vec2(-0.8,0.8),vec2(-0.8,0.9),vec2(-0.9,1),vec2(-0.9,1),vec2(-1,1.1),vec2(-1,1.2),vec2(-1.1,1.2),vec2(-1.1,1.3),vec2(-1.2,1.4),vec2(-1.3,1.5),vec2(-1.4,1.5),vec2(-1.4,1.6),vec2(-1.5,1.7),vec2(-1.6,1.8),vec2(-1.7,1.9),vec2(-1.7,2),vec2(-1.8,2.1),vec2(-1.9,2.2),vec2(-2,2.3),vec2(-2.1,2.4),vec2(-2.2,2.5),vec2(-2.3,2.6),vec2(-2.4,2.7),vec2(-2.5,2.8),vec2(-2.6,2.9),vec2(-2.7,3.1),vec2(-2.8,3.2),vec2(-2.9,3.3),vec2(-3.1,3.5))
+    MISSILE_RANGE_TABLES["RS82 HE",array] = array(vec2(-1.8,0.3),vec2(-1.9,0.5),vec2(-2.1,0.6),vec2(-2.4,0.8),vec2(-2.6,0.9),vec2(-2.9,1),vec2(-3.3,1.2),vec2(-3.7,1.3),vec2(-4,1.5),vec2(-4.5,1.6),vec2(-4.8,1.8),vec2(-5.3,2),vec2(-5.8,2.1),vec2(-6.3,2.3),vec2(-6.8,2.5),vec2(-7.3,2.7),vec2(-7.9,2.9),vec2(-8.5,3.1),vec2(-9.1,3.3),vec2(-9.8,3.5),vec2(-10.5,3.8),vec2(-11.2,4),vec2(-12,4.2),vec2(-12.8,4.5),vec2(-13.6,4.7))
+    MISSILE_RANGE_TABLES["70MMFFAR",array] = array(vec2(-0.8,0.2),vec2(-0.8,0.3),vec2(-0.8,0.4),vec2(-0.8,0.4),vec2(-0.8,0.5),vec2(-0.8,0.6),vec2(-0.8,0.7),vec2(-0.8,0.7),vec2(-0.8,0.8),vec2(-0.8,0.9),vec2(-0.8,0.9),vec2(-0.8,1),vec2(-0.8,1.1),vec2(-0.8,1.2),vec2(-0.8,1.2),vec2(-0.8,1.3),vec2(-0.8,1.4),vec2(-0.8,1.5),vec2(-0.8,1.5),vec2(-0.8,1.6),vec2(-0.9,1.7),vec2(-0.9,1.8),vec2(-0.9,1.9),vec2(-1,1.9),vec2(-1,2),vec2(-1.1,2.1),vec2(-1.2,2.2),vec2(-1.3,2.3),vec2(-1.3,2.4),vec2(-1.4,2.6),vec2(-1.5,2.7),vec2(-1.6,2.8),vec2(-1.7,2.9),vec2(-1.9,3.1),vec2(-2,3.2),vec2(-2.1,3.3),vec2(-2.3,3.5),vec2(-2.5,3.6),vec2(-2.7,3.8),vec2(-2.8,4))
+    MISSILE_RANGE_TABLES["40MMFFAR",array] = array(vec2(-0.9,0.2),vec2(-0.9,0.4),vec2(-0.9,0.5),vec2(-0.9,0.6),vec2(-0.9,0.7),vec2(-0.9,0.8),vec2(-0.9,0.8),vec2(-0.9,0.9),vec2(-0.9,1),vec2(-0.9,1.1),vec2(-0.9,1.2),vec2(-1,1.3),vec2(-1,1.4),vec2(-1.1,1.5),vec2(-1.2,1.6),vec2(-1.3,1.7),vec2(-1.5,1.8),vec2(-1.6,2),vec2(-1.7,2.1),vec2(-1.9,2.2),vec2(-2.1,2.3),vec2(-2.3,2.4),vec2(-2.4,2.6),vec2(-2.6,2.7),vec2(-2.9,2.9),vec2(-3.1,3),vec2(-3.4,3.2),vec2(-3.6,3.3),vec2(-3.9,3.5),vec2(-4.2,3.6),vec2(-4.5,3.8),vec2(-4.8,4),vec2(-5.2,4.2),vec2(-5.6,4.3),vec2(-5.9,4.5),vec2(-6.3,4.7),vec2(-6.8,4.9),vec2(-7.2,5.1))
+    local MISSILE_LOOKUP_TABLE = MISSILE_RANGE_TABLES:keys()
+    foreach(K,V:string = MISSILE_LOOKUP_TABLE)
+    {
+        if(MISSILE_TYPE_1 == V) {Missile1RangeTable = MISSILE_RANGE_TABLES[V,array]}
+        if(MISSILE_TYPE_2 == V) {Missile2RangeTable = MISSILE_RANGE_TABLES[V,array]}
+    }
+    #indexes if manually guided
+    MISSILE_1_GUIDED = !Missile1RangeTable#:count()
+    MISSILE_2_GUIDED = !Missile2RangeTable#:count()
+    
+    #integrates a set-altitude bomb function into an iterative cycle
+    function vector bombCCIP(Rack:entity, RangeTable:array, Offset:vector)
+    {
+        local StartPoint = Rack:pos()
+        local EndPoint = bombCCIPWithGivenAltitude(Rack,RangeTable,20,1)
+        local Iterations = 1
+        while(Iterations <= RangeTable:count())
+        {
+            local Trace = rangerOffset((StartPoint-EndPoint):length(),StartPoint,(EndPoint-StartPoint))
+            if(Trace:hit())
+            {
+                return Trace:position()
+            }
+            else
+            {
+                StartPoint = Trace:position()
+                Iterations++
+                EndPoint = bombCCIPWithGivenAltitude(Rack,RangeTable,Iterations*20,1)
+            }
+        }
+        return EndPoint
+    }
+    
+    #CANNON BALLISTICS
+    #creates a ballistic range-table with drop and flighttime for bullets
+    function array createGunRangeTable(Gun:entity)
+    {
+        #A reference holo
+        holoCreate(450,vec(),vec(),ang())
+        local ReferenceEntity = holoEntity(450)
+        #Primary setups
+        local Muzvel = Gun:acfMuzzleVel()
+        local DragConstant = ( (3.1416 * (Gun:acfCaliber()/2)^2 )/10000)/(100*Gun:acfProjectileMass())
+        local ACCEL = vec(0,0,-gravity())
+        local Timescale = 0.066 #Timescale.  Perfect accuracy is at 0.066.  0.066*2 gives a still fairly good accuracy.  Drift will increase in proprtion to timescale accumulation errors.
+        local Coordinates = array()
+        #Initial flight setup
+        local Flight = ReferenceEntity:forward():setZ(0) * (Muzvel * 39.37)
+        local Pos = ReferenceEntity:pos()
+        local Drag = vec()
+        local NextPos = vec()
+        #Used for range comparison, and drop adjustment
+        local StartPos = Pos
+        #Flags for data, will use for interpolation & storage later
+        local TableIncrements = 20  #Range Increments
+        local TableMaxRange = 800   #Maximum range
+        local TableSlot = 1         #Slot it's attempting to insert data, start at 1
+        #Stating value
+        local Distance = 0
+        #Backup to prevent failure on empty guns
+        if(!Muzvel) {return Coordinates}
+        #Actual ballistics table tabulation--accurate out to approximately 15 degrees drop deflection
+        for(N=1,151)
+        {
+            Drag = Flight:normalized()*(DragConstant*Flight:length2())/ACF_DRAG_DIV
+            NextPos = Pos + Flight*Timescale
+            Flight = Flight + (ACCEL-Drag)*Timescale
+            #Debug
+            #holoCreate(N,NextPos)
+            #Array building--if we pass a certain point, it flags the condition being met, averages the point & its predecessor, and stores it.
+            Distance = ((NextPos - StartPos):setZ(0):length()) / 39.37 #This converts to meters, and, at the same time fixes the quite stupid gmod 1.33 map scaling thing.
+            while(Distance > (TableIncrements*TableSlot))
+            {
+                Coordinates:pushVector2(vec2(ReferenceEntity:elevation((Pos + NextPos) / 2),N*Timescale))
+                TableSlot++
+            }
+            if(Distance > TableMaxRange)
+            {
+                Coordinates:pushVector2(vec2(ReferenceEntity:elevation((Pos + NextPos) / 2),N*Timescale))
+                TableSlot++
+                holoDelete(450)
+                return Coordinates
+            }
+            Pos = NextPos
+        }
+        #print(_HUD_PRINTCONSOLE,""+entity():getName()+": Failed to build total range table!\nTable compiled out to "+(Coordinates:count()*TableIncrements)+"m!",3)
+        holoDelete(450) #Cleaning up our reference holo--I know it's a messy solution, it works though.
+        return Coordinates
+    }
+        
+    
+    #HOLO INSTRUMENTS
+    #creates instrument panel
+    function void createHoloInstruments(Index:number,ReferenceEntity:entity,Is_Armed:number,Color:vector,DarkBacking:number,Scale:number,Position:vector)
+    {
+        local SkinMod = DarkBacking * 4
+        local GaugeColor = ReferenceEntity:getColor()
+        local BackingColor = (Color / 8)
+        local Position = Position
+        local PitchOffset = -15
+        if(!Position)
+        {
+            Position = ReferenceEntity:pos()
+            PitchOffset = 0
+        }
+                
+        local Draw = 1
+        #ifdef holoMaxAmount()
+        Draw = holoMaxAmount() > 60
+        #endif
+        #creating the gauge backings
+        #center attitude indicator
+        holoCreate(Index,Position,vec(Scale),ReferenceEntity:toWorld(ang(PitchOffset,180,0)))
+        holoModel(Index,"models/sprops/trans/misc/gauge_1.mdl")
+        holoSkin(Index,1+SkinMod)
+        holoParent(Index,ReferenceEntity)
+        local Master = holoEntity(Index)
+        if(Draw)
+        {
+            #upper left--airspeed indicator
+            holoCreate(Index+1,Master:toWorld(vec(0,-5.5,0) * Scale),vec(Scale),Master:toWorld(ang(0,0,180)))
+            holoModel(Index+1,"models/sprops/trans/misc/gauge_1.mdl")
+            holoSkin(Index+1,1+SkinMod)
+            #upper right--altimeter
+            holoCreate(Index+2,Master:toWorld(vec(0,5.5,0) * Scale),vec(Scale),Master:toWorld(ang(0,0,220)))
+            holoModel(Index+2,"models/sprops/trans/misc/gauge_1.mdl")
+            holoSkin(Index+2,2+SkinMod)
+            #lower right--climb
+            holoCreate(Index+3,Master:toWorld(vec(0,5.5,-5.5) * Scale),vec(Scale),Master:toWorld(ang(0,0,90)))
+            holoModel(Index+3,"models/sprops/trans/misc/gauge_1.mdl")
+            holoSkin(Index+3,3+SkinMod)
+            #lower center--heading/radar warning
+            holoCreate(Index+4,Master:toWorld(vec(0,0,-5.5) * Scale),vec(Scale),Master:angles())
+            holoModel(Index+4,"models/sprops/trans/misc/gauge_1.mdl")
+            holoSkin(Index+4,2+SkinMod)
+            #lower left--gun ammo dial
+            if(Is_Armed)
+            {
+                holoCreate(Index+5,Master:toWorld(vec(0,-5.5,-5.5) * Scale),vec(Scale),Master:angles())
+                holoModel(Index+5,"models/sprops/trans/misc/gauge_1.mdl")
+                holoSkin(Index+5,2+SkinMod)
+            }
+            #batch coloring and parenting
+            for(N=0,4+Is_Armed)
+            {
+                holoParent(Index+N,Master)
+                holoColor(Index+N,GaugeColor)
+            }
+            
+            #creating overlays--needles glow and have a color
+            #top left--airspeed indicator
+            holoCreate(Index+6,Master:toWorld(vec(0,-5.5,0) * Scale),vec(0.35,0.35,0.1) * Scale,Master:toWorld(ang(90,0,0)))    #covering dial/master
+            holoModel(Index+6,"hq_cylinder")
+            holoColor(Index+6,BackingColor)
+            holoParent(Index+6,Index)
+            holoCreate(Index+7,holoEntity(Index+6):toWorld(vec(-1,0,0.6) * Scale),vec(0.02,0.01,0.18) * Scale,Master:toWorld(ang(0,90,0)))  #needle
+            holoModel(Index+7,"prism")
+            holoColor(Index+7,Color)
+            holoParent(Index+7,Index+6)
+            #top center--artificial horizon
+            holoCreate(Index+8,Master:toWorld(vec() * Scale),vec(0.425) * Scale,ang())  #top/master ball
+            holoModel(Index+8,"hq_icosphere")
+            holoColor(Index+8,vec(0,255,0))
+            holoClipEnabled(Index+8,1)
+            holoClip(Index+8,vec(0,0,0),vec(0,0,1),0)
+            holoParent(Index+8,Master)
+            holoCreate(Index+9,Master:toWorld(vec() * Scale),vec(0.425) * Scale,ang())  #bottom/sub ball
+            holoModel(Index+9,"hq_icosphere")
+            holoColor(Index+9,vec(0,0,255))
+            holoClipEnabled(Index+9,1)
+            holoClip(Index+9,vec(0,0,0),vec(0,0,-1),0)
+            holoParent(Index+9,Index+8)
+            #upper right--altimeter
+            holoCreate(Index+10,Master:toWorld(vec(0,5.5,0) * Scale),vec(0.35,0.35,0.1) * Scale,Master:toWorld(ang(90,0,0)))    #covering dial/master
+            holoModel(Index+10,"hq_cylinder")
+            holoColor(Index+10,BackingColor)
+            holoParent(Index+10,Index)
+            holoCreate(Index+11,holoEntity(Index+10):toWorld(vec(-1,0,0.6) * Scale),vec(0.02,0.01,0.18) * Scale,Master:toWorld(ang(0,90,0)))  #needle
+            holoModel(Index+11,"prism")
+            holoColor(Index+11,Color)
+            holoParent(Index+11,Index+10)
+            #lower right--vertical air speed
+            holoCreate(Index+12,Master:toWorld(vec(0,5.5,-5.5) * Scale),vec(0.35,0.35,0.1) * Scale,Master:toWorld(ang(90,0,0)))    #covering dial/master
+            holoModel(Index+12,"hq_cylinder")
+            holoColor(Index+12,BackingColor)
+            holoParent(Index+12,Index)
+            holoCreate(Index+13,holoEntity(Index+12):toWorld(vec(0,-0.9,1) * Scale),vec(0.02,0.01,0.18) * Scale,Master:toWorld(ang(90,270,0)))  #needle
+            holoModel(Index+13,"prism")    
+            holoColor(Index+13,Color)
+            holoParent(Index+13,Index+12)
+            #lower center--heading indicator
+            holoCreate(Index+14,Master:toWorld(vec(0,0,-5.5) * Scale),vec(0.45,0.45,0.1) * Scale,Master:toWorld(ang(90,0,0)))    #covering dial/master
+            holoModel(Index+14,"hq_cylinder")
+            holoColor(Index+14,BackingColor)
+            holoParent(Index+14,Master)
+            holoCreate(Index+15,holoEntity(Index+14):toWorld(vec(0,0,0.75) * Scale),vec(0.01,0.01,0.001) * Scale,holoEntity(Index+14):toWorld(ang(180,-90,0)))    #little jet indicator
+            holoModel(Index+15,"models/xqm/jetbody3.mdl")
+            holoMaterial(Index+15,"phoenix_storms/mat/mat_phx_metallic")
+            holoColor(Index+15,Color)
+            holoParent(Index+15,Index)
+            holoCreate(Index+16,holoEntity(Index+14):toWorld(vec(-2.1,0,1) * Scale),vec(0.05) * Scale,Master:toWorld(ang(0,-90,0)))    #north indicator
+            holoModel(Index+16,"models/sprops/misc/alphanum/alphanum_n.mdl")
+            holoBodygroup(Index+16,0,2)
+            holoMaterial(Index+16,"models/shiny")
+            holoColor(Index+16,Color)
+            holoParent(Index+16,Index+14)
+            #toggle switch for lighting
+            holoCreate(Index+17,Master:toWorld(vec(0.35,2.75,-2.75) * Scale),vec(0.7) * Scale,Master:toWorld(ang(90,0,0)))   #switch for lightign
+            holoModel(Index+17,"models/bull/buttons/toggle_switch.mdl")
+            #ifdef holoAnim(number,number)
+                holoAnim(Index+17,1)
+            #endif
+            holoParent(Index+17,Master)
+        }
+        
+        if(Is_Armed)
+        {
+            #lower left--ammunition indicator
+            holoCreate(Index+18,Master:toWorld(vec(0,-5.5,-5.5) * Scale),vec(0.35,0.35,0.1) * Scale,Master:toWorld(ang(90,0,0)))    #covering dial/master
+            holoModel(Index+18,"hq_cylinder")
+            holoColor(Index+18,BackingColor)
+            holoParent(Index+18,Index)
+            holoCreate(Index+19,holoEntity(Index+18):toWorld(vec(-1,0,0.6) * Scale),vec(0.02,0.01,0.18) * Scale,Master:toWorld(ang(0,90,0)))  #needle
+            holoModel(Index+19,"prism")
+            holoColor(Index+19,Color)
+            holoParent(Index+19,Index+18)
+            #left center--little alphanum code
+            holoCreate(Index+20,Master:toWorld(vec(0.45,-2.8,-2.8) * Scale),vec(0.1,0.01,0.1) * Scale,Master:toWorld(ang(0,-90,0)))   #alpha code for weapon state
+            holoModel(Index+20,"models/sprops/misc/alphanum/alphanum_e.mdl")
+            holoBodygroup(Index+20,0,3)
+            holoMaterial(Index+20,"models/shiny")
+            holoColor(Index+20,Color)
+            holoDisableShading(Index+20,1)
+            holoParent(Index+20,Master)
+            #cover for it
+            holoCreate(Index+21,Master:toWorld(vec(0.3,-2.8,-2.8) * Scale),vec(0.02,0.1,0.125) * Scale,Master:angles())   #alpha code for weapon state
+            holoModel(Index+21,"models/holograms/hq_rcylinder.mdl")
+            holoMaterial(Index+21,"models/shiny")
+            holoColor(Index+21,vec4(0,0,0,96))
+            holoParent(Index+21,Master)
+        }
+    }
+    #matching function for updating those holo instruments
+    function void updateHoloInstruments(Index:number,Speed:number,Angle:angle,Altitude:number,RateOfAscent:number,AmmoPercentage:number)
+    {
+        local RotationMaster = holoEntity(Index+17)
+        #airspeed indicator, clamps at 90
+        #Note: 0-30 is stall range yellow, 75 is warning speed, 85 is redline, 90 is max displayed
+        holoAng(Index+6,RotationMaster:toWorld(ang(0,-2 + (clamp(Speed*2,0,180) * -1.75),0)))
+        #artificial horizon
+        holoAng(Index+8,RotationMaster:toWorld(Angle:setYaw(0) + ang(-90,180,0)))
+        #altimeter, caps at 160
+        holoAng(Index+10,RotationMaster:toWorld(ang(0,2 + (clamp(Altitude,0,160) * -1.77),0)))
+        #rate of ascent, caps at +/- 20
+        holoAng(Index+12,RotationMaster:toWorld(ang(0,clamp(RateOfAscent,-20,20) * -7,0)))
+        #heading
+        holoAng(Index+14,RotationMaster:toWorld(ang(0,bearing(RotationMaster:pos(),-entity():forward():toAngle(),vec(0,9999999,0)) - 180,0)))
+        #ammo percentage indicator
+        holoAng(Index+18,RotationMaster:toWorld(ang(0,-220 - (AmmoPercentage*2.8),0)))
+    }
+    #illuminates said flight instruments, for bad weather flying
+    function void illuminateInstruments(Index:number,Illuminate:number,Weapons:number)
+    {
+        #animating switch
+        #ifdef holoAnim(number,number)
+            holoAnim(Index+17,!Illuminate)
+        #endif
+        holoEntity(Index+17):soundPlay(500,0,"buttons/lightswitch2.wav")
+        for(N=6,19)
+        {
+            if(N != 17) {holoDisableShading(Index+N,Illuminate)}
+        }
+    }
+    
+    #avionics telemetry
+    function array updateAvionicsTelemetry(LastTelemetry:array)
+    {
+        #Speed, Angle, Altitude, Rate of Ascent, Curtime, Position
+        #gathering related data
+        local Position = entity():pos()
+        local Curtime = curtime()
+        local SpeedVector = (Position-LastTelemetry[6,vector]) / (Curtime - LastTelemetry[5,number])
+        #direct data
+        local Speed = SpeedVector:length() * 0.0425   #miles an hour
+        local Angle = entity():angles()
+        #altimeter
+        #temp flag set
+        rangerHitEntities(0)
+        local AltimeterPosition = vec()#
+        local AltimeterLase = rangerOffset(32767,Position,vec(0,0,-1))
+        AltimeterPosition = AltimeterLase:position()
+        rangerHitEntities(1)
+        local Altitude = (AltimeterPosition - Position):length() / 39.37  #meters
+        #rate of ascent
+        local RateOfAscent = SpeedVector:z() * 0.0625 #ft/s
+        return array(Speed,Angle,Altitude,RateOfAscent,Curtime,Position)
+    }
+    
+    #REFLECTOR SIGHT
+    #[creates holographic reflector sight
+    function void createGunPipper(Index:number,Position:vector,Master:entity,SightHeadIndex:number,Color:vector)
+    {
+        local Scale = 0.5   #144 @ 100m
+        #backing glass
+        holoCreate(Index+3,Position + (Master:forward() * (30 * Scale)),vec(0.05,0.5,0.5),Master:angles())    #0.64 = 10, 0.5 = 7.5
+        holoMaterial(Index+3,"phoenix_storms/glass")
+        holoParent(Index+3,Master)
+        holoAlpha(Index+3,128)
+        
+        #master is already given as cam master, so it's a custom function
+        holoAng(SightHeadIndex,ang())
+        
+        #creating the bombsight which sits on top of this, drawn aroudn the world with
+        holoCreate(Index+1,(holoEntity(SightHeadIndex):toWorld(vec(30 * Scale,0,0))),vec(Scale * 0.1),ang(270,0,0))
+        holoModel(Index+1,"models/props_phx/gears/bevel12.mdl")
+        holoClipEnabled(Index+1,1)
+        holoClip(Index+1,vec(0,0,Scale*0.5),vec(0,0,1),0)
+        holoParent(Index+1,SightHeadIndex)
+        #central pipper
+        holoCreate(Index+2,holoEntity(SightHeadIndex):toWorld(vec(30 * Scale,0,0)),vec(Scale * 0.02))
+        holoModel(Index+2,"hq_icosphere")
+        holoParent(Index+2,SightHeadIndex)
+        #batch operations
+        for(I=0,2)
+        {
+            holoMaterial(Index+I,"models/shiny")
+            holoColor(Index+I,vec4(Color,128))
+            holoDisableShading(Index+I,1)
+        }
+        #center cross, sized to be 288 @ 100m
+        #holoCreate(Index+4,Position + (Master:forward() * (Scale * 30)),vec(0.05,0.5,0.5) * Scale,Master:toWorld(ang(0,0,0)))
+        #holoParent(Index+4,Master)
+        #holoModel(Index+4,"models/props_pipes/pipe01_connector01.mdl")
+        #holoMaterial(Index+4,"models/wireframe")
+        #holoColor(Index+4,vec4(Color,32))
+        #holoParent(Index+3,entity())
+        holoAng(SightHeadIndex,Master:angles())
+    }
+    #updates reflector sight
+    function void updateGunPipper(Index:number,Target:vector,Limited:number,HeadIndex:number)
+    {
+        #gets the hud parts themselves, and heading angle for sight head
+        local Glass = holoEntity(Index+3)
+        local SightHead = holoEntity(HeadIndex)
+        local Angle = SightHead:toWorld(-SightHead:heading(Target))
+        #if it's limited by the size of hte glass--so, not free-floating 3rd person
+        if(Limited)
+        {
+            local Limits = 9.75
+            Angle = Glass:toWorld( clamp(Glass:toLocal(Angle),ang(-Limits,-Limits,0),ang(Limits,Limits,0)) )
+        }
+        #angular adjustment
+        holoAng(HeadIndex,Angle)
+    }]#
+    #creates hud
+    function void createHoloHUD(Index:number,Size:number,MasterIndex:number,Color:vector,IsArmed:number)
+    {
+        local SizeUsed = clamp(Size,0.75,50)
+        local Master = holoEntity(MasterIndex)
+        local ForwardAmount = 5
+        holoAng(MasterIndex,ang())
+        #central crosshair
+        holoCreate(Index,Master:pos() + (Master:forward() * ForwardAmount * SizeUsed),vec(0.02,0.001,0.02) * SizeUsed,ang(0,90,0))
+        holoModel(Index,"models/sprops/misc/alphanum/alphanum_plu.mdl")
+        holoBodygroup(Index,0,3)
+        holoMaterial(Index,"models/shiny")
+        holoColor(Index,vec4(0,255,0,128))
+        holoParent(Index,MasterIndex)
+        #attitude indicator master and bar
+        holoCreate(Index+1,Master:pos() + (Master:forward() * ForwardAmount * SizeUsed),vec(),ang())    #invisible master, pitches a few degrees for elevation and rolls normally
+        holoParent(Index+1,MasterIndex)
+        holoCreate(Index+2,Master:pos() + (Master:forward() * ForwardAmount * SizeUsed),vec(0.03,0.001,0.08) * SizeUsed,ang(90,90,0))
+        holoModel(Index+2,"models/sprops/misc/alphanum/alphanum_i.mdl")
+        holoBodygroup(Index+2,0,3)
+        holoParent(Index+2,Index+1)
+        #left bar--range
+        holoCreate(Index+3,Master:pos() + (Master:forward() * ForwardAmount * SizeUsed) + (Master:right() * -0.5 * SizeUsed) + (Master:up() * 0.08 * SizeUsed),vec(0.015,0.01,0.06) * SizeUsed,ang(0,90,0))
+        holoModel(Index+3,"models/sprops/misc/alphanum/alphanum_lbracket.mdl")
+        holoParent(Index+3,Index)
+        #right bar--altitude
+        holoCreate(Index+4,Master:pos() + (Master:forward() * ForwardAmount * SizeUsed) + (Master:right() * 0.5 * SizeUsed) + (Master:up() * 0.08 * SizeUsed),vec(0.015,0.01,0.06) * SizeUsed,ang(0,90,0))
+        holoModel(Index+4,"models/sprops/misc/alphanum/alphanum_rbracket.mdl")
+        holoParent(Index+4,Index)
+        #target pipper
+        if(IsArmed)
+        {
+            holoCreate(Index+5,Master:pos() + (Master:forward() * ForwardAmount * SizeUsed),vec(0.01) * SizeUsed,ang(90,0,0))
+            holoModel(Index+5,"hq_torus")
+            holoParent(Index+5,Index)
+        }
+        #range scale indicator
+        holoCreate(Index+6,holoEntity(Index+3):toWorld(vec(0.08,0,-0.5) * SizeUsed),vec(0.008) * SizeUsed,ang(0,90,0))
+        holoModel(Index+6,"models/sprops/misc/alphanum/alphanum_r.mdl")
+        holoParent(Index+6,Index+3)
+        #altitude scale indicator
+        holoCreate(Index+7,holoEntity(Index+4):toWorld(vec(-0.08,0,-0.5) * SizeUsed),vec(0.008) * SizeUsed,ang(0,90,0))
+        holoModel(Index+7,"models/sprops/misc/alphanum/alphanum_a.mdl")
+        holoParent(Index+7,Index+4)
+        #simple direct aim indicator
+        holoCreate(Index+8,Master:pos() + (Master:forward() * ForwardAmount * SizeUsed),vec(0.005) * SizeUsed)
+        holoModel(Index+8,"hq_icosphere")
+        holoParent(Index+8,MasterIndex)
+        for(N=0,8)
+        {
+            holoMaterial(Index+N,"models/shiny")
+            holoColor(Index+N,vec4(Color,128))
+            holoDisableShading(Index+N,1)
+        }
+        holoAng(MasterIndex,entity():angles())
+    }
+    
+    function void updateHoloHUD(Index:number,Size:number,MasterIndex:number,Target:vector,Aimpos:vector,AltitudeRatio:number,RangeRatio:number,Angle:angle,Limited:number,UpdateLowPriorityParts:number,UpdateVeryLowPriorityParts:number,IsArmed:number)
+    {
+        local ForwardAmount = 5
+        #sight head override
+        holoAng(MasterIndex,Angle)
+        local SizeUsed = clamp(Size,0.75,50)
+        local Master = holoEntity(MasterIndex)
+        local AngularLimit = 5
+        #updating target indicator
+        if(IsArmed)
+        {
+            local Heading = -Master:heading(Target)
+            if(Limited) {Heading = clamp(Heading,ang(-AngularLimit),ang(AngularLimit))}
+            holoPos(Index+5,Master:toWorld(Heading:forward() * SizeUsed * ForwardAmount))
+        }
+        if(UpdateLowPriorityParts)
+        {
+            #updating attitude indicator
+            holoPos(Index+1,Master:pos() + (Master:forward() * ForwardAmount * SizeUsed) + (Master:up() * Angle:pitch() * 0.005 * SizeUsed))
+            holoAng(Index+1,Master:toWorld(ang(0,0,-Angle:roll())))
+            #updating aim indicator
+            local Aimheading = -Master:heading(Aimpos)
+            if(Limited) {Aimheading = clamp(Aimheading,ang(-AngularLimit),ang(AngularLimit))}
+            holoPos(Index+8,Master:toWorld(Aimheading:forward() * SizeUsed * ForwardAmount))
+        }
+        if(UpdateVeryLowPriorityParts)
+        {
+            #updating range scale
+            holoPos(Index+6,holoEntity(Index+3):toWorld(vec(0.08,0,-0.5 + (clamp(RangeRatio,0,1) * 0.85)) * SizeUsed))
+            #updating altimeter
+            holoPos(Index+7,holoEntity(Index+4):toWorld(vec(-0.08,0,-0.5 + (clamp(AltitudeRatio,0,1) * 0.85)) * SizeUsed))
+        }
+    }
+    
+    #creates holographic flight controls
+    function void createHoloFlightControls(Index:number,Seat:entity,Armed:number,Collective:number,ForwardThrottle:number,StickPosition:vector,CollectivePosition:vector,ThrottlePosition:vector)
+    {
+        #baik doesn't like to play nice
+        local Draw = 1
+        #ifdef holoMaxAmount()
+        Draw = holoMaxAmount() > 60
+        #endif
+        if(Draw)
+        {
+            #default reversions
+            local StickRootPosition = StickPosition
+            if(!StickRootPosition) {StickRootPosition = Seat:toWorld(vec(0,10,5))}
+            local CollectiveRootPosition = CollectivePosition
+            if(!CollectiveRootPosition) {CollectiveRootPosition = Seat:toWorld(vec(-10.5,0,7))}
+            local ThrottleRootPosition = ThrottlePosition
+            if(!ThrottleRootPosition) {ThrottleRootPosition = Seat:toWorld(vec(-8,7,10))}
+            #creates the primary stick
+            #base
+            holoCreate(Index,StickRootPosition,vec(0.4),ang())
+            holoModel(Index,"hq_icosphere")
+            holoMaterial(Index,"models/gibs/metalgibs/metal_gibs")
+            holoParent(Index,Seat)
+            #column
+            holoCreate(Index+1,StickRootPosition + vec(0,1,7),vec(1),ang(180,0,0))
+            holoModel(Index+1,"models/gibs/hgibs_spine.mdl")
+            holoMaterial(Index+1,"models/combine_advisor/mask")
+            holoParent(Index+1,Index)
+            #top and button
+            holoCreate(Index+2,StickRootPosition + vec(-2.25,1,12),vec(0.5),ang(0,90,90))
+            holoModel(Index+2,"models/items/battery.mdl")
+            holoMaterial(Index+2,"models/gibs/metalgibs/metal_gibs")
+            holoParent(Index+2,Index)
+            #armament trigger
+            if(Armed)
+            {
+                holoCreate(Index+3,holoEntity(Index+2):toWorld(vec(-2.2,0,4.05)),vec(0.066),ang(0,0,90))
+                holoModel(Index+3,"hq_cylinder")
+                holoColor(Index+3,vec(255,0,0))
+                holoMaterial(Index+3,"sprops/trans/lights/light_plastic")
+                holoParent(Index+3,Index)
+            }
+            holoAng(Index,Seat:angles())  #setting start position of stick
+            #creates pedals
+            #left pedal
+            holoCreate(Index+4,Seat:toWorld(vec(5,25,-12.75)),vec(0.4,0.8,0.1),Seat:angles())
+            holoMaterial(Index+4,"Models/Weapons/V_Stunbaton/W_Shaft01a")
+            holoModel(Index+4,"hq_rcube")
+            holoParent(Index+4,Seat)
+            #right pedal
+            holoCreate(Index+5,Seat:toWorld(vec(-5,25,-12.75)),vec(0.4,0.8,0.1),Seat:toWorld(ang(0,0,180)))
+            holoMaterial(Index+5,"Models/Weapons/V_Stunbaton/W_Shaft01a")
+            holoModel(Index+5,"hq_rcube")
+            holoParent(Index+5,Seat)
+            #collective lever
+            if(Collective)
+            {
+                holoCreate(Index+6,CollectiveRootPosition,vec(1),Seat:angles())
+                holoModel(Index+6,"models/props_c17/TrapPropeller_Lever.mdl")
+                holoMaterial(Index+6,"Models/props_trainstation/Trainstation_Arch001")
+                holoParent(Index+6,Seat)
+            }
+            #throttle lever
+            if(ForwardThrottle)
+            {
+                holoCreate(Index+7,ThrottleRootPosition,vec(0.7),Seat:toWorld(ang(0,90,0)))
+                holoModel(Index+7,"models/props_wasteland/panel_leverhandle001a.mdl")
+                holoMaterial(Index+7,"models/gibs/metalgibs/metal_gibs")
+                holoClipEnabled(Index+7,1)
+                #holoClip(number index,number clipidx,vector origin,vector normal,number isglobal)
+                holoClip(Index+7,1,vec(),vec(0.5,3,1),0)
+                holoParent(Index+7,Seat)
+            }
+        }
+    }
+    #updates holo flight controls
+    #pedals go down and up, stick tilts, throttle and collective go foreback and updown
+    function void updateHoloFlightControls(Index:number,LastReturn:number,Seat:entity,Fire:number,Collective:number,ForwardThrottle:number,CollectivePosition:vector,ThrottlePosition:vector,WS:number,AD:number,LR:number,UD:number,FB:number)
+    {
+        #baik doesn't like to play nice
+        local Draw = 1
+        #ifdef holoMaxAmount()
+        Draw = holoMaxAmount() > 60
+        #endif
+        if(Draw)
+        {
+            #defaults and reversions
+            local CollectiveRootPosition = CollectivePosition
+            if(!CollectiveRootPosition) {CollectiveRootPosition = Seat:toWorld(vec(-10.5,0,7))}
+            local ThrottleRootPosition = ThrottlePosition
+            if(!ThrottleRootPosition) {ThrottleRootPosition = Seat:toWorld(vec(-8,7,10))}
+            #stick
+            holoAng(Index,Seat:toWorld(ang(AD,0,WS) * 15))
+            #low priority
+            if(LastReturn)
+            {
+                #left pedal
+                holoPos(Index+4,Seat:toWorld(vec(5,25,-12.75 - LR)))
+                holoPos(Index+5,Seat:toWorld(vec(-5,25,-12.75 + LR)))
+                #fire
+                holoPos(Index+3,holoEntity(Index+2):toWorld(vec(-2.2 + (Fire * 0.35),0,4.05)))
+                #collective
+                if(Collective) {holoPos(Index+6,CollectiveRootPosition + (Seat:up() * UD * 7))}
+                #throttle
+                if(ForwardThrottle) {holoPos(Index+7,ThrottleRootPosition + (Seat:forward() * FB * 5))}
+            }
+        }
+    }
+    
+    #creates a predicted impact point, off a range table with 20m increments and formatted in a vec2 of "drop angle, time of flight in seconds"
+    function vector createPIPOffRangeTable(Table:array,Range:number,Lead:angle,Weapon:entity,Pos:vector)
+    {
+        local DropModifier = cos(Weapon:angles():pitch())
+        local Drop = Table[round((Range * DropModifier) / 20),vector2]:x()
+        local FlightTime = Table[round(Range / 20),vector2]:y()
+        local SolutionAngle = (Lead * FlightTime) + ang(Drop,0,0)
+        return Pos + ((Weapon:forward():toAngle() - SolutionAngle):forward() * Range * 39.37) #+ (Weapon:vel() * FlightTime * 0.1) #0.1 seems a nice balance for missiles
+    }
+    
+    #building ammo
+    #cannons done by link
+    foreach(K,V:entity = Cannon1:acfLinks())
+    {
+        CANNON1_STARTING_AMMO = CANNON1_STARTING_AMMO + V:acfCapacity()
+        Cannon1Crates:pushEntity(V)
+    }
+    foreach(K,V:entity = Cannon2:acfLinks())
+    {
+        CANNON2_STARTING_AMMO = CANNON2_STARTING_AMMO + V:acfCapacity()
+        Cannon2Crates:pushEntity(V)
+    }
+    foreach(K,V:entity = Cannon3:acfLinks())
+    {
+        CANNON3_STARTING_AMMO = CANNON3_STARTING_AMMO + V:acfCapacity()
+        Cannon3Crates:pushEntity(V)
+    }
+    #missiles and bombs done by selfscan
+    local Type1 = MISSILE_TYPE_1:explode(" ")[1,string]
+    local Type2 = MISSILE_TYPE_2:explode(" ")[1,string]
+    
+    foreach(K,V:entity = entity():getConstraints())
+    {
+        if(V:type() == "acf_ammo")
+        {
+            #is it a bomb
+            local Type = V:acfRoundType():upper()
+            local TypeSplit1 = Type:explode("g")[2,string]
+            if((TypeSplit1 == "BOMB") | (TypeSplit1 == "GBU"))
+            {
+                BOMB_STARTING_AMMO = BOMB_STARTING_AMMO + V:acfCapacity()
+                BombCrates:pushEntity(V)
+            }
+            else
+            {
+                #not a bomb, so is it an unguided rocket
+                local TypeSplit2 = Type:explode(" ")[1,string]
+                if(TypeSplit2 == Type1)
+                {
+                    MISSILE1_STARTING_AMMO = MISSILE1_STARTING_AMMO + V:acfCapacity()
+                    Missile1Crates:pushEntity(V)
+                }
+                if(TypeSplit2 == Type2)
+                {
+                    MISSILE2_STARTING_AMMO = MISSILE2_STARTING_AMMO + V:acfCapacity()
+                    Missile2Crates:pushEntity(V)
+                }
+            }
+        }
+    }
+    
+    
+    #actually creating the instrument panel and gunsights
+    if(InstrumentPanelEntity)
+    {
+        createHoloHUD(182,1,0,InstrumentPanelEntity:getColor(),IS_ARMED)
+        createHoloInstruments(160,InstrumentPanelEntity,IS_ARMED,InstrumentPanelEntity:getColor(),DarkBacking,InstrumentPanelScale,vec())
+        InstrumentPanelEntity:setAlpha(0)
+    }
+    else
+    {
+        createHoloHUD(182,1,0,DEFAULT_HUDINSTRUMENT_COLOR,IS_ARMED)
+        createHoloInstruments(160,entity(),IS_ARMED,DEFAULT_HUDINSTRUMENT_COLOR,1,0.5,Seat:toWorld(vec(0,-2,36)) + (entity():forward() * 20) + (entity():up() * -4.25))
+    }
+    #creating hud and flight controls
+    
+    createHoloFlightControls(191,Seat,IS_ARMED,FlightModel["cyclic or collective",number],FlightModel["forward engine thrust",number],OptionalFlightStickPosition,OptionalCollectivePosition,OptionalThrottlePosition)
+    
+    
+    #telling it finally to run at normal speed
+    Tickrate = 60
+}
+#CONGRADULATIONS: MPFC IS NOW READY TO ACTUALLY DO SOMETHING!
+
+#PRIMARY CONTROL LOOP
+else
+{    
+    
+    ##################
+    #MAIN CODE BLOCK #
+    ##################
+    
+    #INPUT OR CONTROL BASED EVENTS
+    if(inputClk() | changed(State) | keyClk(Pilot))
+    {
+        #Control Scheme Change
+        if(!R | (R & (Pilot:keyPressed("mouse_4") | Pilot:keyPressed("mouse_5"))))
+        {
+            if((Input_PrevWeapon | Input_NextWeapon) | ((Pilot:keyPressed("mouse_4") | Pilot:keyPressed("mouse_5")) & R))
+            {
+                ZoomLevel = updateCamSettings(Cam,ThirdPerson & !CamThroughGunsight,Input_NextWeapon + Pilot:keyPressed("mouse_4"),Input_PrevWeapon + Pilot:keyPressed("mouse_5"))
+            }
+        }
+        else
+        {
+            PrevWeapon = Input_PrevWeapon
+            NextWeapon = Input_NextWeapon
+        }
+        #[if(changed(ExternalAutopilotCommand))
+        {
+            updateAutopilot(ExternalAutopilotCommand)
+        }]#
+    }
+    
+    #PILOT KEY CLICK EVENTS
+    if(keyClk(Pilot) & Piloted)
+    {
+        W = Pod:number("W")
+        A = Pod:number("A")
+        S = Pod:number("S")
+        D = Pod:number("D")
+        R = Pod:number("R")
+        Space = Pod:number("Space")
+        Shift = Pod:number("Shift")
+        Alt = Pod:number("Alt")
+        Mouse1 = Pilot:keyAttack1()
+        Mouse2 = Pilot:keyAttack2()
+        MouseUp = Pilot:keyPressed("mouse_5")
+        MouseDown = Pilot:keyPressed("mouse_4")
+        #modifier
+        if(R)
+        {
+            MouseUp = 0
+            MouseDown = 0
+        }
+        #key pressed that triggered
+        local KeyClkPressed = keyClkPressed()
+        #reload
+        Reload = (Pilot:keyPressed("mouse_middle") | Pilot:keyAttack2() | (KeyClkPressed == ("i"))) * R
+        if(Reload & changed(Reload))
+        {
+            Cannon1:acfReload()
+            Cannon2:acfReload()
+            Cannon3:acfReload()
+        }
+        
+        #1st/3rd person view
+        if(Pilot:keyPressed("V"))
+        {
+            if(State != "SIM")
+            {
+                if(CamThroughGunsight)
+                {
+                    CamThroughGunsight = !CamThroughGunsight
+                }
+                elseif(ThirdPerson)
+                {
+                    if(R) {CamThroughGunsight = !CamThroughGunsight} else {ThirdPerson--}
+                }
+                else
+                {
+                    if(R) {CamThroughGunsight = !CamThroughGunsight} else {ThirdPerson++}
+                }
+                
+                if(ThirdPerson & !CamThroughGunsight)
+                {
+                    holoPos(0,Bases[1,entity]:massCenter() + (entity():up() * CamOffset))
+                }
+                elseif(CamThroughGunsight)
+                {
+                    if(SightHeadActive) {holoPos(0,SightHeadMaster:toWorld(SightHeadPos))} else {holoPos(0,Bases[1,entity]:massCenter() + (entity():up() * CamOffset * -0.33) + (entity():forward() * CamOffset))}
+                }
+                else
+                {
+                    holoPos(0,Seat:toWorld(vec(0,-2,36)) + (entity():forward() * 5))
+                    CamThroughGunsight = 0
+                }
+                ZoomLevel = updateCamSettings(Cam,ThirdPerson & !CamThroughGunsight,0,0)
+            }
+        }
+        
+        #Control scheme change
+        if((KeyClkPressed == "lcontrol") & Pilot:keyPressed("lcontrol") & (State != "AUTO"))
+        {
+            #finite state machines
+            #generic rcontrol
+            if(!R & !Alt)
+            {
+                if(State == "KEY") {State = "MOUSE"}
+                elseif(State == "MOUSE") {State = "KEY"}
+                elseif(State == "TERCOM") {State = "MOUSE"}
+                elseif(State == "SIM") {State = "KEY"}
+            }
+            #r+rcontrol, tercom
+            elseif(R & !Alt)
+            {
+                if((State == "KEY") | (State == "MOUSE")) {State = "TERCOM"}
+                elseif(State == "TERCOM") {State = "MOUSE"}
+                elseif(State == "SIM") {State = "TERCOM"}
+            }
+            #"raw", realistic flightsimmish control
+            elseif(!R & Alt)
+            {
+                if(State == "SIM") {State = "KEY"}
+                else {State = "SIM"}
+            }
+            Seat:hintDriver("Control mode: "+State+"",3)
+            AutoLevelCollectiveBoost = (State == "KEY") & FlightModel["collective",number]
+        }
+        
+        #Autopilot quick binds
+        elseif(Pilot:keyPressed(AP_RECORD_KEY))
+        {
+            AP_Record = !AP_Record
+            if(AP_Record)
+            {
+                updateAutopilot("ap dir 0 "+AP_Waypoints:count())
+                Seat:hintDriver("Waypoint "+AP_Waypoints:count()+" set!",3)
+            }
+        }
+        else
+        {
+            local KeyStringExplode = KeyClkPressed:explode("_")
+            local Valid = KeyStringExplode[1,string] == "pad"
+            if(Valid)
+            {
+                local Autopilot_Waypoint_Index = KeyStringExplode[2,string]:toNumber()
+                if(inrange(Autopilot_Waypoint_Index,1,9))
+                {
+                    AP_Pushpoint = !AP_Pushpoint
+                    if(AP_Pushpoint)
+                    {
+                        local Command = "cur 0 "+Autopilot_Waypoint_Index
+                        updateAutopilot(Command)
+                    }
+                }
+                else
+                {
+                    AP_Pushpoint = 0
+                }
+            }
+        }
+        
+        #Engine ignition
+        if(KeyClkPressed == "enter")
+        {
+            if(Pilot:keyPressed("enter") & R)
+            {
+                Engine_Ignition = !Engine_Ignition
+                #ifdef entity:propNotSolid(number)
+                SightHeadMaster:propNotSolid(Engine_Ignition)
+                #endif
+                if(Engine_Ignition)   #engine on
+                {
+                    #flips physical switch holo; doesn't always work if you don't have it enabled.
+                    #ifdef holoAnim(number,number)
+                        holoAnim(176,0)   #160+16
+                    #endif
+                    FlightCPUAngle = entity():angles()
+                    Seat:soundPlay(1,0,Sounds:string(1))
+                    soundPlay(2,0,Sounds:string(2))
+                    soundPlay(3,0,Sounds:string(3))
+                    soundPitch(2,0)
+                    soundPitch(3,0)
+                    if(FlightModel["wings",number]) {soundPlay(4,0,"acf_extra/vehiclefx/misc/windexternal.wav")}
+                    soundVolume(4,0)
+                }
+                else    #engine off
+                {
+                    reset()
+                }
+            }
+        }
+        
+        #FLIR
+        Cam["FLIR",number] = Pilot:keyPressed("f") & !R
+        
+        #Backlighting instrument panel
+        if(Pilot:keyPressed("f") & R)
+        {
+            InstrumentsBacklit = !InstrumentsBacklit
+            illuminateInstruments(160,InstrumentsBacklit,IS_ARMED)
+        }
+        
+        #Landing Gear Toggle
+        if((KeyClkPressed == "l") & Pilot:keyPressed("l") & GearModel:length())
+        {
+            Gear_Down = !Gear_Down
+            if(Gear_Down) {soundPlay(1,0,"acf_extra/airfx/gear_down.wav")} else {soundPlay(1,0,"acf_extra/airfx/gear_up.wav")}
+            for(N=1,LandingGear:count())
+            {
+                LandingGear[N,entity]:setAlpha(Gear_Down * 255)
+                #ifdef entity:propNotSolid(number)
+                LandingGear[N,entity]:propNotSolid(!Gear_Down)
+                #endif
+                #ifdef entity:setMass(number)
+                LandingGear[N,entity]:setMass(1.5 + ((LandingGearWeights[N,number]-1.5) * Gear_Down))
+                #endif
+            }
+        }
+        
+        #Weaponry control
+        if(IS_ARMED)    #& !R)
+        {
+            local FireCircuit = Mouse1
+            local WeaponSelectionCircuit = Mouse2 & !R
+            WeaponSelected = WeaponSelected + WeaponSelectionCircuit
+            
+            #selecting, firing, and building ballistics for cannons
+            if(BallisticComputerModeChar == "G")
+            {
+                #if gun 1 selected, we link the fire circuit with the output for firing cannon 1
+                #if we're switching weapons, we make sure it's a valid weapon, create a range-table,
+                #and make other guns not fire.
+                if(WeaponSelected == 1)
+                {
+                    FireCannon1 = FireCircuit & !WeaponSelectionCircuit
+                    if(WeaponSelectionCircuit)
+                    {
+                        FireCannon2 = 0
+                        FireCannon3 = 0
+                        CannonRangeTable = createGunRangeTable(Cannon1)
+                    }
+                    CannonSelected = Cannon1
+                }
+                #weapon 2 we do the same with
+                elseif(WeaponSelected == 2)
+                {
+                    FireCannon2 = FireCircuit & !WeaponSelectionCircuit
+                    if(WeaponSelectionCircuit)
+                    {
+                        if(!Cannon2)
+                        {
+                            WeaponSelected = 1
+                        }
+                        else
+                        {
+                            FireCannon1 = 0
+                            FireCannon3 = 0
+                            CannonRangeTable = createGunRangeTable(Cannon2)
+                        }
+                    }
+                    CannonSelected = Cannon2
+                }
+                #weapon 3 we do the same with
+                elseif(WeaponSelected == 3)
+                {
+                    FireCannon3 = FireCircuit & !WeaponSelectionCircuit
+                    if(WeaponSelectionCircuit)
+                    {
+                        if(!Cannon3)
+                        {
+                            WeaponSelected = 1
+                        }
+                        else
+                        {
+                            FireCannon1 = 0
+                            FireCannon2 = 0
+                            CannonRangeTable = createGunRangeTable(Cannon3)
+                        }
+                    }
+                    CannonSelected = Cannon3
+                }
+                #we protect vs overflows
+                else
+                {
+                    WeaponSelected = 1
+                }
+                #notifying us
+                if((changed(CannonSelected) & CannonSelected) | (changed(BallisticComputerModeChar))) {Seat:hintDriver(""+CannonSelected:acfNameShort():upper()+" selected",3)}
+                #finally we tell it not to drop bombs or missiles, just in case we switched while firing
+                FireMissile1 = 0
+                FireMissile2 = 0
+                DropBombs = 0
+            }
+            
+            #here we handle selection of missiles--a similar task, but simpler, because the outputs are there whether we have two missiles or one
+            #We have no way of determining if we do or don't have a second missile, or even one missile.
+            elseif(BallisticComputerModeChar == "M")
+            {
+                if(WeaponSelected == 1)
+                {
+                    FireMissile1 = FireCircuit & !WeaponSelectionCircuit
+                    FireMissile2 = 0
+                }
+                elseif(WeaponSelected == 2)
+                {
+                    FireMissile1 = 0
+                    FireMissile2 = FireCircuit & !WeaponSelectionCircuit
+                    if(!MISSILE_TYPE_2) {WeaponSelected = 1}
+                }
+                #protecting vs overflow
+                else
+                {
+                    WeaponSelected = 1
+                }
+                #notifying pilot
+                if(changed(WeaponSelected) | changed(BallisticComputerModeChar))
+                {
+                    if(WeaponSelected == 1) {Seat:hintDriver(""+MISSILE_TYPE_1:upper()+" selected",3)} elseif(WeaponSelected == 2) {Seat:hintDriver(""+MISSILE_TYPE_2:upper()+" selected",3)}
+                }
+                #finally we lock out other weapons
+                FireCannon1 = 0
+                FireCannon2 = 0
+                FireCannon3 = 0
+                DropBombs = 0
+            }
+            
+            #now, we handle bombs, which are way simpler
+            #note we have a totally different section of code that handles the dropping.
+            elseif(BallisticComputerModeChar == "B")
+            {
+                #locking otu other weapons
+                FireCannon1 = 0
+                FireCannon2 = 0
+                FireCannon3 = 0
+                FireMissile1 = 0
+                FireMissile2 = 0
+            }
+            
+            #finally, unarmed, "safe" flight
+            elseif(BallisticComputerModeChar == "N")
+            {
+                FireCannon1 = 0
+                FireCannon2 = 0
+                FireCannon3 = 0
+                FireMissile1 = 0
+                FireMissile2 = 0
+                DropBombs = 0
+            }
+            
+            
+            #select guns, bombs, or missiles
+            if((KeyClkPressed == "g") | (KeyClkPressed == "c")) {BallisticComputerModeChar = "G"}      #CANNONS
+            elseif(KeyClkPressed == "b") {BallisticComputerModeChar = "B"}  #BOMBS
+            elseif(KeyClkPressed == "m") {BallisticComputerModeChar = "M"}  #MISSILES
+            elseif(KeyClkPressed == "n") {BallisticComputerModeChar = "N"}  #NOT ARMED
+            #update display
+            holoModel(180,"models/sprops/misc/alphanum/alphanum_"+BallisticComputerModeChar+".mdl")
+        }
+        
+        #aux outputs for like grabbers and doors and shit
+        if((KeyClkPressed == "lbracket") & Pilot:keyPressed("lbracket")) {AuxOut1 = !AuxOut1}
+        elseif((KeyClkPressed == "rbracket") & Pilot:keyPressed("rbracket")) {AuxOut2 = !AuxOut2}
+    }
+    
+    #PILOT CHAT EVENT
+    elseif(chatClk(Seat:driver()))
+    {
+        local Pilot_LastSaid = Pilot:lastSaid():lower():explode(" ")
+        
+        #AUTOPILOT
+        #Filtering if autopilot is to be used
+        if(Pilot_LastSaid:string(1) == "ap")
+        {
+            #Inits
+            hideChat(1)
+            updateAutopilot(Pilot:lastSaid():lower())
+        }
+        
+        #DETAIL PROP REMOVAL
+        elseif(Pilot_LastSaid[1,string] == "lowlag")
+        {
+            hideChat(1)
+            foreach(K,V:entity = entity():getConstraints())
+                {
+                    if((V:mass() <= 1) & V:type() == "prop_physics")
+                        {
+                            #ifdef entity:propDelete()
+                            V:propDelete()
+                            #endif
+                        }
+                }
+            soundPlay(199,0,"misc/outer_space_transition_01.wav")
+        }
+        
+        #FREEZING SELF
+        elseif(Pilot_LastSaid[1,string] == "fs")
+        {
+            hideChat(1)
+            local Self = entity():getConstraints()
+            Self:pushEntity(entity())
+            local Freeze = Pilot_LastSaid[2,string]:toNumber()
+            #ifdef entity:propFreeze(number)
+            foreach(K,V:entity = Self) {V:propFreeze(Freeze)}
+            #endif
+            Self = array()
+        }
+        
+        #DEBUG STAT OUTPUT
+        elseif(Pilot_LastSaid[1,string] == "stat")
+        {
+            hideChat(1)
+            printTable(FlightModel)
+        }
+        
+    }
+    
+    #####################
+    #PRIMARY CONTROL LOOP
+    #####################
+    
+    elseif(!keyClk() | !chatClk())
+    {
+        #Ignition and startup branch
+        Piloted = Pod:number("Active")
+        if(changed(Piloted))
+        {
+            #IF A NEW PERSON SITS DOWN AS PILOT
+            if(Piloted) #If someone gets in or out of hte pilots seat
+            {
+                Pilot = Seat:driver() #Getting the pilot
+                holoPos(0,Seat:toWorld(vec(0,-2,36)) + (entity():forward() * 5))    #camera master
+                
+                #Hints
+                if(!Engine_Ignition)
+                {
+                    Seat:soundPlay(99,0,Sounds:string(5))
+                    Seat:hintDriver("Hold R and press ENTER to start this "+FlightModel["name",string],7)
+                }
+                #Backcheck on legality and sight
+                if(IS_ARMED)
+                {
+                    if(Seat:model() != "models/vehicles/pilot_seat.mdl")
+                    {
+                        Seat:hintDriver("MPFC will not fly without using an acf pilot seat.",3)
+                        NoCanFly = 1
+                    }
+                }
+                
+                #Cam active
+                Cam["Activated",number] = 1
+                #state update
+                State = "KEY"
+            }
+            
+            #PILOT GETS UP FROM SEAT
+            else
+            {
+                Cam["Activated",number] = 0
+                Cam["FOV",number] = 100
+                if(Engine_Ignition) {} else {State = "IDLE"}
+                Pilot = entity()
+            }
+        }
+
+            ###################
+            #MAIN FLIGHT BRANCH
+            ###################
+
+            elseif(Engine_Ignition & (clkName() == "interval")) #Engine must be on
+            {
+                #Extra holo bits
+                #TODO: mesh together into one function?
+                if(HoloRotorsMode)
+                {
+                    #This is for things that have powered rotors--almost anything except autogyros
+                    if(FlightModel["collective",number])
+                    {
+                        rotateRotors(HoloRotorsMode,Index,RotorA,RotorB,RatePercentage)
+                    }
+                    #This is for autogyros
+                    else
+                    {
+                        Rotorrate = clamp(clamp((LocalVel:z() / 250) + (BaseVel:length() / 1000),Rotorrate-0.03,Rotorrate+0.03),-1,1)
+                        rotateRotors(HoloRotorsMode,Index,RotorA,RotorB,Rotorrate)
+                    }
+                }
+                if(Number_Of_Propellors)
+                {
+                    for(N=1,Number_Of_Propellors)
+                    {
+                        rotatePropellor(60+(N*2),Propellor_Directions:number(N),RatePercentage)
+                    }
+                }
+        
+                #Here's our main flight stuff, all this huge segment.  Surprisingly buried, isn't it?
+                #If you're down here, I salute you for your dedication.  A+.  All the gold stars.
+                
+                #Flight constants, indexing for future use.
+                Position = entity():pos()
+                BaseVel = entity():vel()
+                Velocity = entity():toLocal(Position + BaseVel)
+                LocalVel = entity():velL()
+                Angle = entity():angles()
+                Forward = Angle:forward()
+                
+                #our half-rate timer
+                CoreTimer++
+                
+                Interval100Timer = !(CoreTimer%2)
+                #quarter rate timer
+                Interval200Timer = !(CoreTimer%4)
+                #1/8 rate timer
+                Interval400Timer = !(CoreTimer%8)
+                #1/16 rate timer
+                Interval800Timer = !(CoreTimer%16)
+                if(Interval800Timer) {CoreTimer = 0}
+                
+                if(Piloted)
+                {
+                    #Getting aimpoint and camera
+                    #camera on
+                    if((State == "KEY") | (State == "MOUSE") | (State == "TERCOM") | (State == "AUTO"))
+                    {
+                        AimAng = Cam:angle("CamAng")
+                        AimLoc = holoEntity(0):pos()
+                    }
+                    else
+                    {
+                        AimAng = Pilot:eyeAngles()
+                        AimLoc = Seat:toWorld(vec(0,-2,36))
+                    }
+                    local AimForward = AimAng:forward()
+                    
+                    Flypos = Position + (AimForward * 32767)
+                    if(!Alt)
+                    {
+                        AimTrace = rangerOffsetHull(32767,AimLoc + (AimForward * 393.7),AimForward,vec(39.37))  #400m max range, 1m scan zone
+                        Aimpos = AimTrace:position()
+                    }
+                }
+                    #keyboard/autolevel
+                    if(State == "KEY")
+                    {
+                        #[autolevel/keyboard flight
+                        R+W/S is throttle
+                        W/S is pitch
+                        A/D is roll
+                        Mouse is yaw, or R+A/D
+                        Space/shift is collective]#
+                        
+                        #aim override for bombardier
+                        local BombingRunAim = BombardierAimpos
+                        if((!BombingRunAim) | !(BallisticComputerModeChar == "B")) {BombingRunAim = Aimpos}
+                        
+                        #AUTOGYRO AND HELI
+                        if(FlightModel["collective",number])
+                        {
+                            #ascent rate
+                            local PositionZ = Position:z()
+                            local AscentRate = clamp(Space-Shift+PrevWeapon-NextWeapon+MouseDown-MouseUp,-1,1)
+                            if(AscentRate | changed(State)) {LevelZ = PositionZ}
+                            #velocity compensation--we use thist o resist drifting
+                            local VelocityCompensation = vec2()
+                            if(!AscentRate) {VelocityCompensation = clamp(vec2(LocalVel),-393.7,393.7) / vec2(393.7,-393.7)}
+                            #pitch
+                            local CyclicPitchInput = 0
+                            if((W | S) & !(R | Alt)) {CyclicPitchInput = -(W - S * !R) * StickLimits} else {CyclicPitchInput = VelocityCompensation:x() * StickLimits}
+                            #roll
+                            local CyclicRollInput = 0
+                            if((A | D) & (R | Alt)) {CyclicRollInput = (A - D) * StickLimits} else {CyclicRollInput = VelocityCompensation:y() * StickLimits}
+                            
+                            #pid control used for ascent, tilt is done by simple feedback
+                            #PID is velocity & coordinate comparision if we're hovering. if we're descending or ascending, it just tries to max up/down by feeding it impossible parameters of speed
+                            if(!AscentRate)
+                            {
+                                AutoLevelProportional = (PositionZ - LevelZ) * -0.05# + AscentRate
+                                if(!changed(LevelZ)) {AutoLevelDerivative = $AutoLevelProportional * 5}
+                                AutoLevelIntegral = clamp(AutoLevelIntegral + ((AutoLevelProportional+AutoLevelDerivative) * 0.05),-1,1)
+                                Input_UD = ((AutoLevelProportional+AutoLevelIntegral+AutoLevelDerivative)-UD)
+                            }
+                            else
+                            {
+                                Input_UD = AscentRate
+                            }
+                            Input_WS = clamp((Angle:pitch()+CyclicPitchInput) / StickLimits,-1,1)
+                            Input_AD = -clamp((Angle:roll()+CyclicRollInput) / StickLimits,-1,1)
+                            if(R) {Input_LR = clamp(entity():bearing(Aimpos) / StickLimits,-1,1)} else {Input_LR = (D-A) * !Alt}
+                            Input_FB = (W-S) * (R | Alt)
+                        }
+                        #AIRPLANE
+                        else
+                        {
+                            #our deflection offsets
+                            #WASD is flight direction, pgup/down is throttle, space/shift is flaps
+                            #R+Mouse is for level bombing w/ WS taking over throttle, R+A/D is pylon turn
+                            local ElevationInput = (W-S) * !R
+                            local BearingInput = (D-A) * !R
+                            if(R) {BearingInput = clamp(entity():bearing(BombingRunAim) / StickLimits,-1,1)}
+                            #pylon turn input
+                            local PylonInput = (A-D) * R
+                            if(PylonInput) {BearingInput = 0}
+                            #thrust input
+                            local ThrustInput = clamp((Pilot:keyPressed("pageup") - (Pilot:keyPressed("pagedown"))) + ((W-S) * R),-1,1)
+                            #flaps input
+                            local FlapsInput = Space-Shift
+                            #coordinate adjustment 
+                            local ForwardOffsetLength = BaseVel:length()
+                            local LevelZLimiter = ForwardOffsetLength / StickLimits
+                            #altitude holding
+                            if(ElevationInput)
+                            {
+                                LevelZ = Position:z()
+                            }
+                            else
+                            {
+                                local PositionZ = Position:z()  #precaching
+                                LevelZ = clamp(LevelZ,PositionZ - LevelZLimiter,PositionZ + LevelZLimiter)  #worst case scenario fix.
+                            }
+                            
+                            #pylon specific
+                            local RollPointingToPoint = elevation(Position,Angle:setRoll(0),Aimpos) * PylonInput
+                            #standard forward flight
+                            if(!PylonInput)
+                            {
+                                local FixedAngle = Forward:setZ(0):toAngle()
+                                Flypos = Position:setZ(LevelZ) + (((FixedAngle:forward():setZ(0)) + (FixedAngle:right():setZ(0) * BearingInput) + (FixedAngle:up() * ElevationInput)) * ForwardOffsetLength)
+                                #holoCreate(25,Flypos,vec(3))
+                            }
+                            
+                            else
+                            {
+                                local ZMod = (LevelZ * 0.05) + (Position:z() * 0.95) - (Velocity:z() * 0.1)
+                                Flypos = (Position + (AimAng:right() * (BaseVel:length() * 0.5) * PylonInput)):setZ(ZMod) #pylon turn
+                            }
+                            #flight heading, similar to cam-mouse mode
+                            local FlightHeading = getHeadingAutoroll(Flypos,StickLimits,FlightCPUAngle,FlightModel["self leveling",number],FlightModel["cyclic ratio",number],Position,FlightModel,(A&D) | R)
+                            Input_WS = FlightHeading:pitch()  #pitch up at point
+                            if(!PylonInput) 
+                            {
+                                Input_AD = clamp(-FlightCPUAngle:roll() + (FlightHeading:roll()* ((FlightModel["maneuverability",angle]:roll() / FlightModel["maneuverability",angle]:yaw()) * 90)),-StickLimits,StickLimits) / StickLimits
+                            }
+                            else
+                            {
+                                Input_AD = -(FlightCPUAngle:roll() - RollPointingToPoint) / (StickLimits / 2)#45 #90
+                            }
+                            Input_LR = FlightHeading:yaw() * (1 + (abs(PylonInput) * 2))    #our rudder is more sensitive during a pylon turn, because it'll already inherently spiral slightly
+                            Input_UD = FlapsInput
+                            Input_FB = ThrustInput
+                        }
+                        
+                        #adding side mouse buttons and R+mousewheel
+                        if(FlightModel["collective",number])
+                        {
+                            Input_UD = clamp(Input_UD + NextWeapon - PrevWeapon + MouseUp - MouseDown,-1,1)
+                        }
+                        else
+                        {
+                            Input_FB = clamp(Input_FB + NextWeapon - PrevWeapon + MouseUp - MouseDown,-1,1)
+                        }
+                    }
+                    
+                    #mouse
+                    elseif(State == "MOUSE")
+                    {
+                        local FlightHeading = getHeadingAutoroll(Flypos,StickLimits,FlightCPUAngle,FlightModel["self leveling",number],FlightModel["cyclic ratio",number],Position,FlightModel,A&D)
+                        local OverrideInput_AD = D-A
+                        if(!OverrideInput_AD) #autoroll
+                        {
+                            Input_AD = clamp(-FlightCPUAngle:roll() + (FlightHeading:roll() * ((FlightModel["maneuverability",angle]:roll() / FlightModel["maneuverability",angle]:yaw()) * 90)),-StickLimits,StickLimits) / StickLimits
+                        }
+                        else    #autoroll
+                        {
+                            Input_AD = OverrideInput_AD - ((FlightCPUAngle:roll()/StickLimits) * FlightModel["self leveling",number])
+                        }
+                        Input_WS = FlightHeading:pitch()
+                        Input_AD = clamp((Input_AD),-1,1)
+                        Input_LR = FlightHeading:yaw()
+                        Input_UD = clamp((Space - Shift) * !R,-1,1)
+                        Input_FB = clamp((W - S) * !R,-1,1)
+                        #adding side mouse buttons and R+mousewheel
+                        if(FlightModel["collective",number])
+                        {
+                            Input_UD = clamp(Input_UD + NextWeapon - PrevWeapon + ((MouseUp - MouseDown)*0.5),-1,1)
+                        }
+                        else
+                        {
+                            Input_FB = clamp(Input_FB + NextWeapon - PrevWeapon + ((MouseUp - MouseDown)*0.5),-1,1)
+                        }
+                    }
+                    
+                    #ground-hugging
+                    elseif(State == "TERCOM")
+                    {
+                        #variable for alt
+                        local AltMod = clamp(Space - Shift + MouseUp - MouseDown,0,1)
+                        local WS = (W - S) * !R
+                        #get altitude, and target altitude
+                        local AltitudeTarget = 5 + (AltMod * 2.5 * FlightModel["wings",number])
+                        local Altitude = AvionicsData[3,number]
+                        #difference
+                        local AltitudeRatio = (AltitudeTarget-Altitude) / AltitudeTarget
+                        local AltitudeInput = clamp(-1 + (AltitudeRatio*2),-1,1)
+                        #traces forward a few seconds.  From that point, it traces down, and sets a point above it, which we fly towards.
+                        local ForwardCoordinateToTraceToward = rangerOffset(Velocity:length() * 3,Position,AimAng:forward()):position()    #3s forward of us
+                        local ForwardTerrainPosition = rangerOffset(Velocity:length(),ForwardCoordinateToTraceToward,vec(0,0,-1)):position()
+                        local ForwardFlypos = ForwardTerrainPosition + (vec(0,0,AltitudeTarget * 39.37))
+                        local ClearedForwardFlypos = rangerOffset(Velocity:length() * 3,Position,(ForwardFlypos-Position)):position()
+                        #gets flight heading, acts similar to regular mouse flight.  Helis get magical pitch
+                        local FlightHeading = getHeadingAutoroll(ClearedForwardFlypos,StickLimits,FlightCPUAngle,FlightModel["self leveling",number],FlightModel["cyclic ratio",number],Position,FlightModel,0)
+                        Input_AD = clamp(-FlightCPUAngle:roll() + (FlightHeading:roll() * ((FlightModel["maneuverability",angle]:roll() / FlightModel["maneuverability",angle]:yaw()) * 90)),-45,45) / 45 #reduced roll sensitivit                        
+                        if(FlightModel["collective",number])
+                        {
+                            Input_WS = clamp((Angle:pitch() - (clamp(-AltitudeRatio,0,1) * 15 * WS)) / 15,-1,1)
+                        }
+                        else
+                        {
+                            Input_WS = FlightHeading:pitch()
+                        }
+                        if(FlightModel["cyclic",number])
+                        {
+                            local Input_UDUnclamped = (((UD < 0.5) + 0.5 + (AltitudeRatio/1.5) - (Velocity:z() / 100)) * (2-cos(Angle:pitch()))) / 4
+                            Input_UD = clamp(Input_UDUnclamped,-1 + (AltMod*2),1)
+                            Input_FB = clamp(WS,-1,1)
+                        }
+                        else
+                        {
+                            Input_UD = 1
+                            local StallTarget = FlightModel["stall",number] * 1.25 + (WS * 9999)
+                            Input_FB = ((StallTarget - Velocity:length()) / (StallTarget / 10)) * (2-cos(Angle:pitch()))
+                        }
+                        Input_LR = FlightHeading:yaw()
+                        #prevents cyclic under 20%, adds a bit for moving forward, adjusts based off alt, and dampens vertical velocity
+                        
+                    }
+                    
+                    #simulation-style flight
+                    elseif(State == "SIM")
+                    {
+                        local CollectiveSidebuttons = 0
+                        local ThrustSidebuttons = 0
+                        local Sidebuttons = MouseUp - MouseDown
+                        if(FlightModel["collective",number]) {CollectiveSidebuttons = Sidebuttons} else {ThrustSidebuttons = Sidebuttons}
+                        Input_WS = entity():elevation(Flypos) / StickLimits / 2
+                        Input_AD = entity():bearing(Flypos) / StickLimits / 2
+                        Input_LR = D-A
+                        Input_FB = clamp(W-S+ThrustSidebuttons,-1,1)
+                        Input_UD = clamp(Space-Shift+CollectiveSidebuttons,-1,1)
+                    }
+                    
+                    #autopilot
+                    elseif(State == "AUTO")
+                    {
+                        #preresetting controls and locals
+                        Input_WS = 0
+                        Input_AD = 0
+                        Input_LR = 0
+                        Input_UD = 0
+                        Input_FB = 0
+                        TempCompare = 0
+                        UD_Override = 0
+                        #precaches
+                        local VelLen = Velocity:length()
+                        
+                        
+                        #GETTING CURRENT OPCODE
+                        local AP_OPCode = AP_OPCodes[AP_CurrentIndex,string]
+                        
+                        #JMP to a new index and reevaluate operation code; intentionally set up to fail if it's a double-jump.
+                        if(AP_OPCode == "JMP")
+                        {
+                            #if the current index is a jump command, it'll reset pointer to that
+                            AP_CurrentIndex = AP_Waypoints[AP_CurrentIndex,number]
+                            AP_OPCode = AP_OPCodes[AP_CurrentIndex,string]
+                            #if(AP_OPCode == "PNT") {AP_Flypos = AP_Waypoints[AP_CurrentIndex,vector]}
+                        }
+                        
+                        #Fly to a coordinate
+                        if(AP_OPCode == "PNT")
+                        {
+                            AP_Flypos = AP_Waypoints[AP_CurrentIndex,vector]
+                            #if we are within 1s of coordinate, our "pointer" jumps to the next "address"
+                            if((AP_Flypos-Position):length() < VelLen)
+                            {
+                                AP_CurrentIndex++
+                            }
+                            #if not, we keep flying at our waypoint
+                            else
+                            {
+                                #now that we have coordinates and all sorted out, we get flight heading and cyclic and such
+                                local FlightHeading = getHeadingAutoroll(AP_Flypos,StickLimits,FlightCPUAngle,FlightModel["self leveling",number],FlightModel["cyclic ratio",number],Position,FlightModel,0)
+                                local AltDifference = (AP_Flypos-Position):z()
+                                #nose up/down, or, if a heli, that weird heli adjusting thing I need to rewrite
+                                if(!FlightModel["cyclic",number])
+                                {
+                                    Input_WS = FlightHeading:pitch()
+                                    Input_AD = -FlightCPUAngle:roll() + (FlightHeading:roll() * ((FlightModel["maneuverability",angle]:roll() / FlightModel["maneuverability",angle]:yaw()) * 90))
+                                    Input_UD = (AltDifference / 250) - UD
+                                }
+                                else
+                                {
+                                    if(inrange(entity():bearing(AP_Flypos),-StickLimits/2,StickLimits/2))
+                                    {
+                                        local DesiredPitch = 10 - (clamp((AP_Flypos-Position):z() / 200,-20,10))    #keeps us within 0-30 degres.
+                                        Input_WS = clamp((Angle:pitch() - DesiredPitch) / StickLimits,-1,1)
+                                        Input_AD = -FlightCPUAngle:roll() + (FlightHeading:roll() * ((FlightModel["maneuverability",angle]:roll() / FlightModel["maneuverability",angle]:yaw()) * 90))
+                                    }
+                                    else
+                                    {
+                                        Input_WS = clamp((Angle:pitch()) / StickLimits,-1,1)
+                                        Input_AD = clamp(-Angle:roll() / StickLimits,-1,1)
+                                    }
+                                    Input_UD = ((AltDifference - (LocalVel:z())) / 100) - UD + 0.5  #0.5 = rough hover est.
+                                }
+                                #processes all our state information back into a 5-point input model.
+                                
+                                Input_LR = FlightHeading:yaw()
+                                Input_FB = Pod:number("W") - Pod:number("S")
+                            }
+                        }
+                        
+                        #End of our command list
+                        if(!AP_OPCode | AP_OPCode == "OFF")
+                        {
+                            Seat:hintDriver("Autopilot off!",3)
+                            State = "KEY"
+                            AP_CurrentIndex = 1
+                        }
+                    }
+                    
+                    
+                    #low-priority controls
+                    if(Interval100Timer)
+                    {
+                        #updates our camera head if we have one
+                        if(SightHeadActive) {updateHoloSightHead(45,SightHeadMaster,Aimpos,Interval800Timer)}
+                        
+                        local AmmoRatio = 0
+                        #ballistics
+                        if(IS_ARMED & Piloted)
+                        {
+                            #precaching if our sight hits an entity
+                            #SightLockStatus = 0
+                            #computing lead deflection
+                            if(!Alt) {Lead = (Lead * 0.75) + (clamp(angnorm(AimAng-LeadFloatingValue),ang(-3),ang(3)) * 2.5)} else {Lead = ang()}   #100 tickrate = 1:1 parity with 1/10 value
+                            LeadFloatingValue = AimAng
+                            
+                            #ranging--first we trace at our ballistic solution and, if that failed, we trace on our own aim path
+                            if(Interval200Timer)
+                            {
+                                if(!Pilot:keyPressed("mouse_middle") & !Pilot:keyPressed("i"))
+                                {
+                                    local Difference = (BallisticSolution - holoEntity(0):pos()):normalized()
+                                    local RangingTrace = rangerOffsetHull(32767,Position + (Difference * 787),Difference,vec(197)) #5m sized trace, from 20 ahead
+                                    if(RangingTrace:entity() & (RangingTrace:distance() > 393.7))  #has to be over 5m
+                                    {
+                                        EngagementRange = (RangingTrace:distance() - 787) / 39.37
+                                        SightLockStatus = 2
+                                    }
+                                    elseif(AimTrace:entity())
+                                    {
+                                        EngagementRange = AimTrace:distance() / 39.37
+                                        SightLockStatus = 1
+                                    }
+                                    else
+                                    {
+                                        SightLockStatus = 0
+                                    }
+                                }
+                                else
+                                {
+                                    EngagementRange = AimTrace:distance() / 39.37
+                                    SightLockStatus = 1
+                                }
+                                
+                                #sound play for sight
+                                if(changed(SightLockStatus))
+                                {
+                                    soundStop(0)
+                                    if(SightLockStatus == 0) {soundStop(0)}
+                                    elseif(SightLockStatus == 1) {holoEntity(0):soundPlay(0,0,"acf_extra/airfx/laser_track.wav")}
+                                    elseif(SightLockStatus == 2) {holoEntity(0):soundPlay(0,0,"acf_extra/airfx/laser_lock.wav")}
+                                    soundVolume(0,0.5)
+                                }
+                            }
+                            
+                            #gun ballistics
+                            if(BallisticComputerModeChar == "G")
+                            {
+                                if(Interval800Timer)
+                                {
+                                    CannonRangeTable = createGunRangeTable(CannonSelected)
+                                }
+                                BallisticSolution = createPIPOffRangeTable(CannonRangeTable,EngagementRange,Lead,CannonSelected,holoEntity(0):pos())
+                                if(Interval200Timer)
+                                {
+                                    if(WeaponSelected == 1) {AmmoRatio = CannonSelected:acfTotalAmmoCount() / CANNON1_STARTING_AMMO}
+                                    elseif(WeaponSelected == 2) {AmmoRatio = CannonSelected:acfTotalAmmoCount() / CANNON2_STARTING_AMMO}
+                                    elseif(WeaponSelected == 3) {AmmoRatio = CannonSelected:acfTotalAmmoCount() / CANNON3_STARTING_AMMO}
+                                }
+                            }
+                            #bomb ballistics
+                            elseif(BallisticComputerModeChar == "B")
+                            {
+                                local DropSignal = Mouse1 | BombardierDropInput
+                                if(!Alt)  #ccip--shows where your bomb would impact if you dropped it right at this moment
+                                {
+                                    if(Interval200Timer)
+                                    {
+                                        BallisticSolution = bombCCIP(entity(), BombRangeTable, $Position * 2)
+                                        EngagementRange = (BallisticSolution - Position):length() / 39.37
+                                        local Bombs = 0
+                                        foreach(K,V:entity = BombCrates) {Bombs = Bombs + V:acfRounds()}
+                                        AmmoRatio = Bombs / BOMB_STARTING_AMMO
+                                    }
+                                    DropBombs = DropSignal
+                                }
+                                else    #ccrp--computer controls bomb release
+                                {
+                                    #aim coord and drop circuit.  note that if you have a bombardier, it'll overwrite; either pilot or bombardier can release bombs
+                                    if(!BombardierAimpos)
+                                    {
+                                        BallisticSolution = Aimpos
+                                    }
+                                    else
+                                    {
+                                        BallisticSolution = BombardierAimpos
+                                    }
+                                    local BombingAltitude = abs(Position:z() - BallisticSolution:z()) / 39.37
+                                    if(DropSignal)
+                                    {
+                                        EngagementRange = (bombCCIPWithGivenAltitude(entity(), BombRangeTable, BombingAltitude,0)-(Aimpos+$Aimpos)):setZ(0):length() / 39.37
+                                        BestCCRPDistance = clamp(EngagementRange,EngagementRange,BestCCRPDistance)
+                                        if((EngagementRange <= BombCCRPWindow) & (EngagementRange > BestCCRPDistance))
+                                        {
+                                            DropBombs = 1
+                                            Seat:hintDriver("Bombs released!",3)
+                                        }
+                                        if(DropBombs & (BombKg >= 1000))
+                                        {
+                                            #ifdef concmd(string)
+                                            concmd("say \"I have become death, the destroyer of pancakes.\"")
+                                            #endif
+                                            print("You have become death, the destroyer of pancakes.")
+                                        }
+                                    }
+                                    else
+                                    {
+                                        BestCCRPDistance = 9999
+                                        DropBombs = 0
+                                    }
+                                }
+                                
+                            }
+                            #missile ballistics
+                            elseif(BallisticComputerModeChar == "M")
+                            {
+                                local Missiles = 0
+                                if(WeaponSelected == 2)
+                                {
+                                    if(!MISSILE_2_GUIDED) {BallisticSolution = createPIPOffRangeTable(Missile2RangeTable,EngagementRange,Lead,entity(),holoEntity(0):pos())} else {BallisticSolution = Aimpos}
+                                    if(Interval200Timer)
+                                    {
+                                        foreach(K,V:entity = Missile2Crates) {Missiles = Missiles + V:acfRounds()}
+                                        AmmoRatio = Missiles / MISSILE2_STARTING_AMMO
+                                    }
+                                }
+                                elseif(WeaponSelected == 1)
+                                {
+                                    if(!MISSILE_1_GUIDED) {BallisticSolution = createPIPOffRangeTable(Missile1RangeTable,EngagementRange,Lead,entity(),holoEntity(0):pos())} else {BallisticSolution = Aimpos}
+                                    if(Interval200Timer)
+                                    {
+                                        foreach(K,V:entity = Missile1Crates) {Missiles = Missiles + V:acfRounds()}
+                                        AmmoRatio = Missiles / MISSILE1_STARTING_AMMO
+                                    }
+                                }
+                                else
+                                {
+                                    BallisticSolution = Aimpos  #guided rocket
+                                }
+                            }
+                            #not armed
+                            elseif(BallisticComputerModeChar == "N")
+                            {
+                                BallisticSolution = Position + (BaseVel:normalized() * 3937)
+                                EngagementRange = (Flypos-Position):length() / 39.37
+                            }
+                        }
+                        #range is just used in nav mode
+                        else
+                        {
+                            EngagementRange = (Aimpos-Position):length() / 39.37
+                        }
+                        
+                        #heads-up display
+                        local MaxAltitude = ((rangerOffset(50000,Position + vec(0,0,393.7),vec(0,0,1)):distance() - 393.7) / 39.37) + AvionicsData[3,number]
+                        local AltitudeRatio = AvionicsData[3,number] / MaxAltitude
+                        if(Piloted) {updateHoloHUD(182,1,0,BallisticSolution,Aimpos,AltitudeRatio,EngagementRange/400,Angle,!ThirdPerson & !CamThroughGunsight,!Interval200Timer,Interval400Timer,IS_ARMED)}
+                        
+                        #holo flight controls are updated
+                        if(!ThirdPerson & Piloted) {updateHoloFlightControls(191,Interval200Timer,Seat,Mouse1 & !R,FlightModel["cyclic or collective",number],FlightModel["forward engine thrust",number],vec(),vec(),WS,AD,LR,UD,FB)}
+                        if(Interval200Timer)
+                        {
+                            #Wartime emergency power or afterburner, hook it up to an external system
+                            WEP = (FB * Input_FB) == 1
+                            #thrust reverser
+                            ThrustReverser = (FB < 0)
+                            #updates avionics data and instruments
+                            AvionicsData = updateAvionicsTelemetry(AvionicsData)
+                            if(!ThirdPerson) {updateHoloInstruments(160,AvionicsData[1,number],AvionicsData[2,angle],AvionicsData[3,number],AvionicsData[4,number],AmmoRatio * 100)}
+                            
+                            #Here is where I stuff shit that is to run only every few executions--this is a lag saving measure
+                            #A holo timer, used to slow and accelerate the rotors and props
+                            RatePercentage = clamp(RatePercentage+0.03,RatePercentage,1)
+                            #Sound
+                            local EpitchIn = EnginePitch
+                            if(!FlightModel["wings",number])
+                            {
+                                EpitchIn = 80 + (UD*40)
+                            }
+                            else
+                            {
+                                EpitchIn = 80 + (FB*40)
+                                FlapVolume = UD
+                            }
+                            EnginePitch = clamp(EpitchIn,EnginePitch-10,EnginePitch+10)
+                            if(changed(EnginePitch))
+                            {
+                                soundPitch(2,(EnginePitch+100)/2)
+                                soundPitch(3,EnginePitch)
+                            }
+                            if(FlapVolume)
+                            {
+                                soundVolume(4,clamp(UD * (Velocity:length() / FlightModel["stall",number]),0,1))
+                            }
+                        }
+                    }#end half-rate toggle
+                    
+                    #LOW PRIORITY AUX CODE--CRASH CODE, ETC
+                    if(Interval400Timer)
+                    {
+                        Gear_Brakes = (FB <= 0) & (Input_FB == -1)
+                        #Backchecks, again.  Not sure why this is necessary
+                        DamageBaseCount = Bases:count()
+                        
+                        #Damage system for impacts
+                        #abandon hope all ye whos control flow enters here.
+                        
+                        #If you decelerate too hard, it will kill the pilot, remove random props, recolor for damage, and then go kill itself.
+                        #The maximum allowed deceleration is around 20mph or so.
+                        DamageSystemSpeed = Velocity:length()
+                        if($DamageSystemSpeed < -750)
+                        {
+                            Seat:soundPlay(100,0,"ambient/materials/cartrap_explode_impact2.wav")
+                            Base:soundPlay(299,0,"ambient/materials/cartrap_explode_impact1.wav")
+                            Seat:killPod()
+                            foreach(K,V:entity = Bases)
+                            {
+                                #ifdef entity:constraintBreak()
+                                V:constraintBreak()
+                                #endif
+                                #ifdef entity:removeAllConstraints()
+                                V:removeAllConstraints()
+                                #endif
+                            }
+                            foreach(K,V:entity = entity():getConstraints())
+                            {
+                                N = random(1)
+                                if(N > 0.9)
+                                {
+                                    if(V:parent():isValid())
+                                    {
+                                        #ifdef entity:deparent()
+                                        V:deparent()
+                                        #V:applyForce(Velocity * V:mass() * 1)
+                                        #endif
+                                    }
+                                    elseif(V:mass() > 25)
+                                    {
+                                        #ifdef entity:constraintBreak()
+                                        V:constraintBreak()
+                                        #endif
+                                        #ifdef entity:removeAllConstraints()
+                                        V:removeAllConstraints()
+                                        #endif
+                                    }
+                                    V:setMaterial("Models/props_trainstation/Trainstation_Ornament001")
+                                }
+                                elseif(N <= 0.1) {V:setMaterial("Models/props_trainstation/Trainstation_Ornament001")}
+                                elseif(N <= 0.2) {V:setColor(V:getColor()*vec(0.5,0.5,0.5))}
+                                elseif(N <= 0.3) {V:setMaterial("models/props_c17/metalladder002")}
+                                elseif(N <= 0.4) {V:setColor(V:getColor() * vec(0.7,0.6,0.6))}
+                                elseif((V:type() != "gmod_wire_gate") & (V != Base))
+                                {#ifdef entity:propDelete()
+                                    V:propDelete()
+                                #endif
+                                }
+                            }
+                            selfDestruct()
+                        }
+                        
+                        #Alternatively, if you lose a "base" prop, a core and vital component, you will lose all control, but the pilot will survive.
+                        else
+                        {
+                            #Flagged var for use later, hooray my years of coding in strong statically typed languages
+                            local DamageSystemTrigger = 0
+                            for(N=2,DamageBaseCount)
+                            {
+                                #Did we lose an important bit?
+                                if(!Bases:entity(N):isValid())
+                                {#if it's not welded, we don't give a fuck.  if it is, RIP your airframe.
+                                    if(!Unwelded:number(N)) {DamageSystemTrigger++}
+                                }
+                            }
+                            
+                            if(DamageSystemTrigger) #if we lost an important chunk of our airframe, the vehicle fucks itself.
+                            {
+                                Base:soundPlay(298,0,"ambient/materials/cartrap_explode_impact1.wav")
+                                Bases:entity(2):soundPlay(299,0,"ambient/materials/cartrap_explode_impact1.wav")
+                                Bases:entity(3):soundPlay(300,0,"ambient/materials/cartrap_explode_impact1.wav")
+                                selfDestruct()
+                            }
+                        }
+                        
+                        #taxi multiplier, makes turning way the fuck faster under 3m/s on ground with very low throttle and holding A&D in mouse mode
+                        if(A&D) {TaxiMultiplier = clamp(1-(AvionicsData[3,number] / 2.5),0,max(0.25 - abs(FB),0)) * (BaseVel:length() < 118.11) * 19} else {TaxiMultiplier = 0}
+                    } #end faux int 400
+                
+                
+                
+                WS = getSmoothedOutput(WS,Input_WS,0.2)
+                AD = getSmoothedOutput(AD,Input_AD,0.4)
+                LR = getSmoothedOutput(LR,Input_LR,0.2)
+                UD = getAccumulatedValue(UD,Input_UD,0.05 + (!FlightModel["collective",number] * 0.05) + (AutoLevelCollectiveBoost * 0.2),0,1)
+                FB = getAccumulatedValue(FB,Input_FB,0.03,-0.15 * (Input_FB == -1),1)
+                
+                #Building angular rotation & directional force models
+                #This is wing based lift and gorund effect
+                if(Interval200Timer)
+                {
+                    local Winged = FlightModel["wings",number]
+                    if(Winged)#if it has wings, it must make lift from them
+                    {
+                        local FlapAdjustedStall = FlightModel["stall",number] * (1-(UD * FLAP_EFFECTIVENESS))
+                        #This is a new way of doing it by a rough sinusoidal curve purely for "feel" and a raw value
+                        local RawStall = abs(Velocity:x()) / FlapAdjustedStall
+                        Lift_Ratio = clamp((RawStall * 0.5) + (sin(RawStall*90)/180),0,1) #creates a ratio of lift, as you go faster it increases until you hit cruising speed
+                        ControlRatio = clamp(Lift_Ratio,MIN_CONTROL_VALUE,AltitudeEffectValue) #Creates a ratio off the lift ratio for control surface mobility #adjusted from ,1.25)/1.25 for simplicity, may slightlya djust curve
+                        Flap_Dampening = 1 + ((FLAP_EFFECTIVENESS*UD)*3*AltitudeEffectValue)
+                        Plane_Lift_Adjustment = Lift_Ratio * FlightModel["wings",number]
+                    }
+                    else
+                    {
+                        ControlRatio = AltitudeEffectValue
+                    }
+                    
+                    #altitude effect, reduces lift and maneuverability at very high altitudes
+                    AltitudeEffectValue = (AltitudeEffectValue * 0.8) + (clamp(1 - (AvionicsData[3,number] / 1000),0,1) * 0.2)
+                    #ground effect, provides greatly increased lift and dust at very low altitude
+                    local GroundEffectIntensity = clamp((7-AvionicsData[3,number]) / 7,0,1)
+                    GroundEffectValue = GroundEffectIntensity * (FlightModel["ground effect multiplier",number])   #ground effect, extra lift up to 7m of ground
+                    #Dust kickup and sound code
+                    if(FlightModel["cyclic or collective",number])
+                    {
+                        DustKickingUp = GroundEffectValue != 0
+                        if(DustKickingUp)
+                        {
+                            if($DustKickingUp)
+                            {
+                                soundPlay(200,0,"acf_extra/vehiclefx/misc/windrush_in.wav")
+                                #ifdef effect:setMagnitude(number)
+                                DustEffect = effect()
+                                DustEffect:setEntity(Bases[1,entity])
+                                DustEffect:setMagnitude(10)
+                                DustEffect:setRadius(1000)
+                                WaterEffect = effect()
+                                WaterEffect:setEntity(Bases[1,entity])
+                                WaterEffect:setMagnitude(10)
+                                WaterEffect:setRadius(1000)
+                                #endif
+                            }
+                            #ifdef effect:setMagnitude(number)
+                            local EffectPos = Position - vec(0,0,AvionicsData[3,number] * 39)
+                            local EffectScale = GroundEffectIntensity * 150
+                            DustEffect:setOrigin(EffectPos)
+                            DustEffect:setScale(EffectScale)   #this should be like 500-0 based off altitude for mpfc using ThumperDust
+                            DustEffect:play("ThumperDust")
+                            WaterEffect:setOrigin(EffectPos)
+                            WaterEffect:setScale(EffectScale/2)   #this should be like 500-0 based off altitude for mpfc using ThumperDust
+                            WaterEffect:play("waterripple")
+                            #endif
+                            soundVolume(200,GroundEffectIntensity / 2)
+                        }
+                        else
+                        {
+                            if($DustKickingUp) {soundStop(200)}
+                        }
+                    }
+                }
+                #collective and forward force updates
+                if(changed(UD) | changed(FB))
+                {
+                    if(FlightModel["collective",number])#if it has rotors, make it lift from those
+                    {
+                        Collective_Force = UD * (1-(FB*FlightModel["collective throttle blending",number]))
+                    }
+                    if(FlightModel["forward engine thrust",number])#if it has thrust, it should use that
+                    {
+                        Thrust_Force = (FB * (1-(UD*FlightModel["collective throttle blending",number]))) * FlightModel["forward engine thrust",number]
+                    }
+                }
+                
+                #taxi multiplier for yaw.  2.5m or less off ground, throttle under 25%, increases yaw
+                #local TaxiMultiplier = clamp(1-(AvionicsData[3,number] / 2.5),0,max(0.25 - abs(FB),0)) * (BaseVel:length() < 250) * 25
+                
+                #cyclic from helicopters
+                if(FlightModel["cyclic",number])#if it has cyclic, that could be useful to us as well
+                {
+                    local AngForCyclic = clamp(Angle,CYCLIC_LOW_LIMIT,CYCLIC_HIGH_LIMIT)
+                    Cyclic = vec(AngForCyclic:pitch(),-AngForCyclic:roll(),0)/30
+                    if(FlightModel["cyclic tail mixing",number]) {CyclicTailAddition = (Cyclic:x() * -Cyclic:z()) * FlightModel["cyclic tail mixing",number]}#Drift from cyclic
+                }
+                
+                #Computing flight characteristics into raw values; very confusing, so try not to fuck with it
+                FlightCPUVector = entity():toWorld(( ((vec(Thrust_Force,0,clamp(Collective_Force+Lift_Ratio,0,1) * (1 + GroundEffectValue)) + Cyclic) * FlightModel["thrust",vector]) + ((Velocity*FlightModel["damping",vector]*Flap_Dampening*(vec(1,1,1+Plane_Lift_Adjustment))))) * AltitudeEffectValue) - Position
+                FlightCPUAngle = freeRotateAngle(FlightCPUAngle,(WS*FlightModel["maneuverability",angle]:pitch())*ControlRatio,((CyclicTailAddition-LR)*(FlightModel["maneuverability",angle]:yaw() * 1+TaxiMultiplier))*ControlRatio,(AD*FlightModel["maneuverability",angle]:roll())*ControlRatio)
+                
+                #PID compensation
+                FlightCPUP = -entity():toLocal(FlightCPUAngle)
+                FlightCPUD = $FlightCPUP
+                FlightCPUI = clamp(FlightCPUI + ((FlightCPUP+FlightCPUD) * FLIGHT_CPU_INTEGRAL_GAIN),FLIGHT_CPU_INTEGRAL_LOWER_LIMIT,FLIGHT_CPU_INTEGRAL_UPPER_LIMIT)
+
+                #Quaternion direction rotation finding--translates angles of flight CPU to prop forces.  Works fairly well, I'm sure there's a more efficient way.
+                local Current_Quat = quat(entity())
+                local Desired_Quat = quat(FlightCPUAngle-FlightCPUI)
+                local Q = Desired_Quat/Current_Quat
+                
+                #Application of actual force
+                for(X=1,Bases:count())
+                {
+                    local EntityToApplyForceTo = Bases[X,entity]
+                    local EntityToApplyForceToMass = Masses[X,number] #EntityToApplyForceTo:mass()
+                    if(!Unwelded[X,number]) {EntityToApplyForceTo:applyTorque((((EntityToApplyForceTo:toLocal(rotationVector(Q)+EntityToApplyForceTo:pos()))*ANGULAR_FORCE) - (ANGULAR_DAMPING*(EntityToApplyForceTo:angVelVector()))) * -(Inertias[X,vector]*EntityToApplyForceToMass))}
+                    EntityToApplyForceTo:applyForce((FlightCPUVector)*EntityToApplyForceToMass)
+                }
+                
+            }
+    }
+}
+
+#[
+###################################################################################################
+#Here's a copy of varlib, copy-paste into a new e2
+###################################################################################################
+
+@name MPFC v7 VarLib
+@outputs [VarLib]:array
+#FLIGHT MODELS:
+#0------------Glider
+#1------------Biplane
+#2------------Parasol plane
+#3------------Monoplane
+#4------------Jumpjet
+#5------------Airship
+#6------------Helicopter
+#7------------Gyrodyne
+#8------------Autogyro
+#9------------Ekranoplan
+#Varlib for flight chip
+Maneuverability = 1			#modifier for maneuverability
+Thrust = 1				#forward or lateral thrust, it's all meshed the same
+Lift = 1			#Lift force ratio, may adjust to work with some autohovering governor
+Cruisespeed = 1000				#max lift at this, used to create stall ratios
+Typeofvehicle = 0			#selects flight model
+#Personal preferences
+Smoothers = 0.2				#Smooths inputs  #THESE ARE OVERRIDEN NOW I NEED TO REMOVE
+CollectiveSmoother = 0.1		#smoother for collective only #THESE ARE OVERRIDEN NOW I NEED TO REMOVE
+ThrustSmoother = 0.05			#smoother for thrust only #THESE ARE OVERRIDEN NOW I NEED TO REMOVE
+StickLimits = 20    #determines how snappy it is around close angles. 15-45 seems the limit of what it likes
+
+#Sounds
+CockpitSound = "acf_extra/airfx/heliinside3.wav"			#Sound that plays in the cockpit
+EngineSound = "acf_extra/airfx/usag.wav"				#Sound that plays from engine
+PropSound = "acf_extra/airfx/helirotor.wav"				#Sound that plays from rotors or thrusting, static and unchanging.
+SwitchSound = "buttons/lever7.wav"				#Sound that plays when you switch master circuit
+GetInSound = "buttons/latchunlocked2.wav"				#Sound that plays when someone gets in the seat
+StartSound = "acf_extra/airfx/satellite_target.wav"      #Sound that plays as the engine turns over
+
+#Cam offset for third person cam
+CamOffset = vec(0,0,60)
+
+#dark backing on your flight instrument panel?  1/0
+DarkBacking = 1
+#size of instrument panel, number--best between 0.5-1
+InstrumentPanelScale = 0.6
+
+#Landing gear model; we use propnotsolid/setalpha/setmass to automatically handle landing gear
+#if you don't want to use the automatic gear thing, just enter nothing; you can use your own setup and just the output GearDown
+GearModel = ""
+
+#Optional holos; we adjust scale and settings here
+Scale = vec(1)          #Scale of your main rotors
+RotorBlades = 3             #Blades on main rotors
+TailScale = vec(1)      #Scale of your tail rotor
+TailRotorBlades = 3         #Blades on tail rotor
+PropellorScale = 1 #Size of your propellors
+PropellorBlades = 3 #Blades on your propellors
+TailAngleSwap = 1 #0 or 1, swaps the side the tail rotor is on
+
+#Ballistic data
+#Currently supported data is for all generic unguided rockets (not yet the ones only on FRS) and FFAR
+#you enter em based off their acf name.  This corresponds with pre-built range tables, like S-24 is a full size full HE full prop HE S-24
+#S-24 lowvel is full size S-24 with 1/4 the propellant
+#There are keys that correspond with rockets:
+#S-24,S-24 LOWVEL, HVAR HE, HVAR HEAT, RS82 HE, 70MMFFAR, 40MMFFAR
+#For MISSILES, you have to still enter their names.  It's the first "part" of acfRoundType; to find name just spawn-weld onto a box this e2.
+#For example, AT-3 ASM becomes AT-3
+MissileType1 = ""
+MissileType2 = ""
+#This is the size of the bomb.
+#If you enter a matching # with a table we have (50/100/250/500/1000), it'll use the range table for that.
+#If it doesn't match any caliber--lookin' at you GBUs--it'll use an aggregate average table for general purpose stuff
+#If you DON'T HAVE BOMBS then MAKE THIS ZERO
+BombKg = 0
+
+#Building Variable library
+VarLib = array(Maneuverability,Thrust,Lift,Cruisespeed,Typeofvehicle,Smoothers,CollectiveSmoother,ThrustSmoother,15,vec(0,0,0),CockpitSound,EngineSound,PropSound,SwitchSound,GetInSound,StartSound,0,Scale,RotorBlades,TailScale,TailRotorBlades,PropellorScale,PropellorBlades,TailAngleSwap,CamOffset,StickLimits,BombKg,DarkBacking,InstrumentPanelScale,MissileType1,MissileType2,GearModel)
+
+
+#attach e2 to a box to get its "key", for missiles
+if(entity():isWeldedTo())
+{
+    if(entity():isWeldedTo():type() == "acf_ammo")
+    {
+        local NameArray = entity():isWeldedTo():acfRoundType():explode(" ")
+        local Keyvalue = NameArray[1,string]:upper()
+        print("Round type: "+Keyvalue)
+    }
+}
+
