@@ -1,0 +1,227 @@
+@name FailCake MoneyFinder V2
+@trigger all
+@persist T Hold Hold2 Lo V:vector M V2:vector R Scans Lp
+@outputs On Scan AutoMod Normal OwnerMod Music Up
+@model models/props/cs_assault/Money.mdl
+runOnTick(1)
+runOnChat(1)
+
+E = entity()
+O = owner()
+E:setMass(10)
+if(first()){
+On = 0
+Scan = 1
+Hold = 0
+Normal = 0
+AutoMod = 0
+OwnerMod = 0
+hint("Made by Failcake",100)
+}
+
+findDisallowPlayerProps("player")
+findExcludeClass("player")
+findByModel("models/props/cs_assault/Money.mdl")
+
+EE = findClosest(entity():pos())
+Distance = round(entity():pos():distance(EE:pos()))
+
+
+if(On){
+entity():setColor(Distance,Distance,Distance,255)
+
+if(Distance >= 200){
+T+=0.05
+}elseif(Distance < 200){
+T+=0.1
+}elseif(Distance < 150){
+T+=0.5
+}elseif(Distance < 10){
+T+=0.5
+}
+
+if(T == 1){
+if(Distance > 10){
+E:soundPlay(1000,1000,"npc/turret_floor/ping.wav")
+soundStop(2000)
+}elseif(Distance <= 10){
+soundStop(1000)
+E:soundPlay(2000,2000,"npc/turret_floor/alert.wav")
+}
+}
+
+
+if(Distance > 10){
+if(T >= 5){
+T = 0
+soundStop(1000)
+}
+}else{
+if(T >= 10){
+T = 0
+soundStop(1000)
+}
+}
+}
+
+
+if(On == 1 & O:keyUse() & O:aimEntity()==entity() & O:pos():distance(entity():pos())<= 70)
+{
+Hold2+=0.1
+if(Hold2 >= 5){
+hint("Turned Off",100)
+E:soundPlay(3000,3000,"npc/turret_floor/die.wav")
+On = 0
+T = 0
+Hold2 = 0 
+Hold = 0    
+}   
+}
+
+if(On == 0 & O:keyUse() & O:aimEntity()==entity() & O:pos():distance(entity():pos())<= 70)
+{
+Hold+=0.1
+if(Hold >= 5){
+hint("Turned On",100)
+E:soundPlay(3000,3000,"npc/turret_floor/active.wav")
+On = 1
+Scan = 1
+T = 0
+Hold2 = 0 
+Hold = 0    
+}   
+}
+
+if(On == 0){
+entity():setColor(255,255,0,255)    
+}
+
+if(On){
+    
+timer("Scanner",40000)
+
+if(clk("Scanner")){
+Scan = 1    
+}
+
+if(Scan){
+findByModel("models/props/cs_assault/Money.mdl") 
+Arr = findToArray()
+MaxMoney = Arr:count()
+if(MaxMoney > 0){
+hint("Total Money Found = "+MaxMoney+".",100)
+}else{
+hint("No Money Found! D*=.",100)
+}
+Scan = 0
+}
+}
+
+
+if(chatClk(owner())) {if(lastSaid() == "!auto"& AutoMod == 0 & On == 1){
+AutoMod = 1
+Normal = 0
+OwnerMod = 0
+
+E:setTrails(5,5,10,"trails/laser",vec(255,0,0),255)
+hint("** AutoMode Activated! **",100)
+}
+}
+
+if(chatClk(owner())) {if(lastSaid() == "!normal"& Normal == 0 & On == 1){
+AutoMod = 0
+Normal = 1
+OwnerMod = 0
+
+E:removeTrails()
+hint("** Normal Mode Activated! **",100)
+}
+}
+if(chatClk(owner())) {if(lastSaid() == "!scan" & On == 1){
+Scan = 1
+hint("** Scanning! **",100)
+}
+}
+
+if(chatClk(owner())) {if(lastSaid() == "!owner" & On == 1){
+OwnerMod = 1
+AutoMod = 0
+Normal = 0
+hint("** Coming Back To Owner! **",100)
+}
+}
+
+if(chatClk(owner())) {if(lastSaid() == "!music" & On == 1){
+hint("** Playing Music! **",100)
+soundStop(20000)
+E:soundPlay(10000,10000,"music/vlvx_song23.mp3")
+}
+}
+
+
+if(chatClk(owner())) {if(lastSaid() == "!music2" & On == 1){
+soundStop(10000)
+hint("** Playing Music2! **",100)
+E:soundPlay(20000,20000,"music/vlvx_song28.mp3")
+}
+}
+
+if(chatClk(owner())) {if(lastSaid() == "!stop" & On == 1){
+hint("** Stoping Music! **",100)
+soundStop(10000)
+soundStop(20000)
+M = 0
+Music = 0
+}
+}
+
+if(chatClk(owner())) {if(lastSaid() == "!die" & On == 1){
+hint("** E2 Removed =( ! **",100)
+selfDestructAll()
+}
+}
+
+if(AutoMod){
+#E:applyForce((EE:pos()-E:pos())) -- Old One.
+V2=(EE:pos() - E:pos()+vec(0,0,100))
+E:applyForce(V2 + $V2*30)   
+}
+
+if(OwnerMod){
+E:removeTrails()
+V=(owner():pos() - E:pos() + vec(0,0,190))
+E:applyForce(V + $V*30)   
+}
+if(On){
+R+=1
+
+if(Scans <= 0) {Up = 1} elseif (Scans <= 0) {Scans = Scans}
+if(Scans >= 10) {Up = 0}    
+if(Up) {Scans+=0.05} else {Scans-=0.05}
+
+## HOLO ##
+holoCreate(1)
+holoModel(1,"hqcone")
+holoColor(1,vec(0,255,0))
+holoScaleUnits(1,vec(5,5,5))
+holoPos(1,EE:pos()+vec(0,0,8+Scans))
+holoAng(1,ang(0,R,180))
+holoParent(1,EE)
+
+holoCreate(2)
+holoModel(2,"hqcylinder")
+holoColor(2,vec(0,255,0))
+holoScaleUnits(2,vec(3,3,3))
+holoPos(2,EE:pos()+vec(0,0,11+Scans))
+holoAng(2,ang(0,R,0))
+holoParent(2,EE)
+## HOLO ##
+}
+
+
+
+if(duped()){selfDestructAll()}
+
+####################################################################
+## Do not rename the E2 or remove the hint("Made by Failcake",100)##
+####################################################################

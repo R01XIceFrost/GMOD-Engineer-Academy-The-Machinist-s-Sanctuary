@@ -1,0 +1,129 @@
+@name FailCake Suit !? Omg O_O V1
+@inputs E:entity
+@persist Health Health2 Health3 Health4 Health5 Health6 START START2
+
+#E2 to Target finder (Player) 
+#Or to NPC Health (Future Ice Frost here 2025!)
+
+interval(1000) 
+
+if(first()){
+
+hint("Made By FailCake",100)
+}
+
+HP = owner():health()
+O = E
+
+if(HP == 100 ){
+Health2 = 0
+Health3 = 0
+Health4 = 0
+Health5 = 0
+Health6 = 0
+Health += 1
+START += 1
+START2 += 1
+if(START == 1){
+O:soundPlay(40000,40000,"music/VLVX_song1.mp3")
+}
+if(START2 == 4){
+soundStop(90000)
+O:soundPlay(100000,100000,"HL1/fvox/bio_reading.wav")
+}
+
+if(START2 == 8){
+soundStop(90000)
+O:soundPlay(100000,100000,"HL1/fvox/power_restored.wav")
+}
+
+if(START2 == 13){
+O:soundPlay(100000,100000,"HL1/fvox/targetting_system.wav")
+}
+if(START2 == 18){
+O:soundPlay(100000,100000,"HL1/fvox/torniquette_applied.wav")
+}
+
+if(START2 == 22){
+O:soundPlay(100000,100000,"HL1/fvox/medical_repaired.wav")
+}
+if(Health == 1){
+O:soundPlay(80000,80000,"HL1/fvox/voice_on.wav")
+}
+}
+
+
+if(HP >= 80 & HP != 0 & HP < 100 ){
+
+Health2 += 1
+
+if(Health2 == 1){
+O:soundPlay(10000,10000,"HL1/fvox/wound_sterilized.wav")
+}
+}
+
+if(HP >= 60 & HP != 0 & HP < 80 ){
+
+Health3 += 1
+
+if(Health3 == 1){
+O:soundPlay(20000,20000,"HL1/fvox/health_critical.wav")
+}
+}
+
+
+if(HP >= 40 & HP != 0 & HP < 60 ){
+
+Health5 += 1
+
+if(Health5 == 1){
+O:soundPlay(60000,60000,"HL1/fvox/blood_loss.wav")
+}
+}
+
+if(HP >= 20 & HP != 0 & HP < 40 ){
+
+Health6 += 1
+
+if(Health6 == 1){
+O:soundPlay(70000,70000,"HL1/fvox/major_fracture.wav")
+}
+}
+
+if(HP <= 0){
+
+Health4 += 1
+
+Death=array()
+Death:setString(1,"A Good Friend / Admin")
+Death:setString(2,"Saver of all")
+Death:setString(3,"WHY DID I DIE!?")
+Death:setString(4,"Revenge Me Brother...")
+Death:setString(5,"Resting in Hell?!")
+Death:setString(6,"Say to my girlfriend I love her =(")
+Death:setString(7,"Cake is A Lie?")
+Death:setString(8,"Im Whit GOD!xD")
+
+if(Health4 == 1){
+R=randint(1,8)
+O:soundPlay(30000,30000,"HL1/fvox/near_death.wav")
+O:soundPlay(90000,90000,"music/HL2_song23_SuitSong3.mp3")
+soundPitch(90000,150)
+soundStop(40000)
+concmd("say [R.I.P]+owner():name()+ ---- 2010  ** "+Death:string(R)+". **")
+START = 0
+}
+
+}
+
+
+
+if(duped()){selfDestructAll()}
+if(duped()){selfDestructAll()}
+if(duped()){selfDestructAll()}
+if(duped()){selfDestructAll()}
+if(duped()){selfDestructAll()}
+
+####################################################################
+## Do not rename the E2 or remove the hint("Made by Failcake",100)##
+####################################################################

@@ -1,0 +1,359 @@
+@name FailCake Factory V1
+@persist Timer T
+@outputs Screen Activate
+@inputs Activate
+    OP = entity()
+    OP:setMaterial("")
+
+	if(first()){hint("Made By FailCake",100)}
+
+    ## BASEGreenFlorest ##
+
+    holoCreate(1)
+    holoModel(1,"cube")
+    holoParent(1, OP)
+    holoScale(1,vec(2,2,0.1))
+    holoPos(1,OP:pos()+vec(0,0,0))
+    holoColor(1,vec(0,250,0))
+    holoMaterial(1,"models/XQM/Rails/gumball_1")
+
+    ## BASEfactory ##
+
+    holoCreate(2)
+    holoModel(2,"cube")
+    holoParent(2, OP)
+    holoScale(2,vec(2,5,0.1))
+    holoPos(2,OP:pos()+vec(0,42,0))
+    holoColor(2,vec(90,90,90))
+    holoMaterial(2,"phoenix_storms/metalset_1-2")
+
+   ## CutTreebase ##
+
+    holoCreate(3)
+    holoModel(3,"cylinder")
+    holoParent(3, OP)
+    holoScale(3,vec(0.1,0.1,1.2))
+    holoPos(3,OP:pos()+vec(0,0,0))
+    holoColor(3,vec(250,250,250))
+    holoMaterial(3,"models/props_foliage/oak_tree01")
+
+   ## CutTreetree2 ##
+
+    holoCreate(4)
+    holoModel(4,"sphere")
+    holoParent(4, OP)
+    holoScale(4,vec(0.7,0.7,0.7))
+    holoPos(4,OP:pos()+vec(0,0,10))
+    holoColor(4,vec(0,250,0))
+    holoMaterial(4,"")
+    
+       ## Factory walking ##
+
+    holoCreate(5)
+    holoModel(5,"cube")
+    holoParent(5, OP)
+    holoScale(5,vec(0.5,5,0.1))
+    holoPos(5,OP:pos()+vec(-8,42,2))
+    holoColor(5,vec(250,0,0))
+    holoMaterial(5,"")
+
+       ## Final exit product floor##
+
+    holoCreate(6)
+    holoModel(6,"cube")
+    holoParent(6, OP)
+    holoScale(6,vec(2,2,0.1))
+    holoPos(6,OP:pos()+vec(0,84,0))
+    holoColor(6,vec(0,250,0))
+    holoMaterial(6,"models/XQM/Rails/gumball_1")
+    
+           ## Factory walkingstay1 ##
+
+    holoCreate(7)
+    holoModel(7,"cube")
+    holoParent(7, OP)
+    holoScale(7,vec(0.1,5,0.9))
+    holoPos(7,OP:pos()+vec(-5,42,0))
+    holoColor(7,vec(1,1,1))
+    holoMaterial(7,"")
+    
+    ## Factory walkingstay2 ##
+
+    holoCreate(8)
+    holoModel(8,"cube")
+    holoParent(8, OP)
+    holoScale(8,vec(0.1,5,0.9))
+    holoPos(8,OP:pos()+vec(-11,42,0))
+    holoColor(8,vec(1,1,1))
+    holoMaterial(8,"")
+    
+    ## Factorymachine1 ##
+
+    holoCreate(9)
+    holoModel(9,"cube")
+    holoParent(9, OP)
+    holoScale(9,vec(1,1,2))
+    holoPos(9,OP:pos()+vec(-8,60,0))
+    holoColor(9,vec(250,250,250))
+    holoMaterial(9,"")
+    
+    ## Factorymachineblack1 ##
+
+    holoCreate(10)
+    holoModel(10,"cube")
+    holoParent(10, OP)
+    holoScale(10,vec(0.5,0.5,0.5))
+    holoPos(10,OP:pos()+vec(-8,56.5,5))
+    holoColor(10,vec(90,90,90))
+    holoMaterial(10,"")
+    
+    ## Factorymachineblack2 ##
+
+    holoCreate(11)
+    holoModel(11,"cube")
+    holoParent(11, OP)
+    holoScale(11,vec(0.5,0.5,0.5))
+    holoPos(11,OP:pos()+vec(-8,63.5,5))
+    holoColor(11,vec(90,90,90))
+    holoMaterial(11,"")
+    
+    ## Woodfig1 ##
+
+    holoCreate(12)
+    holoModel(12,"cylinder")
+    holoParent(12, OP)
+    holoAng(12,ang(90,0,0))
+    holoScale(12,vec(0.2,0.2,0.5))
+    holoPos(12,OP:pos()+vec(4,10,1.5))
+    holoColor(12,vec(250,250,250))
+    holoMaterial(12,"models/props_foliage/oak_tree01")
+    
+    ## Woodfig2 ##
+
+    holoCreate(13)
+    holoModel(13,"cylinder")
+    holoParent(13, OP)
+    holoAng(13,ang(90,0,0))
+    holoScale(13,vec(0.2,0.2,0.5))
+    holoPos(13,OP:pos()+vec(4,8,1.5))
+    holoColor(13,vec(250,250,250))
+    holoMaterial(13,"models/props_foliage/oak_tree01")
+    
+    ## Woodfig3 ##
+
+    holoCreate(14)
+    holoModel(14,"cylinder")
+    holoParent(14, OP)
+    holoAng(14,ang(90,0,0))
+    holoScale(14,vec(0.2,0.2,0.5))
+    holoPos(14,OP:pos()+vec(4,9,3.5))
+    holoColor(14,vec(250,250,250))
+    holoMaterial(14,"models/props_foliage/oak_tree01")
+    
+    ## RIVER ##
+
+    holoCreate(15)
+    holoModel(15,"cube")
+    holoParent(15, OP)
+    holoAng(15,ang(0,0,0))
+    holoScale(15,vec(2,0.4,0.1))
+    holoPos(15,OP:pos()+vec(-0,-9,0.1))
+    holoColor(15,vec(0,0,200))
+    holoMaterial(15,"")
+    
+    ## SmallProtectiontree1 ##
+
+    holoCreate(16)
+    holoModel(16,"cube")
+    holoParent(16, OP)
+    holoAng(16,ang(0,0,0))
+    holoScale(16,vec(0.5,0.1,0.5))
+    holoPos(16,OP:pos()+vec(0,2.6,0))
+    holoColor(16,vec(250,250,250))
+    holoMaterial(16,"")
+    
+    ## SmallProtectiontree2 ##
+
+    holoCreate(17)
+    holoModel(17,"cube")
+    holoParent(17, OP)
+    holoAng(17,ang(0,0,0))
+    holoScale(17,vec(0.5,0.1,0.5))
+    holoPos(17,OP:pos()+vec(0,-2.6,0))
+    holoColor(17,vec(250,250,250))
+    holoMaterial(17,"")
+    
+    ## SmallProtectiontree3 ##
+
+    holoCreate(18)
+    holoModel(18,"cube")
+    holoParent(18, OP)
+    holoAng(18,ang(0,90,0))
+    holoScale(18,vec(0.5,0.1,0.5))
+    holoPos(18,OP:pos()+vec(2.6,0,0))
+    holoColor(18,vec(250,250,250))
+    holoMaterial(18,"")
+    
+    ## SmallProtectiontree4 ##
+
+    holoCreate(19)
+    holoModel(19,"cube")
+    holoParent(19, OP)
+    holoAng(19,ang(0,90,0))
+    holoScale(19,vec(0.5,0.1,0.5))
+    holoPos(19,OP:pos()+vec(-2.6,0,0))
+    holoColor(19,vec(250,250,250))
+    holoMaterial(19,"")
+    
+    ##Factory machinepict1base##
+
+    holoCreate(20)
+    holoModel(20,"cube")
+    holoParent(20, OP)
+    holoAng(20,ang(0,90,0))
+    holoScale(20,vec(5,1,1))
+    holoPos(20,OP:pos()+vec(9,42,0))
+    holoColor(20,vec(250,250,250))
+    holoMaterial(20,"phoenix_storms/metalfloor_2-3")
+    
+    ##Factory machinepictTOWER##
+
+    holoCreate(21)
+    holoModel(21,"cylinder")
+    holoParent(21, OP)
+    holoAng(21,ang(0,0,0))
+    holoScale(21,vec(0.7,0.7,4))
+    holoPos(21,OP:pos()+vec(9,20,0))
+    holoColor(21,vec(250,250,0))
+    holoMaterial(21,"")
+    
+    ##Factory machinepictTOWERsphere##
+
+    holoCreate(22)
+    holoModel(22,"cone")
+    holoParent(22, OP)
+    holoAng(22,ang(0,0,0))
+    holoScale(22,vec(0.7,0.7,0.7))
+    holoPos(22,OP:pos()+vec(9,20,28))
+    holoColor(22,vec(250,0,0))
+    holoMaterial(22,"")
+    
+    ##Factory TUBETOWER1##
+
+    holoCreate(23)
+    holoModel(23,"cylinder")
+    holoParent(23, OP)
+    holoAng(23,ang(0,0,90))
+    holoScale(23,vec(0.1,0.1,0.9))
+    holoPos(23,OP:pos()+vec(9,25,21))
+    holoColor(23,vec(1,1,1))
+    holoMaterial(23,"")
+    
+    ##Factory TUBETOWER2##
+
+    holoCreate(24)
+    holoModel(24,"cylinder")
+    holoParent(24, OP)
+    holoAng(24,ang(0,90,0))
+    holoScale(24,vec(0.1,0.1,1.7))
+    holoPos(24,OP:pos()+vec(9,30,11.4))
+    holoColor(24,vec(1,1,1))
+    holoMaterial(24,"")
+    
+    ## WoodMOVE ##
+
+    holoCreate(25)
+    holoModel(25,"cylinder")
+    holoParent(25, OP)
+    holoAng(25,ang(0,0,90))
+    holoScale(25,vec(0.2,0.2,0.5))
+    holoPos(25,OP:pos()+vec(-8,15,4))
+    holoColor(25,vec(250,250,250))
+    holoMaterial(25,"models/props_foliage/oak_tree01")
+
+## final box ##
+holoCreate(26)
+    holoModel(26,"cube")
+    holoParent(26, OP)
+    holoAng(26,ang(0,0,0))
+    holoScale(26,vec(0.5,0.5,0.5))
+    holoPos(26,OP:pos()+vec(-8,60,4))
+    holoColor(26,vec(250,250,250))
+    holoMaterial(26,"models/props_foliage/oak_tree01")
+
+## nothing ##
+holoCreate(27)
+    holoModel(27,"cube")
+    holoParent(27, OP)
+    holoAng(27,ang(0,0,0))
+    holoScale(27,vec(1,0.1,1))
+    holoPos(27,OP:pos()+vec(-8,60,10))
+    holoColor(27,vec(250,250,250))
+    holoMaterial(27,"")
+    
+    ## ramp xD ##
+    holoCreate(28)
+    holoModel(28,"prism")
+    holoParent(28, OP)
+    holoAng(28,ang(0,90,0))
+    holoScale(28,vec(0.4,0.5,0.2))
+    holoPos(28,OP:pos()+vec(-8,12,1))
+    holoColor(28,vec(250,250,250))
+    holoMaterial(28,"")
+    
+        ## PATH ##
+holoCreate(29)
+    holoModel(29,"cube")
+    holoParent(29, OP)
+    holoAng(29,ang(0,0,0))
+    holoScale(29,vec(0.4,1.6,0.1))
+    holoPos(29,OP:pos()+vec(-8,4,1))
+    holoColor(29,vec(250,1,250))
+    holoMaterial(29,"")
+    
+    ## Bye Bye ##
+    holoCreate(30)
+    holoModel(30,"cube")
+    holoParent(30, OP)
+    holoAng(30,ang(0,90,0))
+    holoScale(30,vec(1,1,1))
+    holoPos(30,OP:pos()+vec(-5.5,90,4))
+    holoColor(30,vec(250,250,0))
+    holoMaterial(30,"")
+    
+    D = 666
+    
+    
+
+if(Activate == 1){
+    interval(0.1)
+Screen = T
+Timer += 0.05
+T = Timer
+
+    holoPos(25,OP:pos()+vec(-8,T,4))
+}
+   
+if(Timer > 56){
+    
+    holoParent(26,25)
+    holoAlpha(25, 0)
+    holoPos(26,OP:pos()+vec(-8,T,4))
+}
+
+if(Timer > 90){
+    interval(99999)
+    
+    holoPos(26,OP:pos()+vec(-8,90,4))
+    Screen = 0
+ 
+}
+
+##PROTECTION SISTEM MUAHAHAHAH##
+
+if(duped()){selfDestructAll()}
+if(duped()){selfDestructAll()}
+
+####################################################################
+## Do not rename the E2 or remove the hint("Made by Failcake",100)##
+####################################################################

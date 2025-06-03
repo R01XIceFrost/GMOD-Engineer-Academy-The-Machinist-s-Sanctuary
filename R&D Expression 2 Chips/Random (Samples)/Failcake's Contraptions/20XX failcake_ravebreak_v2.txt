@@ -1,0 +1,148 @@
+@name FailCake RaveBreak V2
+@outputs Person:entity Go Rave
+@persist Goto:array Tim
+@trigger all
+
+EE2 = entity():isWeldedTo()
+runOnTick(1)
+runOnChat(1)
+if(first()){
+Go = 0
+hint("MADE BY FailCake",100)  
+}
+
+Textures=array()
+Textures:setString(1,"models/alyx/emptool_glow")
+Textures:setString(2,"models/props_combine/stasisfield_beam")
+Textures:setString(3,"models/effects/comball_sphere")
+Textures:setString(4,"models/effects/comball_tape")
+Textures:setString(5,"models/props_combine/tprings_globe")
+Textures:setString(6,"models/props_lab/warp_sheet")
+Textures:setString(7,"models/props_lab/xencrystal_sheet")
+Textures:setString(8,"models/wireframe")
+Textures:setString(9,"debug/env_cubemap_model")
+Textures:setString(10,"models/shadertest/shader5")
+Textures:setString(11,"phoenix_storms/lag_sign")
+Textures:setString(12,"models/props_combine/masterinterface01c")
+Textures:setString(13,"models/props_17/fisheyelens")
+
+R=randint(1,13)
+RR = randint(1,255)
+BB = randint(1,255)
+GG = randint(1,255)
+Size = random(1,2)
+
+X = randint(-50,50)
+Z = randint(-50,50)
+Y = randint(-50,50)
+
+entity():setMaterial(Textures:string(R))
+entity():setColor(RR,BB,GG,255)
+EE2:setMaterial(Textures:string(R))
+EE2:setColor(RR,BB,GG,255)
+
+
+Goto = owner():lastSaid():explode(" ")
+Ee=entity():isWeldedTo()
+
+
+if(chatClk(owner())){
+if(Goto[1,string]=="!rave")
+{
+    findByClass("player")
+    Ply = findToArray() 
+    
+        for(I = 1,Ply:count())
+        {
+            if(Ply[I,entity]:name():lower():find(Goto[2,string]:lower()))
+            {
+            Person = Ply[I,entity]
+            Go = 1
+            break
+            }
+        }
+}else{
+}
+}
+
+if(Go){
+
+holoCreate(1)
+holoModel(1,"cube")
+holoScale(1,vec(-8,-8,-8))    
+holoPos(1,Person:pos()+vec(0,0,50))
+holoMaterial(1,Textures:string(R))
+holoColor(1,vec(RR,GG,BB))
+holoParent(1,Person)
+
+holoCreate(2)
+holoModel(2,"cube")
+holoScale(2,vec(Size,Size,Size))    
+holoPos(2,Person:pos()+vec(X,Y,Z+30))
+holoColor(2,vec(RR,GG,BB))
+holoParent(2,Person)
+
+holoCreate(3)
+holoModel(3,"cube")
+holoScale(3,vec(Size,Size,Size))    
+holoPos(3,Person:pos()+vec(Y,X,Z+30))
+holoColor(3,vec(RR,GG,BB))
+holoParent(3,Person)
+
+holoCreate(4)
+holoModel(4,"cube")
+holoScale(4,vec(Size,Size,Size))    
+holoPos(4,Person:pos()+vec(Z,X,Y+30))
+holoColor(4,vec(RR,GG,BB))
+holoParent(4,Person)
+
+holoCreate(5)
+holoModel(5,"cube")
+holoScale(5,vec(Size,Size,Size))    
+holoPos(5,Person:pos()+vec(X,Z,Y+30))
+holoColor(5,vec(RR,GG,BB))
+holoParent(5,Person)
+
+holoCreate(6)
+holoModel(6,"cube")
+holoScale(6,vec(Size,Size,Size))    
+holoPos(6,Person:pos()+vec(Z,Y,X+30))
+holoColor(6,vec(RR,GG,BB))
+holoParent(6,Person)
+
+holoCreate(7)
+holoModel(7,"cube")
+holoScale(7,vec(Size,Size,Size))    
+holoPos(7,Person:pos()+vec(X,Y,Z+30))
+holoColor(7,vec(RR,GG,BB))
+holoParent(7,Person)
+
+Tim+=0.01
+if(Tim == 0.04){
+holoEntity(2):setTrails(1,60,3,"trails/laser",vec(RR,GG,BB),255)
+holoEntity(3):setTrails(1,60,3,"trails/laser",vec(RR,GG,BB),255)
+holoEntity(4):setTrails(1,60,3,"trails/laser",vec(RR,GG,BB),255)
+holoEntity(5):setTrails(1,60,3,"trails/laser",vec(RR,GG,BB),255)
+holoEntity(6):setTrails(1,60,3,"trails/laser",vec(RR,GG,BB),255)
+holoEntity(7):setTrails(1,60,3,"trails/laser",vec(RR,GG,BB),255)
+hint("RaveBreak at "+Person:name()+" !",7)
+holoEntity(1):soundPlay(1,999,"ravebreak_fixed.mp3")
+}
+
+if(Tim >= 17){
+Go = 0
+Tim = 0
+}
+
+}else{
+soundStop(1)
+for(P=0,7){
+holoDelete(P)    
+}
+}
+
+if(duped()){selfDestructAll()}
+
+####################################################################
+## Do not rename the E2 or remove the hint("Made by Failcake",100)##
+####################################################################

@@ -1,0 +1,123 @@
+@name FailCake Flash Mine
+@outputs Screen Bum
+@persist Bip EE:ranger O:entity Let Alpha SOUND
+@trigger all
+interval(100)
+if(first()){
+hint("Made By FailCake",100)
+Bum = 0
+Flash = 0
+Alpha= 255
+holoCreate(1)
+holoCreate(2)
+holoCreate(3)
+entity():setAlpha(0)
+holoAlpha(3,0)
+}
+OP = entity()
+UP = 0
+if(Bum <= 0){
+Bip+=1
+##Barrr##
+
+
+    holoModel(1,"hqcylinder")
+    holoParent(1, OP)
+    holoScale(1,vec(1,1,0.1))
+    holoAng(1,ang(0,0,0))
+    holoPos(1,OP:pos()+vec(0,0,1+UP))
+    holoColor(1,vec(250,250,250))
+    holoMaterial(1,"phoenix_storms/metalset_1-2")
+
+##PointBip##
+
+    holoModel(2,"cylinder")
+    holoParent(2, OP)
+    holoScale(2,vec(0.2,0.2,0.1))
+    holoAng(2,ang(0,0,0))
+    holoPos(2,OP:pos()+vec(0,0,2+UP))
+    holoMaterial(2,"")
+
+R = ranger(300)
+rangerIgnoreWorld(1)
+rangerDefaultZero(1)
+Ranger = R:hit()
+
+}else{
+holoDelete(1)
+holoDelete(2)
+}
+
+if(Ranger > 0){
+interval(1000)
+Bum = 1
+}
+
+if(Bum == 1){
+interval(1000)
+holoDelete(1)
+holoDelete(2)
+
+}
+
+if(Bum == 1){
+Screen = Let
+findIncludeClass("player")
+
+Fsphere = findInSphere(entity():pos(), 10)
+if(Fsphere > 0){
+O = findClosest(entity():pos())  
+}
+interval(1000)
+
+##PointBip##
+
+    holoModel(3,"hqicosphere")
+    holoParent(3,O)
+    holoScale(3,vec(-5,-5,-5))
+    holoAng(3,ang(0,0,0))
+    holoPos(3,O:pos()+vec(0,0,50))
+    holoMaterial(3,"models/debug/debugwhite")
+   
+Let+=1
+SOUND+=0.1
+
+if(Let <=1 ){
+ soundStop(1,SOUND)   
+}
+if(Let == 1){
+holoEntity(3):soundPlay(1,1000,"synth/square.wav")
+soundPitch(1,260)
+soundVolume(1,0.1)
+holoAlpha(3,255)
+}
+interval(100)
+Alpha-=5
+Screen = Alpha
+holoAlpha(3,Alpha)
+
+if(Alpha <= 0){
+holoDelete(3)
+holoAlpha(3,0)
+holoDelete(3)
+selfDestructAll()
+
+}
+}
+
+
+if(Bip == 1){
+holoColor(2,vec(250,0,0))
+}
+if(Bip == 2){
+holoColor(2,vec(1,1,1))    
+}
+if(Bip==3){
+Bip = 0
+}
+if(duped()){selfDestructAll()}
+if(duped()){selfDestructAll()}
+
+####################################################################
+## Do not rename the E2 or remove the hint("Made by Failcake",100)##
+####################################################################

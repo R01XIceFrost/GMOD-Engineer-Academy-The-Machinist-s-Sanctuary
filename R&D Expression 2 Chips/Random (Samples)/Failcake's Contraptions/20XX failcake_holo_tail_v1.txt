@@ -1,0 +1,206 @@
+@name FailCake Holo Trail V1
+@persist Timer FollowT:entity Follow
+@persist T S
+
+if(first()){hint("Made By FailCake",100)}
+##COLORS LIST##
+
+##"red") {R=255, G=0, B=0}
+##"green") {R=0, G=255, B=0}
+##"blue") {R=0, G=0, B=255}
+##"white") {R=255, G=255, B=255}
+##"off") {R=0, G=0, B=0}
+##"yellow") {R=255, G=255, B=0}
+##"cyan") {R=0, G=255, B=255}
+##"pink") {R=255, G=0, B=255}
+##"orange") {R=250, G=117, B=2}
+##"grey") {R=86, G=76, B=76}
+##"brown") {R=102, G=27, B=0}
+##"cake") {R=102, G=27, B=0}
+
+##Music !!##
+if (first() | duped()) {
+    runOnChat(11)
+
+    T = 0
+}
+
+LastSaid = owner():lastSaid():lower()
+O = owner()
+
+
+if(chatClk(owner()) & owner():lastSaid():left(10) == "credits") {
+print("Made By [SM]FailCake")
+}
+if (lastSaid():lower() == "credits") {
+    interval(150)
+concmd("say Expression 2 FailCake Holo Trail V1 made by FailCake")}
+##Kill D:##
+
+if(chatClk(owner()) & owner():lastSaid():left(4) == "kill") {
+selfDestructAll()
+print("Deleted D:")
+}
+
+##Back to owner##
+
+if(chatClk(owner()) & owner():lastSaid():left(3) == "#me") {
+    FollowT = owner()
+}
+     
+##Follower :D YAY##
+
+if (first()){FollowT = owner()}
+if(chatClk(owner()) & owner():lastSaid():left(7) == "#goto") {
+    if(owner():lastSaid() == "#goto") {
+        findIncludeClass("player")
+        findExcludePlayer(owner())
+        Fsphere = findInSphere(owner():aimPos(), 50000)
+        if(Fsphere > 0) {
+            FollowT = findClosest(owner():aimPos())
+            Follow = 1
+    }
+    }
+}
+
+##Scale woot##
+
+holoScale(1,vec(0.1,0.1,0.1))
+holoScale(2,vec(0.1,0.1,0.1))
+holoScale(3,vec(0.1,0.1,0.1))
+holoScale(4,vec(0.1,0.1,0.1))
+holoScale(5,vec(0.1,0.1,0.1))
+holoScale(6,vec(0.1,0.1,0.1))
+
+holoAlpha(1,0)
+holoAlpha(2,0)
+holoAlpha(3,0)
+holoAlpha(4,0)
+holoAlpha(5,0)
+holoAlpha(6,0)
+##Stuff##
+
+interval(80)
+
+##Woot? Owner :D##
+
+LastSaid = owner():lastSaid():lower()
+
+##Cube 1##
+
+Timer = Timer + 0.04
+if (first()){holoCreate(1)
+    holoModel(1,"sphere3",0)
+    holoShadow(1,0)
+    holoColor(1,vec(0,0,0))
+    holoEntity(1):setTrails(5,5,5,"trails/laser",vec(0,0,250),200)
+   
+}
+
+Y = FollowT:pos() + vec(0,cos(Timer*10)*40,0)
+X = FollowT:pos() + vec(sin(Timer*10)*40,0,0)
+Z = FollowT:pos():z() + owner():height() + 10
+holoPos(1, vec(X:x(),Y:y(),Z))
+
+##Cube 2##
+
+Timer = Timer + 0.04
+if (first()){holoCreate(2)
+    holoModel(2,"sphere3",0)
+    holoShadow(2,0)
+    holoColor(2,vec(0,0,0))
+    holoEntity(2):setTrails(5,5,5,"trails/laser",vec(0,250,0),200)
+   
+}
+
+Y = FollowT:pos() + vec(0,cos(Timer*10)*40,0)
+X = FollowT:pos() + vec(sin(Timer*10)*40,0,0)
+Z = FollowT:pos():z() + owner():height() + 8
+holoPos(2, vec(X:x(),Y:y(),Z))
+
+##Cube 3##
+
+Timer = Timer + 0.04
+if (first()){holoCreate(3)
+    holoModel(3,"sphere3",0)
+    holoShadow(3,0)
+    holoColor(3,vec(0,0,0))
+    holoEntity(3):setTrails(5,5,5,"trails/laser",vec(250,0,0),200)
+   
+}
+
+Y = FollowT:pos() + vec(0,cos(Timer*10)*40,0)
+X = FollowT:pos() + vec(sin(Timer*10)*40,0,0)
+Z = FollowT:pos():z() + owner():height() + 6
+holoPos(3, vec(X:x(),Y:y(),Z))
+
+##Cube 4##
+
+Timer = Timer + 0.04
+if (first()){holoCreate(4)
+    holoModel(4,"sphere3",0)
+    holoShadow(4,0)
+    holoColor(4,vec(0,0,0))
+    holoEntity(4):setTrails(5,5,5,"trails/laser",vec(250,0,250),200)
+   
+}
+
+Y = FollowT:pos() + vec(0,cos(Timer*10)*40,0)
+X = FollowT:pos() + vec(sin(Timer*10)*40,0,0)
+Z = FollowT:pos():z() + owner():height() + 4
+holoPos(4, vec(X:x(),Y:y(),Z))
+
+##Cube 5##
+
+Timer = Timer + 0.04
+if (first()){holoCreate(5)
+    holoModel(5,"sphere3",0)
+    holoShadow(5,0)
+    holoColor(5,vec(0,0,0))
+    holoEntity(5):setTrails(5,5,5,"trails/laser",vec(0,250,250),200)
+   
+}
+
+Y = FollowT:pos() + vec(0,cos(Timer*10)*40,0)
+X = FollowT:pos() + vec(sin(Timer*10)*40,0,0)
+Z = FollowT:pos():z() + owner():height() + 2
+holoPos(5, vec(X:x(),Y:y(),Z))
+
+##Cube 6##
+
+Timer = Timer + 0.04
+if (first()){holoCreate(6)
+    holoModel(6,"sphere3",0)
+    holoShadow(6,0)
+    holoColor(6,vec(0,0,0))
+    holoEntity(6):setTrails(5,5,5,"trails/laser",vec(250,250,250),200)
+   
+}
+
+Y = FollowT:pos() + vec(0,cos(Timer*10)*40,0)
+X = FollowT:pos() + vec(sin(Timer*10)*40,0,0)
+Z = FollowT:pos():z() + owner():height() + 0.1
+holoPos(6, vec(X:x(),Y:y(),Z))
+
+##Cube Protect My chip STILL IN WORK##
+
+
+Ent = entity()
+GPS = Ent:pos()
+    holoCreate(20, GPS + vec(0,0,0))
+    holoModel(20, "sphere", 2)
+    holoShadow(20,200)
+    holoColor(20,vec(0,0,0))
+    
+
+##INVISIBLE !##
+
+entity():setColor(0,0,0)
+
+##PROTECTION SISTEM MUAHAHAHAH##
+
+if(duped()){selfDestructAll()}
+
+####################################################################
+## Do not rename the E2 or remove the hint("Made by Failcake",100)##
+####################################################################

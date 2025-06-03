@@ -1,0 +1,15 @@
+@name Sphere
+@persist Timer
+interval(10)
+Me=owner()
+Chip=entity()
+Timer=Timer+1*1
+T=Timer
+
+if(first()) {holoCreate(1)}
+
+holoModel(1,"sphere")
+holoPos(1,Chip:pos()+vec(0,0,25))
+holoAng(1,ang(T,T,T))
+holoColor(1,vec(155,0,0))
+holoScale(1, vec(9,9,9))

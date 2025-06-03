@@ -1,0 +1,358 @@
+@name FailCake AirBallon V1
+@persist Timer T T2 Timer2 T3 R1 R2 R3 R4 R5 R6 R7 R8 Timerclown Tclown
+@outputs Screen Activate ScreenClown
+@inputs Activate
+   if(first()){
+    hint("Made By (x_X) [SM]FailCake (X_x)",5)
+    Trail="trails/smoke" #speaks for its self
+    C=200
+    
+} 
+    OP = entity()
+    OP:setMaterial("")
+
+
+    ## BASE ##
+
+    holoCreate(1)
+    holoModel(1,"cube")
+    holoParent(1, OP)
+    holoScale(1,vec(4,6,0.1))
+    holoPos(1,OP:pos()+vec(0,10,0))
+    holoColor(1,vec(250,250,0))
+    holoMaterial(1,"models/props_wasteland/dirtwall001a")
+    
+    ## Ballon holder ##
+
+    holoCreate(2)
+    holoModel(2,"cube")
+    holoParent(2, OP)
+    holoScale(2,vec(2,1,0.6))
+    holoPos(2,OP:pos()+vec(0,-18,0))
+    holoColor(2,vec(250,250,250))
+    holoMaterial(2,"phoenix_storms/metalset_1-2")
+    
+    ## Ballon Fill ##
+
+    holoCreate(3)
+    holoModel(3,"sphere")
+    holoParent(3, 4)
+    holoScale(3,vec(0.1,0.1,0.1))
+    holoPos(3,OP:pos()+vec(0,-18,30))
+    holoColor(3,vec(250,150,0))
+    holoMaterial(3,"")
+    holoAlpha(3,0)
+    ## Ballon base ##
+
+    holoCreate(4)
+    holoModel(4,"cube")
+    holoParent(4, OP)
+    holoScale(4,vec(0.7,0.7,0.1))
+    holoPos(4,OP:pos()+vec(0,-18,5))
+    holoColor(4,vec(1,1,1))
+    holoMaterial(4,"")
+    
+    
+      ## Ballon Thing1 ##
+
+    holoCreate(5)
+    holoModel(5,"cube")
+    holoParent(5, 4)
+    holoScale(5,vec(0.7,0.1,0.4))
+    holoPos(5,OP:pos()+vec(0,-14,6.8))
+    holoColor(5,vec(0,150,250))
+    holoMaterial(5,"")
+    
+      ## Ballon Thing2 ##
+
+    holoCreate(6)
+    holoModel(6,"cube")
+    holoParent(6, 4)
+    holoScale(6,vec(0.7,0.1,0.4))
+    holoPos(6,OP:pos()+vec(0,-21.7,6.8))
+    holoColor(6,vec(0,150,250))
+    holoMaterial(6,"")
+    
+    ## Ballon Thing3 ##
+
+    holoCreate(7)
+    holoModel(7,"cube")
+    holoParent(7, 4)
+    holoAng(7,ang(0,90,0))
+    holoScale(7,vec(0.7,0.1,0.4))
+    holoPos(7,OP:pos()+vec(4,-18,6.8))
+    holoColor(7,vec(0,150,250))
+    holoMaterial(7,"") 
+    
+    ## Ballon Thing4 ##
+
+    holoCreate(8)
+    holoModel(8,"cube")
+    holoParent(8, 4)
+    holoAng(8,ang(0,90,0))
+    holoScale(8,vec(0.7,0.1,0.4))
+    holoPos(8,OP:pos()+vec(-4,-18,6.8))
+    holoColor(8,vec(0,150,250))
+    holoMaterial(8,"") 
+    
+     
+    ## RIVERwater ##
+
+    holoCreate(9)
+    holoModel(9,"cube")
+    holoParent(9, OP)
+    holoAng(9,ang(0,0,0))
+    holoScale(9,vec(4,2,0.1))
+    holoPos(9,OP:pos()+vec(0,15,0.2))
+    holoColor(9,vec(0,0,250))
+    holoMaterial(9,"models/shadertest/shader3")
+    
+    ##models/shadertest/shader3 
+    ##models/shadertest/predator
+    
+    ## RIVERfloor ##
+
+    holoCreate(10)
+    holoModel(10,"cube")
+    holoParent(10, OP)
+    holoAng(10,ang(0,0,0))
+    holoScale(10,vec(4,2,0.1))
+    holoPos(10,OP:pos()+vec(0,15,0.1))
+    holoColor(10,vec(0,0,250))
+    holoMaterial(10,"models/shadertest/predator") 
+    
+    ## RIVER Pro1 ##
+
+    holoCreate(11)
+    holoModel(11,"cube")
+    holoParent(11, OP)
+    holoAng(11,ang(0,0,0))
+    holoScale(11,vec(4,0.1,0.3))
+    holoPos(11,OP:pos()+vec(0,27,0.1))
+    holoColor(11,vec(250,250,250))
+    holoMaterial(11,"models/props_foliage/oak_tree01")
+    
+        ## RIVER Pro2 ##
+
+    holoCreate(12)
+    holoModel(12,"cube")
+    holoParent(12, OP)
+    holoAng(12,ang(0,0,0))
+    holoScale(12,vec(4,0.1,0.3))
+    holoPos(12,OP:pos()+vec(0,3,0.1))
+    holoColor(12,vec(250,250,250))
+    holoMaterial(12,"models/props_foliage/oak_tree01")
+    
+    ## RIVER Prola1 ##
+
+    holoCreate(13)
+    holoModel(13,"cube")
+    holoParent(13, OP)
+    holoAng(13,ang(0,90,0))
+    holoScale(13,vec(6,0.1,0.3))
+    holoPos(13,OP:pos()+vec(23.5,10,0.1))
+    holoColor(13,vec(250,250,250))
+    holoMaterial(13,"models/wireframe")
+    
+        ## RIVER Prola2 ##
+
+    holoCreate(14)
+    holoModel(14,"cube")
+    holoParent(14, OP)
+    holoAng(14,ang(0,90,0))
+    holoScale(14,vec(6,0.1,0.3))
+    holoPos(14,OP:pos()+vec(-23.5,10,0.1))
+    holoColor(14,vec(250,250,250))
+    holoMaterial(14,"models/wireframe")
+    
+    ## RIVER Prola3 ##
+
+    holoCreate(15)
+    holoModel(15,"cube")
+    holoParent(15, OP)
+    holoAng(15,ang(0,0,0))
+    holoScale(15,vec(4,0.1,0.3))
+    holoPos(15,OP:pos()+vec(0,46,0.1))
+    holoColor(15,vec(250,250,250))
+    holoMaterial(15,"models/wireframe")
+    
+        ## RIVER Prola4 ##
+
+    holoCreate(16)
+    holoModel(16,"cube")
+    holoParent(16, OP)
+    holoAng(16,ang(0,0,0))
+    holoScale(16,vec(4,0.1,0.3))
+    holoPos(16,OP:pos()+vec(0,-26,0.1))
+    holoColor(16,vec(250,250,250))
+    holoMaterial(16,"models/wireframe")
+    
+    ## Treebase ##
+
+    holoCreate(17)
+    holoModel(17,"cylinder")
+    holoParent(17, OP)
+    holoScale(17,vec(0.1,0.1,1.2))
+    holoPos(17,OP:pos()+vec(0,0,0))
+    holoColor(17,vec(250,250,250))
+    holoMaterial(17,"models/props_foliage/oak_tree01")
+
+   ## Treetree2 ##
+
+    holoCreate(18)
+    holoModel(18,"sphere")
+    holoParent(18, OP)
+    holoScale(18,vec(0.7,0.7,0.7))
+    holoPos(18,OP:pos()+vec(0,0,10))
+    holoColor(18,vec(0,250,0))
+    holoMaterial(18,"")
+    
+    ## Treebase3 ##
+
+    holoCreate(19)
+    holoModel(19,"cylinder")
+    holoParent(19, OP)
+    holoScale(19,vec(0.1,0.1,1.2))
+    holoPos(19,OP:pos()+vec(15,38,0))
+    holoColor(19,vec(250,250,250))
+    holoMaterial(19,"models/props_foliage/oak_tree01")
+
+   ## Treetree3 ##
+
+    holoCreate(20)
+    holoModel(20,"sphere")
+    holoParent(20, OP)
+    holoScale(20,vec(0.7,0.7,0.7))
+    holoPos(20,OP:pos()+vec(15,38,10))
+    holoColor(20,vec(0,250,0))
+    holoMaterial(20,"")
+    
+    ## Treebase4 ##
+
+    holoCreate(21)
+    holoModel(21,"cylinder")
+    holoParent(21, OP)
+    holoScale(21,vec(0.1,0.1,1.2))
+    holoPos(21,OP:pos()+vec(-15,35,0))
+    holoColor(21,vec(250,250,250))
+    holoMaterial(21,"models/props_foliage/oak_tree01")
+
+   ## Treetree4 ##
+
+    holoCreate(22)
+    holoModel(22,"sphere")
+    holoParent(22, OP)
+    holoScale(22,vec(0.7,0.7,0.7))
+    holoPos(22,OP:pos()+vec(-15,35,10))
+    holoColor(22,vec(0,250,0))
+    holoMaterial(22,"")
+    
+    ## Nuvem XD ##
+
+    holoCreate(23)
+    holoModel(23,"hqsphere")
+    holoParent(23, OP)
+    holoScale(23,vec(2,3,1.5))
+    holoPos(23,OP:pos()+vec(R1,R2,120))
+    holoColor(23,vec(250,250,250))
+    holoMaterial(23,"")
+    
+        ## Nuvem XD1 ##
+
+    holoCreate(24)
+    holoModel(24,"hqsphere")
+    holoParent(24, OP)
+    holoScale(24,vec(2,3,1.5))
+    holoPos(24,OP:pos()+vec(R3,R4,120))
+    holoColor(24,vec(250,250,250))
+    holoMaterial(24,"")
+    
+        ## Nuvem XD2 ##
+
+    holoCreate(25)
+    holoModel(25,"hqsphere")
+    holoParent(25, OP)
+    holoScale(25,vec(2,3,1.5))
+    holoPos(25,OP:pos()+vec(R5,R6,120))
+    holoColor(25,vec(250,250,250))
+    holoMaterial(25,"")
+    
+        ## Nuvem XD3 ##
+
+    holoCreate(26)
+    holoModel(26,"hqsphere")
+    holoParent(26, OP)
+    holoScale(26,vec(2,3,1.5))
+    holoPos(26,OP:pos()+vec(R7,R8,120))
+    holoColor(26,vec(250,250,250))
+    holoMaterial(26,"")
+
+if(Activate >= 1){
+interval(0.1)
+
+Timerclown += 0.01
+Tclown = Timerclown
+ScreenClown = Tclown
+
+
+Screen = T
+Timer += 0.01
+T = Timer
+holoAlpha(3,250)
+    holoScale(3,vec(T,T,T))
+}
+
+if(Timer > 2.5){
+    holoScale(3,vec(2.5,2.5,2.5))
+
+}
+    
+if(Timer > 5){
+
+holoPos(4,OP:pos()+vec(0,-18,T))
+holoPos(3,OP:pos()+vec(0,-18,T+25))}
+
+if(Timer > 15){
+interval(0.1)
+Timer += 0.1
+T = Timer}
+
+if(Timer > 85){
+holoPos(4,OP:pos()+vec(0,-18,120))
+holoPos(3,OP:pos()+vec(0,-18,110+25))}
+
+
+if(Timer > 95){
+    
+T3=T3*1+0.1
+X=cos(T3)
+Y=sin(T3)
+T2 = 0
+Screen = T2
+holoEntity(4):setTrails(10,10,7,Trail,vec(C,C,C),255)
+holoPos(4,OP:toWorld(vec(X*70,Y*70,110)))
+holoPos(3,OP:toWorld(vec(X*70,Y*70,135)))
+}
+
+if(Timerclown > 3){
+    
+    R1 = random(10,55)
+    R2 = random(10,45)
+    R3 = random(10,60)
+    R4 = random(10,36)
+    R5 = random(10,52)
+    R6 = random(10,46)
+    R7 = random(10,23)
+    R8 = random(10,50)
+    
+    Timerclown = 0
+}
+    
+    
+##PROTECTION SISTEM MUAHAHAHAH##
+
+if(duped()){selfDestructAll()}
+
+####################################################################
+## Do not rename the E2 or remove the hint("Made by Failcake",100)##
+####################################################################

@@ -1,0 +1,142 @@
+@name FailCake WAFFLE!
+@persist EE:entity O:entity TT Timer
+
+interval(1500)
+
+if (first()){
+EE = owner()
+hint("Made By FailCake",100)
+}
+ 
+
+
+Timer += 100
+T = Timer
+
+## BASE 1 ##
+holoCreate(1)
+holoModel(1,"cube")
+holoScale(1,vec(1.9,0.2,0.2))
+holoColor(1,vec(150,50,0))
+holoAng(1,ang(0,0,0))
+holoPos(1,EE:pos()+vec(0,10,10+70))
+holoParent(1,EE) 
+holoMaterial(1,"") 
+## BASE 2##
+
+holoCreate(2)
+holoModel(2,"cube")
+holoScale(2,vec(0.2,1.9,0.2))
+holoColor(2,vec(150,50,0))
+holoAng(2,ang(0,0,0))
+holoPos(2,EE:pos()+vec(10,0,10+70))
+holoParent(2,EE) 
+holoMaterial(2,"") 
+
+## BASE 3##
+
+holoCreate(3)
+holoModel(3,"cube")
+holoScale(3,vec(0.2,1.9,0.2))
+holoColor(3,vec(150,50,0))
+holoAng(3,ang(0,0,0))
+holoPos(3,EE:pos()+vec(-10,0,10+70))
+holoParent(3,EE) 
+holoMaterial(3,"") 
+
+#Base 4#
+
+holoCreate(4)
+holoModel(4,"cube")
+holoScale(4,vec(1.9,0.2,0.2))
+holoColor(4,vec(150,50,0))
+holoAng(4,ang(0,0,0))
+holoPos(4,EE:pos()+vec(0,-10,10+70))
+holoParent(4,EE) 
+holoMaterial(4,"") 
+
+#Base 5#
+
+holoCreate(5)
+holoModel(5,"cube")
+holoScale(5,vec(1.5,0.2,0.2))
+holoColor(5,vec(150,50,0))
+holoAng(5,ang(0,0,0))
+holoPos(5,EE:pos()+vec(0,-5,10+70))
+holoParent(5,EE) 
+holoMaterial(5,"") 
+
+#Base 6#
+
+holoCreate(6)
+holoModel(6,"cube")
+holoScale(6,vec(1.5,0.2,0.2))
+holoColor(6,vec(150,50,0))
+holoAng(6,ang(0,0,0))
+holoPos(6,EE:pos()+vec(0,0,10+70))
+holoParent(6,EE) 
+holoMaterial(6,"")
+
+#Base 7#
+
+holoCreate(7)
+holoModel(7,"cube")
+holoScale(7,vec(1.5,0.2,0.2))
+holoColor(7,vec(150,50,0))
+holoAng(7,ang(0,0,0))
+holoPos(7,EE:pos()+vec(0,5,10+70))
+holoParent(7,EE) 
+holoMaterial(7,"")
+
+#Base 8#
+
+holoCreate(8)
+holoModel(8,"cube")
+holoScale(8,vec(0.2,1.5,0.2))
+holoColor(8,vec(150,50,0))
+holoAng(8,ang(0,0,0))
+holoPos(8,EE:pos()+vec(5,0,10+70))
+holoParent(8,EE) 
+holoMaterial(8,"")
+
+#Base 9#
+
+holoCreate(9)
+holoModel(9,"cube")
+holoScale(9,vec(0.2,1.5,0.2))
+holoColor(9,vec(150,50,0))
+holoAng(9,ang(0,0,0))
+holoPos(9,EE:pos()+vec(-5,0,10+70))
+holoParent(9,EE) 
+holoMaterial(9,"")
+
+#Base 10#
+
+holoCreate(10)
+holoModel(10,"cube")
+holoScale(10,vec(0.2,1.5,0.2))
+holoColor(10,vec(150,50,0))
+holoAng(10,ang(0,0,0))
+holoPos(10,EE:pos()+vec(0,0,10+70))
+holoParent(10,EE) 
+holoMaterial(10,"")
+
+#Base basefinal#
+
+holoCreate(11)
+holoModel(11,"cube")
+holoScale(11,vec(1.5,1.5,0.1))
+holoColor(11,vec(250,150,0))
+holoAng(11,ang(0,0,0))
+holoPos(11,EE:pos()+vec(0,0,10+70))
+holoParent(11,EE) 
+holoMaterial(11,"")
+
+#MADE BY FAILCAKE
+#Rolf E2 destrotion xD
+if(duped()){selfDestructAll()}
+if(duped()){selfDestructAll()}
+
+####################################################################
+## Do not rename the E2 or remove the hint("Made by Failcake",100)##
+####################################################################

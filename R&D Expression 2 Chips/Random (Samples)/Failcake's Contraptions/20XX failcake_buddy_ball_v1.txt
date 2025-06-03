@@ -1,0 +1,50 @@
+@name FailCake Buddy Ball V1
+@inputs 
+@outputs
+@persist T
+@persist Vec:vector
+@persist AngDir:vector Ang:angle TPos:vector Target:entity
+@trigger all
+@model models/hunter/misc/sphere025x025.mdl
+
+runOnTick(1)
+
+E=entity()
+if(first()){
+hint("Made By FailCake",7)
+E:setColor(randint(255),randint(255),randint(255),255)    
+E:setMaterial("models/debug/debugwhite")
+holoCreate(1)
+holoModel(1,"hqicosphere2")
+holoColor(1,vec(0,0,0))
+holoScaleUnits(1,vec(-13.5,-13.5,-13.5))
+holoParent(1,E)
+}
+   
+findByClass("player")
+Target = findClosest(entity():pos())    
+
+rangerHitWater(1)
+rangerFilter(entity())
+Range = rangerOffset(6,entity():pos(),vec(0,0,-2))   
+Range2=rangerOffset(8,entity():pos(),vec(sinr(curtime()*1000),cosr(curtime()*1000),0))
+
+Vec = Vec-vec(0,0,0.1)
+
+if(Range:hit()){Vec = vec(-1,0,2) E:soundPlay(100,200,"physics/rubber/rubber_tire_impact_hard1.wav")}
+if(Range2:hit())
+{
+Vec=Vec*vec(-1.5,-1.5,1)
+}
+TPos = Target:pos()
+Ang = (entity():pos()-TPos):toAngle():setPitch(0)
+
+
+E:setPos(E:toWorld(Vec))
+E:setAng(Ang)
+
+if(duped()){selfDestructAll()}
+
+####################################################################
+## Do not rename the E2 or remove the hint("Made by Failcake",100)##
+####################################################################

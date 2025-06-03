@@ -1,0 +1,112 @@
+@name Super Stickman
+@inputs 
+@outputs 
+@persist 
+@trigger 
+interval(10)
+if(first()){
+    I=1
+    holoCreate(I,entity():pos()+vec(0,0,66))
+    holoModel(I,"hqicosphere2")
+    holoScale(I,vec(1.5,1.5,1.5))
+    holoAng(I,ang(0,0,0))
+    I++
+    holoCreate(I,entity():pos()+vec(0,0,45))
+    holoModel(I,"hqcylinder2")
+    holoScale(I,vec(0.75,0.75,2.5))
+    holoAng(I,ang(0,0,0))
+    I++
+    holoCreate(I,entity():pos()+vec(0,0,55))
+    holoModel(I,"hqcylinder2")
+    holoScale(I,vec(0.6,0.6,2))
+    holoAng(I,ang(90,0,0))
+    I++
+    holoCreate(I,entity():pos()+vec(7.5,0,45))
+    holoModel(I,"hqcylinder2")
+    holoScale(I,vec(0.6,0.6,2))
+    holoAng(I,ang(-30,0,0))
+    I++
+    holoCreate(I,entity():pos()+vec(-7.5,0,45))
+    holoModel(I,"hqcylinder2")
+    holoScale(I,vec(0.6,0.6,2))
+    holoAng(I,ang(30,0,0))
+    I++
+    holoCreate(I,entity():pos()+vec(0,0,30))
+    holoModel(I,"hqicosphere2")
+    holoScale(I,vec(1,1,1))
+    holoAng(I,ang(0,0,0))
+    I++
+    holoCreate(I,entity():pos()+vec(8.5,0,15))
+    holoModel(I,"hqcylinder2")
+    holoScale(I,vec(0.6,0.6,2.5))
+    holoAng(I,ang(-30,0,0))
+    I++
+    holoCreate(I,entity():pos()+vec(-8.5,0,15))
+    holoModel(I,"hqcylinder2")
+    holoScale(I,vec(0.6,0.6,2.5))
+    holoAng(I,ang(30,0,0))
+     I++
+    holoCreate(I,entity():pos()+vec(15,0,55))
+    holoModel(I,"hqicosphere2")
+    holoScale(I,vec(1,1,1))
+    holoAng(I,ang(0,0,0))
+     I++
+    holoCreate(I,entity():pos()+vec(-15,0,55))
+    holoModel(I,"hqicosphere2")
+    holoScale(I,vec(1,1,1))
+    holoAng(I,ang(0,0,0))
+    
+    
+    
+    I++
+    holoCreate(I,entity():pos()+vec(0,0,0))
+    holoModel(I,"hqicosphere2")
+    holoScale(I,vec(0.8,0.8,0.8))
+    holoAng(I,ang(30,0,0))
+    holoPos(I,owner():attachmentPos("anim_attachment_lh"))
+    #holoParentAttachment(I,owner(),"anim_attachment_lh")
+    I++
+    holoCreate(I,entity():pos()+vec(0,0,0))
+    holoModel(I,"hqicosphere2")
+    holoScale(I,vec(0.8,0.8,0.8))
+    holoAng(I,ang(30,0,0))
+    holoPos(I,owner():attachmentPos("anim_attachment_rh"))
+    #holoParentAttachment(I,owner(),"anim_attachment_rh")
+
+holoCreate(20,holoEntity(8):pos()+holoEntity(8):up()*-16) 
+holoParent(20,8)
+holoModel(20,"hqicosphere2")
+holoCreate(21,holoEntity(7):pos()+holoEntity(7):up()*-16)   
+holoParent(21,7)
+holoModel(21,"hqicosphere2")
+
+
+    for(I=1,10){
+        holoParent(I,2)
+    }
+}
+owner():setColor(vec())
+owner():setMaterial("models/effects/vol_light001")
+holoPos(2,owner():pos()+vec(0,0,45))
+holoAng(2,ang(0,owner():eyeAngles():yaw()+90,0))
+
+    holoPos(11,owner():attachmentPos("anim_attachment_lh"))
+    holoPos(12,owner():attachmentPos("anim_attachment_rh"))
+holoPos(4,mix(holoEntity(9):pos(),holoEntity(11):pos(),0.5))
+holoPos(5,mix(holoEntity(10):pos(),holoEntity(12):pos(),0.5))
+holoScale(4,vec(0.6,0.6,(holoEntity(9):pos():distance(holoEntity(11):pos())/12)))
+holoScale(5,vec(0.6,0.6,(holoEntity(10):pos():distance(holoEntity(12):pos())/12)))
+holoAng(4,(holoEntity(9):pos()-holoEntity(11):pos()):toAngle()+ang(90,0,0))
+holoAng(5,(holoEntity(10):pos()-holoEntity(12):pos()):toAngle()+ang(90,0,0))
+if(owner():vel():length()>0){
+    holoPos(8,owner():pos()+vec(0,0,15)+holoEntity(2):forward()*-8.5+holoEntity(2):right()*sin(curtime()*600)*8)
+    holoAng(8,holoEntity(2):angles()+ang(30,0,sin(curtime()*600)*-25))
+        holoPos(7,owner():pos()+vec(0,0,15)+holoEntity(2):forward()*8.5+holoEntity(2):right()*-sin(curtime()*600)*8)
+    holoAng(7,holoEntity(2):angles()+ang(-30,0,sin(curtime()*-600)*-25))
+   
+}else{
+    holoPos(8,owner():pos()+vec(0,0,15)+holoEntity(2):forward()*-8.5+holoEntity(2):right()*0)
+    holoAng(8,holoEntity(2):angles()+ang(30,0,0))
+    holoPos(7,owner():pos()+vec(0,0,15)+holoEntity(2):forward()*8.5+holoEntity(2):right()*0)
+    holoAng(7,holoEntity(2):angles()+ang(-30,0,0))
+}

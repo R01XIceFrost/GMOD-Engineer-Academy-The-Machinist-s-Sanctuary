@@ -1,0 +1,116 @@
+@name FailCake
+@inputs 
+@outputs 
+@persist   D 
+Eye = owner():eye()
+interval(10)
+if(first())
+{
+    holoCreate(16)
+    holoCreate(17)
+    holoCreate(1)
+    holoCreate(2)
+    holoCreate(3)
+    holoCreate(4)
+    holoCreate(5)
+    holoCreate(7)
+    holoCreate(8)
+    holoCreate(9)
+    holoCreate(10)
+    holoCreate(11)
+    holoCreate(12)
+    holoCreate(13)
+    holoCreate(14)
+    
+}
+holoPos(16,owner():shootPos()+vec(7,-4,0):rotate(Eye:toAngle()))
+holoModel(16,"sphere")
+holoScale(16,vec(2,2,2))
+holoAng(16,Eye:toAngle())
+holoColor(16,vec(255,201,154),255)
+
+holoPos(17,owner():shootPos()+vec(7,-4,10):rotate(Eye:toAngle()))
+holoModel(17,"cylinder")
+holoScale(17,vec(1.6,1.6,0.5))
+holoAng(17,Eye:toAngle())
+holoColor(17,vec(89,36,1),255)
+
+holoPos(1,owner():shootPos()+vec(16,-7,3.5):rotate(Eye:toAngle()))
+holoModel(1,"sphere")
+holoScale(1,vec(0.5,0.5,0.5))
+holoAng(1,Eye:toAngle())
+holoColor(1,vec(255,255,255),255)
+
+holoPos(2,owner():shootPos()+vec(16,-1,3.5):rotate(Eye:toAngle()))
+holoModel(2,"sphere")
+holoScale(2,vec(0.5,0.5,0.5))
+holoAng(2,Eye:toAngle())
+holoColor(2,vec(255,255,255),255)
+
+holoPos(3,owner():shootPos()+vec(16,-4,-5):rotate(Eye:toAngle()))
+holoModel(3,"torus")
+holoScale(3,vec(0.5,0.5,0.5))
+holoAng(3,Eye:toAngle()+ang(20,0,0))
+holoColor(3,vec(200,100,100),255)
+
+holoPos(4,owner():shootPos()+vec(18,-7,3.5):rotate(Eye:toAngle()))
+holoModel(4,"sphere")
+holoScale(4,vec(0.2,0.2,0.2))
+holoAng(4,Eye:toAngle())
+holoColor(4,vec(0,0,0),255)
+
+holoPos(5,owner():shootPos()+vec(18,-1,3.5):rotate(Eye:toAngle()))
+holoModel(5,"sphere")
+holoScale(5,vec(0.2,0.2,0.2))
+holoAng(5,Eye:toAngle())
+holoColor(5,vec(0,0,0),255)
+
+
+holoPos(7,owner():shootPos()+vec(16,-4,-8):rotate(Eye:toAngle()))
+holoModel(7,"prism")
+holoScale(7,vec(0.2,0.3,0.3))
+holoAng(7,Eye:toAngle()+ang(-180,0,0))
+holoColor(7,vec(89,36,1),255)
+
+holoPos(8,owner():shootPos()+vec(17,-4,-2.5):rotate(Eye:toAngle()))
+holoModel(8,"bloc")
+holoScale(8,vec(0.2,0.6,0.1))
+holoAng(8,Eye:toAngle())
+holoColor(8,vec(89,36,1),255)
+
+holoPos(9,owner():shootPos()+vec(17,-1,-5.5):rotate(Eye:toAngle()))
+holoModel(9,"bloc")
+holoScale(9,vec(0.2,0.1,0.6))
+holoAng(9,Eye:toAngle())
+holoColor(9,vec(89,36,1),255)
+
+holoPos(10,owner():shootPos()+vec(17,-7,-5.5):rotate(Eye:toAngle()))
+holoModel(10,"bloc")
+holoScale(10,vec(0.2,0.1,0.6))
+holoAng(10,Eye:toAngle())
+holoColor(10,vec(89,36,1),255)
+
+holoPos(11,owner():shootPos()+vec(18,-7,3.5):rotate(Eye:toAngle()))
+holoModel(11,"torus")
+holoScale(11,vec(0.5,0.5,0.5))
+holoAng(11,Eye:toAngle()+ang(90,0,0))
+holoColor(11,vec(0,0,0),255)
+
+holoPos(12,owner():shootPos()+vec(18,-1,3.5):rotate(Eye:toAngle()))
+holoModel(12,"torus")
+holoScale(12,vec(0.5,0.5,0.5))
+holoAng(12,Eye:toAngle()+ang(90,0,0))
+holoColor(12,vec(0,0,0),255)
+
+holoPos(13,owner():shootPos()+vec(14,-11,3.5):rotate(Eye:toAngle()))
+holoModel(13,"bloc")
+holoScale(13,vec(0.8,0.1,0.1))
+holoAng(13,Eye:toAngle()+ang(0,45,0))
+holoColor(13,vec(0,0,0),255)
+
+holoPos(14,owner():shootPos()+vec(14,3,3.5):rotate(Eye:toAngle()))
+holoModel(14,"bloc")
+holoScale(14,vec(0.8,0.1,0.1))
+holoAng(14,Eye:toAngle()+ang(0,-45,0))
+holoColor(14,vec(0,0,0),255)
+

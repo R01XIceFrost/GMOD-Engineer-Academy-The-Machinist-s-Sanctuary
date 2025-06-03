@@ -1,0 +1,94 @@
+@name FailCake PaintBlock
+@outputs Delete Spawn Paint
+@persist Grid:array X Y I N Max:array O Rest Ply:entity A:array L
+@trigger all
+runOnTick(1)
+runOnChat(1)
+
+if(first()){
+hint("Made By FailCake",7)
+for(X=0,10){       
+for(Y=0,10){   
+I++   
+Grid[I,vector2]=vec2(X,Y)         
+}     
+}
+Delete = 0
+}
+
+if(Delete){
+for(O = 0,300){
+Max[O,entity]:propDelete()
+if(O == 300){
+Delete = 0
+O = 0
+selfDestructAll()
+}   
+}   
+}
+
+Color = owner():lastSaid():explode(" ")
+if(Color[1,string]=="-color"){
+    R = Color[2,number]
+    B = Color[3,number]
+    G = Color[4,number]
+}
+
+
+if(chatClk(owner())) {if(lastSaid() == "-clean" & Delete == 0){
+Delete = 1
+hint("** Cleaning Props **",100)
+}
+}
+if(chatClk(owner())) {if(lastSaid() == "-repaint" & Paint == 0){
+Paint = 1
+hint("** Repainting **",100)
+}
+}
+
+
+if(Paint){
+for(L=0,110){
+Max[L,entity]:setColor(255,255,255,255)    
+}    
+if(L >= 110){
+L = 0
+Paint = 0    
+}
+}
+
+if(Delete == 0){
+timer("spawn",250)
+
+if(clk("spawn")){
+if(N < 110){
+N++
+Prop = propSpawn("models/hunter/plates/plate.mdl",entity():pos()+vec(0,0,30+O)+(vec(Grid[N,vector2])*3),ang(0,0,0),1)
+Max:pushEntity(Prop)
+Prop:setMaterial("models/debug/debugwhite")
+}
+}
+}else{
+stoptimer("spawn")
+}
+
+Ply = owner()
+
+if(Ply:weapon():type() == "weapon_physcannon"){
+Point = Ply:aimEntity()
+Rest+=0.1
+
+if(Ply:keyAttack1()& Rest >=3){
+Point:setColor(R,B,G,255)  
+Rest = 0
+}
+if(Ply:keyAttack2()& Rest >=3){
+Point:setColor(255,255,255,255)  
+Rest = 0
+}
+}
+
+if(duped()){selfDestructAll()}
+####################################################################
+## Do not rename the E2 or remove the hint("Made by Failcake",100)##
+####################################################################

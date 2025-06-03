@@ -1,0 +1,232 @@
+@name FailCake C4Omg V1
+@inputs
+@outputs Tim Explode StartActive Active Defuse Rem Def Success Temp KillUs
+@persist Tim Expl A:array Player:entity Arm Def Rem Temp
+@model models/weapons/w_c4_planted.mdl
+if(first()){
+Tim = 150
+Defuse = 0
+holoAlpha(1,0)
+hint("Made By FailCake",100)
+entity():soundPlay(6000,6000,"weapons/c4/c4_plant.wav") 
+entity():soundPlay(4000,4000,"radio/bombpl.wav") 
+    findByClass("player")
+    A=findToArray() 
+    Arm = 50
+    entity():setAlpha(255)
+    holoAlpha(1,0)
+}
+runOnTick(1)
+
+E=entity()
+
+
+for(I=0,A:count()){
+    Player = findResult(I)
+    if(Player:keyUse() & Player:aimEntity()==entity() & Active == 0 & Player:pos():distance(entity():pos())<= 70){
+StartActive = 1
+}
+}
+
+if(StartActive){
+Arm -= 0.5
+if(Arm >= 100){
+timer("arm",2000)
+}elseif(Arm >= 50){
+timer("arm",1000)
+}elseif(Arm >= 20){
+timer("arm",500)
+}elseif(Arm >= 10){
+stoptimer("arm")
+Active = 1
+}
+
+if(clk("arm") & Arm >= 0){
+holoAlpha(1,0)
+E:soundPlay(1,1,"weapons/c4/c4_click.wav")
+}
+   
+}else{
+Arm = 50
+stoptimer("arm")
+}
+
+holoCreate(1)
+holoModel(1,"cylinder")
+holoColor(1,vec(255,0,0))
+holoPos(1,entity():toWorld(vec(1,-1,10)))
+holoScaleUnits(1,vec(8,8,0.2))
+holoParent(1,E)
+holoMaterial(1,"models/roller/rollermine_glow")
+
+if(Active & Success != 1){
+Defuse = 1 
+Tim -= 0.1
+if(Tim >= 100){
+timer("bip",2000)
+}elseif(Tim >= 50){
+timer("bip",1000)
+}elseif(Tim >= 20){
+timer("bip",500)
+}elseif(Tim >= 10){
+timer("bip",100)
+}elseif(Tim <= 10){
+timer("bip",50)
+}elseif(Tim <= 0){
+Tim -= 0
+stoptimer("bip")
+Tim = 0
+}
+if(Tim <= 0){Explode = 1}
+if(clk("bip") & Tim >= 0){
+holoAlpha(1,255)
+E:soundPlay(1,1,"weapons/c4/c4_beep1.wav")
+}else{
+holoAlpha(1,0)
+}
+if(Explode){
+Expl += 1
+
+if(Expl == 20){
+entity():setAlpha(0)
+#goBoom(entity():pos(),10000) # This only works on CarbonGaming  (function made by wolf :D)# 
+soundPlay(2,2,"weapons/c4/c4_exp_deb1.wav")   
+soundPlay(3,3,"weapons/c4/c4_exp_deb2.wav") 
+soundPlay(4,4,"weapons/c4/c4_explode1.wav")  
+KillUs = 1 ## wire it to a simple explosive (if your not in carbong gaming build server)
+#earthquake(entity(),1000,1000,10,1000000) # This only works on CarbonGaming (function made by wolf whit help from me :D)#
+}
+
+if(Expl >= 20 & Expl <= 70){
+for(I=0,A:count()){
+Player = A[I,entity]
+if(Player:pos():distance(E:pos())<=500){
+#Player:ignite(10) # This only works on CarbonGaming  (function made by wolf :D) so ignore this#
+soundStop(12)
+soundStop(13)
+soundStop(14)
+soundStop(15)
+soundStop(16)
+soundStop(17)
+soundStop(18)
+soundStop(19)
+
+}
+}
+}
+
+if(Expl == 70){
+
+soundPlay(99999,9999,"radio/terwin.wav")     
+}
+if(Expl >= 150){
+selfDestructAll()
+}
+} 
+}
+
+if(Defuse){
+  
+ 
+holoCreate(2)
+holoAlpha(2,255)
+holoModel(2,"cube")
+holoColor(2,vec(255,155,1))
+if(Def > 0){
+holoPos(2,entity():toWorld(vec(2.5,-1.5+-Def/29,10)))
+holoScaleUnits(2,vec(1,Def/16,0.2))
+}else{
+holoPos(2,entity():toWorld(vec(2.5,-1.5,8)))
+holoScaleUnits(2,vec(1,5,0.2))
+}
+holoParent(2,E)
+
+findByModel("models/weapons/w_defuser.mdl")
+C4 = findClosest(entity():pos())
+Distance = round(entity():pos():distance(C4:pos()))
+
+if(Distance <= 40){
+Def += 0.1
+Temp+= 0.1
+if(Def == 2){
+E:soundPlay(10,10,"weapons/c4/c4_disarm.wav")  
+} 
+
+for(I=0,A:count()){
+Player = A[I,entity]
+if(Player:pos():distance(E:pos())<=50){
+if(Temp >= 1){
+holoCreate(3)
+holoAlpha(3,255)
+holoModel(3,"cube")
+holoColor(3,vec(255,155,1))
+holoAlpha(3,0)
+holoPos(3,Player:toWorld(vec(0,0,10)))
+holoScaleUnits(3,vec(1,1,1))   
+holoParent(3,Player)
+}
+if(Temp == 10){
+holoEntity(3):soundPlay(13,13,"player/heartbeat1.wav")   
+holoEntity(3):soundPlay(14,14,"player/heartbeat1.wav") 
+holoEntity(3):soundPlay(15,15,"player/heartbeat1.wav") 
+holoEntity(3):soundPlay(16,16,"player/heartbeat1.wav")  
+}
+if(Temp == 50){
+holoEntity(3):soundPlay(17,17,"player/breathe1.wav")   
+holoEntity(3):soundPlay(18,18,"player/breathe1.wav")  
+holoEntity(3):soundPlay(19,19,"player/breathe1.wav")  
+holoEntity(3):soundPlay(20,20,"player/breathe1.wav")  
+}
+}
+}
+
+if(Def>= 80){Success = 1}          
+}else{
+soundStop(10)
+Def = 0
+Temp = 0
+Temp = 0
+soundStop(13)
+soundStop(14)
+soundStop(15)
+soundStop(16)
+soundStop(17)
+soundStop(18)
+soundStop(19)
+soundStop(20)
+holoAlpha(2,0)
+}
+}else{
+
+}
+
+if(Success & Expl <= 70){
+Rem += 0.1 
+holoDelete(1)
+holoDelete(2)
+soundStop(13)
+soundStop(14)
+soundStop(15)
+soundStop(16)
+soundStop(17)
+soundStop(18)
+soundStop(19)
+soundStop(20)
+if(Rem == 3){
+E:soundPlay(11,11,"radio/bombdef.wav")      
+}  
+
+if(Rem == 10){
+E:soundPlay(12,12,"radio/ctwin.wav")      
+}  
+if(Rem >= 100){
+selfDestructAll()
+}
+}
+
+if(duped()){selfDestructAll()}
+if(duped()){selfDestructAll()}
+
+####################################################################
+## Do not rename the E2 or remove the hint("Made by Failcake",100)##
+####################################################################

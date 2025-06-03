@@ -1,0 +1,102 @@
+@name FailCake 8Bit Man V1
+@outputs Act
+@persist O:entity M:string D:number B
+@trigger all
+
+if(first()){
+    O=owner()
+    runOnTick(1)
+    runOnChat(1) 
+    O:setAlpha(0)
+    entity():setAlpha(0)   
+    hint("Made By Failcake",100)
+}
+
+
+
+if(tickClk()){
+    
+    W=lastSaid():lower():trim():explode("")
+    C=W:count()
+    
+}
+
+if(tickClk()){
+    if(D){
+        D--
+    }elseif(M:length()){
+        B=!B
+        D=5
+        T=M[1]
+        M=M:sub(2)
+        if(T:findRE("[A-Z]")){
+            O:soundPlay(3+B,0,"items/flashlight1.wav")
+            soundPitch(2+B,60)
+            soundPitch(0,60)
+        }
+    }
+}elseif(chatClk(O)){
+    S=lastSaid():upper()
+    if(S[1]!="!"){
+        M+=S+" "
+    }
+}
+
+    holoCreate(1)
+    holoAng(1,O:attachmentAng("anim_attachment_Head"))
+    holoPos(1,O:attachmentPos("anim_attachment_Head"))
+    holoParentAttachment(1,O,"anim_attachment_Head")
+    holoModel(1,"cube")
+    holoScaleUnits(1,vec(18,18,18))
+    holoPos(1,holoEntity(1):toWorld(vec(0,4,0)))
+    holoAng(1,holoEntity(1):toWorld(ang(0,0,0)))
+    holoMaterial(1,"")
+    
+    holoCreate(2)
+    holoAng(2,O:attachmentAng("anim_attachment_lh"))
+    holoPos(2,O:attachmentPos("anim_attachment_lh"))
+    holoParentAttachment(2,O,"anim_attachment_lh")
+    holoModel(2,"cube")
+    holoScaleUnits(2,vec(8,8,8))
+    holoPos(2,holoEntity(2):toWorld(vec(0,0,0)))
+    holoAng(2,holoEntity(2):toWorld(ang(0,0,0)))
+    holoMaterial(2,"")
+    
+    holoCreate(3)
+    holoAng(3,O:attachmentAng("anim_attachment_rh"))
+    holoPos(3,O:attachmentPos("anim_attachment_rh"))
+    holoParentAttachment(3,O,"anim_attachment_rh")
+    holoModel(3,"cube")
+    holoScaleUnits(3,vec(8,8,8))
+    holoPos(3,holoEntity(3):toWorld(vec(0,0,0)))
+    holoAng(3,holoEntity(3):toWorld(ang(0,0,0)))
+    holoMaterial(3,"")
+    
+    holoCreate(4)
+    holoAng(4,O:attachmentAng("anim_attachment_Head"))
+    holoPos(4,O:attachmentPos("anim_attachment_Head"))
+    holoParentAttachment(4,O,"anim_attachment_Head")
+    holoModel(4,"cube")
+    holoScaleUnits(4,vec(2,6,2))
+    holoPos(4,holoEntity(4):toWorld(vec(3.5,8,-8)))
+    holoAng(4,holoEntity(4):toWorld(ang(0,0,0)))
+    holoMaterial(4,"")
+    holoColor(4,vec(1,1,1))
+    
+    holoCreate(5)
+    holoAng(5,O:attachmentAng("anim_attachment_Head"))
+    holoPos(5,O:attachmentPos("anim_attachment_Head"))
+    holoParentAttachment(5,O,"anim_attachment_Head")
+    holoModel(5,"cube")
+    holoScaleUnits(5,vec(2,6,2))
+    holoPos(5,holoEntity(5):toWorld(vec(-3.5,8,-8)))
+    holoAng(5,holoEntity(5):toWorld(ang(0,0,0)))
+    holoMaterial(5,"")
+    holoColor(5,vec(1,1,1))
+
+
+if(duped()){selfDestructAll()}
+
+####################################################################
+## Do not rename the E2 or remove the hint("Made by Failcake",100)##
+####################################################################

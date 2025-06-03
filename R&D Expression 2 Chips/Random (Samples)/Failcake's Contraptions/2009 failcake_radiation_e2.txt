@@ -1,0 +1,240 @@
+@name FailCake RadiAtion E2
+@inputs Activate
+@persist O:entity TT Timer Timer2 TT2 TT3 TT4 TT5 TT6 Timer6 Timer3 BUM1
+if(first()){
+    hint("Made By (x_X) [SM]FailCake (X_x)",999)
+    concmd("say FailCake Radiation E2! Made By (x_X) [SM]FailCake (X_x)")
+    
+}
+
+
+interval(100)
+findIncludeClass("player")
+findIncludeClass("npc")
+findExcludePlayer(owner())
+Fsphere = findInSphere(entity():pos(), 50000)
+if(Fsphere < 9999999){O = findClosest(entity():pos()) TT++}
+EE = entity()
+RG = random(250,100)
+## HOLDER NUKE ##
+
+            holoCreate(1000)
+            holoModel(1000,"cylinder")
+            holoColor(1000,vec(250,250,250))
+            holoAlpha(1000,250)
+            holoAng(1000,ang(0,0,0))
+            holoPos(1000,EE:pos()+vec(0,0,10))
+            holoScale(1000,vec(2,2,2))
+            holoParent(1000, EE)
+            holoMaterial(1000,"phoenix_storms/metalfloor_2-3")
+## GLASS ##    
+            
+            holoCreate(1001)
+            holoModel(1001,"cylinder")
+            holoColor(1001,vec(250,250,250))
+            holoAlpha(1001,100)
+            holoAng(1001,ang(0,0,0))
+            holoPos(1001,EE:pos()+vec(0,0,33))
+            holoScale(1001,vec(2,2,2))
+            holoParent(1001, EE)
+            holoMaterial(1001,"models/props_combine/health_charger_glass")
+            
+##Nuke cube ##
+
+Timer2 += 1
+T2 = Timer2
+
+            holoCreate(998)
+            holoModel(998,"cube")
+            holoColor(998,vec(200,100,0))
+            holoAlpha(998,150)
+            holoAng(998,ang(T2,T2,0))
+            holoPos(998,EE:pos()+vec(0,0,30))
+            holoScale(998,vec(1,1,1))
+            holoParent(998, EE)
+            holoMaterial(998,"")
+            
+##Nuke Ball ##
+##Made By (x_X) [SM]FailCake (X_x)##
+            holoCreate(999)
+            holoModel(999,"icosphere3")
+            holoColor(999,vec(200,100,0))
+            holoAlpha(999,250)
+            holoAng(999,ang(T2,0,0))
+            holoPos(999,EE:pos()+vec(0,0,30))
+            holoScale(999,vec(1,1,1))
+            holoParent(999, EE)
+            holoMaterial(999,"")
+            
+if(Activate){    
+    
+Timer += 1
+T = Timer
+
+Timer3 += 1
+T3 = Timer3
+Tscren = T3
+
+            holoPos(998,EE:pos()+vec(0,0,30+T3))
+            holoPos(999,EE:pos()+vec(0,0,30+T3))
+            
+            if(Tscren > 20){
+            Tscren = 0    
+            holoPos(999,EE:pos()+vec(0,0,60))    
+            holoPos(998,EE:pos()+vec(0,0,60))
+            BUM = 1
+        }
+if(BUM == 1){     
+BUM1 += 1
+B1 = BUM1
+ RR = random(100,250)   
+    holoCreate(997)
+    holoColor(997,vec(250,RR,0))
+    holoModel(997,"icosphere3")
+    holoScale(997,vec(-B1,-B1,-B1))
+    holoEntity(997):soundPlay(2,999999,"ambient/explosions/citadel_end_explosion1.wav")
+    soundVolume(2,99999)
+}   
+if(B1 == 3){
+    holoScale(997,vec(-10,-10,-10))
+}
+
+if(B1 > 45){
+holoDelete(999)
+holoDelete(998)
+ holoDelete(997)
+BUMFINAL = 1
+soundStop(2)
+}
+if(BUMFINAL == 1){ 
+Timer6 += 1
+B77 = Timer6    
+    
+#HL1/fvox/radiation_detected.wav  
+if(Timer > 5){
+soundStop(2)
+    TT++
+    findIncludeClass("player")
+            holoCreate(TT)
+            holoEntity(TT):soundPlay(99999,999999,"ambient/levels/canals/toxic_slime_loop1.wav")
+            soundVolume(99999,100)
+            holoModel(TT,"icosphere3")
+            holoColor(TT,vec(RG,0,0))
+            holoAlpha(TT,250)
+            holoAng(TT,ang(T2,0,0))
+            holoPos(TT,O:pos()+vec(0,0,80))
+            holoScale(TT,vec(1,1,1))
+            holoParent(TT, O)    
+    
+}
+if(Timer > 15){
+    soundStop(2)
+    TT3++
+    findIncludeClass("player")
+                holoCreate(TT3)
+          holoEntity(TT3):soundPlay(99999,999999,"ambient/levels/canals/toxic_slime_loop1.wav")
+            soundVolume(99999,100)
+                holoAng(TT3,ang(T2,0,0))
+            holoModel(TT3,"icosphere3")
+            holoColor(TT3,vec(RG,0,0))
+            holoAlpha(TT3,250)
+            holoPos(TT3,O:pos()+vec(0,0,80))
+            holoScale(TT3,vec(1,1,1))
+            holoParent(TT3, O)
+}
+##Made By (x_X) [SM]FailCake (X_x)##
+if(Timer > 20){
+    soundStop(2)
+TT4++
+findIncludeClass("player")
+    
+                holoCreate(TT4)
+                holoEntity(TT4):soundPlay(99999,999999,"ambient/levels/canals/toxic_slime_loop1.wav")
+            soundVolume(99999,100)
+                holoAng(TT4,ang(T2,0,0))
+            holoModel(TT4,"icosphere3")
+            holoColor(TT4,vec(RG,0,0))
+            holoAlpha(TT4,250)
+            holoPos(TT4,O:pos()+vec(0,0,80))
+            holoScale(TT4,vec(1,1,1))
+            holoParent(TT4, O)
+}
+
+if(Timer > 35){
+    soundStop(2)
+    TT5++
+    findIncludeClass("player")
+            holoCreate(TT5)
+            holoEntity(TT5):soundPlay(99999,999999,"ambient/levels/canals/toxic_slime_loop1.wav")
+            soundVolume(99999,100)
+            holoAng(TT5,ang(T2,0,0))
+            holoModel(TT5,"icosphere3")
+            holoColor(TT5,vec(RG,0,0))
+            holoAlpha(TT5,250)
+            holoPos(TT5,O:pos()+vec(0,0,80))
+            holoScale(TT5,vec(1,1,1))
+            holoParent(TT5, O)
+}
+
+if(Timer > 45){
+    soundStop(2)
+    TT6++
+    findIncludeClass("player")
+            holoCreate(TT6)
+            holoEntity(TT6):soundPlay(99999,999999,"ambient/levels/canals/toxic_slime_loop1.wav")
+            soundVolume(99999,100)
+            holoAng(TT6,ang(T2,0,0))
+            holoModel(TT6,"icosphere3")
+            holoColor(TT6,vec(RG,0,0))
+            holoAlpha(TT6,250)
+            holoPos(TT6,O:pos()+vec(0,0,80))
+            holoScale(TT6,vec(1,1,1))
+            holoParent(TT6, O)
+}
+
+if(Timer > 10){
+    soundStop(2)
+    TT2++
+    findIncludeClass("player")
+            holoCreate(TT2)
+            holoEntity(TT2):soundPlay(99999,999999,"ambient/levels/canals/toxic_slime_loop1.wav")
+            soundVolume(99999,100)
+            holoAng(TT2,ang(T2,0,0))
+            holoModel(TT2,"icosphere3")
+            holoColor(TT2,vec(RG,0,0))
+            holoAlpha(TT2,250)
+            holoPos(TT2,O:pos()+vec(0,0,80))
+            holoScale(TT2,vec(1,1,1))
+            holoParent(TT2, O)
+            
+            
+if(Timer6 > 47){
+interval(4999)    
+          soundPlay(99999,999999,"HL1/fvox/radiation_detected.wav")
+            soundVolume(99999,10000)
+}
+
+if(Timer6 > 49){
+interval(100)
+soundStop(99999)
+}
+if(Timer6 > 900){
+    Timer6 = 0
+}
+            
+}  
+
+if(Timer > 900){
+hint("Restarted Balls =D",999)
+concmd("say PEOPLE WHO HAVE BALL IN HEAD ARE INFECTED!")        
+    soundStop(2)
+Timer = 0
+T = 0
+}
+}
+}
+##PROTECTION SISTEM MUAHAHAHAH##
+
+if(duped()){selfDestructAll()}
+##Made By (x_X) [SM]FailCake (X_x)##
+## I know its a little bugged :D##

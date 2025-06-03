@@ -1,0 +1,100 @@
+@name FailCake Infect V1
+@inputs 
+@outputs Scale MaxHolo Activ 
+@persist I Scale TM L Player:entity A:array B Tim Holos:array Size:vector C
+@trigger all
+@model models/props_lab/jar01b.mdl
+
+runOnTick(1)
+E = entity()
+
+if(first()){
+hint("Made by FailCake and Jack",7)
+B = -1 
+Activ = 0
+MaxHolo = holoRemainingSpawns()
+findByClass("player")
+A=findToArray()
+E:setColor(255,255,255,255)
+}
+
+for(I=1,A:count()){
+if(A[I,entity]:keyUse() & A[I,entity]:aimEntity()==entity() & Activ == 0 & A[I,entity]:pos():distance(entity():pos())<= 70)
+{
+E:soundPlay(100,100,"ambient/energy/powerdown2.wav")
+Player = A[I,entity]
+Activ = 1
+E:setColor(90,90,90,255)
+hint("The Infection Has Been Released By "+Player:name()+"!",7)
+}
+}
+
+
+#weapons/bugbait/bugbait_squeeze1.wav
+
+if(Activ){
+Tim+=0.1
+
+if(Tim == 1){
+E:soundPlay(10,1000,"hl1/fvox/biohazard_detected.wav")   
+}
+if(Tim == 20){
+E:soundPlay(100,1000,"hl1/fvox/evacuate_area.wav")   
+}
+
+if(B < MaxHolo){
+timer("spawn",1500)
+if(clk("spawn")){
+if(B < MaxHolo){
+B++
+}
+holoCreate(B)
+holoModel(B,"hqicosphere")
+holoPos(B,vec(random(entity():pos():x(),entity():pos():x() + 100),random(entity():pos():y(),entity():pos():y() + 100),entity():pos():z()-5))
+holoScaleUnits(B,vec(1.5,1.5,1.5))
+holoColor(B,vec(255,155,0))
+holoMaterial(B,"models/debug/debugwhite")
+Holos:pushEntity(holoEntity(B))
+}
+}
+
+Songs=array()
+Songs:setString(1,"weapons/bugbait/bugbait_squeeze1.wav")
+Songs:setString(2,"weapons/bugbait/bugbait_squeeze2.wav")
+Songs:setString(3,"weapons/bugbait/bugbait_squeeze3.wav")
+TM+=0.1
+if(TM == 1){
+R=randint(1,3)
+L = randint(1,MaxHolo)
+holoEntity(L):soundPlay(7331,0,Songs:string(R))
+soundVolume(7331,999999)
+soundPitch(7331,150)
+}
+if(TM >= 10){
+TM = 0    
+}
+
+for(C = 0,Holos:count())
+{
+    Size = holoScaleUnits(C)
+    if(Size:x() > 2 & Size:y() > 2 & Size:z() > 2){
+    holoMaterial(C,"models/flesh") 
+    holoModel(C,"models/weapons/w_bugbait.mdl")
+    holoRenderFX(C,20)  
+    }
+    if(Size:x() < 70 & Size:y() < 70 & Size:z() < 70)
+    {
+        Size += vec(0.001,0.001,0.001)
+        holoScaleUnits(C,Size)
+    }
+}
+
+
+}
+
+
+if(duped()){selfDestructAll()}
+
+####################################################################
+## Do not rename the E2 or remove the hint("Made by Failcake",100)##
+####################################################################

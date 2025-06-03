@@ -1,0 +1,92 @@
+@name FailCake Human Car
+@outputs On
+@persist T T2 T3 Wait Wait2
+@trigger all
+runOnTick(1)
+
+if(first()){
+hint("Made By Failcake",100)
+hint("Press Mouse2 to Beep and keep pressing use to turn on/off the car.",100)
+On = 1    
+entity():setAlpha(0)
+}
+
+Vel = owner():vel():length()/2
+O = owner()
+
+if(On == 1){
+if(Vel >= 10 & Vel <= 85){
+T+=0.5
+T2 = 0
+T3 = 0
+if(T == 1){
+O:soundPlay(1000,1000,"vehicles/truck/1stgear.wav")
+soundStop(2000) 
+soundStop(3000)
+}
+}
+
+if(Vel < 10){
+T = 0
+T3 = 0
+T2+=0.5
+if(T2 == 1){
+soundStop(1000)
+soundStop(3000)
+O:soundPlay(2000,2000,"vehicles/truck/idle.wav")
+}
+}
+
+
+if(Vel > 85){
+T = 0
+T2 = 0
+T3+=0.5
+if(T3 == 1){
+soundStop(2000)    
+soundStop(1000)   
+O:soundPlay(3000,3000,"vehicles/truck/2ndgear.wav")
+}
+}
+}
+
+
+if(O:keyUse() & On == 1){
+Wait+=0.1
+if(Wait >= 5){
+if(Wait == 6){
+O:soundPlay(4000,4000,"vehicles/v8/v8_stop1.wav")
+soundStop(2000)    
+soundStop(1000)   
+soundStop(3000) 
+On = 0    
+}
+}    
+}else{
+Wait = 0
+}
+
+if(O:keyUse() & On == 0){
+Wait2+=0.1
+if(Wait2 >= 5){
+if(Wait2 == 6){
+O:soundPlay(2,2,"vehicles/v8/v8_start_loop1.wav")
+soundStop(2000)    
+soundStop(1000)   
+soundStop(3000) 
+On = 1   
+}
+}    
+}else{
+Wait2 = 0
+}
+
+if(O:keyAttack2() & On == 1){
+O:soundPlay(6000,6000,"synth/saw_440.wav")   
+}else{
+soundStop(6000)
+}
+
+####################################################################
+## Do not rename the E2 or remove the hint("Made by Failcake",100)##
+####################################################################
