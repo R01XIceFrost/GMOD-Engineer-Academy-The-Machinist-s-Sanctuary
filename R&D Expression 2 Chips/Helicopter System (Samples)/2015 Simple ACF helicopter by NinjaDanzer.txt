@@ -1,0 +1,93 @@
+@name HeliChip
+@inputs Baseplate:wirelink PodController:wirelink EyePod:wirelink
+@outputs Status:string
+@persist EBasePlate:entity
+@persist Throttle MaxThrottle DThrottle
+@persist PitchMult YawMult RollMult StabMult
+@trigger
+
+
+#[
+
+INFO:
+
+Hi!
+This is my simple ACF helicopter chip which somewhat accurately simulates helicopter movement.
+
+WIP: Add optional wirelinked rotor & tailrotor entities that can be blown up and disable vertical acceleration and apply angular force.
+
+]#
+
+
+#[
+Made by NinjaDanzer
+INSTRUCTIONS:
+1. Link baseplate prop, podcontroller & eyepod
+2. (Optional) Hook up textscreen to status output
+3. Fiddle with settings
+4. Done.
+
+Special thanks to Raveo & xk4melot!
+]#
+
+if( (first() == 1) | (dupefinished() == 1) )
+{
+    Throttle = 0
+    DThrottle = 0.005                   #How much to increase/decrease throttle in each step.
+    MaxThrottle = 1.5                   #Maximum amount of throttle
+    PitchMult = 1                       #Pitch multiplier, increase to have more agressive pitch
+    YawMult = 1                         #Yaw multiplier
+    RollMult = 1                        #Roll multiplier
+    StabMult = 1.0                      #Stabilizer multiplier, how aggressive the stabilizer wants the copter to level out
+    EBasePlate = Baseplate:entity()     #Entity
+}
+runOnTick(1)
+#Throttle control
+if( (PodController["Shift", number] == 1) & (Throttle < MaxThrottle)) 
+{
+    Throttle +=DThrottle
+}
+elseif( (PodController["R", number] == 1) & (Throttle > 0))
+{
+    Throttle-=DThrottle
+}
+
+#Movement
+if(PodController["W", number] == 1) #Pitch
+{
+    EBasePlate:applyAngForce(EBasePlate:angles() - ang(3500,0,0)*shiftL(ang(EBasePlate:inertia()))*PitchMult )
+}
+if(PodController["S", number] == 1)
+{
+    EBasePlate:applyAngForce(EBasePlate:angles() - ang(-3500,0,0)*shiftL(ang(EBasePlate:inertia()))*PitchMult )
+}
+if(PodController["A", number] == 1) #Roll
+{
+    EBasePlate:applyAngForce(EBasePlate:angles() - ang(0,0,-3500)*shiftL(ang(EBasePlate:inertia()))*RollMult )
+}
+if(PodController["D", number] == 1)
+{
+    EBasePlate:applyAngForce(EBasePlate:angles() - ang(0,0,3500)*shiftL(ang(EBasePlate:inertia()))*RollMult )
+}
+
+#Eyepod settings
+EyePod["SetViewAngle", angle] = ang(0,90,0)
+EyePod["UnfreezePitch", number] = 1
+EyePod["Enable", number] = 1
+
+if(EyePod["X", number] > 0) #Yaw
+{
+    EBasePlate:applyAngForce(EBasePlate:angles() - ang(0,250,0)*shiftL(ang(EBasePlate:inertia()))*abs(EyePod["X", number])*YawMult )
+}
+elseif(EyePod["X", number] < 0)
+{
+    EBasePlate:applyAngForce(EBasePlate:angles() - ang(0,-250,0)*shiftL(ang(EBasePlate:inertia()))*abs(EyePod["X", number])*YawMult )
+}
+
+Vel = EBasePlate:vel()
+#Vertical Component, just about enough to counteract gravity on any one prop.
+EBasePlate:applyForce(EBasePlate:up()*EBasePlate:mass()*9.38*Throttle)
+#Stabilize helicopter to upright position.
+EBasePlate:applyAngForce( (-EBasePlate:angles():setYaw(0)*20*StabMult - EBasePlate:angVel()*20*StabMult) * shiftL(ang(EBasePlate:inertia())) )
+
+Status = "Throttle: " + round((Throttle/MaxThrottle)*100) + "%"
