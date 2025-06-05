@@ -1,0 +1,196 @@
+@name Tranquility Garden - By Moglizorz
+@outputs PV OV Max List:array
+
+#[
+
+INFO:
+
+Description:
+Just made a nice little piece of a park with holos. Has a tree, bench, and fountain thing.
+Also has some peaceful sounds, the water makes a sound, and there's a random bird sound each time you enter the garden, that will repeat every so often.
+
+Instructions:
+Spawn the chip, sir.
+
+]#
+    runOnTick(1)
+    interval(100)
+    if(first()){
+        E=entity()
+        E:setAlpha(0)
+        EP=E:pos()
+        for(I=1,25){holoCreate(I),holoAng(I,ang())}
+        
+        I=1
+        holoModel(I,"dome")
+        holoScale(I,vec(40,40,0))
+        holoMaterial(I,"models/props_c17/FurnitureMetal001a")
+        holoColor(I,vec(200,255,150))
+        I++
+        holoModel(I,"dome2")
+        holoScale(I,vec(14,9,3))
+        holoColor(I,vec(0,0,225))
+        holoAng(I,ang(0,0,180))
+        holoPos(I,EP+vec(0,-100,36))
+        holoMaterial(I,"models/props_debris/concretewall019a")
+        I++
+        holoModel(I,"hqcylinder2")
+        holoScale(I,vec(2,2,15))
+        holoPos(I,EP+vec(45,180,89.9))
+        holoMaterial(I,"Straw/StrawTile_diffuse")
+        I++
+        holoModel(I,"cone")
+        holoScale(I,vec(4,4,15))
+        holoPos(I,EP+vec(45,180,89.9))
+        holoMaterial(I,"Straw/StrawTile_diffuse")
+        I++
+        holoModel(I,"hqicosphere2")
+        holoScale(I,vec(12,12,9))
+        holoColor(I,vec(0,200,0))
+        holoPos(I,EP+vec(45,180,170))
+        holoMaterial(I,"models/props_debris/concretefloor020a")
+        I++
+        holoModel(I,"hqtorus2")
+        holoScale(I,vec(9.7,9.7,30))
+        holoColor(I,vec(0,200,0))
+        holoPos(I,EP+vec(45,180,147))
+        holoMaterial(I,"models/props_debris/concretefloor020a")
+        I++
+        holoModel(I,"hqtorus2")
+        holoScale(I,vec(15,10,30))
+        holoPos(I,EP+vec(0,-100,0))
+        holoMaterial(I,"models/props_debris/concretewall019a")
+        I++
+        holoModel(I,"sphere")
+        holoScale(I,vec(10,15,0.2))
+        holoColor(I,vec(0,0,225))
+        holoAng(I,ang(0,270,180))
+        holoPos(I,EP+vec(0,-100,30))
+        holoMaterial(I,"models/shadertest/shader3")
+        I++
+        holoModel(I,"cube")
+        holoScale(I,vec(6,5,7))
+        holoColor(I,vec(0,0,225))
+        holoAng(I,ang(0,90,0))
+        holoPos(I,EP+vec(0,-182,50))
+        holoMaterial(I,"models/props_debris/concretewall019a")    
+        I++
+        holoModel(I,"cube")
+        holoScale(I,vec(0.1,6,7))
+        holoColor(I,vec(0,0,225))
+        holoAng(I,ang(0,90,0))
+        holoPos(I,EP+vec(0,-143,52))
+        holoMaterial(I,"models/shadertest/shader3")
+        I++
+        holoModel(I,"cube")
+        holoScale(I,vec(6,6,0.2))
+        holoColor(I,vec(0,0,225))
+        holoAng(I,ang(0,90,0))
+        holoPos(I,EP+vec(0,-179,93))
+        holoMaterial(I,"models/shadertest/shader3")    
+        I++
+        holoModel(I,"hqcylinder2")
+        holoScale(I,vec(2,7.5,7))
+        holoPos(I,EP+vec(35,-178,40))
+        holoMaterial(I,"models/props_debris/concretewall019a")    
+        I++
+        holoModel(I,"hqcylinder2")
+        holoScale(I,vec(2,7.5,7))
+        holoPos(I,EP+vec(-35,-178,40))
+        holoMaterial(I,"models/props_debris/concretewall019a")    
+        I++
+        holoModel(I,"dome")
+        holoScale(I,vec(2,7.5,4.8))
+        holoPos(I,EP+vec(-35,-178,81))
+        holoMaterial(I,"models/props_debris/concretewall019a")    
+        I++
+        holoModel(I,"dome")
+        holoScale(I,vec(2,7.5,4.8))
+        holoPos(I,EP+vec(35,-178,81))
+        holoMaterial(I,"models/props_debris/concretewall019a")    
+        I++
+        holoModel(I,"hqcylinder2")
+        holoScale(I,vec(3,6.4,9))
+        holoAng(I,ang(0,90,0))
+        holoPos(I,EP+vec(0,-218,53))
+        holoMaterial(I,"models/props_debris/concretewall019a")    
+        I++
+        holoModel(I,"dome")
+        holoScale(I,vec(3,6.4,8))
+        holoAng(I,ang(0,90,0))
+        holoPos(I,EP+vec(0,-218,106))
+        holoMaterial(I,"models/props_debris/concretewall019a")    
+        I++
+        holoModel(I,"cube")
+        holoScale(I,vec(6.4,1.5,0.2))
+        holoAng(I,ang(0,40,0))
+        holoPos(I,EP+vec(-120,130,30))
+        holoMaterial(I,"phoenix_storms/wood")    
+        I++
+        holoModel(I,"cube")
+        holoScale(I,vec(6.4,1.7,0.2))
+        holoAng(I,ang(0,40,80))
+        holoPos(I,EP+vec(-126.6,138,46))
+        holoMaterial(I,"phoenix_storms/wood")    
+        I++
+        holoModel(I,"cube")
+        holoScale(I,vec(1,6,0.2))
+        holoAng(I,ang(0,40,80))
+        holoColor(I,vec())
+        holoPos(I,EP+vec(-124.6,135,17))
+        holoMaterial(I,"models/debugwhite")    
+        I++
+        holoModel(I,"cube")
+        holoColor(I,vec())
+        holoScale(I,vec(3,1.2,0.2))
+        holoAng(I,ang(0,40,0))
+        holoPos(I,EP+vec(-120,130,2))
+        holoMaterial(I,"models/debugwhite")    
+        I++
+        holoModel(I,"hqicosphere2")
+        holoScale(I,vec(10,7,0.2))
+        holoAng(I,ang(0,40,0))
+        holoPos(I,EP+vec(-105,113,0))
+        holoMaterial(I,"models/props_c17/metalladder003")   
+        I++
+        holoModel(I,"hqicosphere2")
+        holoScale(I,vec(8,8,1))
+        holoPos(I,EP+vec(45,180,0))
+        holoMaterial(I,"models/props_debris/concretefloor020a")
+        I++
+        holoModel(I,"cylinder")
+        holoScale(I,vec(0.4,0.4,2))
+        holoPos(I,EP+vec(0,-190,120))
+        holoAng(I,ang(0,0,90))
+        holoMaterial(I,"phoenix_storms/dome")
+        I++
+        holoModel(I,"hqcone")
+        holoScale(I,vec(0.8,0.8,4))
+        holoPos(I,EP+vec(0,-181,98))
+        holoMaterial(I,"models/shadertest/shader3")
+
+        for(I=2,25){holoParent(I,holoEntity(1))}
+    }
+
+    if(clk()){
+        findByClass("player") 
+        findClipToSphere(entity():pos(),200) 
+        if(Max!=findToArray():count()){
+            List=findToArray()
+            Max=List:count()
+        }
+        if((Max>0)&(OV==0)){
+            holoEntity(1):soundPlay(1,0,"ambient/creatures/leech_water_churn_loop2.wav")
+            soundVolume(1,0.3)
+            holoEntity(4):soundPlay(2,0,"ambient/levels/canals/swamp_bird"+randint(1,6)+".wav")
+            OV=1
+        }
+        if(random(20)<1){soundPitch(2,randint(100,101))}
+        if((!Max)&(OV==1)){
+            soundStop(1)
+            soundStop(2)
+            OV=0
+        }
+    }
+
+

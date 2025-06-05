@@ -1,0 +1,44 @@
+@name Combine police noob
+@inputs 
+@outputs 
+@persist 
+@trigger 
+
+
+runOnTick(1)
+
+Speed = 1
+
+timer("turn",5000)
+
+if (first())
+{
+    entity():setAlpha(0)
+    holoCreate(1)
+    holoCreate(2)
+    
+    
+    holoModel(1, "models/Police.mdl")
+    
+    holoAnim(1, 25)
+
+    
+
+     
+}
+holoPos(1, holoEntity(1):pos() + holoEntity(1):forward()*Speed)
+
+holoPos(2, holoEntity(1):pos())
+holoAng(2, holoEntity(1):angles())
+holoParent(2, holoEntity(1))
+
+if(clk("turn"))
+{
+    holoAng(1, ang(0,random(360),0))
+}
+R1 = rangerOffset(1, holoEntity(1):pos(), holoEntity(1):up())
+
+if (R1:hit())
+{
+    holoPos(1, holoEntity(1):pos() + R1:pos())
+}

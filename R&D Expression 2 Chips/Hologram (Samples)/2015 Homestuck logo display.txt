@@ -1,0 +1,45 @@
+@name Homestuck logo display
+@inputs
+@outputs
+@persist Timer
+@trigger
+#Made by Dean MacPootis
+runOnTick(1)
+Timer=Timer+1*1
+T=Timer
+Me=owner()
+Chip=entity()
+if (first()) {holoCreate(1)}
+holoModel(1,"hq_cube") #Model of the cube, look at all the models from wiremod wiki
+holoPos(1,Chip:pos()+vec(0,0,10))
+holoAng(1,ang(T,T,0)) #<---To set the directions wich the holo spins change those
+holoColor(1,vec(10,255,10))#Color
+holoScale(1,vec(0.3,1,1))#scale of the holo
+
+holoCreate(2)
+holoModel(2,"hq_cube")
+holoPos(2,Chip:pos()+vec(0,15,10))
+holoAng(2,ang(T,T,0))
+holoColor(2,vec(10,255,10))
+holoScale(2,vec(0.3,1,1))
+
+holoCreate(3)
+holoModel(3,"hq_cube")
+holoPos(3,Chip:pos()+vec(0,15,25))
+holoAng(3,ang(T,T,0))
+holoColor(3,vec(10,255,10))
+holoScale(3,vec(0.3,1,1))
+
+holoCreate(4)
+holoModel(4,"hq_cube")
+holoPos(4,Chip:pos()+vec(0,0,25))
+holoAng(4,ang(T,T,0))
+holoColor(4,vec(10,255,10))
+holoScale(4,vec(0.3,1,1))
+
+holoCreate(5)
+holoModel(5,"pyramid")
+holoPos(5,Chip:pos()+vec(0,7.5,42))
+holoAng(5,ang(0,T,0))
+holoColor(5,vec(10,255,10))
+holoScale(5,vec(0.5,2.8,1.3))

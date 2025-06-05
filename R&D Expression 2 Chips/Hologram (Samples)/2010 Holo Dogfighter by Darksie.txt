@@ -1,0 +1,251 @@
+@name Holo Dogfighter - Made by Darksie
+@inputs W A S D Alt Rinput Space Shift Active
+@outputs Pos:vector Direction:vector Position:vector
+@persist Pos:vector O:entity E:entity Mass Ang:angle
+@trigger 
+
+#[
+
+INFO:
+
+Hey guys, finally got round to making my first release.
+
+It's a Holo mini flying spaceship Techni and a few of my friends inspired me to create my own version...it uses Applyforce to fly.
+
+Just going to cover the controls and how to set it up...it requires Spacebuild2 Materials to see what it truly looks like.
+
+Controls:
+W = Forward
+A = Strife Left
+S = Backwards
+D = Strife Right
+Shift = Super Speed
+Alt = Fly Down
+Space = Fly Up
+Mouse2 = Fly Slowly (the input name is called Rinput)
+
+As for turning it's mouse controlled.
+
+Everything else you should be able to do.
+
+Now for putting it together..
+
+Spawn a small plate, place a Adv pod controller on it and then a cam controller..
+
+wire all of the above to the Adv pod..then Activated from the Cam to the pod on "active" and finally Position Vector / Direction Vector to the E2 Chip which is inside the hologram don't mind pos vector.
+
+Heres some pictures.
+
+]#
+
+#Body
+if(first() | duped()){
+holoEntity(1)
+holoCreate(1,entity():pos()+vec(-4.20,0,0))
+holoParent(1,entity())
+holoScale(1,vec(1.50,0.57,0.35))
+holoMaterial(1, "Spacebuild/body5skin")
+
+
+#Nose
+holoEntity(2)
+holoCreate(2,entity():pos()+vec(5,0,0))
+holoParent(2,entity())
+holoModel(2,"prism")
+holoScale(2,vec(3.04,0.56,0.35))
+holoAng(2,ang(0,0,0))
+holoMaterial(2, "Spacebuild/body5skin")
+
+#Wing1
+holoEntity(3)
+holoCreate(3,entity():pos()+vec(-10,0,0))
+holoParent(3,entity())
+holoScale(3,vec(3,0.55,0.10))
+holoAng(3,ang(-20,90,0))
+holoMaterial(3, "Spacebuild/body5skin")
+
+#Wing2
+holoEntity(4)
+holoCreate(4,entity():pos()+vec(-10,0,0))
+holoParent(4,entity())
+holoScale(4,vec(3,0.55,0.10))
+holoAng(4,ang(20,90,0))
+holoMaterial(4, "Spacebuild/body5skin")
+
+#WepLT
+holoEntity(5)
+holoCreate(5,entity():pos()+vec(-5,17,6))
+holoParent(5,entity())
+holoModel(5,"hqcylinder")
+holoScale(5,vec(0.15,0.15,1.50))
+holoAng(5,ang(90,0,0))
+holoMaterial(5, "Phoenix_storms/pack2/interior_top")
+
+#WepRB
+holoEntity(6)
+holoCreate(6,entity():pos()+vec(-5,17,-6))
+holoParent(6,entity())
+holoModel(6,"hqcylinder")
+holoScale(6,vec(0.15,0.15,1.50))
+holoAng(6,ang(90,0,0))
+holoMaterial(6, "Phoenix_storms/pack2/interior_top")
+
+#WepRT
+holoEntity(7)
+holoCreate(7,entity():pos()+vec(-5,-17,6))
+holoParent(7,entity())
+holoModel(7,"hqcylinder")
+holoScale(7,vec(0.15,0.15,1.50))
+holoAng(7,ang(90,0,0))
+holoMaterial(7, "Phoenix_storms/pack2/interior_top")
+
+#WepLB
+holoEntity(8)
+holoCreate(8,entity():pos()+vec(-5,-17,-6))
+holoParent(8,entity())
+holoModel(8,"hqcylinder")
+holoScale(8,vec(0.15,0.15,1.50))
+holoAng(8,ang(90,0,0))
+holoMaterial(8, "Phoenix_storms/pack2/interior_top")
+
+#Engine Torus
+holoEntity(9)
+holoCreate(9,entity():pos()+vec(-13,0,0))
+holoParent(9,entity())
+holoModel(9,"hqtorus2")
+holoScale(9,vec(0.30,0.40,0.30))
+holoAng(9,ang(90,0,0))
+holoMaterial(9,"spacebuild/fusion2")
+holoEntity(9):setTrails(15,10,5,"trails/laser",vec(0,255,237),255)
+
+#Nose Cap
+holoEntity(10)
+holoCreate(10,entity():pos()+vec(22,0,-2))
+holoParent(10,entity())
+holoModel(10,"prism")
+holoScale(10,vec(0.09,0.58,0.30))
+holoAng(10,ang(97,0,0))
+holoMaterial(10, "Spacebuild/body5skin")
+
+#Engine Rocket Mount LT
+holoEntity(11)
+holoCreate(11,entity():pos()+vec(-4.50,3,2.50))
+holoParent(11,entity())
+holoModel(11,"hqcylinder")
+holoScale(11,vec(0.15,0.15,1.50))
+holoAng(11,ang(90,0,0))
+holoMaterial(11, "phoenix_storms/black_chrome")
+
+#Engine Rocket Mount LB
+holoEntity(12)
+holoCreate(12,entity():pos()+vec(-4.50,3,-2.50))
+holoParent(12,entity())
+holoModel(12,"hqcylinder")
+holoScale(12,vec(0.15,0.15,1.50))
+holoAng(12,ang(90,0,0))
+holoMaterial(12, "phoenix_storms/black_chrome")
+
+#Engine Rocket Mount RT
+holoEntity(13)
+holoCreate(13,entity():pos()+vec(-4.50,-3,2.50))
+holoParent(13,entity())
+holoModel(13,"hqcylinder")
+holoScale(13,vec(0.15,0.15,1.50))
+holoAng(13,ang(90,0,0))
+holoMaterial(13, "phoenix_storms/black_chrome")
+
+#Engine Rocket Mount RB
+holoEntity(14)
+holoCreate(14,entity():pos()+vec(-4.50,-3,-2.50))
+holoParent(14,entity())
+holoModel(14,"hqcylinder")
+holoScale(14,vec(0.15,0.15,1.50))
+holoAng(14,ang(90,0,0))
+holoMaterial(14, "phoenix_storms/black_chrome")
+
+#######################Rocket Engine Holo's###################################
+#Engine Rocket Holo LT
+holoEntity(15)
+holoCreate(15,entity():pos()+vec(-5,3,2.50))
+holoParent(15,entity())
+holoModel(15,"hqcylinder")
+holoScale(15,vec(0.10,0.10,1.50))
+holoAng(15,ang(90,0,0))
+holoMaterial(15,"spacebuild/fusion2")
+holoEntity(15):setTrails(15,10,5,"trails/laser",vec(0,255,237),255)
+
+#Engine Rocket Holo LB
+holoEntity(16)
+holoCreate(16,entity():pos()+vec(-5,3,-2.50))
+holoParent(16,entity())
+holoModel(16,"hqcylinder")
+holoScale(16,vec(0.10,0.10,1.50))
+holoAng(16,ang(90,0,0))
+holoMaterial(16,"spacebuild/fusion2")
+holoEntity(16):setTrails(15,10,5,"trails/laser",vec(0,255,237),255)
+
+#Engine Rocket Holo RT
+holoEntity(17)
+holoCreate(17,entity():pos()+vec(-5,-3,2.50))
+holoParent(17,entity())
+holoModel(17,"hqcylinder")
+holoScale(17,vec(0.10,0.10,1.50))
+holoAng(17,ang(90,0,0))
+holoMaterial(17,"spacebuild/fusion2")
+holoEntity(17):setTrails(15,10,5,"trails/laser",vec(0,255,237),255)
+
+#Engine Rocket Holo RB
+holoEntity(18)
+holoCreate(18,entity():pos()+vec(-5,-3,-2.50))
+holoParent(18,entity())
+holoModel(18,"hqcylinder")
+holoScale(18,vec(0.10,0.10,1.50))
+holoAng(18,ang(90,0,0))
+holoMaterial(18,"spacebuild/fusion2")
+holoEntity(18):setTrails(15,10,5,"trails/laser",vec(0,255,237),255)
+
+#Engine Middle
+holoEntity(19)
+holoCreate(19,entity():pos()+vec(-13,0,0))
+holoParent(19,entity())
+holoModel(19,"hqcylinder")
+holoScale(19,vec(0.15,0.20,0.10))
+holoAng(19,ang(90,0,0))
+holoMaterial(19,"spacebuild/fusion2")
+holoEntity(19):setTrails(15,10,5,"trails/laser",vec(0,255,237),255)
+
+
+
+    Pos=entity():pos()+vec(0,0,20)
+    O=owner()
+    E=entity()
+    E:setMass(50000)
+    Mass = E:mass()
+    runOnTick(1) 
+}
+
+if(tickClk()){
+    if(Alt){Mult=50}
+    elseif(Rinput){Mult=2}
+    else{
+        Mult=15
+    }
+    if(W){Pos+=O:eye()*Mult}
+    if(A){Pos-=O:right()*Mult}
+    if(S){Pos-=O:forward()*Mult}
+    if(D){Pos+=O:right()*Mult}
+    if(Space){Pos+=vec(0,0,1)*Mult}
+    if(Shift){Pos-=vec(0,0,1)*Mult}
+        
+        
+    Ps = E:elevation(E:pos()+owner():eye())
+    Ys = E:bearing(E:pos()+owner():eye())
+    Rs = E:angles():roll()
+    Ang = -ang(Ps,Ys,Rs)
+    Direction = E:forward()
+    Position = Pos - E:forward()*70 + E:up() *4
+    if(Pos:distance(E:pos())>100){        Pos=E:pos()    }
+
+    E:applyForce(((Pos-E:massCenter())*70-E:vel())*Mass)  
+    E:applyAngForce((((Ang+$Ang*15)*Mass))*0.09-shiftL(ang(E:inertia())))
+}
