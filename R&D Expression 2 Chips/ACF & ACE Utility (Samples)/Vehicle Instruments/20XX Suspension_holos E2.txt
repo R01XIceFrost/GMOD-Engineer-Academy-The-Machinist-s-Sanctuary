@@ -1,0 +1,24 @@
+@name Suspension_holos
+@inputs 
+@outputs 
+@persist 
+@trigger 
+
+runOnTick(1)
+E = entity()
+
+if (first()) {
+    holoCreate(1)
+    holoModel(1, "models/xeon133/racewheel/race-wheel-30.mdl")
+    holoAng(1, ang(0,-90,0))
+    holoParent(1, E:isConstrainedTo())
+}
+
+Ra = rangerOffset(15, E:pos(), E:forward())
+
+holoPos(1, Ra:position() + E:up()*10)
+
+if (Ra:hit()) {
+    E:isConstrainedTo():applyForce(-Ra:position() + E:pos() + vec(0,0,200))
+}
+    
