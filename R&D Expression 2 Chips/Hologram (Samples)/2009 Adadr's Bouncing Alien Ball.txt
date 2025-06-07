@@ -1,0 +1,58 @@
+@name Adadr's Bouncing Alien Ball
+@inputs 
+@outputs 
+@persist R:ranger V:vector E:entity A:angle N R2:ranger N2
+@trigger 
+
+
+#[
+
+INFO:
+
+Hello wiremod users, i am here with a recent project. i call it Bouncing Alien Ball. its a little holo ball that bounces around and follows people. A person on the server i was playing on said he saw something like this, but i haven't seen anything like this before. to your luck, i will release the code. note that i made this in an hour or less, so the variable names are a little weird. it uses a fairly new function called toWorld() for movement. it makes complex physics calculations much easier. note that this is just a quick project that i thought the community might like. enjoy! oh, and it sqeeks. pictures:
+
+
+EDIT: i thought id add some more information. Yes, they do follow the nearest person, and i actually spent some time on the collisions. you can trap them in a container and they cant get out (being that the container is bigger than the width of the holo). they can also be trapped in a slightly moving container. note that sometimes they can get out because the the speed of sine/cosine.
+
+]#
+
+interval(1)
+if(first()) {   
+#Creates the body
+holoCreate(1,entity():pos(),vec(1,1,0.9),ang(0,0,0),randvec()*255,"hqicosphere2")  holoCreate(2,holoEntity(1):toWorld(vec(4,3,3)),vec(0.25,0.25,0.25),ang(0,0,0),vec(255,255,255),"hqicosphere2") holoCreate(3,holoEntity(1):toWorld(vec(4,-3,3)),vec(0.25,0.25,0.25),ang(0,0,0),vec(255,255,255),"hqicosphere2")
+holoCreate(4,holoEntity(3):toWorld(vec(1,0,0.1)),vec(0.1,0.1,0.1),ang(0,0,0),vec(0,0,0),"hqicosphere2")    holoCreate(5,holoEntity(2):toWorld(vec(1,0,0.1)),vec(0.1,0.1,0.1),ang(0,0,0),vec(0,0,0),"hqicosphere2")
+holoParent(2,1)
+holoParent(3,1)
+holoParent(4,1)
+holoParent(5,1)
+}
+#timer slows down findbyclass rate to save ops
+timer("A",500)
+if(clk("A")) {findByClass("player")}
+E = findClosest(holoEntity(1):pos())
+
+#Making the angles slowly go to the position
+A+=angnorm((E:shootPos()-holoEntity(1):pos()):toAngle()-holoEntity(1):angles())/25
+holoAng(1,A:setPitch(0))
+
+#creates the ranger, R is Z ranger and R2 is the X,Y ranger
+R=rangerOffset(7.6,holoEntity(1):pos()+vec(0,0,5.5),vec(0,0,-1))
+R2=rangerOffset(12,holoEntity(1):pos(),vec(sinr(curtime()*1000),cosr(curtime()*1000),0))
+
+#Physics (falling down)
+V-=vec(0,0,0.1)
+
+#tells if it hits, makes it go up and away from props
+if(R:hit()) {V = vec(random(0.4,0.8),0,random(2,3))}
+if(R:hit()&R:distance()<0.2&holoEntity(1):pos():isInWorld()) {V*=vec(1,1,-0.2)}
+if(R2:hit()&holoEntity(1):pos():isInWorld()) {N2 = 1} else {N2 = 0}
+if(N2&$N2) {V*=vec(-1,-1,1)}
+
+#position the holo
+holoPos(1,holoEntity(1):toWorld(V))
+
+#Squeeky sound
+timer("A",randint(2000,4000))
+if(clk("A")) {N = 1} else {N = 0}
+if(N&$N) {holoEntity(1):soundPlay(0,0,"weapons/bugbait/bugbait_squeeze"+randint(1,3)+".wav")}
+if(!holoEntity(1):pos():isInWorld()) {V = vec(0,0,1)}

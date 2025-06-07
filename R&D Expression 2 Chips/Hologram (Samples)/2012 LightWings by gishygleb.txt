@@ -1,0 +1,32 @@
+@name LightWings
+@inputs 
+@outputs Winger2 M ZDefault Winger WingerEvolution Winger2Evolution
+@persist IsCrowbar
+@trigger 
+#M - Index of the hologram
+interval(50)
+if (first()) {ZDefault = 55
+for (M=10, 30, 1) 
+    {
+    holoCreate(M):setTrails(1,20,1,"trails/laser",vec(255, 255, 255), 255)
+    holoScale(M, vec(0,0,0))   
+     }
+}
+if (!WingerEvolution) {Winger-=5} else {Winger+=5} if (Winger<-4) {WingerEvolution=1} elseif (Winger>=0) {WingerEvolution=0}
+for (M=10, 30, 1) 
+{
+    if (Winger>=0) {
+    if ((M%10)<=4) {ZDefault+=Winger*(M%10)*1.25}
+    if ((M%10)>4) {ZDefault+=Winger*(11-(M%10))}
+} else{
+    if ((M%10)<=4) {ZDefault+=Winger*(M%10)*1.25 ZDefault*=((Winger2)/45)}
+    if ((M%10)>4) {ZDefault+=Winger*(11-(M%10)) ZDefault*=((Winger2)/45)}
+}
+    if (M<20&M>9) {holoPos(M, owner():pos()+vec(5*(M%10)*Winger2/30,0,(M%10)*(4-abs(4-(M%10)))+ZDefault):rotate(owner():angles():pitch(),owner():angles():yaw()+Winger2*2+180,owner():angles():roll()))}
+    if (M<30&M>19) {holoPos(M, owner():pos()+vec(5*(M%10)*Winger2/30,0,(M%10)*(4-abs(4-(M%10)))+ZDefault):rotate(owner():angles():pitch(),owner():angles():yaw()-Winger2*2-180,owner():angles():roll()))}
+    ZDefault=55
+}
+if (!owner():isOnGround()) {
+if (Winger2>44) {Winger2Evolution = 0} if (Winger2<11) {Winger2Evolution = 1}
+if (Winger2Evolution) {Winger2++} else {Winger2--}
+} else {Winger2=20}

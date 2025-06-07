@@ -1,0 +1,336 @@
+@name Mr.t's Snowman
+@persist X Y Z Xs Ys Pitch Yaw Action:string Speed YawSave
+@persist Target:entity Phase Force:vector Offset Pos:vector T Dead
+@persist X2 Y2 Z2 Dir:vector Snowball Count
+interval(50)
+if(first()){
+    print("Press E once to bring the prop")
+    print("Press E again to get ready to throw")
+    print("Press E again to fling the bitch")
+    print("Right Mouse to move the buddy")
+    print("If the dude glitches, respawn him")
+    Action = "follow"
+    Offset = (60+random(60))/100
+    Target = noentity()
+    Phase = 0
+    Speed = 8
+    T = 50
+    Snowball = 0
+    Dead = 0
+    X = entity():pos():x()
+    Y = entity():pos():y()
+    Z = entity():pos():z()
+    Holo = 0
+    holoCreate(Holo)
+    holoModel(Holo,"hqsphere2")
+    Holo = 1
+    holoCreate(Holo)
+    holoModel(Holo,"hqsphere2")
+    holoScale(Holo,vec(0.2,0.2,0.2))
+    holoColor(Holo,vec(0,0,0))
+    Holo = 2
+    holoCreate(Holo)
+    holoModel(Holo,"hqsphere2")
+    holoScale(Holo,vec(0.2,0.2,0.2))
+    holoColor(Holo,vec(0,0,0))
+    Holo = 3
+    holoCreate(Holo)
+    holoModel(Holo,"hqsphere2")
+    holoScale(Holo,vec(2,2,2))
+    Holo = 4
+    holoCreate(Holo)
+    holoModel(Holo,"hqsphere2")
+    holoScale(Holo,vec(0.5,0.5,0.5))
+    Holo = 5
+    holoCreate(Holo)
+    holoModel(Holo,"hqsphere2")
+    holoScale(Holo,vec(0.5,0.5,0.5))
+    Holo = 6
+    holoCreate(Holo)
+    holoModel(Holo,"hqcylinder2")
+    holoScale(Holo,vec(1.2,1.2,0.2))
+    holoColor(Holo,vec(0,0,0))
+    Holo = 7
+    holoCreate(Holo)
+    holoModel(Holo,"hqcylinder2")
+    holoScale(Holo,vec(1,1,0.75))
+    holoColor(Holo,vec(0,0,0))
+    Holo = 8
+    holoCreate(Holo)
+    holoModel(Holo,"hqsphere2")
+    holoScale(Holo,vec(0.2,0.2,0.2))
+    holoColor(Holo,vec(255,0,0))
+    Holo = 9
+    holoCreate(Holo)
+    holoModel(Holo,"hqsphere2")
+    holoScale(Holo,vec(0.2,0.2,0.2))
+    holoColor(Holo,vec(255,0,0))
+    Holo = 10
+    holoCreate(Holo)
+    holoModel(Holo,"hqcone")
+    holoScale(Holo,vec(0.2,0.2,0.5))
+    holoColor(Holo,vec(255,100,0))
+    Holo = 11
+    holoCreate(Holo)
+    holoModel(Holo,"hqsphere2")
+    holoScale(Holo,vec(0.5,0.5,0.5))
+}
+OwnerPos = owner():shootPos()-vec(0,0,10)
+Base = vec(X,Y,Z+25)
+Xs *= 0.7
+Ys *= 0.7
+X += Xs
+Y += Ys
+Dead = 1
+if(Action == "follow"){
+    T += 1
+    if(owner():keyAttack2()){
+        Action = "move"
+        Pos = owner():aimPos()+vec(0,0,40)
+        T = 0
+        Target = noentity()
+    }
+    if(owner():keyUse()){
+        if(Target == noentity()){
+            E = owner():aimEntity()
+            if(!E:isFrozen()){
+                if(E:owner() == owner()){
+                    Target = E
+                    Action = "bring"
+                    Phase = 0
+                }elseif(Snowball == 0){
+                Spawn = Base-vec(0,0,10)+vec(15,-10,15):rotate(ang(Pitch,Yaw,0))
+                    X2 = Spawn:x()
+                    Y2 = Spawn:y()
+                    Z2 = Spawn:z()
+                    Action = "snowball"
+                    Snowball = 1
+                    Phase = 0
+                    T = 0
+                }
+            }
+        }
+    }
+    if(T>50){
+        Speed = 8
+        ToAngle = (OwnerPos-(Base)):toAngle()
+        Yaw = ToAngle:yaw()
+        Pitch = ToAngle:pitch()
+        Dist = OwnerPos:distance(Base)
+        if(Dist>150*Offset){
+            Xs += holoEntity(0):forward():x()*Speed
+            Ys += holoEntity(0):forward():y()*Speed
+        }
+    }
+}
+if(Action == "snowball"){
+    Speed = 0
+    Phase += 0.3
+    ToAngle = (owner():aimPos()-(Base)):toAngle()
+    Yaw = ToAngle:yaw()
+    Pitch = ToAngle:pitch()
+    if(Phase<5){
+        holoPos(4,Base-vec(0,0,10)+vec(Phase*3,-10,15):rotate(ang(Pitch,Yaw,0)))
+        holoPos(5,Base-vec(0,0,10)+vec(-Phase*3,10,15):rotate(ang(Pitch,Yaw,0)))
+    }else{
+        holoPos(4,Base-vec(0,0,10)+vec(5,-10,15):rotate(ang(Pitch,Yaw,0)))
+        holoPos(5,Base-vec(0,0,10)+vec(15,10,15):rotate(ang(Pitch,Yaw,0)))
+        if(Phase>5.3){
+            Action = "follow"
+            Phase = 0
+            Target = noentity()
+            Snowball = 2
+            T = 45
+            Spawn = Base-vec(0,0,10)+vec(15,-10,15):rotate(ang(Pitch,Yaw,0))
+            holoEntity(11):setTrails(10,0,1,"trails/smoke",vec(255,255,255),255)
+            Dir = holoEntity(0):forward()*35
+            holoScale(11,vec(0.5,0.5,0.5))
+            Count = round(Spawn:distance(owner():aimPos()))/35+10
+        }
+    }
+}
+if(Snowball == 2){
+    Dir -= vec(0,0,0.15)
+    Count -= 1
+    X2 += Dir:x()
+    Y2 += Dir:y()
+    Z2 += Dir:z()
+    holoPos(11,vec(X2,Y2,Z2))
+    if(Count < 0){
+        Snowball = 0
+        holoScale(11,vec(0,0,0))
+        holoEntity(11):removeTrails()
+    }
+}
+if(Action == "move"){
+    if(!owner():keyAttack2()){
+        Action = "follow"
+    }else{
+        Pos = owner():aimPos()
+    }
+    ToAngle = (Pos-(Base)):toAngle()
+    Yaw = ToAngle:yaw()
+    Pitch = 0
+    Dist = Pos:distance(Base)
+    if(Dist>55){
+        Xs += holoEntity(0):forward():x()*Speed
+        Ys += holoEntity(0):forward():y()*Speed
+    }
+}
+if(Action == "bring"){
+    if(Phase == 0){
+        ToAngle = (Target:pos()-(Base)):toAngle()
+        Yaw = ToAngle:yaw()
+        Pitch = ToAngle:pitch()
+        Dist = Target:pos():distance(Base)
+        if(Dist>50*Offset){
+            Xs += holoEntity(0):forward():x()*Speed
+            Ys += holoEntity(0):forward():y()*Speed
+        }else{
+            if(Target:model() == "models/props_junk/watermelon01.mdl"){
+                Phase = 0
+                Action = "smash"
+            }else{
+                Phase = 1
+            }
+        }
+    }else{
+        ToAngle = (OwnerPos-(Base)):toAngle()
+        Yaw = ToAngle:yaw()
+        Pitch = ToAngle:pitch()
+        Dist = OwnerPos:distance(Base)
+        Force = ((Base+vec(0,0,15)+vec(20,0,0):rotate(ang(Pitch,Yaw,0)))-Target:pos())*Target:mass()
+        Target:applyForce(($Force*10)+(Force*5))
+        Target:applyAngForce(-Target:angVel()*Target:mass())
+        Target:applyAngForce(-Target:angles()*Target:mass()*5)
+        if(Dist>150*Offset){
+            Xs += holoEntity(0):forward():x()*Speed
+            Ys += holoEntity(0):forward():y()*Speed
+            if(owner():keyUse()){
+                Phase = 3
+                Action = "hold"
+                T = 50
+            }
+        }else{
+        T = 45
+            Action = "follow"
+            Phase = 0
+            Target = noentity()
+        }
+    }
+}
+if(Action == "moveHold"){
+    if(!owner():keyAttack2()){
+        Action = "hold"
+        T = 0
+    }else{
+        Pos = owner():aimPos()
+    }
+    Phase += 1
+    ToAngle = (Pos-(Base)):toAngle()
+    Yaw = ToAngle:yaw()
+    YawSave = Yaw
+    Pitch = 0
+    Dist = Pos:distance(Base)
+    Force = ((Base+vec(0,0,25)+vec(20,0,0):rotate(ang(Pitch,Yaw,0)))-Target:pos())*Target:mass()
+    holoPos(4,Base-vec(0,0,20)+vec(0,-10,30):rotate(ang(Pitch,Yaw,0)))
+    holoPos(5,Base-vec(0,0,20)+vec(0,10,30):rotate(ang(Pitch,Yaw,0)))
+    Target:applyForce(($Force*10)+(Force*5))
+    Target:applyAngForce(-Target:angVel()*Target:mass())
+    Target:applyAngForce(-Target:angles()*Target:mass()*5)
+    if(Dist>55*Offset){
+        Xs += holoEntity(0):forward():x()*Speed
+        Ys += holoEntity(0):forward():y()*Speed
+    }
+    if(owner():keyUse() & Phase>7){
+        Action = "smash"
+        Phase = 0
+    }
+}
+if(Action == "hold"){
+    T += 1
+    if(owner():keyAttack2()){
+        Action = "moveHold"
+        Pos = owner():aimPos()+vec(0,0,40)
+        T = 0
+        Phase = 0
+    }
+    Phase += 1
+    ToAngle = (OwnerPos-(Base)):toAngle()
+    Yaw = ToAngle:yaw()
+    Pitch = ToAngle:pitch()
+    Dist = OwnerPos:distance(Base)
+    Force = ((Base+vec(0,0,25)+vec(20,0,0):rotate(ang(Pitch,Yaw,0)))-Target:pos())*Target:mass()
+    Target:applyForce(($Force*10)+(Force*5))
+    Target:applyAngForce(-Target:angVel()*Target:mass())
+    Target:applyAngForce(-Target:angles()*Target:mass()*5)
+    holoPos(4,Base-vec(0,0,20)+vec(0,-10,30):rotate(ang(0,Yaw,0)))
+    holoPos(5,Base-vec(0,0,20)+vec(0,10,30):rotate(ang(0,Yaw,0)))
+    if(T>50){
+        if(Dist>200*Offset){
+            Xs += holoEntity(0):forward():x()*Speed
+            Ys += holoEntity(0):forward():y()*Speed
+        }
+    }else{
+        Pitch = 0
+        Yaw = YawSave
+    }
+    if(owner():keyUse() & Phase>7){
+            Action = "smash"
+            Phase = 0
+    }
+}
+if(Action == "smash"){
+    Speed = 0
+    Phase += 0.3
+    ToAngle = (owner():aimPos()-(Base)):toAngle()
+    Yaw = ToAngle:yaw()
+    Pitch = ToAngle:pitch()
+    if(Phase>2 & owner():keyUse()){
+        Action = "follow"
+        T = 45
+        Phase = 0
+        Target = noentity()
+    }
+    if(Phase<5){
+        holoPos(4,Base-vec(0,0,10)+vec(0,-10,20+Phase):rotate(ang(0,Yaw,0)))
+        holoPos(5,Base-vec(0,0,10)+vec(0,10,20+Phase):rotate(ang(0,Yaw,0)))
+        Force = ((Base+vec(0,0,25+Phase)+vec(10,0,0):rotate(ang(Pitch,Yaw,0)))-Target:pos())*Target:mass()
+        Target:applyForce(($Force*10)+(Force*4))
+        Target:applyAngForce(Target:angVel()*-Target:mass())
+        Target:applyAngForce(-Target:angles()*Target:mass()*5)
+    }else{
+        Target:applyForce((Base-owner():aimPos())*-(Target:mass()/2))
+        holoPos(4,Base-vec(0,0,10)+vec(25,-10,0):rotate(ang(0,Yaw,0)))
+        holoPos(5,Base-vec(0,0,10)+vec(25,10,0):rotate(ang(0,Yaw,0)))
+        if(Phase>7){
+            Action = "follow"
+            Phase = 0
+            Target = noentity()
+            T = 45
+        }
+    }
+}
+holoPos(0,Base)
+holoAng(0,ang(Pitch,Yaw,0))
+holoPos(1,Base+vec(5,-2,2):rotate(ang(Pitch,Yaw,0)))
+holoPos(2,Base+vec(5,2,2):rotate(ang(Pitch,Yaw,0)))
+holoPos(10,Base+vec(8,0,0):rotate(ang(Pitch,Yaw,0)))
+holoAng(10,ang(Pitch+90,Yaw,0))
+holoPos(3,Base-vec(0,0,15))
+if(Action != "smash"){
+    if(Phase ==0){
+        holoPos(4,Base-vec(0,0,10)+vec(0,-10,0):rotate(ang(0,Yaw,0)))
+        holoPos(5,Base-vec(0,0,10)+vec(0,10,0):rotate(ang(0,Yaw,0)))
+    }
+    if(Phase ==1){
+        holoPos(4,Base-vec(0,0,10)+vec(0,-10,10):rotate(ang(0,Yaw,0)))
+        holoPos(5,Base-vec(0,0,10)+vec(0,10,10):rotate(ang(0,Yaw,0)))
+    }
+}
+holoPos(6,Base+vec(0,0,5):rotate(ang(Pitch,Yaw,0)))
+holoAng(6,ang(Pitch,Yaw,0))
+holoPos(7,Base+vec(0,0,10):rotate(ang(Pitch,Yaw,0)))
+holoAng(7,ang(Pitch,Yaw,0))
+holoPos(8,Base+vec(10,0,-8):rotate(ang(0,Yaw,0)))
+holoPos(9,Base+vec(12,0,-12):rotate(ang(0,Yaw,0)))

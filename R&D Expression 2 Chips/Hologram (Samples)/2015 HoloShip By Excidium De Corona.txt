@@ -1,0 +1,410 @@
+@name HoloShip By Excidium De Corona
+@inputs Pod:wirelink Seat:entity EGP:wirelink DmgClk Damage Attacker:entity
+@outputs CamPos:vector CamAng:angle ParentEnt:entity O2512
+@persist [Scale ScaleSet Vec BasePos]:vector [Ent O BaseHolo Prop]:entity Projectile Attack TargetPos:ranger [Rangers Missiles]:array FindModel:string Health Mul Div
+@persist FollowMode [Holo Player FollowedEnt ShieldProp HitBox]:entity [Threats Hls Hpos Dir]:array
+
+interval(50)
+runOnChat(1)
+if (first() | duped()) {
+    #variable library
+    ScaleSet = vec(1, 1, 1)
+    FollowedEnt = noentity()
+    Counter = 0
+    Scale = ScaleSet
+    BasePos = entity():pos() + vec(0, 0, 43)
+    Colour = vec(255, 255, 255)
+    RingMat = "models/dav0r/hoverball"
+    BallMat = "models/props_combine/portalball001_sheet"
+    O = owner()
+    BaseHolo = holoEntity(1)
+    Projectile = 20
+    FindModel = "models/props_phx/cannonball_solid.mdl"
+    Rangers = array()##
+    O2512 = 1# For later use in EGP functions / interfaces 0 to 512
+    Mul = 0
+    Div = 0
+    Damage = 0
+    FollowMode = 0
+    StartingPos = array()
+    Hpos = array()
+    Attacker = noentity()
+    printColor(vec(255,100,0),"Type !home to return the drone to controller's posistion")
+
+    findByModel("models/hunter/blocks/cube05x05x05.mdl")
+    findExcludePlayerProps("*")
+    findIncludePlayerProps(O)
+    if (!find():isValid()) {
+
+        HitBox = propSpawn("models/hunter/blocks/cube05x05x05.mdl", BasePos, 1)
+        HitBox:setAlpha(0)
+    } else {
+        HitBox = find()
+        HitBox:setAlpha(0)
+    }
+    HitBox:setMass(0)
+    Health = 300
+
+    holoCreate(1, BasePos + vec(0, 0, 1))
+    holoCreate(2, BasePos + vec(0, -3, 0))
+    holoCreate(3, BasePos + vec(0, 3, 0))
+    holoCreate(4, BasePos + vec(0, -5, 0))
+    holoCreate(5, BasePos + vec(0, 5, 0))
+    holoCreate(6, BasePos)
+    holoCreate(7, BasePos)
+    holoCreate(8, BasePos + vec(0, 0, -2))
+    holoCreate(9, BasePos + vec(0, 0, -5.5))
+    holoCreate(10, BasePos)##
+    holoCreate(11, BasePos)
+    holoCreate(12, BasePos)
+    holoCreate(13, BasePos)
+    holoCreate(14, BasePos)
+    holoCreate(15, BasePos)
+    holoCreate(16, BasePos + vec(0, 25, 0))
+    holoCreate(17, BasePos + vec(0, -25, 0))
+    holoCreate(18, BasePos)
+    holoCreate(19, BasePos)
+
+    for (I = 0, 19) {
+        Hls:pushEntity(holoEntity(I))
+    }
+
+    holoAlpha(15, 20)
+    holoAlpha(16, 140)
+    holoAlpha(17, 140)
+    holoAlpha(18, 0)
+    holoAlpha(19, 0)
+
+    holoAng(1, ang())
+    holoAng(2, ang())
+    holoAng(3, ang())
+    holoAng(4, ang())
+    holoAng(5, ang())
+    holoAng(6, ang())
+    holoAng(7, ang())
+    holoAng(8, ang(0, 90, 180))
+    holoAng(9, ang(0, 0, 180))##
+    holoAng(11, ang())
+    holoAng(12, ang())
+    holoAng(13, ang())
+    holoAng(14, ang())
+
+    holoColor(1, Colour)
+    holoColor(2, Colour)
+    holoColor(3, Colour)
+    holoColor(4, Colour - vec(255, 0, 255))
+    holoColor(5, Colour - vec(255, 0, 255))
+    holoColor(6, Colour)
+    holoColor(7, Colour)
+    holoColor(8, vec(25, 25, 25))
+    holoColor(9, vec(50, 50, 50))
+    holoColor(10, vec(255, 0, 0))##
+    holoColor(16, vec(0, 255, 255))
+    holoColor(17, vec(0, 255, 0))
+    holoColor(18, vec(0, 255, 50))
+    holoColor(19, vec(0, 255, 50))
+
+    holoMaterial(1, "models/gibs/metalgibs/metal_gibs")
+    holoMaterial(2, RingMat)
+    holoMaterial(3, RingMat)
+    holoMaterial(4, BallMat)
+    holoMaterial(5, BallMat)
+    holoMaterial(6, RingMat)
+    holoMaterial(7, RingMat)##
+    holoMaterial(11, RingMat)
+    holoMaterial(12, RingMat)
+    holoMaterial(13, RingMat)
+    holoMaterial(14, RingMat)
+    holoMaterial(15, BallMat)
+
+    holoModel(1, "hq_cone")
+    holoModel(2, "hq_torus")
+    holoModel(3, "hq_torus")
+    holoModel(4, "hq_sphere")
+    holoModel(5, "hq_sphere")
+    holoModel(6, "hq_torus")
+    holoModel(7, "hq_torus")
+    holoModel(8, "prism")
+    holoModel(9, "hq_cone")
+    holoModel(10, "hq_sphere")##
+    holoModel(11, "hq_torus_thin")##
+    holoModel(12, "hq_torus_thin")##
+    holoModel(13, "hq_torus_thin")##
+    holoModel(14, "hq_torus_thin")##
+    holoModel(15, "hq_sphere")
+    holoModel(16, "hq_icosphere")
+    holoModel(17, "hq_icosphere")
+    holoModel(18, "hq_sphere")
+    holoModel(19, "hq_sphere")
+
+    holoParent(2, 1)
+    holoParent(3, 1)
+    holoParent(4, 1)
+    holoParent(5, 1)
+    holoParent(6, 1)
+    holoParent(7, 1)
+    holoParent(8, 1)
+    holoParent(9, 1)##
+    holoParent(11, 1)
+    holoParent(12, 1)
+    holoParent(13, 1)
+    holoParent(14, 1)
+    holoParent(15, 1)
+    holoParent(16, 14)
+    holoParent(17, 14)
+
+    holoScale(1, Scale:setZ(0.5) / 2)
+    holoScale(2, Scale)
+    holoScale(3, Scale)
+    holoScale(4, Scale / 4)
+    holoScale(5, Scale / 4)
+    holoScale(6, Scale)
+    holoScale(7, Scale)
+    holoScale(8, vec(1.45, 0.97, 0.2) * Scale)
+    holoScale(9, vec(0.25, 0.25, 0.45) * Scale)
+    holoScale(10, vec(0.1, 0.1, 0.1))##
+    holoScale(11, Scale * 2.5)##
+    holoScale(12, Scale * 2.5)##
+    holoScale(13, Scale * 2.5)##
+    holoScale(14, Scale * 2.5)##
+    holoScale(15, Scale * 2.5)
+    holoScale(16, Scale * 0.15)
+    holoScale(17, Scale * 0.15)
+    holoScale(18, Scale * 40)
+    holoScale(19, Scale * -40)
+
+    holoEntity(1):setTrails(10, 2, 5, "trails/laser", vec(0, 255, 255), 140, 0, 0)
+    holoEntity(10):setTrails(10, 1.5, 10, "trails/laser", hsv2rgb(360 * curtime() * 10 % 360, 1, 1), 255, 0, 0)
+    holoEntity(16):setTrails(10, 2, 2.5, "trails/laser", vec(0, 255, 255), 140, 0, 0)
+    holoEntity(17):setTrails(10, 2, 2.5, "trails/laser", vec(0, 255, 0), 140, 0, 0)# entity:setTrails(number startSize, number endSize, number length, string material, vector color, number alpha, number attachmentID, number additive)
+}
+Driver = Seat:driver()
+if (changed(Driver) & Driver:isPlayer()) {
+    holoEntity(1):soundPlay("idle", 0, "ambient/atmosphere/undercity_loop1.wav")
+}
+elseif(changed(Driver) & !Driver:isPlayer()) {
+    soundPurge()
+}
+if (Driver:isPlayer() & Driver == O) {
+    soundPitch("idle", 50)
+    W = Pod:number("W")
+    A = Pod:number("A")
+    S = Pod:number("S")
+    D = Pod:number("D")
+    Space = Pod:number("Space")
+    Alt = Pod:number("Alt")
+    Shift = Pod:number("Shift")
+    Angles = Seat:driver():eyeAngles()
+
+    CamPos = holoEntity(1):toWorld(vec(-45, 0, 10))
+    CamAng = Angles
+    ParentEnt = holoEntity(1)
+    holoAng(1, Angles)
+}
+if (W) {
+    holoPos(1, holoEntity(1):toWorld(vec(W * 14, 0, 0)))
+}
+if (A) {
+    holoPos(1, holoEntity(1):toWorld(vec(0, A * 5, 0)))
+}
+if (D) {
+    holoPos(1, holoEntity(1):toWorld(vec(0, D * -5, 0)))
+}
+if (S) {
+    holoPos(1, holoEntity(1):toWorld(vec(S * -5, 0, 0)))
+}
+if (Space) {
+    holoPos(1, holoEntity(1):toWorld(vec(0, 0, Space * 5.5)))
+}
+if (W & Shift) {
+    holoPos(1, holoEntity(1):toWorld(vec(W * 20, 0, 0)))
+}
+if (Alt) {
+    holoPos(1, holoEntity(1):toWorld(vec(0, 0, Alt * -2)))
+}
+Attack = Driver:keyAttack2()
+if ($Attack == 1) {
+    holoEntity(1):soundPlay(0, 0, "replay/enterperformancemode.wav")
+    holoColor(1, hsv2rgb(360 * curtime() * 10 % 360, 1, 1))
+    Seat:soundPlay(0, 0, "replay/enterperformancemode.wav")
+
+    Projectile += 1
+    Prop = propSpawn(FindModel, holoEntity(1):toWorld(vec(30, 0, 0)), Angles, 0)
+    Prop:setMass(50000)
+    Prop:setTrails(10, 10, 10, "trails/laser", hsv2rgb(360 * curtime() * 10 % 360, 1, 1), 255, 0, 0)
+    Prop:setAlpha(0)
+    Prop:propGravity(0)
+
+    holoCreate(Projectile, Prop:pos())
+    holoParent(Projectile, Prop)
+    holoAng(Projectile, Prop:angles())
+    holoModel(Projectile, "hq_sphere")
+    holoColor(Projectile, hsv2rgb(360 * curtime() * 10 % 360, 1, 1))
+    holoScale(Projectile, vec(2, 0.5, 0.5))
+
+} else {
+
+}
+rangerFilter(Prop)
+rangerFilter(O)
+rangerFilter(holoEntity(10))
+TargetPos = rangerOffset(10 ^ 7, holoEntity(1):toWorld(vec(20, 0, 0)), holoEntity(1):forward())
+if (changed(TargetPos:pos())) {
+    holoPos(10, TargetPos:pos())
+    Prop:setAng((holoEntity(10):pos() - Prop:pos()):toAngle())
+}#note to self, TARGETPOS - CURRENT POS NOT THE OTHER FUCKING WAY ROUND# note to self, remove the above ^ note before posting this anywhere.
+Vec = (holoEntity(10):pos() - holoEntity(1):pos()) * Prop:mass() * 1000
+Prop:applyForce(Vec)
+
+findByModel(FindModel)
+findExcludePlayerProps("*")
+findIncludePlayerProps(O)
+Missiles = findToArray()
+
+if (find():isValid()) {
+    for (Index = 0, Missiles:count()) {
+        rangerFilter(Missiles[Index, entity])
+        Rangers[Index, ranger] = rangerOffset(150, Missiles[Index, entity]:pos(), Missiles[Index, entity]:forward())
+        if (Rangers[Index, ranger]:hit()) {
+            Missiles[Index, entity]:propBreak()
+        }
+    }
+}
+Mul = Mul + 1 * 1
+Div -= sin(Mul / 1)# Animations Start
+holoAng(11, ang(sin(Div) * 200, cos(Div) * 200, sin(Div) * 200))
+holoAng(12, ang(sin(Div) * 300, cos(Div) * 300, sin(Div) * 300))
+holoAng(13, ang(sin(Div) * 400, cos(Div) * 400, sin(Div) * 400))
+holoAng(14, ang(sin(Div) * 500, cos(Div) * 500, sin(Div) * 500))
+
+holoColor(11, hsv2rgb(360 * curtime() / 50 % 360, 1, 1))
+holoColor(12, hsv2rgb(360 * curtime() / 50 % 360, 1, 1))
+holoColor(13, hsv2rgb(360 * curtime() / 50 % 360, 1, 1))
+holoColor(14, hsv2rgb(360 * curtime() / 50 % 360, 1, 1))# Animations End# Start Modes
+if (chatClk(O)) {
+    local Strings = O:lastSaid():explode(" ")
+    if (Strings:string(1) == "!follow" & Strings:count() == 1) {
+        FollowMode = 1
+        FollowedEnt = O
+    }
+    elseif(Strings[1, string] == "!follow" & Strings:count() > 1) {
+        FollowMode = 2
+        local TempPlayer = findPlayerByName(Strings[2, string])
+        if (TempPlayer:isPlayer()) {
+            Player = TempPlayer
+        }
+    }
+    elseif(Strings[1, string] == "!home") {
+        FollowMode = 0
+        holoPos(1, BasePos)
+        holoAng(1, ang())
+    }
+}
+if (FollowMode == 1) {
+    FollowedEnt = O
+    holoPos(1, O:toWorld(O:forward() + vec(-50, 52, 75)))
+    holoAng(1, (O:aimPos() - holoEntity(1):pos()):toAngle())    
+}
+elseif(FollowMode == 2) {
+    FollowedEnt = Player
+    holoPos(1, Player:toWorld(Player:forward() + vec(-50, 52, 75)))
+    holoAng(1, (Player:aimPos() - holoEntity(1):pos()):toAngle())
+}
+if (changed(FollowMode) & FollowMode == 1) {
+    for (I = 0, 19) {
+        holoVisible(I, O, 0)
+        if (Player:isValid() & Player != O) {
+            holoVisible(I, Player, 1)
+        }
+    }
+}
+elseif(changed(FollowMode) & FollowMode == 2) {
+    FollowedEnt = Player
+    for (I = 0, 19) {
+        holoVisible(I, Player, 0)
+        FollowedEnt = Player
+    }
+}
+elseif(changed(FollowMode) & FollowMode == 0) {
+    for (I = 0, 19) {
+        holoVisible(I, O, 1)
+        holoVisible(I, Player, 1)
+        FollowedEnt = noentity()
+    }
+}
+if (changed(Driver) & Driver:isPlayer() & FollowMode > 0) {
+    holoPos(1, BasePos)
+    FollowMode = 0
+    FollowedEnt = noentity()
+}#Start RPG shielding / Crossbow bolts / grenades / combine balls
+if (changed(FollowedEnt) & FollowedEnt:isPlayer()) {
+    holoPos(1, BaseHolo:toWorld(FollowedEnt:forward() + vec(-50,45,100)))
+    holoPos(18, FollowedEnt:pos() + vec(0, 0, 43))
+    holoParent(18, FollowedEnt)
+    holoAlpha(18, 90)
+
+    holoPos(19, FollowedEnt:pos() + vec(0, 0, 43))
+    holoParent(19, FollowedEnt)
+    holoAlpha(19, 90)
+}
+if (changed(FollowedEnt) & !FollowedEnt:isPlayer()) {
+    holoAlpha(18, 0)
+    holoAlpha(19, 0)    
+}
+if (FollowedEnt:isPlayer()) {
+    findInSphere(FollowedEnt:pos(), 500)
+    findExcludeClass("*")
+    findIncludeClass("rpg_*")
+    findIncludeClass("npc_grenade_frag")
+    findIncludeClass("prop_combine_ball")
+    Threats = findToArray()
+
+}
+if (changed(Threats:count()) & Threats:count() == 0) {
+    Counter = 0
+}#Health / Hitboxsystem
+if (changed(holoEntity(1):pos())) {
+    HitBoxPos = holoEntity(1):toWorld(holoEntity(1):forward() + holoEntity(1):vel() * 4)
+    HitBox:setPos(HitBoxPos)
+    HitBox:setAng(Angles)
+    HitBox:propFreeze(1)
+}
+
+if (changed(DmgClk)) {
+    Health -= Damage
+    print(Attacker)
+    print($Health)
+    holoColor(15, vec(Damage + Health, Health - Damage, 0))
+}
+if (changed(Health) & Health > 150) {
+
+}#[elseif(changed(Health) & Health <= 150) {
+    holoColor(15, vec(100 * abs($Health), 0, 0))
+}]#
+if (changed(Health) & Health <= 0) {
+    Explosion = propSpawn("models/props_phx/mk-82.mdl", holoEntity(1):pos(), 1)
+    Explosion:propBreak()
+    holoEntity(1):soundPlay(0, 0, "gbombs/fab/fab_explo.wav")
+    for (I = 1, Hls:count()) {
+        Hpos[I, vector] = randvec(holoEntity(1):pos() - vec(100), holoEntity(1):pos() + vec(100))
+        Dir[I, vector] = (Hpos[I, vector] - holoEntity(1):pos()):normalized()
+        Hls[I, entity]:setTrails(10, 2, 1, "trails/laser", vec(255, 0, 0), 255, 0, 0)
+    }
+    timer("regen", 4000)
+}
+elseif(Health <= 0) {
+    for (I = 0, 19) {
+        holoPos(I, Hls[I, entity]:pos() + (Dir[I, vector] * 20))
+    }
+}
+if (clk("regen")) {
+    holoDeleteAll()
+    hint("Drone was destroyed! Regenerating!", 10)
+    timer("rebuild", 4000)
+}
+if (clk("rebuild")) {
+    reset()
+}
+
+
+#End Health & Death animations

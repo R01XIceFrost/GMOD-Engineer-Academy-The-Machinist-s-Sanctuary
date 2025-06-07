@@ -1,0 +1,148 @@
+@name Maso's Minimap
+@persist E:entity Players:array Props:array Attack1:array Beams:array PCount PropCount PC PropC PH PropH Find
+@persist XN XP XLength XOff YN YP YLength YOff ZN ZP ZLength ZOff Max MapX MapY MapZ
+
+#[
+
+INFO:
+
+I was looking at TayG0's Contraptions and loved the MniMap he made out of holograms so I made my own but added props to my version. I did show TayG0 this a couple weeks ago and he didn't mind that I post my version on the forums.
+
+All of these prop contraptions were made by <{BT}>Darky and Drunkie<{BT}> (Darky always makes epic prop contraptions that work perfect for my minimap).
+
+Special thanks to Haloguy<{BT}> for suggestions on this contraption. Other people did have suggestions but Haloguy was the biggest contributor.
+
+IF FOR WHATEVER REASON THE E2 EXCEEDS QUOTA, REMOVE 1 OF THE TIMERS.
+
+]#
+
+Scale = 50
+timer("1",1)
+timer("2",1)
+timer("3",1)
+
+if(first()) {
+    holoDeleteAll()
+    E = entity()
+    timer("map",100)
+    
+    #----------Map Scaling----------
+    #FLATGRASS!
+    #X
+    XN = -15456
+    XP = 12288
+    XLength = XP + -XN
+    XOff = (-XN - XP)*Scale*6/XLength
+    #Y
+    YN = -15360
+    YP = 12096
+    YLength = YP + -YN
+    YOff = (-YN - YP)*Scale*6/YLength
+    #Z
+    ZN = -1
+    ZP = 7167
+    ZLength = ZP + -ZN
+    ZOff = (-ZN - ZP)*Scale*6/ZLength
+
+    Max = max(XLength,YLength,ZLength)
+
+    MapX = XLength*Scale/Max
+    MapY = YLength*Scale/Max
+    MapZ = ZLength*Scale/Max
+}
+#----------Finding Players/Props----------
+Find = Find%500+1
+    if(Find == 250) {
+        findClearBlackList()
+        PCount = findByClass("Player")
+        Players = findToArray()
+    }
+    if(Find == 500) {
+        findClearBlackList()
+        findExcludeModel("ZeikJT")
+        PropCount = findByClass("prop_physics")
+        Props = findToArray()
+}
+
+#----------Player Scaling----------
+#Cycle Players
+if(PCount) {
+    PC = PC%PCount+1
+    P = Players:entity(PC)
+    PAng = P:angles()
+}
+
+#Player Size
+PSize = P:boxSize()
+
+PX = PSize:x()*Scale/Max
+PY = PSize:y()*Scale/Max
+PZ = PSize:z()*Scale/Max
+
+#----------Prop Scaling----------
+#Cycle Props
+if(PropCount) {
+    PropC = PropC%PropCount+1
+    Prop = Props:entity(PropC)
+    PropAng = Prop:angles()
+    PropColor = Prop:getColor()
+    PropMat = Prop:getMaterial()
+}
+#Prop Size
+PropSize = Prop:boxSize()+10
+
+PropX = PropSize:x()*Scale/Max
+PropY = PropSize:y()*Scale/Max
+PropZ = PropSize:z()*Scale/Max
+
+#----------Hologram Creation/Deletion----------
+#Map
+if(clk("map")) {
+    holoCreate(1337,E:massCenter(),vec(-MapX,-MapY,-MapZ),ang())
+    holoColor(1337,vec(0,255,0))
+}
+
+timer("wait",100)
+if(clk("wait")) {
+#Players
+    if(PH < PCount) {
+        PH++
+        holoCreate(PH)
+        holoParent(PH,1337)
+    }
+    if(PH > PCount) {
+        holoDelete(PH)
+        PH--
+    }
+    #Props 
+    if(PropH < PropCount) {
+        PropH++
+        holoCreate(PropH+50)
+        holoParent(PropH+50,1337)
+    }
+    if(PropH > PropCount) {
+        holoDelete(PropH+50)
+        PropH--
+    }
+}
+
+#----------Hologram Movement----------
+#Map
+holoPos(1337,E:massCenter() + vec(-XOff,-YOff,MapZ*6))
+#Players
+holoPos(PC,E:massCenter() + vec(0,0,PZ*6) + P:pos()*Scale*12/Max)
+holoScale(PC,vec(PX,PY,PZ))
+holoAng(PC,PAng)
+#Props 
+holoPos(PropC+50,E:massCenter() + Prop:toWorld(Prop:boxCenter())*Scale*12/Max)
+holoScale(PropC+50,vec(PropX,PropY,PropZ))
+holoColor(PropC+50,PropColor)
+holoAng(PropC+50,PropAng)
+holoMaterial(PropC+50,PropMat)
+
+#Prop Model Changer
+if(Prop:model():find("sphere")|Prop:model():find("wheel")|Prop:model():find("tire")|Prop:model():find("shell")) {holoModel(PropC+50,"icosphere3")}
+elseif(Prop:model():find("cone")) {holoModel(PropC+50,"cone")}
+elseif((Prop:model():find("tube")&!Prop:model():find("metal"))|Prop:model():find("curve")|Prop:model():find("barrel")|Prop:model():find("drum")) {holoModel(PropC+50,"cylinder")}
+elseif(Prop:model():find("triangle")) {holoModel(PropC+50,"prism")}
+else{holoModel(PropC+50,"cube")}
