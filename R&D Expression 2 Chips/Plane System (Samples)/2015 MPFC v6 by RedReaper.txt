@@ -45,7 +45,7 @@
 
 INFO:
 
-o, ground hugging radar (for missile avoidance, think F-111), new 3rd person sight, flight data computer, and of course lag reductions and minor fixes.
+So, ground hugging radar (for missile avoidance, think F-111), new 3rd person sight, flight data computer, and of course lag reductions and minor fixes.
 This is hte flight data computer, it runs optionally if it's wired and you're in first person view.
 
 
