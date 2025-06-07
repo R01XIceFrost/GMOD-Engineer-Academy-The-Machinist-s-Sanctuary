@@ -1,0 +1,74 @@
+@name Distance Tool
+@persist [PosA PosB]:vector [StartSet EndSet]:normal
+
+#[
+INFO:
+
+This is an Expression2 that simply takes PointA and PointB, and calculates the Distance between the two. It may be altered to show different units as well.
+You simply crouch and left click to set a starting point, then crouch and right-click to set an ending point. it will then tell u the distance. 
+
+]#
+
+    interval(1)
+
+    #====What Units to Use=====
+    GmodUnits=0
+
+    Inches=0
+    Feet=1
+    Yards=0
+    Miles=0
+
+    Nanometers=0
+    Millimeters=0
+    Centimeters=0
+    Meters=0
+    Kilometers=0
+    #=========================
+
+
+    if(first()|duped()){
+        hint("Made By Jasongamer1",8)
+        hint("To use, hold crouch, and do the following:",8)
+        hint("Left-Click to set starting position,",8)
+        hint("Right-Click to set ending position.",8)
+        PosA=vec(0,0,0)
+        PosB=vec(0,0,0)
+    }
+
+    if((owner():keyAttack1()) & StartSet==0 & EndSet==0 & owner():isCrouch()){
+        PosA=owner():aimPos()
+        StartSet=1
+        hint("Start Position set!", 6)
+    }
+
+    if((owner():keyAttack2()) & StartSet!=0 & EndSet==0 & owner():isCrouch()){
+        PosB=owner():aimPos()
+        EndSet=1
+        hint("End Position set!", 6)
+    }
+
+    if((owner():keyAttack2()) & (owner():keyAttack1())){StartSet==0, EndSet==0, PosA=vec(0,0,0), PosB=vec(0,0,0)}
+
+    if(StartSet==1 & EndSet==1){
+        Distance = (PosA:distance(PosB))
+        #Distance = (((PosB:x()-PosA:x())^2)+((PosB:y()-PosA:y())^2)+((PosB:z()-PosA:z())^2))
+        if(GmodUnits==1){print("Total Distance is "+Distance+" gmod units.")}
+
+        if(Inches==1){print("Total Distance is "+(toUnit("in", Distance)):toString()+" inches.")}
+        if(Feet==1){print("Total Distance is "+(toUnit("ft", Distance)):toString()+" feet.")}
+        if(Yards==1){print("Total Distance is "+(toUnit("yd", Distance)):toString()+" yards.")}
+        if(Miles==1){print("Total Distance is "+(toUnit("mi", Distance)):toString()+" miles.")}
+
+        if(Nanometers==1){print("Total Distance is "+(toUnit("m", Distance)*10^-9):toString()+" nanometers.")}
+        if(Millimeters==1){print("Total Distance is "+(toUnit("m", Distance)*10^-3):toString()+" millimeters.")}
+        if(Centimeters==1){print("Total Distance is "+(toUnit("cm", Distance)):toString()+" centimeters.")}
+        if(Meters==1){print("Total Distance is "+(toUnit("m", Distance)):toString()+" meters.")}
+        if(Kilometers==1){print("Total Distance is "+(toUnit("km", Distance)):toString()+" kilometers.")}
+
+        StartSet=0
+        EndSet=0
+        PosA=vec(0,0,0)
+        PosB=vec(0,0,0)
+    } 
+
