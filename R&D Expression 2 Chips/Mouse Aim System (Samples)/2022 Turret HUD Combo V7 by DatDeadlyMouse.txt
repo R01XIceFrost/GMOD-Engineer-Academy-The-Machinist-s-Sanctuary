@@ -331,4 +331,3 @@ EGP:egpSetText(34,"KPH: " + toString(F))
 EGP:egpSetText(39,"Gear: " + toString(Fuel))
 EGP:egpText(32,""+floor((Rangefinder:distance()*0.0254)),Res+vec2(0,120))
 if(Active==0){Weld=1}
-https://youtu.be/KzupbHzk9bs?si=2yIZu1_wFy8SW96k
