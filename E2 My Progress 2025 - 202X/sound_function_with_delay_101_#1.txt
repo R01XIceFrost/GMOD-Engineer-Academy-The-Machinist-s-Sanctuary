@@ -1,0 +1,21 @@
+@name Sound Function With Delay 101 #1
+@inputs Play Stop 
+
+#Plug & Play with 2 buttons to E2!
+
+#June 15, 2025
+
+####### To make my code cleaner I had to do this ###############################
+let TOGGLE = function() { 
+} 
+let STOP = function() { 
+    soundStop("Sound 1")
+}
+################################################################################
+if (Play) { #if button pressed start playing sound
+    timer("Play 1", 0,1, TOGGLE) #toggle sound play
+    soundPlay("Sound 1", 0,"thrusters/mh1.wav") #your sound file you want to play 
+    }       
+if (Stop) { #if button pressed stop the sound
+    timer("Stop", 5,1, STOP) #Delays stop for 5 seconds     
+}
