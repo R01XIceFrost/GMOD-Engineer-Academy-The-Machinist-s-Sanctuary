@@ -1,0 +1,16 @@
+@name Split Eye Function Coordinates to XYZ
+@outputs Eye:vector X Y Z
+
+#June 11 - 15 2025
+
+event tick(){
+
+Eye = entity():toLocal(owner():eye()) #Similiar code sample Finding Position X Y Z 101 #1 but this one takes from the E2 chip position automatically
+
+X = Eye:x()
+Y = Eye:y()
+Z = Eye:z()
+
+print(Eye:toString()) #feeling spicy to do redundant steps to print this instead of just "print(Eye)" :)
+
+}
