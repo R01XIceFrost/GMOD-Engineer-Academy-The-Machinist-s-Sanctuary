@@ -1,0 +1,340 @@
+@name Mech - Public V1
+@inputs [Hip Foot_L Foot_R Torso Leg_L_1 Leg_L_2 Leg_R_1 Leg_R_2 Shoulder_L Shoulder_R Weapon_L Weapon_R]:entity
+@inputs EGP:wirelink Cam_Ang:angle Cam_Aimpos:vector W A S D Active Crouch
+
+@outputs Length_Left_Forward Length_Left_Up Length_Right_Forward Length_Right_Up Constant Damping
+@outputs Cam_Vec:vector Cam_Dist Cam_Holo:entity Cam_Filter:array Height_Mul Magnet_L Ranger_Hip_Dist_L_Test Standing_Value
+
+@persist Cos_Speed Sin_Speed Gait_Length Throttle_Mul Hip_Force AngVel_Damp Steering_Mul Height_Mul_Value
+@persist Steering_Force Speed Gait_Height Active_Counter Foot_Pos_L_D_X Foot_Pos_L_D_Z Foot_Pos_R_D_X Foot_Pos_R_D_Z
+@persist Gait_Angle Crouching Throttle_Speed Steering_Accel Width Weapon_Aim_Force Weapon_Aim_Speed Weapon_Aim_Damping
+@persist Traverse_Outward Traverse_Inward Elevation Depression Weapon_Rest_Angle Hydraulic_Length_Default Ranger_Difference_Max
+@persist Torso_Elevation Torso_Traverse Torso_Speed Torso_Force Weapon_Elevation_L Weapon_Elevation_R Ranger_Forward Hip_Rolling
+@persist Slope_Mul Slope_Height_Difference_Max Extra_Walk_Height Standing_Height Torso_Damping Torso_Side_Bobbing Combat_Ready
+@persist SoundPitch_Active SoundPitch_Throttle Torso_Rest_Angle Ledge_Fail_Safe Ranger_Diff SoundPitch_Base Hip_Forward
+@trigger none
+
+#Source: https://youtu.be/9-G76zGW6Cs?si=6zh1DsP1eaTtetrV
+
+if(first() | dupefinished())
+{
+        
+        # This is my hydraulic mech E2. Please enjoy. -Meta
+        
+        Combat_Ready = 0    # Disables the mech upon destroying any of the leg segments
+                            # This should only be enabled after you've refreshed the E2 and are finished building the mech
+                            # Try enabling it on a copy first
+    
+    # v Camera stuff v
+    
+    Cam_Vec            = vec(22,0,40)   # Camera position relative to torso
+    Cam_Dist           = 0              # Camera distance
+    Cockpit_Arrow_Vec  = vec(16,0,-5)   # Cockpit arrow position relative to camera position
+    
+    # v Walking stuff v
+    
+    Hydraulic_Length_Default     = 1518.4   # Length of the hydraulics when applying them using PA. I used a models/hunter/plates/plate32x32.mdl for PA point placement
+    Constant                     = 10000
+    Damping                      = 2500
+    
+    Gait_Length                  = 110      # Determines the distance and height the feet move
+    Gait_Height                  = 50       # 
+    Speed                        = 20       # Changes the gait speed
+    Extra_Walk_Height            = -15      # This is applied when using throttle   
+
+    Standing_Height              = 35.5     # Raises or lowers the mech
+    
+    Height_Mul_Value             = 138      # This one is fairly important.
+                                            # Debug the e2.
+                                            # Raise or lower this number until the Height_Mul output
+                                            # sits at 1 when the mech is active and standing still.
+                                            # This helps manage limping.
+    
+    Slope_Mul                    = 250      # The max distance between front and rear ranger distance detection
+    
+    Throttle_Speed               = 0.025    # Ranges from 1 to 0. Time it takes to reach full throttle
+    Steering_Accel               = 0.20     # Ranges from 1 to 0. Time it takes to reach full steering
+    
+    Gait_Angle                   = Gait_Length*0.25  # This applies an upward tilt to the gait
+    
+    # v Hip stuff v
+    
+    Hip_Force       = 4000000      # Hip applyAngForce strength
+    AngVel_Damp     = 2000000      # Hip applyAngForce damping
+    
+    Hip_Rolling     = 15           # The amount the mech will lean while turning at speed
+    Hip_Forward     = 15           # The distance its hip will move forward/backward relative to the feet during throttle
+    
+    Steering_Force  = 125000000    # The maximum amount of steering force. This is tied to Steering_Accel
+    
+    # v Torso Stuff v
+    
+    Torso_Elevation     = 15         # Maximum torso up/down tilt
+    Torso_Traverse      = 100        # Maximum torso left/right traverse
+    Torso_Speed         = 12         # This is tied to Torso_Force. Try lowering Torso_speed when raising Torso_Force, vice versa
+    Torso_Force         = 300000     # Torso applyAngForce strength
+    Torso_Damping       = 50000      # Torso applyAngForce damping
+    Torso_Side_Bobbing  = 15         # The amount the torso rolls left to right when walking
+    Torso_Rest_Angle    = 15         # The torso angle relative to the hip while inactive
+    
+    # v Weapon stuff v
+    
+    Elevation             = 50         # Max upward weapon angle
+    Depression            = 35         # Max downward weapon angle
+    Traverse_Inward       = 20         #
+    Traverse_Outward      = 75         #
+    
+    Weapon_Aim_Speed      = 10         # This is tied to Weapon_Aim_Force. Try lowering Weapon_Aim_Speed when raising Weapon_Aim_Force, vice versa
+    Weapon_Aim_Force      = 900000     # Weapon applyAngForce strength
+    Weapon_Aim_Damping    = 75000      # Torso applyAngForce damping
+    Weapon_Elevation_L    = 75000      # Distance to target is divided by this number and added to weapon elevation.
+    Weapon_Elevation_R    = 50000      # It's, eh, good enough...
+    
+    Weapon_Rest_Angle     = 30         # The weapon angle relative to the torso while inactive
+    
+    # v Sound stuff v
+    
+    Engine_Sound         = "acf_extra/tankfx/tankinside4.wav"
+    Engine_Sound_Volume  = 1
+    
+    SoundPitch_Base      = 85     # Inactive sound pitch
+    SoundPitch_Active    = 15     # Gets added to SoundPitch_Base when active
+    SoundPitch_Throttle  = 25     # Gets added to SoundPitch_Base and SoundPitch_Active when using throttle
+    
+    # End of stuff
+    
+    rangerHitWater(1)
+    rangerHitEntities(1)
+    rangerPersist(1)
+    rangerFilter(Hip:getConnectedEntities())
+    
+    Hip:soundPlay(1,0,Engine_Sound)
+    soundVolume(1,Engine_Sound_Volume)
+    
+    holoCreate(1)
+    holoAlpha(1,0)
+    
+    holoCreate(4)
+    holoAlpha(4,0)
+    
+    holoCreate(2,Weapon_L:toWorld(vec(0,0,0)))
+    holoParent(2,Weapon_L)
+    holoAng(2,Weapon_L:toWorld(ang(0,0,0)))
+    holoAlpha(2,0)
+    
+    holoCreate(3,Weapon_R:toWorld(vec(0,0,0)))
+    holoParent(3,Weapon_R)
+    holoAng(3,Weapon_R:toWorld(ang(0,0,0)))
+    holoAlpha(3,0)
+        
+    holoCreate(50,Torso:toWorld(Cam_Vec))
+    holoAng(50,Torso:toWorld(ang(0,0,0)))
+    holoParent(50,Torso)
+    holoAlpha(50,0)
+    
+    holoCreate(20,holoEntity(50):toWorld(Cockpit_Arrow_Vec))
+    holoAng(20,holoEntity(50):toWorld(ang(0,0,0)))
+    holoParent(20,holoEntity(50))
+    holoModel(20,"models/sprops/misc/alphanum/alphanum_arrow_a.mdl")
+    holoMaterial(20,"debug/debugdrawflat")
+    holoScale(20,vec(0.25,0,0.5))
+    
+    Cam_Holo = holoEntity(50)
+    Cam_Filter = Torso:getConnectedEntities()
+    
+    Hip:propInertia(vec(50000))
+    Foot_L:propInertia(vec(5000))
+    Foot_R:propInertia(vec(5000))
+    Torso:propInertia(vec(2500))
+    Shoulder_L:propInertia(vec(2500))
+    Shoulder_R:propInertia(vec(2500))
+    
+    Ranger_Forward = Gait_Length/2    
+    Width = (Hip:toLocal(Foot_L:pos()):y() - Hip:toLocal(Foot_R:pos()):y())/2    
+    Ranger_Difference_Max = Width*2
+    Slope_Height_Difference_Max = Slope_Mul/2
+    Ledge_Fail_Safe = Slope_Height_Difference_Max - Slope_Height_Difference_Max*0.1
+    
+    Foot_Z = Foot_L:boxSize():z()
+        
+}
+
+interval(44)
+
+if(changed(Active))
+{
+    
+    Color = vec(255,255,255)
+    
+    # v Weapon_L v
+    EGP:egp3DTracker(1,vec(0))
+    EGP:egpParent(1,holoEntity(1))
+    
+    EGP:egpCircle(2,vec2(0),vec2(3.5))
+    EGP:egpColor(2,vec(0))
+    EGP:egpParent(2,1)
+    EGP:egpAlpha(2,255)
+
+    EGP:egpCircle(3,vec2(0),vec2(2))
+    EGP:egpColor(3,Color)
+    EGP:egpParent(3,1)
+    EGP:egpAlpha(3,255)
+    
+    # v Weapon_R v
+    EGP:egp3DTracker(4,vec(0))
+    EGP:egpParent(4,holoEntity(4))
+    
+    EGP:egpCircle(5,vec2(0),vec2(3.5))
+    EGP:egpColor(5,vec(0))
+    EGP:egpParent(5,4)
+    EGP:egpAlpha(5,255)
+
+    EGP:egpCircle(6,vec2(0),vec2(2))
+    EGP:egpColor(6,Color)
+    EGP:egpParent(6,4)
+    EGP:egpAlpha(6,255)
+
+}
+if(Active)
+{
+    Active_Counter = clamp(Active_Counter + 0.05,0,1)
+
+    Torso_Pitch_Difference  = clamp((clamp(Hip:toLocal(Cam_Ang):pitch(),-Torso_Elevation,Torso_Elevation) - Hip:toLocal(Torso:angles()):pitch()),-Torso_Speed,Torso_Speed)
+    Torso_Yaw_Difference    = clamp((clamp(Hip:toLocal(Cam_Ang):yaw(),-Torso_Traverse,Torso_Traverse) - Hip:toLocal(Torso:angles()):yaw()),-Torso_Speed,Torso_Speed)
+    
+    Distance_L = (Weapon_L:pos() - Cam_Aimpos):length()/Weapon_Elevation_L  
+    holoAng(2,Weapon_L:toWorld(ang(Distance_L,0,0)))    
+    Angle_L           = (Torso:toLocal(Weapon_L:pos()) - Torso:toLocal(Cam_Aimpos)):toAngle()
+    if(Angle_L:pitch() > 180){Pitch_L = Angle_L:pitch() - 360}else{Pitch_L = Angle_L:pitch()}
+    Yaw_L             = Angle_L:yaw() - 180    
+
+    Shoulder_L_Pitch  = clamp(-clamp(Pitch_L + Distance_L,-Depression,Elevation) - Torso:toLocal(Weapon_L:angles()):pitch(),-Weapon_Aim_Speed,Weapon_Aim_Speed)
+    Shoulder_L_Yaw    = clamp(clamp(Yaw_L,-Traverse_Inward,Traverse_Outward) - Torso:toLocal(Weapon_L:angles()):yaw(),-Weapon_Aim_Speed,Weapon_Aim_Speed)
+    Shoulder_L_Roll   = Torso:toLocal(Shoulder_L:angles()):roll()   
+    holoPos(1,rangerOffset(999999,holoEntity(2):toWorld(vec(100,0,0)),holoEntity(2):forward()):pos())
+
+    Distance_R = (Weapon_R:pos() - Cam_Aimpos):length()/Weapon_Elevation_R 
+    holoAng(3,Weapon_R:toWorld(ang(Distance_R,0,0)))    
+    Angle_R           = (Torso:toLocal(Weapon_R:pos()) - Torso:toLocal(Cam_Aimpos)):toAngle()
+    if(Angle_R:pitch() > 180){Pitch_R = Angle_R:pitch() - 360}else{Pitch_R = Angle_R:pitch()}
+    Yaw_R             = Angle_R:yaw() - 180
+    
+    Shoulder_R_Pitch  = clamp(-clamp(Pitch_R + Distance_R,-Depression,Elevation) - Torso:toLocal(Weapon_R:angles()):pitch(),-Weapon_Aim_Speed,Weapon_Aim_Speed)
+    Shoulder_R_Yaw    = clamp(clamp(Yaw_R,-Traverse_Outward,Traverse_Inward) - Torso:toLocal(Weapon_R:angles()):yaw(),-Weapon_Aim_Speed,Weapon_Aim_Speed)
+    Shoulder_R_Roll   = Torso:toLocal(Shoulder_R:angles()):roll()
+    holoPos(4,rangerOffset(999999,holoEntity(3):toWorld(vec(100,0,0)),holoEntity(3):forward()):pos())
+}
+else
+{
+    Active_Counter = clamp(Active_Counter - 0.05,0.25,1)
+    
+    Torso_Pitch_Difference  = clamp(Torso_Rest_Angle - Hip:toLocal(Torso:angles()):pitch(),-5,5)
+    Torso_Yaw_Difference    = clamp(-Hip:toLocal(Torso:angles()):yaw(),-5,5)
+    
+    Shoulder_L_Pitch  = -Torso:toLocal(Weapon_L:angles()):pitch() + Weapon_Rest_Angle
+    Shoulder_L_Yaw    = -Torso:toLocal(Weapon_L:angles()):yaw()
+    Shoulder_L_Roll   = Torso:toLocal(Weapon_L:angles()):roll()
+    
+    Shoulder_R_Pitch  = -Torso:toLocal(Weapon_R:angles()):pitch() + Weapon_Rest_Angle
+    Shoulder_R_Yaw    = -Torso:toLocal(Weapon_R:angles()):yaw()
+    Shoulder_R_Roll   = Torso:toLocal(Weapon_R:angles()):roll()
+}
+if(changed(Active) & !Active){EGP:egpClear()}
+
+Crouching          = clamp(Crouching - (Crouch-!Crouch)*0.1,0,1)
+Throttle_Mul       = clamp(Throttle_Mul + (W-S)*Throttle_Speed - clamp(Throttle_Mul,-Throttle_Speed,Throttle_Speed)*(!W&!S),-clamp(Crouching,0.25,0.5),clamp(Crouching,0.35,1))
+Steering_Mul       = clamp(Steering_Mul + (A-D)*Steering_Accel - clamp(Steering_Mul,-Steering_Accel,Steering_Accel)*(!A&!D),-1,1)
+
+Ranger_L           = rangerOffset(99999,Hip:toWorld(vec(Ranger_Forward*Throttle_Mul,Width,0)),-Hip:up())
+Ranger_R           = rangerOffset(99999,Hip:toWorld(vec(Ranger_Forward*Throttle_Mul,-Width,0)),-Hip:up())
+Ranger_Hip_L       = rangerOffset(99999,Hip:toWorld(vec(0,Width,0)),-Hip:up())
+Ranger_Hip_R       = rangerOffset(99999,Hip:toWorld(vec(0,-Width,0)),-Hip:up())
+
+Ranger_L_Dist      = Ranger_L:distance()
+Ranger_R_Dist      = Ranger_R:distance()
+
+Ranger_Hip_Dist_L = Ranger_Hip_L:distance()
+Ranger_Hip_Dist_R = Ranger_Hip_R:distance()
+
+Height_Diff_L      = clamp((Ranger_Hip_Dist_L - Ranger_L_Dist)*2,-Slope_Height_Difference_Max,Slope_Height_Difference_Max)
+Height_Diff_R      = clamp((Ranger_Hip_Dist_R - Ranger_R_Dist)*2,-Slope_Height_Difference_Max,Slope_Height_Difference_Max)
+
+Fail_Safe          = (Height_Diff_L < -Ledge_Fail_Safe) | (Height_Diff_R < -Ledge_Fail_Safe)
+
+Angle_Mul          = clamp(1 - abs(clamp(((Ranger_Hip_Dist_L + Ranger_Hip_Dist_R) - (Ranger_L_Dist + Ranger_R_Dist))/Slope_Mul,-1,1)) + Fail_Safe,0,1)
+
+Ranger_Diff        = clamp(Ranger_L_Dist - Ranger_R_Dist,-Ranger_Difference_Max,Ranger_Difference_Max)
+
+Foot_Pos_Actual_L  = Hip:toLocal(Foot_L:pos())
+Foot_Pos_Actual_R  = Hip:toLocal(Foot_R:pos())
+
+Walk_Angle_L       = Gait_Angle + Height_Diff_L*Angle_Mul*Height_Mul*!Fail_Safe
+Walk_Angle_R       = Gait_Angle + Height_Diff_R*Angle_Mul*Height_Mul*!Fail_Safe
+
+Height_Mul         = clamp(clamp(1 + (Height_Mul_Value - (Ranger_Hip_Dist_L + Ranger_Hip_Dist_R))/Height_Mul_Value,0,1) + Fail_Safe,0,1)
+
+Cos_Speed          = Cos_Speed + Speed
+Cos                = cos(Cos_Speed)
+Sin_Speed          = Sin_Speed + Speed
+Sin                = sin(Sin_Speed)
+
+Sin_Mul            = Gait_Height*Sin*clamp((abs(Throttle_Mul) + abs(Steering_Mul*0.425))*2.5,0,1)*Angle_Mul*Height_Mul
+Cos_Mul            = Gait_Length*Cos*Throttle_Mul*Angle_Mul*Height_Mul
+
+Sin_Gait_L         = (Sin_Mul - Walk_Angle_L*Cos*abs(Throttle_Mul) - Extra_Walk_Height*abs(Throttle_Mul))*Height_Mul
+Sin_Gait_R         = (Sin_Mul - Walk_Angle_R*Cos*abs(Throttle_Mul) + Extra_Walk_Height*abs(Throttle_Mul))*Height_Mul
+
+Standing_Value     = -(Standing_Height + Standing_Height*Active_Counter*Crouching)
+
+Foot_Pos_L         = vec(-Cos_Mul,Width,Standing_Value + Sin_Gait_L) - Foot_Pos_Actual_L
+Foot_Pos_R         = vec(Cos_Mul,-Width,Standing_Value - Sin_Gait_R) - Foot_Pos_Actual_R
+
+Foot_Pos_L_D_X     = Foot_Pos_L:x()
+Foot_Pos_L_D_Z     = Foot_Pos_L:z()
+Foot_Pos_R_D_X     = Foot_Pos_R:x()
+Foot_Pos_R_D_Z     = Foot_Pos_R:z()
+
+Foot_Pos_L_Delta_X  = $Foot_Pos_L_D_X*3
+Foot_Pos_L_Delta_Z  = $Foot_Pos_L_D_Z*3
+Foot_Pos_R_Delta_X  = $Foot_Pos_R_D_X*3
+Foot_Pos_R_Delta_Z  = $Foot_Pos_R_D_Z*3
+
+Hip_Movement = Hip_Forward*Throttle_Mul*Height_Mul
+
+Length_Left_Forward   = Hydraulic_Length_Default - (Foot_Pos_L:x() + Foot_Pos_L_Delta_X) + Hip_Movement
+Length_Left_Up        = Hydraulic_Length_Default - (Foot_Pos_L:z() + Foot_Pos_L_Delta_Z) + Ranger_Diff
+Length_Right_Forward  = Hydraulic_Length_Default - (Foot_Pos_R:x() + Foot_Pos_R_Delta_X) + Hip_Movement
+Length_Right_Up       = Hydraulic_Length_Default - (Foot_Pos_R:z() + Foot_Pos_R_Delta_Z) - Ranger_Diff
+
+if(Combat_Ready > 0)
+{
+    Valid_L = Leg_L_1:isValid()*Leg_L_2:isValid()
+    Valid_R = Leg_R_1:isValid()*Leg_R_2:isValid()
+
+    if(!Valid_L){Foot_L:propDelete()}
+    if(!Valid_R){Foot_R:propDelete()}
+}
+else
+{
+    Valid_L = 1
+    Valid_R = 1
+}
+
+if(Valid_L & Valid_R)
+{
+    Hip:applyAngForce(ang(-Hip:angles():pitch()*Hip_Force,Steering_Mul*Steering_Force*clamp(Height_Mul,0.5,1),-(Hip:angles():roll() + (Steering_Mul*Hip_Rolling - Cos*Torso_Side_Bobbing)*Throttle_Mul*Height_Mul)*Hip_Force) - Hip:angVel()*AngVel_Damp)
+    Torso:applyAngForce(ang(Torso_Pitch_Difference*Torso_Force,Torso_Yaw_Difference*Torso_Force,-Hip:toLocal(Torso:angles()):roll()*Torso_Force) - Torso:angVel()*Torso_Damping)
+    Shoulder_L:applyAngForce(ang(Shoulder_L_Pitch*Weapon_Aim_Force,Shoulder_L_Yaw*Weapon_Aim_Force,-Shoulder_L_Roll*Weapon_Aim_Force) - Shoulder_L:angVel()*Weapon_Aim_Damping)
+    Shoulder_R:applyAngForce(ang(Shoulder_R_Pitch*Weapon_Aim_Force,Shoulder_R_Yaw*Weapon_Aim_Force,-Shoulder_R_Roll*Weapon_Aim_Force) - Shoulder_R:angVel()*Weapon_Aim_Damping)
+}
+
+holoPos(50,Torso:toWorld(Cam_Vec + vec(0,Cos*Throttle_Mul*Height_Mul*0.35,abs(Cos)*Throttle_Mul*Height_Mul*0.35)))
+
+soundPitch(1,SoundPitch_Base + SoundPitch_Active*Active_Counter + abs(Throttle_Mul)*SoundPitch_Throttle)
+
+Stomp = 2*abs(Throttle_Mul)*Height_Mul
+
+if(changed(Sin > 0) & (Sin > 0)){Foot_R:soundPlay(2,0,"physics/concrete/boulder_impact_hard3.wav") soundVolume(2,Stomp)}
+if(changed(Sin < 0) & (Sin < 0)){Foot_L:soundPlay(2,0,"physics/concrete/boulder_impact_hard3.wav") soundVolume(2,Stomp)}
+
+holoAng(20,holoEntity(50):toWorld(ang(0,90 - Hip:toLocal(Torso:angles()):yaw(),90)))
