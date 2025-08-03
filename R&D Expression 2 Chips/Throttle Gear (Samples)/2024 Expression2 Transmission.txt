@@ -1,0 +1,175 @@
+@name Manual 5-speed with clutch assist AWD ALPHA
+#UPDATED BECAUSE OF CLUTCH WEIRDNESS
+# Inputs and Outputs
+@inputs [Wheel1 Wheel2 Wheel3 Wheel4 RotatingObject]:entity Gearup Geardown Base:entity RPM Clutchin SPEEDIN Throttle SETMPH AnyPiston:entity
+@outputs Gear Ratio Clutch WheelSpeed Calc RAngVelocity GearV SwitchGear
+@persist Wheels:array RotatingObjectWeight PistonWeight FullRatio FinalRotational RAngVelocity FlywheelMass DefinedClutch
+@persist Ratio Constant DifRat Gear Math1 Math2 FinalMass BoxSize AngVelMult Clutch AngVel1 AngVel2 GearV Wheel1Mass Mass [Speeds Constants Gears]:array SpeedSwitch Out OverrideClutch
+@persist GearclutchIncrease StaticCalc Calculation2
+@trigger
+
+#Source: https://youtu.be/LLLRUUCNVVQ?si=VO4esNK3lfBWJell by LowlyForeskin
+
+
+runOnTick(1)
+
+if (first() | dupefinished()) {
+    # Initialize transmission and weight settings
+    DifRat = 1/3.98
+    Ratio = 1
+    AngVelMult = 1
+    PistonWeight = AnyPiston:mass() * 4  # Amount of pistons
+    RotatingObjectWeight = (RotatingObject:mass() / RotatingObject:inertia():z()) + PistonWeight
+    FlywheelMass = 0
+    FinalMass = 2106
+    Speeds = array(47, 80, 112, 150, 1350, 190)
+    Wheels = array(Wheel1, Wheel2, Wheel3, Wheel4)
+    Wheel1Mass = Wheel1:mass()
+}
+
+# Gear Up
+if (changed(Gearup) & Gearup) {
+    if (Gear == 0) {
+        GearV = 1
+    }
+    if (Gear < 5) {
+        Gear++
+    }
+    SwitchGear = 1
+    Clutch = 0.2
+    soundPlay(1, 1, "acf_extra/vehiclefx/trans/default_shift.wav")
+}
+
+# Gear Down
+elseif (changed(Geardown) & Geardown) {
+    if (Gear != -1) {
+        if (Gear == 0) {        
+            GearV = -1
+        }
+        Gear--
+        SwitchGear = 1
+        Clutch = 0.05
+        soundPlay(1, 1, "acf_extra/vehiclefx/trans/default_shift.wav")
+    }
+}
+
+# Set Gear Velocity to 0 when Gear is Neutral
+elseif (Gear == 0) {
+    GearV = 0
+}
+
+# Calculate Ratios for Different Gears
+if (Gear != 0) {
+    if (Gear == 1) {
+        Ratio = 1/0.1
+    }
+    elseif (Gear == 2) {
+        Ratio = 1/0.2
+        Calculation2 = abs(Wheels[1, entity]:angVel():pitch()) * 0.67128024961205
+    }
+    elseif (Gear == 3) {
+        Ratio = 1/0.3
+        Calculation2 = abs(Wheels[1, entity]:angVel():pitch()) * 0.50751866472455
+    }
+    elseif (Gear == 4) {
+        Ratio = 1/0.4
+        Calculation2 = abs(Wheels[1, entity]:angVel():pitch()) * 0.39893571719906
+    }
+    elseif (Gear == 5) {
+        Ratio = 1/0.5
+        Calculation2 = abs(Wheels[1, entity]:angVel():pitch()) * 0.34031409322928
+    }
+    elseif (Gear == -1) {
+        Ratio = 1/0.1
+    }
+
+    # Apply force to wheels based on gear ratio
+    for (A = 1, 4, 1) {
+        FullRatio = (1 / (DifRat + Ratio))
+        
+        # Calculate angular velocities and apply forces to each wheel
+        if (A <= 2) {
+            WAngVelocity = Wheels[A, entity]:angVel():pitch()
+            RAngVelocity = (RotatingObject:angVel():yaw() * 6) * FullRatio
+            PercentageDifference = 1 - abs(WAngVelocity) / RAngVelocity
+            RotationalDifference = abs(abs(WAngVelocity) - RAngVelocity)
+            FinalRotational = ((RotationalDifference * ((RotationalDifference + (RotatingObjectWeight - FlywheelMass)) / RotationalDifference)) * PercentageDifference)
+            FinalWheel = (RotationalDifference * PercentageDifference) * (FinalMass / Wheel1Mass)
+
+            Wheels[A, entity]:applyAngForce(ang(FinalWheel * Clutch * GearV, 0, 0))
+            RotatingObject:applyAngForce(ang(0, (-FinalRotational * Clutch) / 4, 0))
+        } else {
+            WAngVelocity = -Wheels[A, entity]:angVel():pitch()
+            RAngVelocity = (RotatingObject:angVel():yaw() * 6) * FullRatio
+            PercentageDifference = 1 - abs(WAngVelocity) / RAngVelocity
+            RotationalDifference = abs(abs(WAngVelocity) - RAngVelocity)
+            FinalRotational = ((RotationalDifference * ((RotationalDifference + (RotatingObjectWeight - FlywheelMass)) / RotationalDifference)) * PercentageDifference)
+            FinalWheel = (RotationalDifference * PercentageDifference) * (FinalMass / Wheel1Mass)
+
+            Wheels[A, entity]:applyAngForce(ang(-FinalWheel * Clutch * GearV, 0, 0))
+            RotatingObject:applyAngForce(ang(0, (-FinalRotational * Clutch) / 4, 0))
+        }
+    }
+}
+
+# Speed calculation and clutch control based on RPM and throttle input
+if (abs(-Wheels[1, entity]:angVel():pitch()) >= 1000 & StaticCalc == 0) {
+    StaticCalc = (SPEEDIN / abs(-Wheels[1, entity]:angVel():pitch()))
+}
+
+WheelSpeed = StaticCalc * WAngVelocity
+
+if (RPM < 400 | RAngVelocity <= 400) {
+    Clutch = 0
+} elseif (Calc >= 1) {
+    if (Throttle == 0) {
+        timer("Wait", 1200)
+    } else {
+        DefinedClutch = 1
+    }
+} elseif (Throttle > 0) {
+    DesiredRPM = 3900
+    Calc = RPM / DesiredRPM - 0.4
+    if (RPM >= 1800) {
+        DefinedClutch = clamp(Calc * 100, 0, 100) / 100
+        Clutch = clamp(Calc * 100, 0, 100) / 100
+    }
+} elseif (Gear != 0) {
+    DesiredIdleRPM = 2300
+    Calc = RPM / DesiredIdleRPM - 0.4
+    if (RPM >= 800) {
+        DefinedClutch = clamp(Calc * 100, 0, 100) / 100
+        Clutch = clamp(Calc * 100, 0, 100) / 100
+    }
+}
+
+# Idle clutch control
+elseif (Clutchin == 0) {
+    Clutch = 0
+}
+
+if (clk("Wait")) {
+    if (Throttle == 0) {
+        DefinedClutch = 1
+    }
+}
+
+# Handle gear switching
+if (SwitchGear == 1) {
+    if (Gear != 0) {
+        if (Gear != 1 & Gear != -1) {
+            if (inrange(RotatingObject:angVel():yaw(), Calculation2 - 500, Calculation2 + 500)) {
+                SwitchGear = 0
+                Clutch = 1
+                soundPlay(1, 1, "acf_extra/vehiclefx/trans/default_shift.wav")
+            }
+        } else {
+            Calc = 0
+            SwitchGear = 0
+            soundPlay(1, 1, "acf_extra/vehiclefx/trans/default_shift.wav")
+        }
+    } else {
+        Clutch = 0
+        SwitchGear = 0
+    }
+}
