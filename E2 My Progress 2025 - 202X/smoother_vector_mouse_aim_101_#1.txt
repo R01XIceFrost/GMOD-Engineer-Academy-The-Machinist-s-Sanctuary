@@ -1,0 +1,29 @@
+@name Smoother Vector Mouse Aim 101 #1
+@inputs Gimbal:wirelink Eye:vector
+@outputs XYZ:vector Output:vector
+@trigger none
+@strict
+
+##July 20 - August 23
+#[ Note: Placed E2 into the ground (map north direction & nice and straight placement E2 chip) 
+for proper accuracy
+]#
+Output = vec(0) #initialized
+
+Eye = vec( #get XYZ decompose from the Eye function and formatted into single format
+    Eye:x(),
+    Eye:y(),
+    Eye:z()
+)
+event tick() {
+    
+Gimbal["Direction",vector] = Output #Wirelink logic for my Gimbal aim
+Gimbal["On", number] = 1 #Wirelink logic for my Gimbal aim
+Rate = 0.6 #Smooth the number according to this number which is 0.6
+Eye = entity():toLocalAxis(owner():eye()) #inspired logic by one of older mouse aim samples
+    Output += clamp((Eye - Output) / tickInterval(), -Rate, Rate) * tickInterval() #Darmagon's logic for smoothing vectors from Wiremod Discord!
+
+
+print(Output) #for debugging stuff (you can remove this line)
+
+}

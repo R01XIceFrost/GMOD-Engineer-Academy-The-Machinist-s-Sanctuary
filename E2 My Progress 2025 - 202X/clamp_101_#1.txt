@@ -1,0 +1,18 @@
+@name Clamp 101 #1
+@inputs Button
+@outputs Add Result
+
+#July 18, 2025
+
+#Plug & Play! 
+#Connet Screen A to ADD
+#Connet Screen B to Result
+#Connect E2 to Button
+
+if (Button) {               
+    Add++                     #Increment in 1s
+    Result = clamp(Add,0,5)   #Clamp it to 5   
+}
+
+
+

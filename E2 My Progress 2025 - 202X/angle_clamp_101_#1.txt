@@ -1,0 +1,22 @@
+@name Angle Clamp 101 #1
+@inputs
+@outputs Angles:angle A 
+@strict
+
+#July 20 - 2025
+
+event tick() {
+    
+Angles = entity():toLocal(owner():eyeAnglesVehicle()) #Get angles based on E2 chip position
+
+A = Angles:yaw() #your X
+
+A = clamp(A, -100, 100)  #clamp X -90 deg & X 100 deg
+
+
+print(A) #print the results
+    
+}
+
+
+

@@ -1,0 +1,43 @@
+@inputs Input Rate:number
+@outputs Output
+@trigger none
+@strict
+
+
+#Aug 23, 2025
+#Special thanks to Darmagon from Wiremod Discord for provoding example!
+#As for how this thing works go see my Smoother Vector Mouse Aim 101 #1
+
+Output = 0 #initialized
+
+event tick() {
+    Output += clamp((Input - Output) / tickInterval(), -Rate, Rate) * tickInterval()
+}
+
+#[comment by Hultipoo As for trigger none, its so that your code outside of events 
+and timers only runs once, otherwise inputs will trigger your entire E2 to run again
+]#
+
+
+#[
+@name Smoother Gate Equivalent 101 #1
+@outputs Out B
+
+#Plug Screen #1 to B 
+#Plug Screen #2 to Out 
+#August 1 - 3 2025
+
+if (first()) { #run the code for the first time
+    timer("timer1",0.09,0, function() { #increments every 0.09 sec & infinity loop
+    B++ #increments of 1s for B value assigned 
+   
+})
+
+}
+
+event tick() { #update the values based on event tick
+A = 10 #Value A assigned
+Out = B/A #Divded by result of B/A values assigned based on B & A 
+
+}
+]#
