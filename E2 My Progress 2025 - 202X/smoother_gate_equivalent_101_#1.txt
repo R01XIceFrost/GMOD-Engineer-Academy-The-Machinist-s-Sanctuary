@@ -5,7 +5,7 @@
 
 
 #Aug 23, 2025
-#Special thanks to Darmagon from Wiremod Discord for provoding example!
+#Special thanks to Darmagon from Wiremod Discord for providing example!
 #As for how this thing works go see my Smoother Vector Mouse Aim 101 #1
 
 Output = 0 #initialized
