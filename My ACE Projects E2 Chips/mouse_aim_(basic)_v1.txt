@@ -1,6 +1,6 @@
 @name Mouse Aim Basic V1
 @inputs Gimbal:wirelink
-@outputs Eye:vector Output:vector
+@outputs #Eye:vector Output:vector
 @trigger none
 @strict
 
@@ -42,8 +42,12 @@ event tick() { #replacement deprecated function runOnTick()
     Output += clamp((Clamps_XYZ - Output) / tickInterval(), -Rate, Rate) * tickInterval() #Special thanks to Darmagon's example logic for smoothing vectors from Wiremod Discord!
     
     Gimbal["Direction", vector] = Output   
-    Gimbal["On", number] = 1  #Wires Input "On"
-    print(Output)#remove this line if you don't want to debug this chip for angle and stuff
-       
+    Player = owner():inVehicle()
+if (Player) {       
+    Gimbal["On", number] = 1 #Turns on Gimbal when Player is seated
 }
 
+else {
+    Gimbal["On", number] = 0 #Turns off Gimbal when Player is not seated
+    print(Output)#remove this line if you don't want to debug this chip for angle and stuff
+}}
