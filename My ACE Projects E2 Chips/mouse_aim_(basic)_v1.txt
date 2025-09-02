@@ -4,11 +4,13 @@
 @trigger none
 @strict
 
-#July 20 2025 - Aug 23 2025
+#July 20 2025 - Septembre 1 2025
 
-# *New Feature Smoothing Aim Implemented in Mouse Aim Basic V1!
+# *New Feature Smoothing (Vectors) Aim Implemented Mouse Aim Basic V1!
+# *New Feature Player is in Vehicle? Function Implemented 
 
 #[
+
 #Gimbal Required!
 #Wire E2 "Gimbal [WIRELINK]" input to Gimbal Tool (Plug & Play!)
 
@@ -21,14 +23,13 @@ rotate the E2 chip (if necessary) so its arrow point to the right.
 If aligned correctly, you can delete the origin prop.
 
 ]#
+
 Output = vec(0) #initialized
 Limit_1 = -1.0  #Variable stuff
 Limit_2 = -0.3  #Variable stuff
 
 if(first()) {
-    propSpawn("models/sprops/misc/origin.mdl",1) #spawns origin prop of sprop
-     
-
+    propSpawn("models/sprops/misc/origin.mdl",1) #spawns origin prop of sprop     
 }
 
 event tick() { #replacement deprecated function runOnTick()
@@ -38,11 +39,12 @@ event tick() { #replacement deprecated function runOnTick()
         clamp(Eye:y(), Limit_1, abs(Limit_1)), #Clamps Y -1.0 deg & 1.0 deg
         clamp(Eye:z(), Limit_2, abs(Limit_2))  #Clamps Z -0.3 deg & 3.0 deg
     )
-    Rate = 0.6 #Smooth the number according to this number which is 0.6
-    Output += clamp((Clamps_XYZ - Output) / tickInterval(), -Rate, Rate) * tickInterval() #Special thanks to Darmagon's example logic for smoothing vectors from Wiremod Discord!
     
-    Gimbal["Direction", vector] = Output   
-    Player = owner():inVehicle()
+    Rate = 0.6 #Smooth the number according to this number which is 0.6
+    Output += clamp((Clamps_XYZ - Output) / tickInterval(), -Rate, Rate) * tickInterval() #Special thanks to Darmagon's example logic for smoothing vectors from Wiremod Discord!    
+    Gimbal["Direction", vector] = Output #Converts decompose vectors into single formatted for wirelink Gimbal logic
+    
+    Player = owner():inVehicle() #Player detected at all times & Outputs = 1 when seated
 if (Player) {       
     Gimbal["On", number] = 1 #Turns on Gimbal when Player is seated
 }
@@ -50,4 +52,5 @@ if (Player) {
 else {
     Gimbal["On", number] = 0 #Turns off Gimbal when Player is not seated
     print(Output)#remove this line if you don't want to debug this chip for angle and stuff
-}}
+ } 
+}
