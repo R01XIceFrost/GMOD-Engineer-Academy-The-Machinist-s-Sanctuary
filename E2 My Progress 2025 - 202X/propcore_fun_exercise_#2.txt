@@ -1,0 +1,24 @@
+@name Propcore Fun Exercise #2
+@outputs
+@persist T 
+@strict
+
+#September 1 - 9 2025
+
+T = 0
+
+
+event tick () {
+
+
+A = propCanCreate() #Limits the spawn rate
+T = T+1 #Spin the prop logic
+
+if (A) { #logic
+     propSpawn("models/props_c17/oildrum001_explosive.mdl",entity():pos() +vec(0,0,T),ang(0,0,T),0) #go up every time it spawns then change random angle!
+     
+    }
+}
+
+
+

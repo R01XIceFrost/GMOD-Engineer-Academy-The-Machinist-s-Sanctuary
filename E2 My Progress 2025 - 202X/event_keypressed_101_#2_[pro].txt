@@ -1,0 +1,25 @@
+@name Event keyPressed 101 #2 [PRO]
+@inputs 
+@outputs A
+@persist 
+@strict
+
+
+#Special Thanks to Marquis Denneisk, The Peak Comedy (spartanoises.226) & teemeefe (autoupdate) from the Wiremod Discord!
+
+#September 23, 2025
+
+A = 0
+MAGNITUDE = 0.5
+Direction = 0
+event keyPressed(Player:entity, Key:string, Down:number, KeyBind:string) {
+    if (Key == "w") {
+        Direction = Down # Since Down is either 1 or 0, we can use this trick
+    } elseif (Key == "s") {
+        Direction = -Down
+    }
+}
+
+event tick() {
+    A += Direction * MAGNITUDE
+}

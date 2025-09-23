@@ -1,0 +1,28 @@
+@name Player is in Vehicle?
+@inputs Light:wirelink 
+@strict
+
+#Spawn wire Light & Wire E2 to Light (Plug & Play with Wirelink!)
+
+#Aug 29 - 31 2025
+
+event tick () {
+
+PlayerSeat = owner():inVehicle()
+
+if (PlayerSeat) {
+    
+Light["On",number] = 1
+print("Light is on")
+  
+}
+
+else {
+    Light["On",number] = 0
+    print("Light is off")
+}
+
+
+}
+
+

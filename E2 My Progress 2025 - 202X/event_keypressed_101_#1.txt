@@ -1,0 +1,45 @@
+@name Event keyPressed 101 #1
+@inputs 
+@outputs A
+@strict
+
+#Plug & Play! Screen to E2 Chip "A"
+
+#September 19 2025
+
+A = 0 #Initialization
+
+Owner = owner() 
+
+event keyPressed(Player:entity, Key:string, Down:number, Bind:string) {
+        
+    if (Player == Owner & Down & Bind == "forward") { #Outputs 1 when pressed "W" and nothing else when released
+        
+            A++
+            print("Key W Pressed")  
+        }
+}
+
+
+#Or
+
+#[
+
+@name  throttle automatic? prototype #3
+@outputs A 
+@strict
+
+#September 23, 2025
+
+A = 0
+Owner = owner()
+
+event keyPressed(Player:entity, Key:string, Down:number, Bind:string) {
+    if (Player == Owner & Down & Key == "w") {
+        A+= 0.05
+        print("Key W Pressed") 
+  
+    }
+}
+
+]#
