@@ -41,7 +41,7 @@ event tick() { #replacement deprecated function runOnTick()
     )
     
     Rate = 0.6 #Smooth the number according to this number which is 0.6
-    Output += clamp((Clamps_XYZ - Output) / tickInterval(), -Rate, Rate) * tickInterval() #Special thanks to Darmagon's example logic for smoothing vectors from Wiremod Discord!    
+    Output += clamp((Clamps_XYZ - Output) / _TICKINTERVAL, -Rate, Rate) * _TICKINTERVAL #Special thanks to Darmagon's example logic for smoothing vectors from Wiremod Discord!    
     Gimbal["Direction", vector] = Output #Converts decompose vectors into single formatted for wirelink Gimbal logic
     
     Player = owner():inVehicle() #Player detected at all times & Outputs = 1 when seated
