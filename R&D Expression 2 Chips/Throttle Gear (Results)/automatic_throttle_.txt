@@ -1,0 +1,159 @@
+@name Automatic Throttle Prototype #5
+@inputs 
+@outputs A
+@persist 
+@strict
+
+
+#Special Thanks to Marquis Denneisk, The Peak Comedy (spartanoises.226) & teemeefe (autoupdate) from the Wiremod Discord!
+
+#September 23, 2025
+
+A = 0
+MAGNITUDE = 0.5
+Direction = 0
+event keyPressed(Player:entity, Key:string, Down:number, KeyBind:string) {
+    if (Key == "w") {
+        Direction = Down # Since Down is either 1 or 0, we can use this trick
+    } elseif (Key == "s") {
+        Direction = -Down
+    }
+}
+
+event tick() {
+    A += Direction * MAGNITUDE
+}
+
+
+
+#[
+
+@name Automatic Throttle Prototype #4
+@inputs Pod:wirelink
+@outputs A
+@trigger none
+@strict
+
+#Special thanks to spartanoises.226 (The Peak Comedy) from the Wiremod Discord
+#comment also add @trigger none so the wirelink wont rerun your entire E2
+#September 23, 2025
+
+A = 0
+event tick () {
+    W = Pod[ "W", number ]
+    
+    if (W) {
+        if (!timerExists("test")) {
+            timer("test", 1, 0, function() { 
+                A++
+            })
+        }
+    } else {
+        stoptimer("test")
+    }
+}
+
+[#
+
+#[
+
+
+Or 
+
+@inputs Pod:wirelink
+@outputs A
+@trigger none
+@strict
+A = 0
+timer("test", 1, 0, function() {
+    W = Pod["W", number]
+    if (W) { A++ }
+})
+
+
+]#
+
+
+
+
+#[
+
+@name Automatic Throttle prototype #3
+@outputs A 
+@strict
+
+#September 23, 2025
+
+A = 0
+Owner = owner()
+
+event keyPressed(Player:entity, Key:string, Down:number, Bind:string) {
+    if (Player == Owner & Down & Key == "w") {
+        A+= 0.05
+  
+    }
+}
+   
+    
+    
+]#
+
+
+#[
+
+@name Automatic Throttle Prototype #2
+@inputs Pod:wirelink
+@outputs A 
+@persist 
+@strict
+
+
+#September 22, 2025
+
+A = 0
+
+event tick () {
+
+W = Pod[ "W", number ]
+S = Pod[ "S", number ]
+
+if (W) {
+        
+    A+= 0.5
+}
+    
+if (S) {
+    A-= 0.5
+   
+  }
+
+}
+
+
+]#
+
+#[
+
+
+@name Automatic Throttle Prototype #1
+@inputs Screen:wirelink 
+@outputs Value
+@persist 
+@strict
+
+
+#September 20, 2025
+
+event tick() {
+    
+
+A = Screen["A", number] 
+
+if (Value) {
+    Value = (A) * 1
+}
+
+}
+
+
+]#
