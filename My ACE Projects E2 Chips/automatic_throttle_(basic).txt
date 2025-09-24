@@ -4,8 +4,11 @@
 @persist 
 @strict
 
-
-#Special Thanks to Marquis Denneisk, The Peak Comedy (spartanoises.226) & teemeefe (autoupdate) from the Wiremod Discord!
+#[
+Special Thanks to Marquis Denneisk, The Peak Comedy (spartanoises.226) 
+& teemeefe (autoupdate) from the Wiremod Discord for showing different ways
+to throttle the engine based on my E2 prototypes & explanation for the errors/improvements :D
+]#
 
 #September 23, 2025
 
