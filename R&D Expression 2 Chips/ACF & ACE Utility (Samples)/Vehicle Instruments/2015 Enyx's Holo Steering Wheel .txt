@@ -1,0 +1,26 @@
+@name Enyx's Holo Wheel
+@inputs A D
+@persist Turn SteeringAngle SteeringRate TurnbackRate
+
+#Source: https://youtu.be/VD49MzwFrJw?si=BvK-E1m17RQlQn5L
+
+interval(10)
+
+if (first() | dupefinished()){
+    #----SETTINGS----#
+    WheelModel = "models/sprops/trans/stwheels/stwheel_2.mdl"
+    SteeringAngle = 150 #THE MAXIMUM ANGLE THE WHEEL CAN SPIN
+    SteeringRate = 5 #THE SPEED THE WHEEL TURNS ON AN INPUT
+    TurnbackRate = 7 #THE SPEED THE WHEEL TURNS BACK AFTER RELEASING AN INPUT
+    #----DO NOT CHANGE ANYTHING UNDER HERE----#
+    
+    holoCreate(1)
+    holoParent(1,entity())
+    holoModel(1,WheelModel)
+}
+
+if(A | D) {Rate = SteeringRate} else {Rate = TurnbackRate} #CHANGED SPINNING RATE BASED OF THE INPUTS, A AND D. DEFINES STEERING RATE.
+
+Turn += clamp((A-D)*SteeringAngle - Turn, -Rate, Rate) #CLAMPS TO THE MAX ANGLE YOU HAVE INPUTED, SLOWED DOWN BY THE STEERING RATE.
+
+holoAng(1,entity():toWorld(ang(-90,Turn+180,0))) #THIS IS WHAT ACTUALLY CHANGES THE ANGLE OF THE WHEEL. BASED OF TURN, WE DEFINED 2 LINES UP.
