@@ -1,4 +1,4 @@
-@name Mouse Aim Basic V1.1
+@name Mouse Aim Basic V1
 @inputs Gimbal:wirelink
 @outputs #Eye:vector #Output:vector
 @trigger none
