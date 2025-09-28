@@ -1,34 +1,60 @@
 @name Automatic Throttle V1
-@inputs Screen:wirelink 
+@inputs  
+@outputs Turn Throttle Reverse
 @strict
+@trigger none
 
 
 #[
+
 Special Thanks to Marquis Denneisk, The Peak Comedy (spartanoises.226) 
 & teemeefe (autoupdate) from the Wiremod Discord for showing different ways
 to throttle the engine based on my E2 prototypes & explanation for the errors/improvements :D
+
 ]#
 
-#September 24, 2025
+#September 24 - 28 2025
 
 # settings
-A = 0
-MINIMUM = -10
-MAX = 100
 MAGNITUDE = 0.5
 Direction = 0
+MINIMUM = -10
+MAX = 100
+Throttle = 0
+
 #-----------------
 
+
 event keyPressed(Player:entity, Key:string, Down:number, KeyBind:string) {
-    if (Player:inVehicle() & Key == "w") { #Activates when player is in the chair and holding key w
-        Direction = Down # Since Down is either 1 or 0, we can use this trick
-    } elseif (Player:inVehicle() & Key == "s") { #Activates when player is in the chair and holding key s
-        Direction = -Down
+    if (Player:inVehicle()) { #condition #1 checked if player is sitting on the chair
+        #Forward & Backward Logic
+        if (Key == "w") {
+            Direction = Down # Since Down is either 1 or 0, we can use this trick
+            } elseif (Key == "s") {
+            Direction = -Down
+        }
+        #---------------------------------------------------------------------------------
+        
+        #Turning Logic for the Thruster (-1 or 1 or depending location of your Thruster!)
+        if (Key == "a") {
+            Result = -Down # -1
+            } elseif (Key == "d") {
+            Result = Down # 1
+        }         
+    }
+}
+            
+event tick() {
+    
+    Throttle += Direction * MAGNITUDE
+    Turn = Result 
+    Throttle = clamp(Throttle, MINIMUM, MAX) #Clamps the Speed -10 to 100 according to the settings
+
+    if (Throttle < 0) { #Activate the back thruster if speed is below 0!
+        Reverse = -1
+     } else {
+        Reverse = 0
     }
 }
 
-event tick() {
-    A += Direction * MAGNITUDE
-    B = clamp(A, MINIMUM, MAX) #Clamps the Speed -10 to 100 
-    Screen["A", number] = B #Plug & Play! Wire E2 Chip [WIRELINK] to Screen 
-}
+
