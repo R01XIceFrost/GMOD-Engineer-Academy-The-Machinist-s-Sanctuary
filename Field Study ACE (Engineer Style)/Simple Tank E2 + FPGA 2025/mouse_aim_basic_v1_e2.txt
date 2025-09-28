@@ -1,0 +1,57 @@
+@name Mouse Aim Basic V1.1
+@inputs Gimbal:wirelink
+@outputs #Eye:vector #Output:vector
+@trigger none
+@strict
+
+#July 20 2025 - Septembre 1 2025
+
+# *New Feature Smoothing Aim Implemented in Mouse Aim Basic V1!
+
+#[
+#Gimbal Required!
+#Wire E2 "Gimbal [WIRELINK]" input to Gimbal Tool (Plug & Play!)
+
+INFO:
+
+Place the E2 chip on the ground, ensuring its arrow/dash (small red modern E2 skin) is aligned with the green arrow of the origin XYZ prop. 
+This helps achieve proper calibration.
+In other words, find the map north direction and 
+rotate the E2 chip (if necessary) so its arrow point to the right.
+If aligned correctly, you can delete the origin prop.
+
+]#
+
+Output = vec(0) #initialized
+Limit_1 = -1.0  #Variable stuff
+Limit_2 = -0.3  #Variable stuff
+
+if(first()) {
+    propSpawn("models/sprops/misc/origin.mdl",1) #spawns origin prop of sprop
+     
+}
+
+event tick() { #replacement deprecated function runOnTick()
+    Eye = entity():toLocalAxis(owner():eye()) #Grabs your eye angle coordinates based on the E2 position (beware of positioning the chip!)
+    Clamps_XYZ = vec(
+        clamp(Eye:x(), Limit_1, abs(Limit_1)), #Clamps X -1.0 deg & 1.0 deg
+        clamp(Eye:y(), Limit_1, abs(Limit_1)), #Clamps Y -1.0 deg & 1.0 deg
+        clamp(Eye:z(), Limit_2, abs(Limit_2))  #Clamps Z -0.3 deg & 3.0 deg
+    )
+    
+    Rate = 0.6 #Smooth the number according to this number which is 0.6
+    Output += clamp((Clamps_XYZ - Output) / _TICKINTERVAL, -Rate, Rate) * _TICKINTERVAL  #Special thanks to Darmagon's example logic for smoothing vectors from Wiremod Discord!    
+    Gimbal["Direction", vector] = Output
+    Player = owner():inVehicle()
+    
+    
+if (Player) {       
+    Gimbal["On", number] = 1 #Turns on Gimbal when Player is seated
+}
+  else {
+    Gimbal["On", number] = 0 #Turns off Gimbal when Player is not seated
+    }
+}
+
+
+
