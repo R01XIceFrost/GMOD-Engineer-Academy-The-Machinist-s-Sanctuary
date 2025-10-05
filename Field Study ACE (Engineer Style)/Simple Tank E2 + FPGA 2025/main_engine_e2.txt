@@ -36,9 +36,9 @@ event keyPressed(Player:entity, Key:string, Down:number, KeyBind:string) { #I us
         
         #Turning Logic for the Thruster (-1 or 1 or depending location of your Thruster!)
         if (KeyBind == "moveleft") {
-            Result = -Down # -1 (Modify this code -Down to Down if it's not turning the right direction you want)
+            Result = -Down # -1 (Modify this code -Down to Down if it's not turning the right direction)
             } elseif (KeyBind == "moveright") {
-            Result = Down # 1 (Modify this code Down to -Down if it's not turning the right direction you want)
+            Result = Down # 1 (Modify this code Down to -Down if it's not turning the right direction)
         }         
     }
 }
@@ -50,7 +50,7 @@ Turn = Result
 Throttle = clamp(Throttle, MINIMUM, MAX) #Clamps the Speed -10 to 100 according to the settings
 
     if (Throttle < 0) { #Activate the back thruster if speed is below 0!
-        Reverse = -1
+        Reverse = -1 # (Modify this code -1 to 1 if it's not reversing the back of base plate direction)
      } else {
         Reverse = 0
     }   
