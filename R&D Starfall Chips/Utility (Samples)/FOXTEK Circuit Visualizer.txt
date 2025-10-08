@@ -1,0 +1,145 @@
+--@name FOXTEK Circuit Visualizer
+--@author FOXTEK (Feven Kitsune)
+--@shared
+
+if SERVER then
+    local svLinks = {}
+    
+    local function scanRecursivelyEx(ent, alreadyTracked)
+        if alreadyTracked[ent] then return end
+        alreadyTracked[ent] = true
+    
+        if not hasPermission("wire.wirelink", ent) then return end
+        
+        local wl = wire.getWirelink(ent)
+        local names = wl:inputs()
+        
+        for _, name in ipairs(names) do
+            local inputEnt = wl:getWiredTo(name)
+            if inputEnt then
+                -- generate text options
+                local text = wl:inputType(name) .. "[<color=66,165,245,255>" .. wl:getWiredToName(name) .. "</color>-&gt;<color=239,83,80,255>" .. name .. "</color>]" 
+                local revtext = wl:inputType(name) .. "[<color=239,83,80,255>" .. wl:getWiredToName(name) .. "</color>-&gt;<color=66,165,245,255>" .. name .. "</color>]" 
+                
+                -- generate link lookup indexes
+                local linkidx = tostring(ent) .. tostring(inputEnt)
+                local revidx = tostring(inputEnt) .. tostring(ent)
+                
+                if svLinks[linkidx] then
+                    -- if there's an existing link going in the same direction, prepend its text field.
+                    svLinks[linkidx][3] = text .. "\n" .. svLinks[linkidx][3] 
+                elseif svLinks[revidx] then
+                    -- if there's an existing link going the other direction, append its text field
+                    svLinks[revidx][3] = svLinks[revidx][3] .. "\n" .. revtext
+                else
+                    -- this is a new link, generate a new entry with the correction position data.
+                    local startEntPos = ent:getPos()
+                    local endEntPos = inputEnt:getPos()
+                    local midpoint = (startEntPos + endEntPos) / 2
+                    svLinks[linkidx] = {startEntPos, endEntPos, text}
+                end
+                
+                -- scan for further connections.
+                scanRecursivelyEx(inputEnt, alreadyTracked)
+            end
+        end
+    end
+    
+    local function scanRecursively()
+        -- table to keep track of already known objects.
+        -- thanks Twig for the recursion algorithm.
+        local alreadyTracked = {}
+
+        for _, ent in ipairs(find.all()) do
+            if ent:isValid() then
+                scanRecursivelyEx(ent, alreadyTracked)
+            end
+        end
+    end
+    
+    local function updateLinks(ply)
+        svLinks = {} -- Clear svLinks table
+        scanRecursively()
+        
+        -- encopde the table into a string to allow it to be streamed to the client.
+        local svLinksString = bit.tableToString(svLinks)
+        
+        -- stream table to client.
+        net.start("syncLinkTable")
+        net.writeStream(svLinksString)
+        net.send(ply)
+    end
+    
+    net.receive("clientReady", function(len, ply)
+        -- once client has indicated it's ready, send data.
+        updateLinks(ply)
+    end)
+    
+    -- spawn a hud component to allow others to use the HUD.
+    -- thanks Bonyoze
+    local hud = prop.createComponent(chip():getPos() + Vector(0,0,1), Angle(), "starfall_hud", "models/bull/dynamicbutton.mdl", true)
+    hud:linkComponent(chip())
+    constraint.weld(hud, chip())
+
+else    
+    print("[CLIENT]: Client starting...")
+    local clLinks = {}
+    
+    net.receive("syncLinkTable", function(len, ply)
+        net.readStream(function(data)
+            -- once the string has finished streaming, rebuild it back into a table.
+            clLinks = bit.stringToTable(data)
+            for _, v in pairs(clLinks) do
+                -- precompute midpoint
+                v[4] = (v[1] + v[2]) / 2
+                -- parse markup text
+                v[3] = render.parseMarkup(v[3])
+                -- precompute text block size
+                v[5], v[6] = v[3]:getSize()
+                
+            end
+            
+            -- print to console that new data has arrived.
+            printConsole("[CLIENT]: Received " .. tostring(#clLinks) .. " links from the server.")
+            
+            -- every 5 seconds, tell the server the client is ready for more data.
+            timer.simple(5, function()
+                net.start("clientReady")
+                net.send()
+            end)
+        end)
+    end)
+    
+    hook.add("drawhud", "renderLines", function()
+        for _, v in pairs(clLinks) do
+            -- compute world vector space to local screen space
+            local sp = v[1]:toScreen()
+            local ep = v[2]:toScreen()
+            local mp = v[4]:toScreen()
+            
+            -- render background rectangle
+            render.setColor( Color(33, 33, 33) )
+            render.drawRect(mp["x"], mp["y"], v[5], v[6])
+            
+            -- render markdown text
+            v[3]:draw(mp["x"], mp["y"])
+            
+            -- render lines
+            render.setColor( Color(255, 0, 0) )
+            render.drawLine(sp["x"], sp["y"], mp["x"], mp["y"])
+            render.setColor( Color(0, 0, 255) )
+            render.drawLine(mp["x"], mp["y"], ep["x"], ep["y"])
+        end
+    end)
+    
+    print("[CLIENT]: Client initialized! Requesting data from server...")
+    net.start("clientReady")
+    net.send()
+    
+    
+end
+
+hook.add("removed", "cancelStreams", function()
+    -- cleanup any active streams if the chip is removed. this prevents errors upon respawning chip.
+    if net.isStreaming() == true then net.cancelStream() end
+end)
