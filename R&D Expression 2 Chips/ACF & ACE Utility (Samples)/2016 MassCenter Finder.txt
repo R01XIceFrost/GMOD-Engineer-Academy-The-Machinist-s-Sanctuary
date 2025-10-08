@@ -1,4 +1,4 @@
-@name MassCenter
+@name MassCenter 
 @persist Ent:entity Props:array
 
 #Source: https://youtu.be/n5o1zuwtLD0?si=k_j2a1q_Aujurxc1 34:10
@@ -50,3 +50,4 @@ MassCenter = Ent:getConstraints():massCenter()
 #if(findCanQuery()){ findIncludePlayerProps(owner()), findByClass("prop_physics"), Props = findToArray() }
 #MassCenter = Props:massCenter()
 for(A = 1, 4){ holoAng(A, ang()), holoPos(A, MassCenter) }
+
