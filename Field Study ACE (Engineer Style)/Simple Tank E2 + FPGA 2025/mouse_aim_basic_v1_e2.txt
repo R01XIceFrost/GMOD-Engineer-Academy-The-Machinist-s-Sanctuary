@@ -27,8 +27,11 @@ Limit_1 = -1.0  #Variable stuff
 Limit_2 = -0.3  #Variable stuff
 
 if(first()) {
-    propSpawn("models/sprops/misc/origin.mdl",1) #spawns origin prop of sprop
-     
+    Origin = propSpawn("models/sprops/misc/origin.mdl",1) #spawns origin prop of sprop
+    Origin:parentTo(entity()) #parent prop to E2 chip
+    holoCreate(1,entity():pos() + vec(2,0,0.5), vec(0.09,0.09,0.1), ang(0,0,0),vec(0,255,0),"cone")  
+    holoParent(1, entity())  
+
 }
 
 event tick() { #replacement deprecated function runOnTick()
