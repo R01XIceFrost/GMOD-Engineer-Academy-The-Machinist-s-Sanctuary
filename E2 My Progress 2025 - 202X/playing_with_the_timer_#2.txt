@@ -1,0 +1,18 @@
+@name Playing with the timer #2!
+@inputs B1
+@outputs 
+@persist 
+@strict
+
+
+
+event tick() {
+    if (B1) {
+        if(!timerExists("timer1")) { #Timer exists!
+        timer("timer1", 0, 0, function() { #Fire up the code!
+            print("1")
+            })
+        }
+    }
+}
+

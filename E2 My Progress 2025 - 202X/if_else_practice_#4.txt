@@ -1,0 +1,21 @@
+@name multiple if else practice 4
+@inputs B1 B2 B3
+@outputs A 
+@persist 
+@strict
+
+
+#To test it spawn 3 buttons with the value of 3, 4, 5
+
+#September 25, 2025
+
+if (B1 > 2) { #fire condition 1 if B1 greather than 2
+      print("condition #1")
+    if (B2 > 3) { #fire condition 2 if B2 greather than 3
+        print("condition #2")
+        if (B3 > 4) { #fire condition 3 if B3 greather than 4
+            print("condition #3")
+        }
+    }
+  
+}
