@@ -1,0 +1,160 @@
+@name vehicles/Hovercraft_dupe_e2
+@outputs Fire
+@persist [Base Seat Driver Turret]:entity
+@strict
+
+#Source: https://steamcommunity.com/sharedfiles/filedetails/?id=3473540085
+
+if(dupefinished()){ reset() }
+
+if(first()){
+    entity():propDraw(0)
+    
+    propSpawnUndo(0)
+    
+    Base = propSpawn("models/hunter/blocks/cube075x2x075.mdl",entity():toWorld(vec(0,0,100)),ang(0),1)
+    Base:noCollideAll(1)
+    Base:setAlpha(0)
+    Base:emitSound("weapons/physcannon/physcannon_charge.wav")
+    Base:setMass(_INF)
+    
+    timer("HideDelay",1,function(){
+        
+        entity():propNotSolid(1)
+        Base:propFreeze(0)
+    })
+    
+    #[Turret]#
+    local DataTable = table(
+    "damage" = 50,
+    "delay" = 0.15,
+    "spread" = 0.0035,
+    "sound" = "weapons/ar2/fire1.wav",
+    "tracer" = "AR2Tracer")
+    Turret = sentSpawn("gmod_wire_turret",Base:toWorld(vec(0,48,24)),Base:toWorld(ang()),1,DataTable)
+    Turret:createWire(entity(),"Fire","Fire")
+    Turret:propNotSolid(1)
+    Turret:parentTo(Base)
+    Fire = 0
+    timer("TurretThink",0.01,0,function(){
+        local Drvr = Seat:driver()
+        local Filter = array(Base,Seat,Drvr,Turret)
+        rangerFilter(Filter)
+        #local Ranger = rangerOffset(60000,Drvr:shootPos(),Drvr:eye()) #future |R-0-1-X|Ice Frost here, the reason dupe is disppearing because of this error
+        #Turret:setAng((Ranger:position()-Turret:pos()):toAngle())     
+        Fire = Drvr:keyPressed("mouse_left")
+    })
+    #[Turret]#
+    
+    holoCreate(1,Base:toWorld(vec(50,0,36)),vec(2),Base:toWorld(ang(0,0,-90)),vec(255),"models/props_combine/combine_emitter01.mdl"):parentTo(Base)
+    holoCreate(2,Base:toWorld(vec(-50,0,36)),vec(-2),Base:toWorld(ang(0,0,90)),vec(255),"models/props_combine/combine_emitter01.mdl"):parentTo(Base)
+    holoInvertModel(2,1)
+    
+    holoCreate(3,Base:toWorld(vec(0,100,48)),vec(1.75,2.25,2),Base:toWorld(ang(-90,-90,180)),vec(255),"models/vehicles/prisoner_pod_inner.mdl"):parentTo(Base)
+    holoCreate(4,Base:toWorld(vec(0,100,46)),vec(1.75,2.25,2)*0.9,Base:toWorld(ang(-90,-90,180)),vec(255),"models/vehicles/prisoner_pod_inner.mdl"):parentTo(Base)
+    holoMaterial(4,"models/props_combine/combine_monitorbay_disp")
+    
+    holoCreate(5,Base:toWorld(vec(14,6,36)),vec(1,1,1/2),Base:toWorld(ang(0,180,90)),vec(255),"models/props_combine/combine_fence01a.mdl"):parentTo(Base)
+    holoCreate(6,Base:toWorld(vec(-14,6,36)),-vec(1,1,1/2),Base:toWorld(ang(0,180,-90)),vec(255),"models/props_combine/combine_fence01a.mdl"):parentTo(Base)
+    holoInvertModel(6,1)
+    
+    holoCreate(7,Base:toWorld(vec(28,8,18)),vec(1.5),Base:toWorld(ang(0,90,-45)),vec(255),"models/props_combine/combine_binocular01.mdl"):parentTo(Base)
+    holoCreate(8,Base:toWorld(vec(-28,8,18)),-vec(1.5),Base:toWorld(ang(0,-90,135)),vec(255),"models/props_combine/combine_binocular01.mdl"):parentTo(Base)
+    holoInvertModel(8,1)
+    
+    holoCreate(9,Base:toWorld(vec(-28,8,52)),vec(1.5),Base:toWorld(ang(0,90,135)),vec(255),"models/props_combine/combine_binocular01.mdl"):parentTo(Base)
+    holoCreate(10,Base:toWorld(vec(28,8,52)),-vec(1.5),Base:toWorld(ang(0,-90,-45)),vec(255),"models/props_combine/combine_binocular01.mdl"):parentTo(Base)
+    holoInvertModel(10,1)
+    
+    for(I=5,8){ holoEntity(I):setTrails(8,0,2,"trails/laser",vec(75,200,255),255) }
+    
+    holoCreate(11,Base:toWorld(vec(0,54,40)),vec(2,2.5,3),Base:toWorld(ang(-90,90,180)),vec(255),"models/thrusters/jetpack.mdl"):parentTo(Base)
+    holoMaterial(11,"models/props_combine/combine_monitorbay_disp")
+    
+    Seat = seatSpawn("models/nova/airboat_seat.mdl",Base:toWorld(vec(0,-20,30)),Base:toWorld(ang(0,0,0)),0,"Seat_Airboat")
+    Seat:noCollideAll(1)
+    Seat:setMass(0)
+    Seat:parentTo(Base)
+    Seat:setMaterial("models/props_combine/metal_combinebridge001")
+    #if(Seat){ Seat:setTrails(24,0,1,"trails/plasma",vec(50,185,255),255) }
+    if(Seat){ Seat:setTrails(18,0,0.1,"trails/plasma",vec(100,180,255),255) }
+    
+    Driver = noentity()
+    Fire = 0
+}
+
+timer("Validation",1/10,0,function(){
+    if(!Seat:driver()){ Driver = noentity() }
+    Base:propGravity(!Driver:isValid())
+    if(!Driver){
+        if(soundPlaying("engine")){
+            soundStop("engine")
+        }
+    }else{
+        if(!soundPlaying("engine")){
+            holoEntity(1):soundPlay("engine",0,"weapons/physcannon/energy_sing_loop4.wav")
+        }
+        soundPitch("engine",50+Base:vel():length()/250)
+    }
+})
+
+timer("Angle",1/10,0,function(){
+    
+    local Pitch = Driver:keyPressed("lalt") ? 18 : Driver:keyPressed("space") ? -18 : 0
+    Pitch = Driver:keyPressed("lshift") ? Pitch*3/2 : Pitch
+    local Yaw = Base:angles():yaw() 
+    local Turn = Driver:keyPressed("a") ? 28 : Driver:keyPressed("d") ? -28 : 0
+    Turn = (Driver:keyPressed("w")|Driver:keyPressed("s")) ? Turn : Turn*2
+    local Roll = Driver:keyPressed("a") ? 18 : Driver:keyPressed("d") ? -18 : 0
+    Roll = (Driver:keyPressed("w")|Driver:keyPressed("s")) ? Roll : 0
+    local Boost = Driver:keyPressed("lshift") ? 3/2 : 1
+    local Reverse = Driver:keyPressed("s") ? -1 : 1
+    
+    local Ang = ang(-Roll*Boost,Yaw + Turn*Boost*Reverse,-Pitch)
+    Q = quat(Ang)/quat(Base)
+    V = Base:toLocal(rotationVector(Q)+Base:pos())
+    Base:applyTorque((75*V - 50*Base:angVelVector())*Base:inertia()*0.5)
+})
+
+timer("Move",1/10,0,function(){
+    local Move = Driver:keyPressed("w") ? 1 : Driver:keyPressed("s") ? -1 : 0
+    local Boost = Driver:keyPressed("lshift") ? 650 : 150
+    local Up = Driver:keyPressed("space") ? 0.425 : Driver:keyPressed("lalt") ? -0.425 : 0
+    Base:applyForce( ( ( Seat:forward()*vec(1,1,0) * Move * Boost + vec(0,0,Up*Boost)) - ( Base:vel()/8) ) * Base:mass() + vec(0,0,Base:mass()))
+})
+
+event playerEnteredVehicle(Player:entity, Vehicle:entity) {
+    if(Vehicle == Seat){
+        Driver = Seat:driver()
+        if(Driver != owner()){
+            Base:emitSound("npc/attack_helicopter/aheli_megabomb_siren1.wav")
+        }else{
+            Base:emitSound("weapons/physcannon/physcannon_charge.wav")
+        }
+    }
+}
+
+event keyPressed(Player:entity, Key:string, Down:number, KeyBind:string) {
+    if(Player == Driver & Down == 1){
+        if(Key == "mouse_right" & !timerExists("cd")){
+            local Bomb = propSpawn("models/maxofs2d/hover_rings.mdl",Base:toWorld(vec()),ang(),0)
+            if(!Bomb){ exit() }
+            local BombID = Bomb:id()
+            Bomb:propDrag(0)
+            Bomb:propPhysicalMaterial("bouncy")
+            Bomb:setMaterial("models/alyx/emptool_glow")
+            Bomb:setColor(vec(150,200,255))
+            Bomb:setTrails(12,0,3,"trails/laser",vec(255,0,0),255)
+            Bomb:propSetAngVelocityInstant(-Base:right()*Base:vel():length()*5)
+            Bomb:applyForce(Base:vel()*vec(1,1,0)*Bomb:mass())
+            Bomb:emitSound("npc/attack_helicopter/aheli_mine_drop1.wav")
+            Bomb:soundPlay("Loop"+BombID,0,"npc/scanner/combat_scan_loop1.wav")
+            Base:emitSound("ambient/machines/hydraulic_1.wav",50,255)
+            timer("Fuse"+BombID,3.5,function(){
+                propSpawn("models/props_phx/ball.mdl",entity(BombID):pos(),ang(),1):propBreak()
+                entity(BombID):propDelete()
+            })
+            timer("cd",1,function(){})
+        }
+    }
+}
