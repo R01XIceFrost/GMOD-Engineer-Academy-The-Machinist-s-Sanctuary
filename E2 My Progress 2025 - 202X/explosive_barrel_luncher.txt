@@ -1,0 +1,42 @@
+@name Explosive Barrel Luncher
+@inputs Prop:entity #B
+@persist D
+
+#[
+
+to remove limitiation of propCanCreate to spam more than 4 (at your own risk) 
+type this in the console "sbox_e2_maxpropspersecond 100"
+remove the quotation marks!
+
+]#
+
+
+#October 24 
+
+#Unfreeze E2 Chip to start!
+
+D = 0
+
+event tick () {
+    
+    D += 0.1
+    if (D > 30) {
+        D = 0
+}    
+    Angle = ang(0, 0 + D, 0)
+    entity():applyAngForce(Angle)
+    print(D)
+A = entity():isFrozen()
+if (!A & propCanCreate()) {    
+    if (!timerExists("spawn rate")) {
+        timer("spawn rate", 0.1, 0, function() { #spawn rate sets to 0.5 sec or set it 0,1 but you need to remove limitiation of propCanCreate!
+            Prop = propSpawn("models/props_c17/oildrum001_explosive.mdl",0)
+            Prop:applyForce(Prop:forward()*10000000)    
+            Prop:applyForce(Prop:up()*50)    
+            })
+        }
+    }
+    #if (B) {
+        #stoptimer("spawn rate")
+    } 
+

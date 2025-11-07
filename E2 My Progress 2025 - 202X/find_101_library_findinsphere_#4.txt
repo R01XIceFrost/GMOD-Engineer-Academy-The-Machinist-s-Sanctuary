@@ -1,0 +1,24 @@
+@name findInSphere 101 #1
+@inputs 
+@outputs 
+@persist 
+@strict
+
+
+#October 31, 2025
+
+E2 =  entity():pos()
+
+
+
+event tick() {
+    if(findCanQuery()) {
+    findInSphere(E2, 100)
+    findClipToClass("player")
+    
+if(find()) {
+    print("S")
+}
+
+}}
+

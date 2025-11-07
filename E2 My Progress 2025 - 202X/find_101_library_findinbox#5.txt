@@ -1,0 +1,29 @@
+@name findInBox 101 
+@inputs 
+@outputs 
+@persist 
+@strict
+
+
+
+#November 7, 2025
+
+event tick() {
+    
+
+Vector1 = entity():toWorld(vec(-100,-100,-100))
+Vector2 = entity():toWorld(vec(100,100,100))
+
+
+    if(findCanQuery()) {
+    findInBox(Vector1,Vector2)
+
+    findClipToClass("player")
+
+    
+if(find()) {
+    print("1")
+}
+
+}}
+
