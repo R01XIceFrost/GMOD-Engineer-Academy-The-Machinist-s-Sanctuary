@@ -26,13 +26,14 @@ Written by Alix
 @persist [FwVec C1 C2]:vector
 @persist [MeleeA MeleeB]:string
 
+
 runOnTick(1)
 if(first())
 {
     entity():setAlpha(0)
     
     #Weapons to use
-    MeleeA = "weapon_blank_knife"
+    MeleeA = "weapon_empty_hands"
     MeleeB = "weapon_crowbar"
     
     #Colours
@@ -321,14 +322,14 @@ if(IceDestroyDelay==0 && Index>0)
 
 #Using Airstep
 Space = owner():keyJump()
-#ifdef entity:applyPlayerForce(vector)
+#ifdef entity:plyApplyForce(vector)
     if(!owner():isOnGround() && owner():isCrouch() && T<=0 && Hold == 1)
     {
-        owner():applyPlayerForce(vec(-owner():vel():x()/8,-owner():vel():y()/8,-owner():vel():z()) )  
+        owner():plyApplyForce(vec(-owner():vel():x()/8,-owner():vel():y()/8,-owner():vel():z()) )  
         Float = 1
         if(Space) 
         {
-            owner():applyPlayerForce(owner():eye()*1200)
+            owner():plyApplyForce(owner():eye()*1200)
             T = 60   
             Float = 0
             Base:soundPlay(3,0,"weapons/pickaxe_swing"+randint(1,3)+".wav")
