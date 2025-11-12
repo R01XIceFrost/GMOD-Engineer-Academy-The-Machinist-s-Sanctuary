@@ -439,11 +439,11 @@ if(Hold==2 & $M1 & M1 & Cd == 0) {
     S:setTrails(10,0,1,"trails/laser",vec(255,215,215),150)
     S:applyForce(owner():eye() * S:mass() * S:mass())
     
-    #ifdef entity:applyPlayerForce(vector)
-        PlayerTarget:applyPlayerForce(-PlayerTarget:eye()*550)
+    #ifdef entity:plyApplyForce(vector)
+        PlayerTarget:plyApplyForce(-PlayerTarget:eye()*550)
     #endif
     #ifdef particle(number,number,number,string,vector,vector,vector)
-        particle(0.1,20,15,"effects/muzzleflash" + randint(1,4),vec(255,255,255),Base:toWorld(vec(-35,0,0)),vec(0,0,0))
+        particlesList()(0.1,20,15,"effects/muzzleflash" + randint(1,4),vec(255,255,255),Base:toWorld(vec(-35,0,0)),vec(0,0,0))
     #endif
     }
         
