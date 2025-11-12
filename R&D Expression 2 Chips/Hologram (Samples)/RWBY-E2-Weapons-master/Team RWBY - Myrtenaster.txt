@@ -19,6 +19,16 @@ http://rwby.wikia.com/wiki/Myrtenaster
 Written by Alix
 ]#
 
+#[
+
+***Controls***
+Jump then crouch 
+Jump + Space
+
+***Notes***
+Use weapon_empty_hands (default gmod empty hands) for better calibration holo stuff
+
+]#
 @name RWBY Myrtenaster
 @persist [Base Pivot]:entity 
 @persist [Hold Space T Float Chamber M2 Cooldown IcePathVal Index IceDestroyDelay I NumHolo] 
