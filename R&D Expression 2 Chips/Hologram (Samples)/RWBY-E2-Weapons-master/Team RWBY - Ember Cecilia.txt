@@ -32,6 +32,7 @@ I repaird the functions E2 chip that are broken (just basics functions) that I c
 *Explosive stuff that shoots is not aiming correctly,probably something do with line 421 according with @strict on
 *Line 507 Sound stuff Base:soundPlay(5,1,"weapons/metal_gloves_hit_flesh"+randint(1,4)+".wav") not working
 *Use weapon_fists (default GMOD entity)
+* For better experience, type this in the console command "r_drawviewmodel 0" remove quotation  mark to hide your weapons * fists!
 
 ***Controls***
 E + R (reloads both)
@@ -454,7 +455,7 @@ if(Hold==1)
                     P:propGravity(0)
                     P:setAlpha(0)
                     P:setTrails(20,0,1,"trails/smoke",vec(255,150,10),255)
-                    P:applyForce(PlayerTarget:eye() * P:mass() * P:mass() * 10000)
+                    P:applyForce(PlayerTarget:eye() * P:mass() * P:mass() * 2000)
                 }
             
             }
@@ -485,7 +486,7 @@ if(Hold==1)
                     P:propGravity(0)
                     P:setAlpha(0)
                     P:setTrails(20,0,1,"trails/smoke",vec(255,200,10),150)
-                    P:applyForce(PlayerTarget:eye() * P:mass() * P:mass() * 10000)
+                    P:applyForce(PlayerTarget:eye() * P:mass() * P:mass() * 2000)
                 }
             
         }
