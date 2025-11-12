@@ -20,11 +20,34 @@ http://rwby.wikia.com/wiki/Ember_Celica
 Written by Alix
 ]#
 
+#[
+
+Future Nov, 12 2025 
+|R-0-1-X|Ice Frost here
+
+I repaird the functions E2 chip that are broken (just basics functions) that I can replace with my own E2 skills
+
+***Notes***
+*Fixed applyPlayerForce
+*Explosive stuff that shoots is not aiming correctly,probably something do with line 421 according with @strict on
+*Line 507 Sound stuff Base:soundPlay(5,1,"weapons/metal_gloves_hit_flesh"+randint(1,4)+".wav") not working
+*Use weapon_fists (default GMOD entity)
+
+***Controls***
+E + R (reloads both)
+Left click to attack (mode 1?)
+E + R then Right Click pushes you or use it as aerial jump just link in the video 1:07 ttps://youtu.be/XIVIaUF38R4?si=3-NNWoscVNwVbwUI
+E + R then shift + Left Click to shoot explosives
+
+]#
+
 @name RWBY Ember Cecilia
 @persist [Pivot Base Slide Pivot2 Base2 Slide2 PlayerTarget]:entity  
 @persist [C1 C2]:vector 
 @persist [E R Hold Ch1 Ch2 M1 M2 Clip1 Clip2 I NumHolo]:number
 @persist [Fists]:string
+
+
 
 runOnTick(1)
 
@@ -408,17 +431,17 @@ if(Hold==1)
             holoAlpha(11+Clip1,0)
             
             Base:soundPlay(3,1,"weapons/short_stop_shoot.wav")
-            #ifdef entity:applyPlayerForce(vector)
-                PlayerTarget:applyPlayerForce(-PlayerTarget:eye()*40)
+            #ifdef entity:plyApplyForce(vector)
+                PlayerTarget:plyApplyForce(-PlayerTarget:eye()*40)
                 if(PlayerTarget:aimEntity())
                 {
-                    PlayerTarget:aimEntity():applyPlayerForce(PlayerTarget:eye()*400)
+                    PlayerTarget:aimEntity():plyApplyForce(PlayerTarget:eye()*400)
                 }   #Where there's smoke...
             #endif
             #Server-compatible particle effect
             #ifdef particle(number,number,number,string,vector,vector,vector)
                 for(I=0,10){
-                    particle(0.5,5,6,"sprites/flamelet"+randint(1,5),vec(255,255,255),Base:toWorld(vec(randint(-5,5),randint(-5,5),0)),(-Base:up() * 120) + (Base:forward()*randint(-45,145)) + (Base:right()*randint(-45,45)))
+                    particlesList(0.5,5,6,"sprites/flamelet"+randint(1,5),vec(255,255,255),Base:toWorld(vec(randint(-5,5),randint(-5,5),0)),(-Base:up() * 120) + (Base:forward()*randint(-45,145)) + (Base:right()*randint(-45,45)))
                 }
             #endif
             #Particles don't quite work in singleplayer right now
@@ -441,16 +464,16 @@ if(Hold==1)
             Clip2--
             holoAlpha(63-(Clip2),0)   
             Base2:soundPlay(4,1,"weapons/short_stop_shoot.wav")
-            #ifdef entity:applyPlayerForce(vector)
-                PlayerTarget:applyPlayerForce(-PlayerTarget:eye()*40)
+            #ifdef entity:plyApplyForce(vector)
+                PlayerTarget:plyApplyForce(-PlayerTarget:eye()*40)
                 if(PlayerTarget:aimEntity())
                 {
-                    PlayerTarget:aimEntity():applyPlayerForce(PlayerTarget:eye()*400)
+                    PlayerTarget:aimEntity():plyApplyForce(PlayerTarget:eye()*400)
                 }   ##... They push back!
             #endif
             #ifdef particle(number,number,number,string,vector,vector,vector)
                 for(I=0,10){
-                    particle(0.5,5,6,"sprites/flamelet"+randint(1,5),vec(255,255,255),Base2:toWorld(vec(randint(-5,5),randint(-5,5),0)),(-Base2:up() * 120) + (Base2:forward()*randint(-45,145)) + (Base2:right()*randint(-45,45)))
+                    particlesList(0.5,5,6,"sprites/flamelet"+randint(1,5),vec(255,255,255),Base2:toWorld(vec(randint(-5,5),randint(-5,5),0)),(-Base2:up() * 120) + (Base2:forward()*randint(-45,145)) + (Base2:right()*randint(-45,45)))
                         }
             #endif
             
@@ -490,11 +513,11 @@ if(Hold==1)
         #ifdef entity:setVelocity(vector)
             PlayerTarget:setVelocity(-PlayerTarget:eye()*400)
         #endif
-        #ifdef entity:applyPlayerForce(vector)
-                PlayerTarget:applyPlayerForce(-PlayerTarget:eye()*800)
+        #ifdef entity:plyApplyForce(vector)
+                PlayerTarget:plyApplyForce(-PlayerTarget:eye()*800)
                 if(PlayerTarget:aimEntity())
                 {
-                    PlayerTarget:aimEntity():applyPlayerForce(PlayerTarget:eye()*8000)
+                    PlayerTarget:aimEntity():plyApplyForce(PlayerTarget:eye()*8000)
                 } #Send'em flying
         #endif
         Ch1 = 0
@@ -503,10 +526,10 @@ if(Hold==1)
             holoAlpha(11+Clip1,0)
         Clip2--
             holoAlpha(64-Clip2,0)
-        #ifdef particle(number,number,number,string,vector,vector,vector)
+        #ifdef particlesList(number,number,number,string,vector,vector,vector)
             for(I=0,10){
-                    particle(0.5,5,6,"sprites/flamelet"+randint(1,4),vec(255,0,0),Base:toWorld(vec(randint(-5,5),randint(-5,5),0)),(PlayerTarget:eye()*200))
-                    particle(0.5,5,6,"sprites/flamelet"+randint(1,4),vec(255,0,0),Base2:toWorld(vec(randint(-5,5),randint(-5,5),0)),(PlayerTarget:eye()*200))
+                    particlesList(0.5,5,6,"sprites/flamelet"+randint(1,4),vec(255,0,0),Base:toWorld(vec(randint(-5,5),randint(-5,5),0)),(PlayerTarget:eye()*200))
+                    particlesList(0.5,5,6,"sprites/flamelet"+randint(1,4),vec(255,0,0),Base2:toWorld(vec(randint(-5,5),randint(-5,5),0)),(PlayerTarget:eye()*200))
                }
             #endif
     }   
