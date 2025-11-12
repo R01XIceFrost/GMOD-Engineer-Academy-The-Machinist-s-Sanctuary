@@ -13,7 +13,14 @@ PropCore
 SetVelocity
 TF2 (Sniper knife)
 CS:S (Sounds)
+
 A crowbar and a crossbow
+
+Future |R-0-1-X|Ice Frost here!
+Nov 12, 2025
+
+A crowbar and empty rifle (PlaceHolder Rifle/smg) from the addon called "Empty Weapon Sweps" for better experience! 
+
 
 http://rwby.wikia.com/wiki/Crescent_Rose
 
