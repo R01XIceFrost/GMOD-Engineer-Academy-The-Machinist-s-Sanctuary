@@ -20,6 +20,17 @@ http://rwby.wikia.com/wiki/Crescent_Rose
 Written by Alix
 ]#
 
+
+#[
+Future |R-0-1-X|Ice Frost here!
+Nov 12, 2025
+
+Fixed issue the aim is not corresponding from the player's pos
+(Spolier it was the S:setMass(50000) too mass I presume?)
+
+
+]#
+
 @name RWBY Crescent Rose
 @persist [Base Pivot Trailer PlayerTarget]:entity 
 @persist [Hold M1 M2 Anim SMAnim T Cd I NumHolo] 
@@ -27,6 +38,8 @@ Written by Alix
 @persist [Blades Scope]:array 
 @persist [MeleeWeapon RifleWeapon]:string 
 @persist [ScaleFix]
+
+
 runOnTick(1)
 
 if(first())
@@ -39,7 +52,7 @@ if(first())
         
     #Which weapon to use for each 'mode'
     MeleeWeapon = "weapon_crowbar"
-    RifleWeapon = "weapon_crossbow"
+    RifleWeapon = "empt_rifle"
     
     #Colours for each part - if you change these, you suck
     Red = vec(120,0,0)
@@ -433,7 +446,7 @@ if(Hold==2 & $M1 & M1 & Cd == 0) {
     
     S = propSpawn("models/props_junk/garbage_coffeemug001a.mdl",Base:toWorld(vec(-45,0,0)),Base:toWorld(ang(0,0,0)),0)
     S:propGravity(0)
-    S:setMass(50000)
+    S:setMass(10000)
     #S:propDrag(0)
     S:setAlpha(0)
     S:setTrails(10,0,1,"trails/laser",vec(255,215,215),150)
