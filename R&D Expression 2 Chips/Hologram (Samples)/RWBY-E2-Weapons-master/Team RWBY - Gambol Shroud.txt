@@ -39,7 +39,7 @@ if(first())
     C1   = vec(33,33,33)
     C2   = vec(150,150,150)
     
-    SingleWeapon = "weapon_blank_melee2"
+    SingleWeapon = "f4_begotten_machete" #Fallout 4 Machete from Fallout 4 Melee Weapons addon https://steamcommunity.com/sharedfiles/filedetails/?id=1224613862&searchtext=fallout+4+melee
     SplitWeapon = "weapon_fists"
     ThrowWeapon = "weapon_crowbar"
     PistolWeapon = "weapon_pistol"
@@ -51,7 +51,7 @@ if(first())
     I = 2
     NumHolo = 47
     
-    function entity holoStyle(Index,Position:vector,Scale:vector,Angle:angle,Colour:vector,Model:string)
+    function entity holoStyle(Index:number,Position:vector,Scale:vector,Angle:angle,Colour:vector,Model:string)
         {
             holoPos(Index,Position) holoScale(Index,Scale) holoAng(Index,Angle) holoColor(Index,Colour) holoModel(Index,Model) 
             return holoEntity(Index)   
@@ -78,6 +78,8 @@ elseif(I>NumHolo & I > 0)
         
         holoPos(1,Pivot:toWorld(vec(-13,0,0)))
         holoPos(0,entity():toWorld(vec(-7.3,10,0)))
+    
+
         
     #Pistol
     Pivot2 = holoStyle(15,entity():toWorld(vec(0,0,0)),vec(),ang(0,0,0),vec(),"cube") holoParent(15,entity())
@@ -294,7 +296,7 @@ if(M1&$M1&Hold==1)
     Base2:soundPlay(3,0,"weapons/sniper_shoot.wav")
     soundPitch(3,140)
     #ifdef particle(number,number,number,string,vector,vector,vector)
-        particle(0.2,10,5,"effects/muzzleflash" + randint(1,4),vec(255,255,255),Base2:toWorld(vec(0,10,0)),vec(0,0,0))
+        particlesList(0.2,10,5,"effects/muzzleflash" + randint(1,4),vec(255,255,255),Base2:toWorld(vec(0,10,0)),vec(0,0,0))
     #endif
 }
 
@@ -319,7 +321,7 @@ if(M1&$M1&Hold==1)
     
     if(IsThrown)
     {
-        if(M2 && $M2 | Hold !=3 | owner():pos():distance(ThrownProp:pos()) > 1700)
+        if(M2 && $M2 | Hold !=3 | owner():pos():distance(ThrownProp:pos()) > 5000)
         {
             holoPos(16,Pivot2:toWorld(vec(1,-1,3)))
             holoAng(16,Pivot2:toWorld(ang(90,120,0)))
@@ -348,10 +350,10 @@ if(M1&$M1&Hold==1)
             #Grappling
             GrappleForce = owner():pos():distance(ThrownProp:pos()) - GrappleLength
             if(Reload){GrappleLength = 0 }
-            #ifdef entity:applyPlayerForce(vector)
+            #ifdef entity:plyApplyForce(vector)
                 if(GrappleForce > -1)
                 {
-                    PlayerTarget:applyPlayerForce((ThrownProp:pos() - owner():pos()) * (GrappleForce*0.1 + $GrappleForce*0.01))
+                    PlayerTarget:plyApplyForce((ThrownProp:pos() - owner():pos()) * (GrappleForce*0.1 + $GrappleForce*0.01))
                 }
             #endif
         }
