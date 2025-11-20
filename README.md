@@ -6,7 +6,7 @@ Show some love to https://ko-fi.com/gmodengineeracademy & subscribe to my channe
 
 ![1651114819606](https://github.com/user-attachments/assets/850917d8-0bc1-443b-8f8e-1bfa7ac24fd5)
 --------------------------------------------------
-Work in Progress (EARLY) ACE Simple Tank 2025
+Work in Progress (EARLY) ACE Simple Tank E2 + FPGA 2025
 <img width="1173" height="895" alt="ACE TANK EARLY WORKS" src="https://github.com/user-attachments/assets/62a8e175-7861-4355-af65-0dad81e36275" />
 
 --------------------------------------------------
