@@ -65,8 +65,8 @@ This is me trying to fix this E2 Chip (my childhood!!!)
 
 event tick() {
    
-    holoCreate(155)
-    holoModel(155, "models/Kleiner.mdl")
+    holoCreate(420)
+    holoModel(420, "models/Kleiner.mdl")
     entity():setAlpha(0)
     A = ang(0,0,0)
     entity():keepUpright(A)
@@ -812,3 +812,4 @@ if( clk("ambient") )
     
     interval(200)
 }
+
