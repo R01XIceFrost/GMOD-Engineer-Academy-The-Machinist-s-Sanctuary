@@ -1,0 +1,20 @@
+@name findInSphere 101 #2
+@inputs 
+@outputs 
+@persist 
+@trigger none 
+@strict
+
+
+#Nov 26, 2025 
+
+timer("timer",1,0,function() {
+    E2Pos =  entity():pos()
+    Range = findInSphere(E2Pos, 200) 
+    Target = findByModel("models/Items/battery.mdl")
+    
+    if(Range > 1 & Target >= 1) {
+        print("HL2 batteries Found Total:"+Target)
+    }
+})
+
