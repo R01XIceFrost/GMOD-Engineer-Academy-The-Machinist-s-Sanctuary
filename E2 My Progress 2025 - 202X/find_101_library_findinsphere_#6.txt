@@ -1,3 +1,58 @@
+@name Find Example by The Peak Comedy
+@trigger none
+@strict
+
+#[
+Nov 30, 2025
+special thanks to The Peak Comedy
+from the Wiremod Discord 
+for providing sample!
+]#
+
+
+Range = 200
+Cache = array()
+Model = "models/hunter/blocks/cube025x025x025.mdl"
+
+timer("Find", 1, 0, function() {
+    # Early return if you can not queue the find function
+    if (!findCanQuery()) { return }
+    
+    # Get Position
+    let E2Pos = entity():pos()
+    
+    # Trigger any find function
+    # findInSphere(), findInBox(), findByClass(), findByModel(), ...
+    findInSphere(E2Pos, Range)
+    
+    # Find Filter
+    # findClipToClass(), findClipToModel(), findClipToPlayerProps()
+    findClipToModel(Model)
+    
+    # If you want to sort by distance, uncomment the line below to see effect
+    #findSortByDistance(E2Pos)
+    
+    # Return the found entities in array
+    Cache = findToArray()
+})
+
+timer("Post", 2, 0, function() {
+    # If Entities found are empty, early return
+    if (Cache:count() <= 0) { return }
+    
+    # Get Entities count if passed the check
+    let Count = Cache:count()
+    
+    # Get Distance of First Entity in the find
+    let Distance = Cache[1, entity]:pos():distance(entity():pos())
+    
+    # Put into print
+    let Str = format("Matched Model %s Found:\nTotal: %0d\nFirst Entity Entry Distance: %0.0f", Model, Count, Distance)
+    print(Str)
+})
+
+
+#[
 @name findInSphere 101 #2
 @inputs 
 @outputs 
@@ -17,4 +72,5 @@ timer("timer",1,0,function() {
         print("HL2 batteries Found Total:"+Target)
     }
 })
+]#
 
