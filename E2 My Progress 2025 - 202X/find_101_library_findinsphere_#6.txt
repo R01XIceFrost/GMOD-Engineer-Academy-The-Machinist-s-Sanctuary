@@ -53,6 +53,18 @@ timer("Post", 2, 0, function() {
 
 
 #[
+
+info these strings:
+%0.0f
+%0d
+%s
+
+it's a wrapper for Lua's string.format https://www.lua.org/manual/5.1/manual.html#pdf-string.format
+the conversion table from cppreference should explain what these are https://en.cppreference.com/w/c/io/fprintf.html
+thanks to Danct12 from the Wiremod Discord
+]#
+
+#[
 @name findInSphere 101 #2
 @inputs 
 @outputs 
