@@ -1,5 +1,5 @@
 @name BallSplosion
-@persist Click Worldsarray
+@persist Click Worlds:array
 @trigger 
 
 #[
@@ -12,51 +12,45 @@ INFO
 
 runOnTick(1)
 
-Click = owner()keyAttack2()
-Holos = 25
-Scale = 0.5
-Space = 2
+Click = owner():keyAttack2()
+HOLOS = 25
+SCALE = 0.5
+SPACE = 2
 
-if(first())
-{
-for(I=1,Holos)
-{
-holoCreate(I)
-holoModel(I,hqicosphere2)
-holoScale(I,vec(1,1,1)Scale)   
-}    
-}
-if(Click&$Click)
-{
-for(I=1,Holos)
-{
-holoPos(I,owner()aimPos())   
-
-Rand = randvec(-1,1)
-Worlds[I,vector] = (owner()aimNormal()+Rand)Space
-}
-   
+if (first()) {
+    for (I = 1, HOLOS) {
+        holoCreate(I)
+        holoModel(I, "hqicosphere2")
+        holoScale(I, vec(1,1,1) * SCALE)
+    }
 }
 
+if (Click & $Click) {
+    for (I = 1, HOLOS) {
 
-for(I=1,Holos)
-{
-holoPos(I,holoEntity(I)toWorld(Worlds[I,vector]))    
+        holoPos(I, owner():aimPos())
 
-Worlds[I,vector]=Worlds[I,vector]-vec(0,0,0.05)
-Worlds[I,vector]=Worlds[I,vector]0.99
-
-RD = rangerOffset(6Scale,holoEntity(I)pos(),vec(0,0,-1))
-RV = rangerOffset(6Scale,holoEntity(I)pos(),Worlds[I,vector]setZ(0))
-
-if(RDhit())
-{
-Dir = RDposition()+vec(0,0,6Scale)-holoEntity(I)pos()
-Worlds[I,vector]=Worlds[I,vector]setZ(Dirz())
+        Rand = randvec(-1, 1)
+        Worlds[I,vector] = (owner():aimNormal() + Rand) * SPACE
+    }
 }
 
-if(RVhit())
-{
-Worlds[I,vector]=Worlds[I,vector]+RVhitNormal()   
-}
+for (I = 1, HOLOS) {
+
+    holoPos(I, holoEntity(I):toWorld(Worlds[I,vector]))
+
+    Worlds[I,vector] = Worlds[I,vector] - vec(0,0,0.05)
+    Worlds[I,vector] = Worlds[I,vector] * 0.99
+
+    RD = rangerOffset(6 * SCALE, holoEntity(I):pos(), vec(0,0,-1))
+    RV = rangerOffset(6 * SCALE, holoEntity(I):pos(), Worlds[I,vector]:setZ(0))
+
+    if (RD:hit()) {
+        Dir = RD:position() + vec(0,0,6 * SCALE) - holoEntity(I):pos()
+        Worlds[I,vector] = Worlds[I,vector]:setZ(Dir:z())
+    }
+
+    if (RV:hit()) {
+        Worlds[I,vector] = Worlds[I,vector] + RV:hitNormal()
+    }
 }
