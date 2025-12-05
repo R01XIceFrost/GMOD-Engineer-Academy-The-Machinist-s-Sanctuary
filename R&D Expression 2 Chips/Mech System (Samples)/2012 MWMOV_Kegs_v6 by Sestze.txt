@@ -1,0 +1,277 @@
+@name MWMOV_Kegs_v6
+@inputs [Hip Footl Footr Torso]:entity
+@inputs For Back Left Right Jump X Y Active Zero
+@outputs ThrotPerc TorsoDiff Debug:vector
+#Walking Stuff
+#Vectors
+@persist [HPosFootl HPosFootr HPosAve]:vector
+@persist [CPosFootl CPosFootr CPosAve]:vector
+@persist [TPosFootl TPosFootr]:vector
+@persist [OPosFootl OPosFootr OPosAve]:vector
+@persist [HipFDir HipUDir]:vector
+@persist [Footlpo Footrpo Footlho Footrho Guffl Guffr]:vector
+#Foot Rangers
+@persist [Dranl Dranr]:ranger
+#Numbers
+@persist Jtgl Jinc Heading Throttle Time AcSS Checkl Checkr Hush
+#Torso Stuff
+#Vectors
+@persist [DFor DRig Tf Tr Mf Mr OffF OffR]:vector
+@persist [UpVector]:vector
+#Numbers
+@persist Nf Nr FiltFiltx
+#Tweakables
+@persist HipHoldStrength Maxangy Maxangx Tspd Tstr Kustr ThrMax IncPerc
+@persist StepSizeh StepSizev Fstr Hstr HushSpd Footd JumpIncrementAmount JumpMax
+@trigger 
+
+#SOURCE: https://youtu.be/nTJ1tex7kow?si=8ZmwLfh_UoajHpIn by Sestze/FPSLemoneko
+
+#[
+
+INFO:
+
+10,034 views  4 Feb 2012
+Uploaded due to request... The credits to the video , soundtracks and others belongs to its appropriate owner. I do not take any credit, even for re-uploading it. Video quality may not be as good as the original video. The original uploader should be Sestze.
+
+Here's the building & wiring procedure:
+1) Arrange the props, a stove for the Hip, two fridges for the leg, and two washing machine for the foot, according to the video.
+
+2) Constraint those props with Ball Socket according to the settings in the video.
+
+3) Place 3 entity markers( not advanced entity marker ). Link one to the left foot, one to the hip prop, and one to the right foot. Right click on the e-marker with the e-marker tool to select the marker, then right click on a prop to link the marker to the prop. If done correctly, a yellow line should appear to show the links performed. Note down which one prop you've linked and its marker.
+
+4) With the previously noted down e-marker links, wire "footl" from the expression chip to the e-marker linked to the left foot prop. Wire "Hip" to the hip e-marker, and "footr" to the right foot e-marker.
+
+4) Spawn a wire button. Wire the expression chip's "Active" to the button. Make sure it is a toggle button. The setting for "off" state must be 0, and the "on" state to be any number other than 0.
+
+5) Spawn four numpads with the key "8", "2" "6" and "4". Wire "For" to numpad "8", "Left" to numpad "4", "Right" to numpad "6" and "Back" to numpad "2".
+
+6) Type "!reset" in chat. This is a very important thing to do every time you linked your e-marker to a different prop, or the entity links in your expression chip changed.
+
+7) Unfreeze your Mech without activating it. If everything is done correctly, your Mech should be dropping down freely, not standing still.
+
+8) Toggle the button to it's "On" state. The Mech should stand up from it's rest position. If it does, you can now try moving your Mech with the numpad keys
+
+
+]#
+
+interval(10)
+
+CPosFootl = entity():toLocal(Footl:massCenter())
+CPosFootr = entity():toLocal(Footr:massCenter())
+
+Footlpo = Footl:massCenter()
+Footrpo = Footr:massCenter()
+
+CPosAve = (CPosFootl + CPosFootr)/2
+
+if(first()|duped())
+{
+    hint("Type !reset before unfreezing",3)
+    runOnChat(1)
+    rangerPersist(1)
+    rangerFilter(entity():getConstraints())
+
+    HPosFootl = entity():toLocal(Footl:massCenter())
+    HPosFootr = entity():toLocal(Footr:massCenter())
+
+    HPosAve = (HPosFootl + HPosFootr)/2
+
+    #Tweakables
+    #How strong the force to hold the hip to position is. (hip)
+    HipHoldStrength = 8
+    #Turning speed (hip)
+    Tspd = 2
+    #Turning strength (hip)
+    Tstr = 12
+    #Active KU strength (hip)
+    Kustr = 12
+    #Throttle Max (hip)
+    ThrMax = 18
+    #Increment Percentage (Per Tic) (hip)
+    IncPerc = 0.01
+    #Step Size (hip)
+    StepSizeh = 60
+    StepSizev = 25
+    #Foot to position Strength (hip)
+    Fstr = 30
+    #Foot hold strength (hip)
+    Hstr = 30
+    #Distance check for "holding"
+    Footd = 50
+    #Maximum and minimum eyepod angles (torso)
+    Maxangy = 45
+    Maxangx = 0
+    #Force right and Force up
+    Nf = 20
+    Nr = 20
+    #Jump increment amount
+    JumpIncrementAmount = 2
+    #JumpMax
+    JumpMax = 300
+    #On smoothing
+    HushSpd = 0.025
+}
+
+if(chatClk(owner()) & owner():lastSaid():lower():left(6) == "!reset")
+{
+    reset()
+}
+
+if(first() | duped())
+{
+    Footlho = Footl:massCenter()
+    Footrho = Footr:massCenter()
+
+    DFor = Torso:toLocal(Torso:pos() + entity():forward()*200):normalized()
+    DRig = Torso:toLocal(Torso:pos() + entity():right()*200):normalized()
+}
+
+if(Jump)
+{
+    Jtgl = 1
+    if(~Jump)
+    {
+        Torso:soundPlay(entity():id()+"rocketloop", 0, "weapons/rpg/rocket1.wav")
+        Torso:soundPlay(entity():id()+"initrocket", 3, "weapons/rpg/rocketfire1.wav")
+        soundPitch(entity():id()+"initrocket", 60)
+        #boostloop: weapons/rpg/rocket1.wav
+        #launchsound: weapons/rpg/rocketfire1.wav
+    }
+}
+
+if(!Jump & ~Jump)
+{
+    soundStop(entity():id()+"initrocket")
+    soundStop(entity():id()+"rocketloop", 0.5)
+}
+
+#Walking Code
+if(!Active)
+{
+    Jtgl = 0
+    Hush = 0
+    Throttle = 0
+    Footlho = Footlpo
+    Footrho = Footrpo
+}
+
+if(clk() & Active)
+{
+    Hush = min(Hush + HushSpd, 1)
+    #Heading Stuff
+    Heading -= (Right - Left) * Tspd
+
+    HipFDir = vec(cos(Heading), sin(Heading), 0) - entity():forward()
+    HipUDir = vec(0,0,1) - entity():up()
+
+    Hip:applyOffsetForce(Hush * (HipFDir + $HipFDir * 5) * Hip:mass() * Tstr, Hip:massCenter() + entity():forward() * 100)
+    Hip:applyOffsetForce(Hush * (HipFDir + $HipFDir * 5) * Hip:mass() * -Tstr, Hip:massCenter() - entity():forward() * 100)
+    Hip:applyOffsetForce(Hush * (HipUDir + $HipUDir * 5) * Hip:mass() * Kustr, Hip:massCenter() + entity():up() * 100)
+    Hip:applyOffsetForce(Hush * (HipUDir + $HipUDir * 5) * Hip:mass() * -Kustr, Hip:massCenter() - entity():up() * 100)
+    #Hip To Position
+    OPosAve = entity():toWorld(CPosAve:setZ(0) - HPosAve:setZ(0)) - entity():pos() + vec(0, 0, 1) * (CPosAve:z() - HPosAve:z())
+
+    Hip:applyForce(Hush * (OPosAve + $OPosAve * 5) * HipHoldStrength * Hip:mass())
+    #Time Management
+    Throttle = clamp(Throttle + ((For - Back) * IncPerc * ThrMax), -ThrMax/2, ThrMax)
+    Throttle = Throttle * !Zero * !Jtgl
+
+    Time -= Throttle
+
+    AccSS = min(abs(Throttle/ThrMax)*4, 1)
+    #Rangers to check foot position
+    Dranl = rangerOffset(Footd, Footl:massCenter(), vec(0, 0, -1))
+    Dranr = rangerOffset(Footd, Footr:massCenter(), vec(0, 0, -1))
+    if((Dranl:hit() | Dranr:hit()) & !Jump)
+    {
+        Jtgl = 0
+    }
+    #Feet to Position
+    Checkl = (sin(Time) > 0) | !Dranl:hit()
+    Checkr = (sin(Time + 180) > 0) | !Dranr:hit()
+    if(Checkl)
+    {
+        Footlho = Footlpo
+        if($Checkl > 0)
+        {
+            Footr:soundPlay(entity():id()+"stepr", 3, "npc/dog/dog_footstep" + (floor(random(0, 4))+1) + ".wav")
+        }
+    }
+    if(Checkr)
+    {
+        Footrho = Footrpo
+        if($Checkr > 0)
+        {
+            Footl:soundPlay(entity():id()+"stepl", 3, "npc/dog/dog_footstep" + (floor(random(0, 4))+1) + ".wav")
+        }
+    }
+    Guffl = (Footlho - Footlpo):setZ(0)
+    Guffr = (Footrho - Footrpo):setZ(0)
+
+    TPosFootl = HPosFootl + AccSS * vec(cos(Time)*StepSizeh, 0, sin(Time)*StepSizev)
+    TPosFootr = HPosFootr + AccSS * vec(cos(Time+180)*StepSizeh, 0, sin(Time+180)*StepSizev)
+
+    OPosFootl = entity():toWorld(TPosFootl:setZ(0) - CPosFootl:setZ(0)) - entity():pos() + vec(0, 0, 1) * (TPosFootl:z() - CPosFootl:z())
+    OPosFootr = entity():toWorld(TPosFootr:setZ(0) - CPosFootr:setZ(0)) - entity():pos() + vec(0, 0, 1) * (TPosFootr:z() - CPosFootr:z())
+    if(!Jtgl)
+    {
+        Footl:applyForce(Hush * ((Guffl + $Guffl * 5) * Hstr + Checkl * (OPosFootl + $OPosFootl * 5) * Fstr) * Footl:mass())
+        Footr:applyForce(Hush * ((Guffr + $Guffr * 5) * Hstr + Checkr * (OPosFootr + $OPosFootr * 5) * Fstr) * Footr:mass())
+    }
+    }
+    #Torso Code
+    if(clk() & Active)
+    {
+        #Eyepod Filtering
+        if(Maxangx)
+        {
+            Filtx = clamp(-X/4, -Maxangx, Maxangx)
+        }
+        else
+    {
+        Filtx = -X/4
+    }
+    Filty = clamp(Y/4, -Maxangy, Maxangy)
+
+    Tf = vec(cos(Heading + Filtx)*cos(Filty), sin(Heading + Filtx)*cos(Filty), sin(Filty))
+    Tr = Tf:cross(vec(0, 0, 1)):setZ(0):normalized()
+
+    UpVector = Tr:cross(Tf):normalized()
+
+    Mf = (Torso:toWorld(DFor) - Torso:pos()):normalized()
+    Mr = (Torso:toWorld(DRig) - Torso:pos()):normalized()
+
+    OffF = Tf - Mf
+    OffR = Tr - Mr
+
+    Torso:applyOffsetForce(Hush * (OffF + $OffF * 5) * Nf * Torso:mass(), Torso:massCenter() + Mf * 100)
+    Torso:applyOffsetForce(Hush * (OffF + $OffF * 5) * -Nf * Torso:mass(), Torso:massCenter() - Mf * 100)
+    Torso:applyOffsetForce(Hush * (OffR + $OffR * 5) * Nr * Torso:mass(), Torso:massCenter() + Mr * 100)
+    Torso:applyOffsetForce(Hush * (OffR + $OffR * 5) * -Nr * Torso:mass(), Torso:massCenter() - Mr * 100)
+
+    if(Jump)
+    {
+        Jinc = clamp(Jinc + JumpIncrementAmount, 0, JumpMax)
+        Torso:applyForce(UpVector * Torso:mass() * Jinc)
+        soundPitch(entity():id()+"rocketloop", 50 + 100*Jinc/JumpMax)
+    }
+    else
+    {
+        Jinc = 0
+    }
+}
+
+Debug = vec()
+ThrotPerc = (Throttle / ThrMax) * 100
+FiltFiltx = 90 - (Filtx % 360)
+if(FiltFiltx > 180)
+{
+    FiltFiltx = FiltFiltx - 360
+}
+if(FiltFiltx < -180)
+{
+    FiltFiltx = FiltFiltx + 360
+}
+TorsoDiff = FiltFiltx
