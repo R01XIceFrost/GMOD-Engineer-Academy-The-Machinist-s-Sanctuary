@@ -1,0 +1,29 @@
+@name incrementing #3
+@inputs Button1 Button2
+@outputs A B Current1 Current2 Total
+@persist 
+@strict
+
+#December 6, 2025
+
+if(first()) { #initialization stuff
+    A = 0
+    B = 0
+}
+
+    if (Button1) {
+        A += 1
+        Current1 = A
+}
+        if (Button2) {
+            B -= 1
+            Current2 = B
+}
+            if (Button1 | Button2) {
+                Total = Current1 + Current2
+                
+            
+                
+}
+
+

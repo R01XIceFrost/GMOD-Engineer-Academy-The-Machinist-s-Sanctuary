@@ -1,0 +1,55 @@
+@name Scoping Variables 101 #1  
+@trigger none 
+@strict
+
+#December 3 - 2025
+
+#Sprite Core E2 required!
+
+event tick() {
+    
+    entity():setAlpha(0)
+    E2Pos = entity():pos()
+    
+    if (!timerExists("A")) { 
+
+        let Offset = vec(10,0,0)
+        spriteSpawn(1,"sprites/light_ignorez.vmt") 
+        spriteSetPos(1,E2Pos + Offset)
+        spriteSetColor(1,vec(0,255,0))
+        spriteSetAlpha(1,255)
+        spriteSetScale(1,0.9)
+    }
+
+    if (!timerExists("B")) {
+
+        let Offset = vec(-10,0,0)
+        spriteSpawn(2,"sprites/light_ignorez.vmt") 
+        spriteSetPos(2,E2Pos + Offset)
+        spriteSetColor(2,vec(0,255,0))
+        spriteSetAlpha(2,255)
+        spriteSetScale(2,0.9)
+    } 
+
+    if (!timerExists("B")) {
+
+        let Offset = vec(0,0,10)
+        spriteSpawn(3,"sprites/light_ignorez.vmt") 
+        spriteSetPos(3,E2Pos + Offset)
+        spriteSetColor(3,vec(0,255,0))
+        spriteSetAlpha(3,255)
+        spriteSetScale(3,0.9)
+    }
+
+    if (!timerExists("B")) {
+
+        let Offset = vec(0,0,-10)
+        spriteSpawn(4,"sprites/light_ignorez.vmt") 
+        spriteSetPos(4,E2Pos + Offset)
+        spriteSetColor(4,vec(0,255,0))
+        spriteSetAlpha(4,255)
+        spriteSetScale(4,0.9)
+    }
+}
+
+

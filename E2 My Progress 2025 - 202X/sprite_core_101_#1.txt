@@ -1,0 +1,38 @@
+@name Sprite Core 101 #1
+@persist Gap
+@strict
+
+
+#December 6, 2025
+
+Gap = 5 #Gap Distance
+Sprite = 30 #Sprite Total
+
+timer("Tick",0.03,0, function() { #Tick Rate
+
+    Gap += 0.1
+    
+        if (Gap > 3) {
+        Gap = 0
+    }
+    
+
+    for (I = 1, Sprite) {
+ 
+    E2Pos = entity():toWorld(vec(0,0,I*Gap)) #E2 Postion + I + Gap Distance 
+     
+        spriteSpawn(I,"sprites/light_ignorez.vmt") 
+        spriteSetColor(I,vec(0,255,0))
+        spriteSetAlpha(I,255)
+        spriteSetScale(I,0.5)
+        spriteSetPos(I,E2Pos)
+        spriteSetParent(I,entity())
+    }
+})
+
+
+
+    
+
+
+
