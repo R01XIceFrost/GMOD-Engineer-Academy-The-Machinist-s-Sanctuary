@@ -1,0 +1,138 @@
+@name constructor_defenses
+@inputs TurretBases:array TargetPlayers:array TurretClass:string TurretOn Building BuildClear
+@outputs Turrets:array PartIndex TurretIndex TotalIndex Target:entity Radar:entity
+@persist [ENTITIES POSITIONS ANGLES TOTAL]:array 
+@persist Reload Range
+
+
+#Source: https://youtu.be/VDSbq5PNGN4?si=_wQ1t1ofoL-oY8he
+
+
+interval(400) 
+runOnLast(1) 
+
+if(first()){    
+    ENTITIES:insertString(0,"models/hunter/blocks/cube05x05x05.mdl")
+    ENTITIES:insertString(1,"models/props_wasteland/laundry_basket001.mdl")
+    ENTITIES:insertString(2,"models/props_lab/monitor01a.mdl")
+    ENTITIES:insertString(3,"models/props_lab/citizenradio.mdl") 
+    ENTITIES:insertString(4,"models/props_lab/citizenradio.mdl") 
+    ENTITIES:insertString(5,"models/props_junk/MetalBucket01a.mdl")
+    ENTITIES:insertString(6,"models/props_lab/tpplug.mdl") 
+    
+    POSITIONS:insertVector(0,vec(0,0,45))
+    POSITIONS:insertVector(1,vec(0,0,0))
+    POSITIONS:insertVector(2,vec(0,0,30))
+    POSITIONS:insertVector(3,vec(0,5,45))
+    POSITIONS:insertVector(4,vec(0,-5,45))
+    POSITIONS:insertVector(5,vec(20,0,44))
+    POSITIONS:insertVector(6,vec(25,0,44)) 
+    
+    ANGLES:insertAngle(0,ang(0,0,0))
+    ANGLES:insertAngle(1,ang(180,0,0))
+    ANGLES:insertAngle(2,ang(90,0,0))
+    ANGLES:insertAngle(3,ang(90,0,90))
+    ANGLES:insertAngle(4,ang(90,0,-90))
+    ANGLES:insertAngle(5,ang(0,90,270))
+    ANGLES:insertAngle(6,ang(0,0,0))
+    
+    Range = 2000
+    
+    Color1 = vec(255,255,255)
+}
+
+if(dupefinished()){ 
+    reset() 
+}
+
+if(changed(Building)){ 
+    if(!Building){ 
+        if(TurretIndex < TurretBases:count()){ 
+            timer("build",500)
+        }
+        findExcludeClass("gmod_wire_hologram")
+        findByModel("models/props_rooftop/roof_dish001.mdl") 
+        Radar = findClosest(entity():pos())
+    }
+}
+
+function void build(TurretBase:entity){ 
+    TotalIndex++
+    Part = propSpawn(ENTITIES[PartIndex,string],TurretBase:toWorld(POSITIONS[PartIndex,vector]),TurretBase:toWorld(ANGLES[PartIndex,angle]),1)
+    Part:soundPlay(1,0.1,"garrysmod/content_downloaded.wav") 
+    TOTAL:insertEntity(TotalIndex,Part)
+    
+    if(PartIndex == 0){ Part:setAlpha(0), Turrets:insertEntity(TurretIndex+1,Part) }
+    if(PartIndex > 2){ Part:parentTo(Turrets[TurretIndex+1,entity]) }else{ Part:setColor(vec(155,155,155)) }
+    if(PartIndex < 6){ Part:setMaterial("models/props_combine/metal_combinebridge001") }else{ Part:setColor(vec(155,155,155)) }
+    
+    if(PartIndex < ENTITIES:count()){ PartIndex++, timer("build",500) }
+    else{ TurretIndex++, PartIndex = 0, if(TurretIndex < TurretBases:count()){ timer("build",500) } }
+}
+
+if(clk("build")){ build(TurretBases[TurretIndex+1,entity] ) }   
+
+if(changed(TargetPlayers:count())){ 
+    findClearBlackList() 
+    findClearWhiteList() 
+}
+    
+if(TurretOn){   
+    if(TargetPlayers:count() > 0){
+        for(I=1,TargetPlayers:count()){ 
+            Owner = TargetPlayers[I,entity] 
+            findIncludePlayerProps(Owner)
+        }
+        
+        findByClass(TurretClass) 
+        
+        Target = findClosest(Radar:pos())  
+        if(!Target:isValid()){ Target = noentity() } 
+    }
+    else{ 
+        Target = noentity() 
+    }    
+    
+    Dis = Target:pos():distance(Radar:pos())
+
+    for(I=1, Turrets:count()){ 
+        Turret = Turrets[I,entity]
+        
+        if(!Reload){ 
+            if(Dis<Range/2){
+                Turret:soundPlay(I,0.5,"weapons/shotgun/shotgun_dbl_fire7.wav"), soundPitch(I,75)
+                Shell = propSpawn("models/props_junk/gascan001a.mdl",Target:pos(),1)
+                Shell:propBreak() 
+                Reload = 1
+                timer("reload",2000/Turrets:count())
+            }
+        }
+        
+        if(Target:isValid() & Radar:isValid()){ Ang = (Target:boxCenterW() - Turret:pos()):toAngle() }else{ Ang = TurretBases[I,entity]:angles() }
+        Turret:setAng(Ang)
+    }
+}
+
+if(clk("reload")){ 
+    Reload = 0
+}
+
+if(TurretIndex == Turrets:count()){ 
+    if(last() | changed(BuildClear) & BuildClear){ 
+        for(I=1,Turrets:count()){ 
+            Turret = Turrets[I,entity] 
+            Shell = propSpawn("models/props_junk/gascan001a.mdl",Turret:pos(),Turret:angles(),1)
+            Shell:propBreak() 
+        }
+        
+        for(I=1,TOTAL:count()){ 
+            Part = TOTAL[I,entity] 
+            Part:propDelete() 
+        }
+        
+        PartIndex = 0
+        TurretIndex = 0
+        TotalIndex = 0
+        Turrets = array()
+    }
+}

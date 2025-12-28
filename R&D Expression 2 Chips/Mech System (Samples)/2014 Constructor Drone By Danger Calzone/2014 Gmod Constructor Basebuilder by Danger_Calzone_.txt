@@ -1,0 +1,227 @@
+@name basebuilder_constructor
+@inputs Mode:string BuildStart BuildClear Reset
+@outputs TurretBases:array Building
+@persist [MODELS VECTOR ANGLES MATERIAL TOTAL]:array 
+@persist [Pos Target DronePos]:vector Y Element
+@persist BlueIndex BuildIndex TotalIndex TurretIndex
+
+#Source: https://youtu.be/VDSbq5PNGN4?si=_wQ1t1ofoL-oY8he
+
+if(first()){
+    Base = entity():isWeldedTo() 
+    holoCreate(99, Base:toWorld(vec(-40,0,70)), vec(1,1,1)*0.5, Base:angles())
+    holoModel(99, "models/mechanics/wheels/wheel_speed_72.mdl")
+    holoParent(99, Base) 
+    
+    BlueIndex = 2
+         
+    MODELS:insertString(0,"models/hunter/blocks/cube2x4x05.mdl") 
+    MODELS:insertString(1,"models/hunter/blocks/cube2x2x2.mdl")
+    MODELS:insertString(2,"models/hunter/blocks/cube075x2x075.mdl")
+    MODELS:insertString(3,"models/hunter/plates/plate1x4.mdl") 
+    MODELS:insertString(4,"models/hunter/misc/stair1x1.mdl") 
+    MODELS:insertString(5,"models/hunter/tubes/circle2x2.mdl")
+    MODELS:insertString(6,"models/props_rooftop/roof_dish001.mdl") 
+    
+    VECTOR:insertVector(0,vec(0, 0, 47) )
+    VECTOR:insertVector(1,vec(0, 0, 47) )
+    VECTOR:insertVector(2,vec(0, 0, 47) )
+    VECTOR:insertVector(3,vec(0, 0, 46) )
+    VECTOR:insertVector(4,vec(0, 0, 0) )
+    VECTOR:insertVector(5,vec(0, 0, 0) )
+    VECTOR:insertVector(6,vec(0, 0, 0) )
+    
+    MATERIAL:insertString(0,"models/props_debris/concretewall019a")
+    MATERIAL:insertString(1,"models/props_debris/concretewall019a")
+    MATERIAL:insertString(2,"models/props_debris/concretewall019a")
+    MATERIAL:insertString(3,"phoenix_storms/wood")
+    MATERIAL:insertString(4,"phoenix_storms/wood")
+    MATERIAL:insertString(5,"phoenix_storms/grey_steel")
+    MATERIAL:insertString(6,"")
+    
+    ANGLES:insertAngle(0,ang(90, 0, Y) )
+    ANGLES:insertAngle(1,ang(90, 0, Y) )
+    ANGLES:insertAngle(2,ang(0, Y, 90) )
+    ANGLES:insertAngle(3,ang(0, Y, 0) )
+    ANGLES:insertAngle(4,ang(0, Y, 0) )
+    ANGLES:insertAngle(5,ang(0, 0, 0) )
+    ANGLES:insertAngle(6,ang(0, Y, 0) )
+}
+
+if(dupefinished()){ 
+    reset() 
+}
+
+function void element(){ 
+    holoCreate(1,Pos,vec(1,1,1),ang(90,0,0))
+    holoModel(1,MODELS[Element,string] )
+    holoColor(1,vec4(255,0,255,150))
+    holoMaterial(1,MATERIAL[Element,string])
+}
+
+if(changed(Mode)){ 
+    Building = 0
+    if(Mode == "build"){ 
+        element() 
+    }
+    if(Mode != "build"){ 
+        for(I=1, BlueIndex){ 
+            holoDelete(I) 
+        }
+        BlueIndex = 2
+        BuildIndex = 2
+        
+        holoDelete(100) 
+        holoAlpha(99, 255)
+    }
+}
+
+if( Mode == "build" ){ 
+    interval(50) 
+     
+    R = owner():keyReload()
+    E = owner():keyUse() 
+    S = owner():keyAttack1() 
+    Z = owner():keyZoom() 
+  
+    Dis = 11.8
+    Eye = owner():eyeTrace():position()
+    Pos = vec( floor(Eye:x() / Dis) * Dis, round(Eye:y() / Dis) * Dis, Eye:z() )
+    
+    if(changed(E) & E){ 
+        Element = (Element + 1)%(MODELS:count() + 1)
+        element()
+    }
+    
+    if(changed(R) & R){ 
+        Y = (Y + R*45)%360
+        
+        ANGLES = array() 
+        ANGLES:insertAngle(0,ang(90, 0, Y) )
+        ANGLES:insertAngle(1,ang(90, 0, Y) )
+        ANGLES:insertAngle(2,ang(0, Y, 90) )
+        ANGLES:insertAngle(3,ang(0, Y, 0) )
+        ANGLES:insertAngle(4,ang(0, Y, 0) )
+        ANGLES:insertAngle(5,ang(0, 0, 0) )
+        ANGLES:insertAngle(6,ang(0, Y, 0) )
+    }
+    
+    holoPos(1, Pos + VECTOR[Element,vector])
+    holoAng(1, ANGLES[Element,angle])
+    
+    if(changed( S ) & S){ 
+        holoCreate(BlueIndex, holoEntity(1):pos(), vec(1,1,1), holoEntity(1):angles())
+        holoModel(BlueIndex, holoEntity(1):model())
+        holoMaterial(BlueIndex, holoEntity(1):getMaterial())
+        holoColor(BlueIndex, holoEntity(1):getColor4())
+        BlueIndex += 1
+    }
+    
+    if(changed( Z ) & Z){ 
+        BlueIndex -= 1
+        holoDelete(BlueIndex)
+    }
+    
+    if(changed( BuildStart ) & BuildStart){ 
+        Building = 1
+        if(!holoEntity(100):isValid()){
+            holoCreate(100, entity():isWeldedTo():toWorld(vec(-40,0,75)),vec(1,1,1)*0.5,ang(0,0,0))
+            holoModel(100, "models/mechanics/wheels/wheel_speed_72.mdl")
+            
+            function void holo(HIndex, Model:string, Scale:vector, Pos:vector, Ang:angle, Material:string, Color:vector){ 
+                Parent = holoEntity(100)
+                holoCreate(HIndex+100, Parent:toWorld(Pos), Scale, Parent:toWorld(Ang))
+                holoParent(HIndex+100, Parent)
+                holoModel(HIndex+100, Model) 
+                holoMaterial(HIndex+100, Material)
+                holoColor(HIndex+100, Color)
+            }
+            
+            holo(10,"models/props_c17/pulleywheels_large01.mdl",vec(1,1,1)*0.8,vec(0,0,-5),ang(90,0,0),"phoenix_storms/concrete0",vec(100,100,100))
+            holo(11,"models/props_c17/pulleywheels_large01.mdl",vec(1,0.3,1)*0.9,vec(0,0,-5.5),ang(90,0,0),"",vec(100,100,100))
+            holo(12,"models/props_c17/light_industrialbell01_on.mdl",vec(1,1,0.8),vec(0,0,-17),ang(180,0,0),"phoenix_storms/concrete0",vec(100,100,100))
+            holo(13,"models/props_wasteland/prison_lamp001c.mdl",vec(1,1,1),vec(0,0,-12),ang(0,0,0),"phoenix_storms/concrete0",vec(100,100,100))
+            
+            holoAlpha(99, 0)
+            
+            Drone = holoEntity(100)
+            
+            holoCreate(101, Drone:toWorld(vec(0,0,-50)), vec(1,1,1)*0.4, Drone:angles())
+            holoParent(101, Drone)
+            holoModel(101, "models/hunter/misc/cone2x2.mdl") 
+            holoMaterial(101, "models/props_combine/stasisshield_sheet") 
+            holoAlpha(101,0)
+            
+            DronePos = holoEntity(100):pos()
+            BuildIndex = 2 
+        }
+    }
+    
+    if(BuildIndex < BlueIndex){ 
+        Target = holoEntity(BuildIndex):pos() 
+    }
+    if(BuildIndex == BlueIndex){ 
+        Target = entity():pos() 
+    }
+    
+    Drone = holoEntity(100)
+    DroneAng = ((Target + vec(0,0,100)) - Drone:pos()):toAngle()
+    DroneDis = vec2(Drone:pos()):distance(vec2(Target))  
+    
+    if(DroneDis > 25){ 
+        DronePos = DronePos + (Drone:forward():rotate(DroneAng))*10
+        holoPos(100, DronePos)
+    }
+        
+    if(changed(DroneDis)){
+        if(DroneDis < 25){ 
+            if(BuildIndex < BlueIndex){
+                timer("build",1000)
+                Drone:soundPlay(1,1,"ambient/energy/whiteflash.wav")  
+                holoAlpha(101, 50) 
+            }
+            if(BuildIndex == BlueIndex){ 
+                BuildIndex = 2
+                BlueIndex = 2
+            }
+        } 
+    }
+    
+    if(clk("build")){
+        TotalIndex++
+        holoAlpha(101, 0)   
+        PROP = propSpawn(holoEntity(BuildIndex):model(), holoEntity(BuildIndex):pos(), holoEntity(BuildIndex):angles(), 1)
+        PROP:setMaterial(holoEntity(BuildIndex):getMaterial())
+        if(PROP:model() == "models/hunter/tubes/circle2x2.mdl"){ TurretIndex++, TurretBases:insertEntity(TurretIndex,PROP) } 
+        TOTAL:insertEntity(TotalIndex,PROP)
+        holoDelete(BuildIndex)
+        BuildIndex += 1
+    }
+    
+    if(Target == entity():pos()){ 
+        if(DroneDis < 25){ 
+            holoDelete(100) 
+            holoAlpha(99, 255)
+            Building = 0
+        }
+    } 
+}
+
+if(!Building){ 
+    if(changed(BuildClear) & BuildClear){ 
+        for(I=1, BlueIndex){ 
+            holoDelete(I+1) 
+        }
+        
+        for(I=1, TOTAL:count()){ 
+            Entity = TOTAL[I,entity] 
+            Entity:propDelete()
+        }
+        
+        BlueIndex = 2
+        BuildIndex = 2 
+        TotalIndex = 0
+        TurretIndex = 0
+        TurretBases = array() 
+    }
+}

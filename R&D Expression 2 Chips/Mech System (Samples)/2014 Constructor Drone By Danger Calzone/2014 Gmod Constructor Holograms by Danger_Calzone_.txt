@@ -1,0 +1,226 @@
+@name constructor holograms 
+@persist E:entity 
+
+##NAVIGATION
+@inputs Gear Shield Mode:string 
+@persist Ang1 Ang2 Active 
+
+##WEAPONRY
+@inputs TarPos:vector TargetMode TargetClear
+@outputs ActiveTurret TurretE:entity
+@persist TurYaw TurPit TarAngPit TarAngYaw
+
+
+#Source: https://youtu.be/VDSbq5PNGN4?si=_wQ1t1ofoL-oY8he
+
+
+if(first()){ 
+    E = entity():isWeldedTo() 
+    
+    function void holo(Index,Model:string,Scale:vector,Pos:vector,Ang:angle,Parent:entity,Material:string,Color:vector4){
+        holoCreate(Index, Parent:toWorld(Pos), Scale, Parent:toWorld(Ang))
+        holoModel(Index, Model) 
+        holoParent(Index, Parent) 
+        holoMaterial(Index, Material) 
+        holoColor(Index, Color)     
+    }
+    
+    Material1 = "phoenix_storms/concrete1"
+    Material2 = "models/combine_scanner/scanner_eye"
+    
+    Color1 = vec4(255,255,255,0)
+    Color2 = vec4(72,72,72,255)
+    Color3 = vec4(255,191,0,255)
+    
+    holo(1, "", vec(1,1,1), vec(30,0,-40), ang(-20,0,0), E, "", Color1)
+    holo(2, "", vec(1,1,1), vec(30,0,0), ang(0,0,0), holoEntity(1), "", Color1)
+    holo(3, "", vec(1,1,1), vec(-63,0,-40), ang(0,0,0), E, "", Color1) 
+    holo(4, "", vec(1,1,1), vec(0,30,0), ang(0,0,45), holoEntity(3), "", Color1) 
+    holo(5, "", vec(1,1,1), vec(-63,0,-40), ang(0,0,0), E, "", Color1) 
+    holo(6, "", vec(1,1,1), vec(0,-30,0), ang(0,0,-45), holoEntity(5), "", Color1) 
+    holo(7, "", vec(1,1,1), vec(-40,0,62), ang(0,0,0), E, "", Color1)
+    holo(8, "", vec(1,1,1), vec(-45,0,15), ang(0,0,0), holoEntity(7), "", Color1)
+    holo(9, "", vec(1,1,1), vec(30,0,53), ang(20,0,0), E, "", Color1)
+    holo(46, "", vec(1,1,1), vec(-80,58,3.87), ang(0,0,0), E, "", Color1)
+    holo(47, "", vec(1,1,1), vec(-80,-58,3.87), ang(0,0,0), E, "", Color1)
+    
+    TurretE = holoEntity(8)
+    
+    ##FRONT LANDING LEG##
+    holo(10, "models/Mechanics/roboticslarge/k1.mdl", vec(1,1,1)*0.4, vec(15,0,0), ang(0,0,0), holoEntity(1), Material1, Color2)
+    holo(11, "models/mechanics/robotics/claw.mdl", vec(1,1,1)*0.5, vec(-3,10,0), ang(0,0,270), holoEntity(2), Material1, Color2)
+    holo(12, "models/mechanics/robotics/claw.mdl", vec(1,1,1)*0.5, vec(-3,-10,0), ang(0,0,270), holoEntity(2), Material1, Color2)
+    holo(13, "models/hunter/plates/plate1x2.mdl", vec(1,1,1), vec(-10,0,-12), ang(0,90,0), holoEntity(2), Material1, Color3)
+    holo(14, "models/hunter/plates/plate1x2.mdl", vec(1,1,1)*0.8, vec(-10,0,-13), ang(0,90,0), holoEntity(2), Material2, Color3)
+    holo(15, "models/props_lab/monitor01a.mdl", vec(1.2,1.5,0.5), vec(15,0,-8), ang(0,180,0), holoEntity(2), Material1, Color2)
+    holo(16, "models/props_lab/monitor01a.mdl", vec(1.2,1.5,0.5), vec(-10,0,-8), ang(0,0,0), holoEntity(2), Material1, Color2)
+    holo(17, "models/XQM/Rails/slope_up_90.mdl", vec(1,1,2)*0.5, vec(20,0,-5), ang(90,180,0), holoEntity(2), Material1, Color2)
+    
+    ##LANDING LEG LEFT SIDE##
+    holo(18, "models/Mechanics/roboticslarge/k1.mdl", vec(1,1,1)*0.4, vec(0,15,0), ang(0,90,0), holoEntity(3), Material1, Color2)
+    holo(19, "models/Mechanics/robotics/xfoot.mdl", vec(1,1,1)*0.8, vec(0,0,3), ang(0,90,0), holoEntity(4), Material1, Color2)
+    holo(20, "models/hunter/plates/plate1x1.mdl", vec(1,1,1), vec(0,6,-10), ang(0,90,0), holoEntity(4), Material1, Color3)
+    holo(21, "models/hunter/plates/plate1x1.mdl", vec(1,1,1)*0.8, vec(0,6,-11), ang(0,90,0), holoEntity(4), Material2, Color3)
+    
+    ##LANDING LEG RIGHT SIDE##
+    holo(22, "models/Mechanics/roboticslarge/k1.mdl", vec(1,1,1)*0.4, vec(0,-15,0), ang(0,90,0), holoEntity(5), Material1, Color2)
+    holo(23, "models/Mechanics/robotics/xfoot.mdl", vec(1,1,1)*0.8, vec(0,0,3), ang(0,270,0), holoEntity(6), Material1, Color2)
+    holo(24, "models/hunter/plates/plate1x1.mdl", vec(1,1,1), vec(0,-6,-10), ang(0,90,0), holoEntity(6), Material1, Color3)
+    holo(25, "models/hunter/plates/plate1x1.mdl", vec(1,1,1)*0.8, vec(0,-6,-11), ang(0,90,0), holoEntity(6), Material2, Color3)
+    
+    ##SHIELD EMITTER##
+    holo(26, "models/hunter/plates/plate05x1.mdl", vec(1,1,1), vec(12.75,0,0), ang(0,0,0), holoEntity(9), Material1, Color3)
+    holo(27, "models/props_lab/citizenradio.mdl", vec(1,1,1)*1.2, vec(12,0,0), ang(0,0,180), holoEntity(9), Material1, Color2)
+    holo(28, "models/Items/battery.mdl", vec(1,1,1.5)*2, vec(19,15,-5), ang(0,0,90), holoEntity(9), "", vec4(255,255,255,255))
+    
+    ##TURRET BASE YAW##
+    Yaw = holoEntity(7)
+    holo(29, "models/props_phx/wheels/metal_wheel2.mdl", vec(1,1,1)*0.6, vec(0,0,0), ang(0,0,0), Yaw, Material1, Color2)
+    holo(30, "models/props_trainstation/payphone001a.mdl", vec(1,0.6,1), vec(-20,0,5), ang(270,0,0), Yaw, Material1, Color2)
+    holo(31, "models/props_wasteland/light_spotlight01_lamp.mdl", vec(2,1,1), vec(-47,10,10), ang(0,270,0), Yaw, Material1, Color2)
+    holo(32, "models/props_wasteland/light_spotlight01_lamp.mdl", vec(2,1,1), vec(-47,-10,10), ang(0,90,0), Yaw, Material1, Color2)
+    holo(33, "models/props_vehicles/tire001b_truck.mdl", vec(1,0.8,1), vec(0,0,6), ang(90,0,0), Yaw, Material1, Color2)
+    
+    ##TURRET BASE PITCH##
+    Pitch = holoEntity(8)
+    holo(34, "models/hunter/geometric/hex05x1.mdl", vec(2,0.5,2), vec(50,0,-5), ang(0,180,0), Pitch, Material1, Color3)
+    holo(35, "models/hunter/geometric/hex05x1.mdl", vec(2,0.5,2), vec(50,0,9), ang(0,180,0), Pitch, Material1, Color3)
+    holo(36, "models/mechanics/solid_steel/box_beam_12.mdl", vec(1,1,1)*0.7, vec(85,0,5), ang(0,90,0), Pitch, Material1, Color2) 
+    holo(37, "models/mechanics/solid_steel/box_beam_12.mdl", vec(1,1,1)*0.7, vec(85,8,5), ang(0,90,0), Pitch, Material1, Color2) 
+    holo(38, "models/mechanics/solid_steel/box_beam_12.mdl", vec(1,1,1)*0.7, vec(85,-8,5), ang(0,90,0), Pitch, Material1, Color2) 
+    holo(39, "models/Mechanics/gears2/pinion_20t2.mdl", vec(1,1.4,1), vec(92,20,5), ang(0,172,0), Pitch, Material1, Color3)
+    holo(40, "models/Mechanics/gears2/pinion_20t2.mdl", vec(1,1.4,1), vec(92,-20,5), ang(0,-172,180), Pitch, Material1, Color3)
+    holo(41, "models/hunter/blocks/cube1x1x05.mdl", vec(1.2,1,1), vec(30,0,5), ang(0,0,0), Pitch, Material1, Color3) 
+    holo(42, "models/props_lab/monitor01a.mdl", vec(1,1,0.5)*2, vec(28,0,10), ang(0,180,0), Pitch, Material1, Color2)
+    
+    ##RADAR##
+    holo(43, "models/props_lab/monitor01b.mdl", vec(1,1,1), vec(-47,35,10), ang(270,0,0), Yaw, Material1, Color2)
+    holo(44, "models/props_lab/monitor01b.mdl", vec(1,1,1), vec(-47,35,20), ang(90,0,0), Yaw, Material1, Color2)
+    holo(45, "models/props_rooftop/satellitedish02.mdl", vec(1,1,1)*0.75, vec(-35,43,20), ang(0,30,0), Yaw, "", Color2)
+    holo(48, "models/props_rooftop/antenna01a.mdl", vec(1,1,1)*0.2, vec(-45,45,35), ang(0,90,0), Yaw, "", Color2)
+    
+    ##LEFT PANEL##
+    holo(49, "models/hunter/plates/plate1x2.mdl", vec(1,1,1), vec(40.5,1,0), ang(90,90,0), holoEntity(46), Material1, Color3)
+    holo(50, "models/props_interiors/refrigerator01a.mdl", vec(0.5,1,1), vec(40,-7,0), ang(0,270,90), holoEntity(46), Material1, Color2)
+    holo(51, "models/Items/battery.mdl", vec(1,1,1)*2, vec(75,-7,-10), ang(0,0,0), holoEntity(46), "", vec4(255,255,255,255))
+    
+    ##RIGHT PANEL##
+    holo(52, "models/hunter/plates/plate1x2.mdl", vec(1,1,1), vec(40.5,-1,0), ang(90,90,0), holoEntity(47), Material1, Color3)
+    holo(53, "models/props_interiors/refrigerator01a.mdl", vec(0.5,1,1), vec(40,7,0), ang(0,90,270), holoEntity(47), Material1, Color2)
+    holo(54, "models/Items/battery.mdl", vec(1,1,1)*2, vec(75,7,-10), ang(0,0,0), holoEntity(47), "", vec4(255,255,255,255))
+}
+
+if(dupefinished()){ 
+    reset() 
+}
+
+interval(100) 
+
+## GEAR AND SHIELD ANIMATIONS ##
+
+if(changed(Gear)){ 
+    Active = 1
+    timer("active",5000)
+}
+
+if(Active){
+    if(Gear){ 
+        Ang1 = clamp((Ang1 + 10),0,65)
+    }
+    if(!Gear){ 
+        Ang1 = clamp((Ang1 - 10),0,65)
+    }
+
+    if(Shield){ 
+        Ang2 = clamp((Ang2 + 10),0,65)
+    }
+    if(!Shield){ 
+        Ang2 = clamp((Ang2 - 10),0,65)
+    }
+    
+    holoAng(1, E:toWorld(ang(Ang1-20,0,0)))
+    holoAng(2, E:toWorld(ang(-20+(Ang1/65)*20,0,0)))
+    
+    holoPos(3, E:toWorld(vec(-63,Ang1/2,-40)))
+    holoAng(3, E:toWorld(ang(0,0,-Ang1/1.3)))
+    holoAng(4, E:toWorld(ang(0,0,45-((Ang1*1.3)/(65*1.3))*45)))
+    
+    holoPos(5, E:toWorld(vec(-63,-Ang1/2,-40)))
+    holoAng(5, E:toWorld(ang(0,0,Ang1/1.3)))
+    holoAng(6, E:toWorld(ang(0,0,-45+((Ang1*1.3)/(65*1.3))*45)))
+    
+    holoAng(9, E:toWorld(ang(20-(Ang2/65)*20,0,0)))
+    holoAng(46, E:toWorld(ang(0,Ang2/65*10,0)))
+    holoAng(47, E:toWorld(ang(0,-Ang2/65*10,0)))
+}
+
+if(clk("active")){ 
+    Active = 0
+}
+
+## TURRET CONTROL ##
+
+if(Mode != "build"){
+    if(TargetMode != 3){ 
+        if(Mode == "shield"){ 
+            if(TarPos != vec(0,0,0)){ 
+                 Dis         = vec2(E:pos()):distance(vec2(TarPos))
+                 TarAngPit   = clamp(Dis/50,15,75)
+                 TarAngYaw   = E:toLocal((TarPos - E:pos()):toAngle()):yaw()
+                 ActiveTurret= 1
+            }
+        }
+    }
+    
+    if(TargetMode == 3){
+        if(changed(TarPos)){ 
+            if(Mode == "shield"){ 
+                if(TarPos != vec(0,0,0)){ 
+                    Dis         = vec2(E:pos()):distance(vec2(TarPos))
+                    TarAngPit   = clamp(Dis/50,15,75)
+                    TarAngYaw   = E:toLocal((TarPos - E:pos()):toAngle()):yaw()
+                    ActiveTurret= 1
+                }
+            }
+        }
+    }
+    
+    if(TargetClear | changed(Mode)){ 
+        TarAngPit   = 0
+        TarAngYaw   = 0
+        ActiveTurret= 1
+    }
+}
+
+if(changed(Mode == "build") & Mode == "build"){ 
+    TarAngPit   = 90
+    TarAngYaw   = 0
+    ActiveTurret= 1
+}
+
+if(changed(ActiveTurret) & ActiveTurret){ E:soundPlay(1,0,"vehicles/tank_turret_loop1.wav") }
+
+if(ActiveTurret){ 
+    CurAngYaw = -holoEntity(7):toLocal(E:angles()):yaw()
+
+    if(inrange(TarAngYaw,CurAngYaw-2.5,CurAngYaw+2.5)){ RateYaw = 0 }
+    elseif(TarAngYaw > CurAngYaw ){ RateYaw = 1 }
+    elseif(TarAngYaw < CurAngYaw){ RateYaw = -1 }
+    
+    if(inrange(TarAngPit, TurPit-1, TurPit+1)){ RatePit = 0 }
+    elseif(TurPit > TarAngPit){ RatePit = -1 } 
+    elseif(TurPit < TarAngPit){ RatePit = 1 } 
+    
+    TurYaw = (TurYaw + RateYaw*5)
+    TurPit = (TurPit + RatePit*2)
+    
+    holoAng(7, E:toWorld(ang(0,TurYaw,0)))
+    holoAng(8, holoEntity(7):toWorld(ang(-TurPit,0,0)))
+    
+    if(Mode == "build" | TargetMode == 3){ 
+        if(RateYaw == 0 & RatePit == 0){ ActiveTurret = 0, soundStop(1) }
+    }
+}
+
+
+soundPitch(1,abs(sign(RateYaw))*50+abs(sign(RatePit))*50)

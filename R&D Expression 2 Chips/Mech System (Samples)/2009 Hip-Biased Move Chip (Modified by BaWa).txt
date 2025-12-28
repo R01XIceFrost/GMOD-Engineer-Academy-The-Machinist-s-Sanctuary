@@ -1,0 +1,174 @@
+@name Hip-Biased Move Chip (Modified by BaWa) 
+
+#[
+Comment: I THINK that a wire link would go (code below I think? |R-0-1-X|Ice Frost Dec 28, 2025 was here!)
+]#
+
+# Entities
+@inputs Hip:entity Left:entity Right:entity
+# Controls
+@inputs Pod:wirelink
+# Debug
+@outputs Fltdbg Vecdbg:vector
+# Offsets
+@persist Offsetl:vector Offsetr:vector Hiptrg:vector Hoff Voff Foff Ideall:vector Idealr:vector
+@persist Yoffl Yoffr Zoff Turnposa:vector Turnposb:vector Turnvec:vector
+@persist Xoffl Xoffr
+# Passed Information for Delta
+@persist Entpos:vector Leg
+# Forces
+@persist Forcel:vector Forcer:vector Trig Mul Spr Snap Vtch Ltch Htch Pshd Strp 
+# Wirelinks
+@persist On For Back TRight TLeft Sprint
+@trigger all
+
+# Explanation of Variables and Application of Chip
+# Variables
+
+# Trig - Step trigger distance. After this distance is tripped
+# the chip will swap to the other foot. Too much trig means
+# that your legs often overstep, too little and you end up
+# with toddler steps
+
+# Mul - How fast the step is. Too much and it looks like
+# something that you should be playing yakkity sax to,
+# too small and it sort of shuffles like a zombie.
+
+# Snap - How fast it turns. I don't need to explain this.
+
+# Vtch - Vertical offset distance. More = Higher
+# Do not fuck with this one unless you know what
+# you are doing.
+# Ltch - Lower offset distance. More = Higher friction
+# Do not fuck with this one unless you know what
+# you are doing.
+# Htch - Horizontal offset distance. More = longer
+# strides. Do not fuck with this one unless you know
+# what you are doing.
+
+# Strp - Hip damping. Actively attempts to stop excessive
+# yawing. Too much and your contraption will spaz,
+# too little and you might yaw a little bit (oh no)
+
+# Pshd - Hip stabilization. Moves the hip to the rest state
+# of the hip. Too much and it spazzes out, too little and
+# it'll fall into itself and bob around a lot.
+
+# Spr - Sprint multiplier. Change the value multiplied by
+# Sprint to make your contraption sprint faster or slower
+# It's basically applying Mul * Spr force.
+
+# Application
+#1) Put chip on top of the hip, so you can read the chip's text or see it's arrow.
+#2) Face the chip forward on the hip.
+#3) Apply 3 entity markers and link them to the hip, left foot, and right foot
+#4) Wire the entity markers to the chip
+#5) Reupdate the chip by clicking it with the exp2 gate tool again.
+#6) Wire inputs and test.
+
+interval(20)
+For = Pod:number("W")
+TLeft = Pod:number("A")
+Back  = Pod:number("S")
+TRight = Pod:number("D")
+Sprint = Pod:number("Sprint")
+On = Pod:number("Active")
+
+Offsetl = entity():toLocal(Left:massCenter())
+Offsetr = entity():toLocal(Right:massCenter())
+Foff = (Offsetl:x() + Offsetr:x()) / 2
+Voff = (Offsetl:z() + Offsetr:z()) / 2
+Hoff = (Offsetl:y() + Offsetr:y()) / 2
+
+Entpos = entity():pos()
+
+if(first())
+{
+    Hiptrg = vec((Offsetl:x() + Offsetr:x()) / 2, (Offsetl:y() + Offsetr:y()) / 2, (Offsetl:z() + Offsetr:z()) / 2)
+    Yoffl = Offsetl:y()
+    Yoffr = Offsetr:y()
+    Zoff = (Offsetl:z() + Offsetr:z()) / 2
+    Xoffl = Offsetl:x()
+    Xoffr = Offsetr:x()
+    
+# Trigger Distance
+    Trig = 30
+# Foot Force Multiplier
+    Mul = 2.5
+# Turning Multiplier
+    Snap = 4
+# Vertical, Lower and Horizontal Offsets
+    Vtch = 3
+    Ltch = 3
+    Htch = 2
+# Horizontal (Yaw) Stabilizer
+    Strp = 1/20
+# Hip Stab
+    Pshd = 4
+}
+# Sprint Multiplier
+Spr = 1 + 0.75 * Sprint
+
+if(On)
+{
+    # Hip Snap
+    Hip:applyForce(Hip:mass() * Pshd * (entity():forward() * (Foff + $Foff * 5 - Hiptrg:x()) + entity():up() * (Voff + $Voff * 5 - Hiptrg:z()) + entity():right() * -1 * (Hoff + $Hoff * 5 - Hiptrg:y())))
+    # Turning
+    Turnposa = entity():right() * -200
+    Turnposb = entity():right() * 200
+    Turnvec = entity():forward()
+    if(abs(TRight - TLeft))
+    {
+        Hip:applyOffsetForce(Turnposb, Turnvec * Hip:mass() * (TRight - TLeft) * Snap)
+        Hip:applyOffsetForce(Turnposa, Turnvec * Hip:mass() * (TLeft - TRight) * Snap)
+    }
+    Hip:applyOffsetForce(Turnposb, Turnvec * Hip:mass() * entity():angVel():yaw() * Strp)
+    Hip:applyOffsetForce(Turnposa, Turnvec * Hip:mass() * entity():angVel():yaw() * -Strp)
+
+    # Leg Toggles
+    if((Offsetl:x() - Xoffl > Trig) | (Offsetr:x() - Xoffr < -Trig))
+    {
+        Leg = 1
+    }
+    if((Offsetr:x() - Xoffr > Trig) | (Offsetl:x() - Xoffr < -Trig))
+    {
+        Leg = 0
+    }
+    
+    if(For & (Leg == 1))
+    {
+        Ideall = vec(-1 * Xoffl + 0, -1 * Yoffl, -1 * Zoff + Trig * Ltch)
+        Idealr = vec(-1 * Xoffr + -Trig * Htch, -1 * Yoffr, -1 * Zoff - Trig * Vtch)
+    }
+    if(Back & (Leg == 1))
+    {
+        Idealr = vec(-1 * Xoffr + 0, -1 * Yoffr, -1 * Zoff + Trig * Ltch)
+        Ideall = vec(-1 * Xoffl + Trig * Htch, -1 * Yoffl, -1 * Zoff - Trig * Vtch)
+    }
+    if(For & (Leg == 0))
+    {
+        Ideall = vec(-1 * Xoffl + -Trig * Htch, -1 * Yoffl, -1 * Zoff - Trig * Vtch)
+        Idealr = vec(-1 * Xoffr + 0, -1 * Yoffr, -1 * Zoff + Trig * Ltch)
+    }
+    if(Back & (Leg == 0))
+    {
+        Ideall = vec(-1 * Xoffl + 0, -1 * Yoffl, -1 * Zoff + Trig * Ltch)
+        Idealr = vec(-1 * Xoffr + Trig * Htch, -1 * Yoffr, -1 * Zoff - Trig * Vtch)
+    }
+    #WARNING: This particular IF fucks up a lot - good with rayman
+    #not so good with any sort of legitimate construct
+    #if(!For)
+    #{
+    #    Ideall = vec(0, -1 * Yoffl, -1 * Zoff)
+    #    Idealr = vec(0, -1 * Yoffr, -1 * Zoff)
+    #}
+    
+    Forcel = entity():pos() - entity():toWorld(Offsetl + $Offsetl * 5 + Ideall)
+    Forcer = entity():pos() - entity():toWorld(Offsetr + $Offsetr * 5 + Idealr)
+
+    if(For | Back)
+    {
+        Left:applyForce(Forcel * Left:mass() * (Mul * Spr))
+        Right:applyForce(Forcer * Right:mass() * (Mul * Spr))
+    }
+}

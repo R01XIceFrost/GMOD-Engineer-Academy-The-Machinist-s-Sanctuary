@@ -1,0 +1,195 @@
+@name Hip-Biased Move Chip (Strafing)
+# Entities
+@inputs Hip:entity Left:entity Right:entity
+# Controls
+@inputs On For Back TRight TLeft Strafe Sprint
+# Debug
+@outputs Fltdbga Fltdbgb Vecdbg:vector
+# Offsets
+@persist Offsetl:vector Offsetr:vector Hiptrg:vector Hoff Voff Foff Ideall:vector Idealr:vector
+@persist Yoffl Yoffr Zoff Turnposa:vector Turnposb:vector Turnvec:vector
+@persist Xoffl Xoffr
+# Passed Information for Delta
+@persist Entpos:vector Leg Oy Ny Delta
+# Forces
+@persist Forcel:vector Forcer:vector Trig Mul Spr Snap Vtch Ltch Htch Pshd Strp
+@persist Angle Setf Laterall Lateralr Change Yofflt Yoffrt Del FTrig RTrig
+@trigger all
+
+#Source #1: https://web.archive.org/web/20100105230030/https://facepunch.com/showthread.php?t=728725
+#Source #2: https://youtu.be/kw-rii0xH88?si=KguY1ceooVIgY6eY
+
+#[
+
+INFO:
+
+To place this chip:
+1) Face the chip forward on your hip prop and weld it to the hip prop over the feet
+2) Take 3 entity markers and link them to the hip, left foot, and right foot
+3) Link up the inputs in the chip
+4) Reupdate the chip to record feet information
+On - When this is active, the mech "turns on", stabilizers fire, legs respond to commands.
+For - Walk forward
+Back - Walk backwards
+TRight - Turn Right
+TLeft - Turn Left
+Sprint - Go stupid fast
+
+Tweaking:
+To tweak the chip, you have the following easy to use variables
+Pshd - If your body is sagging or spazzing, increase or reduce this variable
+Mul - If you're running too fast or spazzing, or not moving at all, decrease or increase this variable
+Snap - If you can't turn fast enough or are turning too fast, increase or decrease this variable
+Trig - If your leg step is too short or too long, increase or decrease this variable.
+Spr - Sprint multiplier, set to 1 + some fraction. This just makes it run faster when you press a button.
+
+What it can be used for:
+If properly set up, it can be used for absolutely any bipedal mech of any scale.
+
+Boring explanations (skippable):
+This chip was the result of two or three rounds of tweaking to a very basic applyforce mech walking chip I made when I first learned about applyForce, based on my vector thruster mech design. It uses the idea that you have ideal points to move to using the feet, and it triggers at about half the length to get to the ideal point. The overall effect is a very agile design that can handle stupid speeds (at the cost of looking realistic).
+
+Contrary to what most people keep telling me, the hip does not move the feet at all. The hip follows the feet as they move, attempting to maintain center mass and it weakly attempts to fly to a point above the two feet. Elastics carry most of the burden, though rayman type walkers are definately possible with this.
+
+Credits:
+Kaf, Bigwig, Sharps, Lazermaniac, Vendetta, Goons on Guneland - Best damn builders ever.
+
+
+Enjoy!
+
+
+]#
+
+interval(20)
+
+Angle = (Strafe * (TLeft - TRight)) * 90 / (1 + For - 3 * Back) - Back * 180
+
+Setf = For | Back | ((TRight | TLeft) & Strafe)
+
+Offsetl = entity():toLocal(Left:massCenter())
+Offsetr = entity():toLocal(Right:massCenter())
+
+Foff = (Offsetl:x() + Offsetr:x()) / 2
+Voff = (Offsetl:z() + Offsetr:z()) / 2
+Hoff = (Offsetl:y() + Offsetr:y()) / 2
+
+Entpos = entity():pos()
+
+if(first())
+{
+    Hiptrg = vec((Offsetl:x() + Offsetr:x()) / 2, (Offsetl:y() + Offsetr:y()) / 2, (Offsetl:z() + Offsetr:z()) / 2)
+    Yoffl = Offsetl:y()
+    Yoffr = Offsetr:y()
+    Zoff = (Offsetl:z() + Offsetr:z()) / 2
+    Xoffl = Offsetl:x()
+    Xoffr = Offsetr:x()
+    
+# Trigger Distance
+    FTrig = 25
+    RTrig = 22
+# Foot Force Multiplier
+    Mul = 0.4
+# Turning Multiplier
+    Snap = 2
+# Vertical, Lower and Horizontal Offsets
+    Vtch = 3
+    Ltch = 3
+    Htch = 2
+# Horizontal (Yaw) Stabilizer
+    Strp = 0.25
+# Hip Stab
+    Pshd = 4
+# Delay for feet
+    Del = 500
+}
+# Sprint Multiplier
+Spr = 1 + 0.75 * Sprint
+if((For | Back) | (Strafe & (TRight | TLeft)))
+{
+    Trig = ((For | Back) * FTrig + ((TRight | TLeft) & Strafe) * RTrig) / ((For | Back) + ((TRight | TLeft) & Strafe))
+}
+
+if(On & clk())
+{
+    Oy = Ny
+    Ny = entity():angles():yaw()
+    Delta = angnorm(Ny - Oy)
+    # Hip Snap
+    Hip:applyForce(Hip:mass() * Pshd * (entity():forward() * (Foff + $Foff * 5 - Hiptrg:x()) + entity():up() * (Voff + $Voff * 5 - Hiptrg:z()) + entity():right() * -1 * (Hoff + $Hoff * 5 - Hiptrg:y())))
+    # Turning
+    Turnposa = entity():right() * -200
+    Turnposb = entity():right() * 200
+    Turnvec = entity():forward()
+    if(abs(TRight - TLeft) & !Strafe)
+    {
+        Hip:applyOffsetForce(Turnvec * Hip:mass() * (TRight - TLeft) * Snap, Hip:massCenter() - Turnposb)
+        Hip:applyOffsetForce(Turnvec * Hip:mass() * (TLeft - TRight) * Snap, Hip:massCenter() - Turnposa)
+    }
+    Hip:applyOffsetForce(Turnvec * Hip:mass() * Delta * Strp, Hip:massCenter() + Turnposa)
+    Hip:applyOffsetForce(Turnvec * Hip:mass() * Delta * -Strp, Hip:massCenter() + Turnposb)
+
+    # Leg Toggles
+    Laterall = sqrt((Offsetl:x() - Xoffl)^2 + (Offsetl:y() - Yoffl)^2)
+    Lateralr = sqrt((Offsetr:x() - Xoffr)^2 + (Offsetr:y() - Yoffr)^2)
+    
+    Fltdbga = Laterall
+    Fltdbgb = Lateralr
+    if((Laterall > Trig) & (Leg == 0) & !Change)
+    {
+        Leg = 1
+        Change = 1
+        timer("reset", Del)
+    }
+    if((Lateralr > Trig) & (Leg == 1) & !Change)
+    {
+        Leg = 0
+        Change = 1
+        timer("reset", Del)
+    }
+    
+    if(Back)
+    {
+        Yofflt = Yoffr
+        Yoffrt = Yoffl
+    }
+    else
+    {
+        Yofflt = Yoffl
+        Yoffrt = Yoffr
+    }
+    
+    if(Setf & (Leg == 1))
+    {
+        Ideall = vec(-1 * Xoffl + 0, -1 * Yofflt, -1 * Zoff + Trig * Ltch)
+        Idealr = vec(-1 * Xoffr + -Trig * Htch, -1 * Yoffrt, -1 * Zoff - Trig * Vtch)
+    }
+    if(Setf & (Leg == 0))
+    {
+        Ideall = vec(-1 * Xoffl + -Trig * Htch, -1 * Yofflt, -1 * Zoff - Trig * Vtch)
+        Idealr = vec(-1 * Xoffr + 0, -1 * Yoffrt, -1 * Zoff + Trig * Ltch)
+    }
+    #WARNING: This particular IF fucks up a lot - good with rayman
+    #not so good with any sort of legitimate construct
+#    if(!Setf)
+#    {
+#        Ideall = vec(-1 * Xoffl, -1 * Yoffl, -1 * Zoff)
+#        Idealr = vec(-1 * Xoffr, -1 * Yoffr, -1 * Zoff)
+#    }
+    
+    Ideall = Ideall:rotate(ang(0, Angle, 0))
+    Idealr = Idealr:rotate(ang(0, Angle, 0))
+        
+    Forcel = entity():pos() - entity():toWorld(Offsetl + $Offsetl * 5 + Ideall)
+    Forcer = entity():pos() - entity():toWorld(Offsetr + $Offsetr * 5 + Idealr)
+    
+    if(Setf)
+    {
+        Left:applyForce(Forcel * Left:mass() * (Mul * Spr))
+        Right:applyForce(Forcer * Right:mass() * (Mul * Spr))
+    }
+}
+
+if(clk("reset"))
+{
+    Change = 0
+}
