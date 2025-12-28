@@ -1,0 +1,110 @@
+@name Zeppelid_v2
+@inputs [Pod]:entity ThrottleUp ThrottleDown Pitf Pitb Yawl Yawr Autolevel
+@outputs 
+@persist [Body Friends]:array Throttle N LMOD RVec:vector TVec:vector CSPD Pos:vector LPos:vector LOff:vector
+#tweaks
+@persist BodyMDL:string EngineMDL:string NegAmount RDamp PitchForce YawForce REffect MaxThrust
+@trigger 
+#Two modes, freefloat and autolevel
+#Heavy damping in all directions, and on rotation
+#Throttled movement
+#Move engines
+interval(10)
+if(dupefinished())
+{
+    reset()
+}
+if(first())
+{
+    EngineMDL = "models/props_silo/fanoff.mdl" #What is your engine model - What we spinnin?
+    BodyMDL = "models/sprops/rectangles/size_54/rect_54x132x3.mdl" #What is your base model
+    NegAmount = 9.5 #Force amount upwards - grabbity negation
+    RDamp = 18 #Rotational Damping
+    PitchForce = 3
+    YawForce = 10
+    REffect = 2 #Roll effect from yaw
+    MaxThrust = 80 #Maximum throttle
+    
+    #This is to find your engines.
+    Friends = entity():getConstraints()
+    N = 1
+    while(N <= Friends:count())
+    {
+        if(Friends[N, entity]:model() == EngineMDL)
+        {
+            N++
+        }
+        else
+        {
+            Friends:remove(N)
+        }
+    }
+    Body = entity():getConstraints()
+    N = 1
+    while(N <= Body:count())
+    {
+        if(Body[N, entity]:model() == BodyMDL)
+        {
+            N++
+        }
+        else
+        {
+            Body:remove(N)
+        }
+    }
+}
+if(Autolevel & ~Autolevel)
+{
+    LMOD = !LMOD
+    if(LMOD)
+    {
+        Pod:hintDriver("Autolevel Enabled", 3)
+    }
+    else
+    {
+        Pod:hintDriver("Autolevel Disabled", 3)
+    }
+}
+if(clk())
+{
+    Throttle = clamp(Throttle + (ThrottleUp - ThrottleDown) * 0.005, 0, 1) * !LMOD
+    Pos = entity():pos()
+    if(!LMOD)
+    {
+        LPos = Pos
+    }
+    if(LMOD)
+    {
+        LPos = LPos + vec(0, 0, 1) * (Pitf - Pitb) * 1
+    }
+    LOff = (LPos - Pos):setX(0):setY(0)
+    CSPD = ($Pos):dot(entity():forward())
+    #MOVEMENT
+    N = 1
+    while(N <= Body:count())
+    {
+        TVec = !LMOD*((Pitb - Pitf) * PitchForce * entity():up() + (Yawr - Yawl) * YawForce * entity():right() * clamp(CSPD / 2.5, 0, 1)) * Body[N, entity]:mass()
+        Body[N, entity]:applyOffsetForce((TVec), Body[N, entity]:massCenter() + entity():forward() * 100 - entity():up() * 50)
+        Body[N, entity]:applyOffsetForce((-TVec), Body[N, entity]:massCenter() - entity():forward() * 100 - entity():up() * 50)
+        TVec = !LMOD*(Yawr - Yawl) * entity():up() * -REffect * Body[N, entity]:mass() * clamp(CSPD / 2.5, 0, 1)
+        Body[N, entity]:applyOffsetForce(TVec, Body[N, entity]:massCenter() + entity():right() * 100)
+        Body[N, entity]:applyOffsetForce(-TVec, Body[N, entity]:massCenter() - entity():right() * 100)
+        #Rotational Damping
+        Body[N, entity]:applyTorque(Body[N, entity]:angVelVector() * -RDamp * Body[N, entity]:inertia())
+        #Movement damping
+        Body[N, entity]:applyForce((Throttle * MaxThrust * entity():forward() + ($Pos) * -5 + LMOD*(LOff+$LOff*5) * 8) * Body[N, entity]:mass())
+        #Partial Gravity negation
+        Body[N, entity]:applyOffsetForce(NegAmount * Body[N, entity]:mass() * vec(0, 0, 1), Body[N, entity]:massCenter() + entity():up() * 100)
+        N++
+    }    
+    #ENGINES
+        
+    N = 1
+    while(N <= Friends:count())
+    {
+        RVec = Friends[N, entity]:toLocal(Friends[N, entity]:pos()+entity():forward())
+        CSPD = Throttle * 1000 - RVec:dot(Friends[N, entity]:angVelVector())
+        Friends[N, entity]:applyTorque((CSPD) * RVec * Friends[N, entity]:inertia())
+        N++
+    }
+}

@@ -1,0 +1,121 @@
+@name Basic Ship Movement
+@inputs Active W S A D Seat:entity
+@outputs MPH
+@persist Power MaxSpeedMPH TurningSpeedMultiplier EngineSound:string Acceleration TurnCorrect Buoyancy
+@persist WaterHeight InWater Ang:angle Roll Pitch MPH Base:entity DisplayMarker
+
+#[------------------------------INSTRUCTIONS--------------------------------#
+#1. Make sure your base is at 0 pitch when facing up, so the balance of buoyancy 
+# doesn't make it flip the wrong way.
+#2. While the setting 'DisplayMarker' is 1, Angle the chip so the green holo is facing the front of your ship,
+then weld/parent chip to base.
+#3. Wire all the inputs up.
+#4. Tune your settings, based of your ships design, then refresh the E2.
+#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-]#
+
+if (dupefinished()) {reset()}
+
+if (first()){
+
+    #--------------------------------SETTINGS----------------------------------#
+    DisplayMarker = 1 #Do you want a holo to display the orientation the chip should be?
+    
+    MaxSpeedMPH = 20 #What's the max speed you want your ship to travel?
+    Acceleration = 1 #How fast do you want your ship to get up to it's max speed?
+    TurningSpeedMultiplier = 0.7 #How much power do you want to apply when turning?
+    TurnCorrect = 0 #If A and D turn the wrong direction, make this 1, otherwise keep it at 0.
+    Buoyancy = 1 #Do you want the base to be self buoyant though applyforce? This will make for a much more stabel vessel.
+    EngineSound = "acf_engines/l6_dieselmedium.wav" #Choose the engine sound you want to hear when driving.
+    #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-
+ 
+    #--------------------DO NOT CHANGE ANYTHING UNDER HERE---------------------#
+        
+    if (DisplayMarker){
+        holoCreate(1)    
+        holoModel(1,"sphere2")
+        holoPos(1,entity():pos()+entity():forward()*8)
+        holoScale(1,vec(0.4))
+        holoColor(1,vec(0,175,0))
+        holoAlpha(1,150)
+        holoParent(1,entity())
+    }
+        
+    if (entity():parent():parent():isValid()) {Base=entity():parent():parent()}
+    elseif (entity():parent():isValid() & !entity():parent():parent():isValid()) {Base = entity():parent()}
+    elseif (entity():isWeldedTo():isValid() & !entity():parent():isValid()) {Base = entity():isWeldedTo()}
+    else {hint("[E2] The chip must be spawned on a prop!",4)}
+    
+    if (Buoyancy) {timer("findWaterHeight",30), Base:propSetBuoyancy(0)}
+}
+
+elseif ( ~Active & Active ) {interval(60), Base:soundPlay(1,0,EngineSound)}
+elseif ( ~Active & !Active ) {stoptimer("interval"), soundStop(1,0)}
+
+if (clk()){
+    
+    local MPH = toUnit("mph",Base:vel():length())
+    
+    soundPitch(1,30+((MPH/MaxSpeedMPH)*100))
+    
+    if ((W|S) & MPH < MaxSpeedMPH) {Power+=Acceleration} 
+    elseif ((W|S) & MPH > MaxSpeedMPH) {Power-=Acceleration}  
+    elseif (!W & !S) {
+        Power=0       
+    }
+    
+    local MPH = toUnit("mph",Base:vel():length())
+    if (MPH < MaxSpeedMPH) {ForwardForce = entity():forward()*Base:mass()*Power*(MaxSpeedMPH/100)*(S-W)}
+    if (!TurnCorrect) {TurnRotate=A-D} else {TurnRotate=D-A}
+    
+    Base:applyForce(ForwardForce+entity():right()*(Base:mass()*(TurningSpeedMultiplier)*(A-D)))
+    
+    if (abs(Base:angVel():yaw())<TurningSpeedMultiplier*50){
+        Base:applyAngForce(ang(0,Base:mass()*(TurningSpeedMultiplier*200*(TurnRotate)),0))
+    }
+      
+    interval(60)
+}
+    
+if (clk("findWaterHeight")){
+    rangerHitEntities(0)
+    rangerHitWater(1)
+    rangerIgnoreWorld(1)
+    local Ranger = rangerOffset(40,Base:pos()-(Base:boxSize()/2)+34,vec(0,0,-1))
+    
+    if (changed(Ranger:hit())&Ranger:hit()){
+        WaterHeight = Ranger:pos():z()+(Base:boxSize():z()/2)+3
+        InWater = 1
+        stoptimer("findWaterHeight")
+        timer("buoyancy",40)    
+    }
+    
+    elseif (changed(Ranger:hit())&!Ranger:hit()){
+        InWater = 0
+        stoptimer("buoyancy") 
+    }
+     
+    timer("findWaterHeight",30)   
+    
+}
+    
+if (clk("buoyancy")){
+    Base:applyForce(vec(0,0,((WaterHeight-Base:pos():z())*5-Base:vel():z())*Base:mass()))  
+    
+    #WATER ANGULAR BUOYANCY
+    local Roll = Base:angles():roll()
+    local Pitch = Base:angles():pitch()
+    Ang = angnorm(-ang(Pitch,0,Roll))
+    Base:applyAngForce((Ang + $Ang*5)*Base:mass()*10)
+    #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-
+    
+    #WATER RESISTANCE SIMULATION
+    if ((abs(Base:vel():x())>20) | (abs(Base:vel():y())>20)){
+        Base:applyForce(-(Base:vel()*Base:mass()/60))
+    }
+    if (abs(Base:angVel():yaw())>TurningSpeedMultiplier*5) {Base:applyAngForce(ang(0,-(Base:angVel():yaw()*(Base:mass()*(abs(Base:vel():length())/70))),0))}
+    #-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-
+    
+    if (InWater & Buoyancy){ 
+        timer("buoyancy",40)
+    }
+}
