@@ -1,0 +1,19 @@
+@name ShipMouseControl
+@inputs XY:vector2 EGP:wirelink Seat:entity Sensitivity
+@outputs Pitch Yaw
+@persist 
+@trigger 
+runOnTick(1)
+X = XY:x() * Sensitivity
+Y = XY:y() * Sensitivity
+Driver = Seat:driver()
+Center = egpScrSize(Driver) / 2
+if(first() | dupefinished())
+{
+    EGP:egpCircleOutline(1,Center,vec2(16,16))
+}
+
+EGP:egpPos(1,Center + vec2(X,-Y))
+
+Pitch = -Y * 0.01
+Yaw = -X * 0.01
