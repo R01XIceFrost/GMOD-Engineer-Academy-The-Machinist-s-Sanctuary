@@ -1,0 +1,41 @@
+@name Projectile Sprite Prototype 1
+@persist ShootPos:vector T
+@strict
+@trigger none
+
+
+
+#Dec 19 - 25  2025
+
+#E2 SpriteCore Required!
+
+T = 0
+event tick(){
+
+T += 0.5
+Index = 1
+Key = owner():keyUse() #Press e to activate the projectile! (not so perfect lmao but at least I got the idea down, no ChatGPT!!!!)
+
+    if (Key == 1) {
+        Pressd = 1        
+        ShootPos = owner():shootPos() #Current Player Pos
+                      
+        if(Pressd == 1) {
+            spriteSpawn(Index,"sprites/light_ignorez.vmt") 
+            spriteSetColor(Index,vec(0,255,0))
+            spriteSetAlpha(Index,999)
+            spriteSetScale(Index,0.9)
+            spriteSetPos(Index,ShootPos + vec(0,0,0)) 
+            T = 0 
+            }   
+                    
+         }else{
+          print("push")
+          spriteSetPos(Index,ShootPos + vec(T,T,0))
+    }                 
+}
+
+    
+
+
+

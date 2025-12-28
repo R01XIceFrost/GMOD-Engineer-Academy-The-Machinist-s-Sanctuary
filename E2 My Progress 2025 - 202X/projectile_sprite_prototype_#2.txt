@@ -1,0 +1,84 @@
+@name Projectile Sprite Prototype 2 (With Comments)
+@persist Speed [ShootPos Eye]:vector
+@strict
+@trigger none
+
+#Dec 26 2025
+
+#E2 SpriteCore Required!
+
+Speed = 0 #initialized
+
+event tick() {
+    
+    Speed += 0.5 #Speed Sprite Projectile
+    Index = 1  #Index 1 for sprite
+    Key = owner():keyUse() #Press e to activate the projectile! (not so perfect lmao but at least I got the idea down, no ChatGPT!!!!)
+
+    if (Key == 1) { #if E key is activated, execute the the lines below
+        Pressd = 1  #Pressed detected
+        ShootPos = owner():shootPos() #Current Player Pos
+                      
+        if(Pressd == 1) { #Key E is pressed, run the lines below
+            
+            spriteSpawn(Index,"sprites/light_ignorez.vmt") 
+            spriteSetColor(Index,vec(0,255,0))
+            spriteSetAlpha(Index,255) #max transparency for visibility
+            spriteSetPos(Index,ShootPos + vec(0,0,0))  #Current Owner ShootPos
+            Eye = owner():eyeAngles():forward() #Current Owner EyeAngles for aiming stuff, different than ShootPos!
+            
+            }   
+                    
+         } else {
+            
+          print("1") #debugging stuff
+          spriteSetPos(Index,ShootPos + Eye:normalized()*Speed) #the main logic
+    }                 
+}
+
+#[
+
+@name Projectile Sprite Prototype 2 (No comments)
+@persist ShootPos:vector T 
+@strict
+@trigger none
+
+
+
+#Dec 26 - 2025
+
+#E2 SpriteCore Required!
+
+T = 0
+event tick(){
+
+T += 0.5
+Index = 1
+Key = owner():keyUse() #Press e to activate the projectile! (not so perfect lmao but at least I got the idea down, no ChatGPT!!!!)
+
+    if (Key == 1) {
+        Pressd = 1        
+        ShootPos = owner():shootPos() #Current Player Pos
+                      
+        if(Pressd == 1) {
+            spriteSpawn(Index,"sprites/light_ignorez.vmt") 
+            spriteSetColor(Index,vec(0,255,0))
+            spriteSetAlpha(Index,999)
+            spriteSetScale(Index,0.9)
+            spriteSetPos(Index,ShootPos + vec(0,0,0)) 
+            T = 0 
+            }   
+                    
+         }else{
+            
+          print("push")
+          V = owner():eyeAngles():forward()
+          spriteSetPos(Index,ShootPos + V:normalized()*100)
+    }                 
+}
+
+]#
+   
+
+
+
