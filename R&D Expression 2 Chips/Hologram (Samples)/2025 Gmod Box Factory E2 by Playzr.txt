@@ -1,0 +1,531 @@
+@name pcore-boxfactory by Playzr
+@inputs 
+@outputs 
+@persist StartProp:entity [Center Col Edge SplitEdge]:vector [Sequence PropList Boxes ColourList Lifts LiftStart LiftPos LiftAng LiftTimer BoxID]:array LiftTable:table NumProps NumPieces Material:string SpawnMode SpawnTimer SpawnDelay SpawnLoop SpawnItem SpawnItemMax NumBoxes [BuildAngle SplitAngle]:angle ClickE NumColours ColourSpawn BoxSpeed StartFree LiftNum LiftDelay LiftSpeed InitDelay InitTimer InitMax InitMode BoxModel:string NumID
+@strict
+@model models/props_lab/generatorconsole.mdl
+
+#Source: https://youtu.be/wfWNoOl2Hts?si=OIeokx0npe843s9W
+
+interval(20)
+runOnLast(1)
+
+if(first())
+{
+    Center = entity():pos() + vec(0, -40, 35)
+    Material = "sprops/textures/sprops_chrome2"
+    #"phoenix_storms/grey_steel"
+    BoxModel = "models/props_junk/cardboard_box001a.mdl"
+    Col = vec(0,120,255)
+    SpawnDelay=15
+    StartProp = propSpawn("models/mechanics/solid_steel/i_beam2_8.mdl", Center, ang(0,0,90), 1)
+    StartProp:setColor(Col)
+    StartProp:setMaterial(Material)
+    StartProp:propPhysicalMaterial("ice")
+    StartProp:setMass(1400)
+    Sequence[NumPieces, number] = 1
+    NumPieces+=1
+    PropList[NumProps, entity] = StartProp
+    PropList[NumProps, entity]:setMass(1401)
+    NumProps+=1
+    PropList[NumProps, entity] = propSpawn("models/props_phx/construct/metal_tubex2.mdl", Center + vec(-48,0,20), ang(90,0,0), 1)
+    PropList[NumProps, entity]:setMaterial(Material)
+    NumProps+=1
+    Edge = Center + vec(-48,0,0)
+    
+    ColourList[NumColours, vector] = vec(255,0,0)   NumColours+=1
+    ColourList[NumColours, vector] = vec(0,255,0)   NumColours+=1
+    ColourList[NumColours, vector] = vec(0,0,255)   NumColours+=1
+    ColourList[NumColours, vector] = vec(255,0,255)   NumColours+=1
+    ColourList[NumColours, vector] = vec(255,255,0)   NumColours+=1
+    ColourList[NumColours, vector] = vec(0,255,255)   NumColours+=1
+    
+    #holoCreate(1, Edge)
+    
+    #Here you can decide what sequence of pieces to make
+    #1=straight
+    #2=left turn
+    #3=right turn
+    #4=upward slope
+    #5=downward slope
+    #6=colourer
+    #7=lift
+    #8=splitter
+    #9=split return (where it continues on the right side of the last splitter)
+    Sequence[NumPieces, number] = 1    NumPieces+=1
+    Sequence[NumPieces, number] = 8    NumPieces+=1
+    Sequence[NumPieces, number] = 1    NumPieces+=1
+    Sequence[NumPieces, number] = 2    NumPieces+=1
+    Sequence[NumPieces, number] = 1    NumPieces+=1
+    Sequence[NumPieces, number] = 2    NumPieces+=1
+    Sequence[NumPieces, number] = 1    NumPieces+=1
+    Sequence[NumPieces, number] = 3    NumPieces+=1
+    Sequence[NumPieces, number] = 1    NumPieces+=1
+    Sequence[NumPieces, number] = 1    NumPieces+=1
+    Sequence[NumPieces, number] = 4    NumPieces+=1
+    Sequence[NumPieces, number] = 4    NumPieces+=1
+    Sequence[NumPieces, number] = 1    NumPieces+=1
+    Sequence[NumPieces, number] = 5    NumPieces+=1
+    Sequence[NumPieces, number] = 1    NumPieces+=1
+    Sequence[NumPieces, number] = 3    NumPieces+=1
+    
+    Sequence[NumPieces, number] = 9    NumPieces+=1
+    
+    Sequence[NumPieces, number] = 3    NumPieces+=1
+    Sequence[NumPieces, number] = 1    NumPieces+=1
+    Sequence[NumPieces, number] = 2    NumPieces+=1
+    Sequence[NumPieces, number] = 6    NumPieces+=1
+    
+    Sequence[NumPieces, number] = 3    NumPieces+=1
+    Sequence[NumPieces, number] = 4    NumPieces+=1
+    Sequence[NumPieces, number] = 1    NumPieces+=1
+    Sequence[NumPieces, number] = 3    NumPieces+=1
+    Sequence[NumPieces, number] = 1    NumPieces+=1
+    Sequence[NumPieces, number] = 1    NumPieces+=1
+    Sequence[NumPieces, number] = 2    NumPieces+=1
+    Sequence[NumPieces, number] = 1    NumPieces+=1
+    Sequence[NumPieces, number] = 1    NumPieces+=1
+    Sequence[NumPieces, number] = 1    NumPieces+=1
+    
+    Sequence[NumPieces, number] = 7    NumPieces+=1
+    Sequence[NumPieces, number] = 3    NumPieces+=1
+    Sequence[NumPieces, number] = 7    NumPieces+=1
+    Sequence[NumPieces, number] = 3    NumPieces+=1
+    Sequence[NumPieces, number] = 7    NumPieces+=1
+    Sequence[NumPieces, number] = 3    NumPieces+=1
+    Sequence[NumPieces, number] = 5    NumPieces+=1
+    
+    #Boxes[0, entity] = propSpawn(BoxModel, PropList[0, entity]:pos() + vec(0,0,14), ang(0,90,0), 0)
+    #Boxes[0, entity]:propFreeze(0)
+    #Boxes[0, entity]:setMass(100)
+    #Boxes[0, entity]:setColor(ColourList[ColourSpawn, vector])
+    #ColourSpawn+=1
+    #NumBoxes+=1
+    
+    
+    SpawnLoop=1
+    SpawnTimer=SpawnDelay
+    SpawnItem=0
+    SpawnMode=1
+    LiftNum=1 #starts from 1 not 0
+    LiftDelay=50
+    LiftSpeed=6
+    InitMode=0
+    InitDelay=30
+    InitTimer=InitDelay
+    InitMax=50
+}
+
+if(SpawnTimer>0){ SpawnTimer-=1 }
+
+#the spawner gradually places all of the props based on the sequence you have provided
+if(SpawnLoop < (NumPieces+SpawnItemMax) & SpawnTimer==0 & propCanCreate() & SpawnMode>0)
+{
+    #1= straight
+    if(Sequence[SpawnLoop, number]==1)
+    {
+        SpawnItemMax=1
+        PropList[NumProps, entity] = propSpawn("models/mechanics/solid_steel/i_beam2_8.mdl", Edge + (vec(-48,0,0):rotate(BuildAngle)), ang(0,0,90) + BuildAngle, 1)
+        PropList[NumProps, entity]:setMass(1401)
+        Edge = PropList[NumProps, entity]:pos() + (vec(-48,0,0):rotate(BuildAngle))
+    }
+    #2= left turn
+    if(Sequence[SpawnLoop, number]==2)
+    {
+        SpawnItemMax=5
+        if(SpawnItem==0)
+        {
+            PropList[NumProps, entity] = propSpawn("models/hunter/plates/plate3x3.mdl", Edge + (vec(-71,-52,-0.5):rotate(BuildAngle)), ang(0,0,0)+BuildAngle, 1)
+            PropList[NumProps, entity]:setMass(1402)
+        }
+        if(SpawnItem==1)
+        {
+            PropList[NumProps, entity] = propSpawn("models/hunter/tubes/tube4x4x025d.mdl", Edge + (vec(-50,-75,-5.5):rotate(BuildAngle)), ang(0,-90,0)+BuildAngle, 1)
+            PropList[NumProps, entity]:setMass(1402)
+        }
+        if(SpawnItem==2)
+        {
+            PropList[NumProps, entity] = propSpawn("models/hunter/tubes/tube4x4x025d.mdl", Edge + (vec(-13.2,-123,-5.5):rotate(BuildAngle)), ang(0,-90,0)+BuildAngle, 1)
+            PropList[NumProps, entity]:setMass(1402)
+        }
+        if(SpawnItem==3)
+        {
+            PropList[NumProps, entity] = propSpawn("models/hunter/plates/plate025x125.mdl", Edge + (vec(-22,16.9,0):rotate(BuildAngle)), ang(90,90,0)+BuildAngle, 1)
+            PropList[NumProps, entity]:setMass(1402)
+        }
+        if(SpawnItem==4)
+        {
+            PropList[NumProps, entity] = propSpawn("models/hunter/plates/plate025x125.mdl", Edge + (vec(-145,-95,0):rotate(BuildAngle)), ang(90,0,0)+BuildAngle, 1)
+            PropList[NumProps, entity]:setMass(1402)
+            Edge = PropList[NumProps-4, entity]:pos() + (vec(-54,-71,0):rotate(BuildAngle))
+            BuildAngle+= ang(0,90,0)
+        }
+    }
+    #3= right turn
+    if(Sequence[SpawnLoop, number]==3)
+    {
+        SpawnItemMax=5
+        if(SpawnItem==0)
+        {
+            PropList[NumProps, entity] = propSpawn("models/hunter/plates/plate3x3.mdl", Edge + (vec(-71,52,-0.5):rotate(BuildAngle)), ang(0,0,0)+BuildAngle, 1)
+            PropList[NumProps, entity]:setMass(1403)
+        }
+        if(SpawnItem==1)
+        {
+            PropList[NumProps, entity] = propSpawn("models/hunter/tubes/tube4x4x025d.mdl", Edge + (vec(-50,75,-5.5):rotate(BuildAngle)), ang(0,0,0)+BuildAngle, 1)
+            PropList[NumProps, entity]:setMass(1403)
+        }
+        if(SpawnItem==2)
+        {
+            PropList[NumProps, entity] = propSpawn("models/hunter/tubes/tube4x4x025d.mdl", Edge + (vec(-13.2,123,-5.5):rotate(BuildAngle)), ang(0,0,0)+BuildAngle, 1)
+            PropList[NumProps, entity]:setMass(1403)
+        }
+        if(SpawnItem==3)
+        {
+            PropList[NumProps, entity] = propSpawn("models/hunter/plates/plate025x125.mdl", Edge + (vec(-22,-16.9,0):rotate(BuildAngle)), ang(90,-90,0)+BuildAngle, 1)
+            PropList[NumProps, entity]:setMass(1403)
+        }
+        if(SpawnItem==4)
+        {
+            PropList[NumProps, entity] = propSpawn("models/hunter/plates/plate025x125.mdl", Edge + (vec(-145,95,0):rotate(BuildAngle)), ang(90,0,0)+BuildAngle, 1)
+            PropList[NumProps, entity]:setMass(1403)
+            Edge = PropList[NumProps-4, entity]:pos() + (vec(-54,71,0):rotate(BuildAngle))
+            BuildAngle+= ang(0,-90,0)
+        }
+    }
+    #4= upward slope
+    if(Sequence[SpawnLoop, number]==4)
+    {
+        SpawnItemMax=1
+        PropList[NumProps, entity] = propSpawn("models/mechanics/solid_steel/i_beam2_16.mdl", Edge + (vec(-80,0,46):rotate(BuildAngle)), ang(30,0,90) + BuildAngle, 1)
+        PropList[NumProps, entity]:setMass(1404)
+        Edge = PropList[NumProps, entity]:pos() + (vec(-82.5,0,47.85):rotate(BuildAngle))
+    }
+    #5= downward slope
+    if(Sequence[SpawnLoop, number]==5)
+    {
+        SpawnItemMax=1
+        PropList[NumProps, entity] = propSpawn("models/mechanics/solid_steel/i_beam2_16.mdl", Edge + (vec(-82.5,0,-48):rotate(BuildAngle)), ang(-30,0,90) + BuildAngle, 1)
+        PropList[NumProps, entity]:setMass(1405)
+        Edge = PropList[NumProps, entity]:pos() + (vec(-82.5,0,-47.85):rotate(BuildAngle))
+        #holoCreate(1, Edge)
+    }
+    #6= colourer
+    if(Sequence[SpawnLoop, number]==6)
+    {
+        SpawnItemMax=3
+        if(SpawnItem==0)
+        {
+            PropList[NumProps, entity] = propSpawn("models/mechanics/solid_steel/i_beam2_8.mdl", Edge + (vec(-48,0,0):rotate(BuildAngle)), ang(0,0,90) + BuildAngle, 1)
+            PropList[NumProps, entity]:setMass(1406)
+        }
+        if(SpawnItem==1)
+        {
+            PropList[NumProps, entity] = propSpawn("models/props_phx/construct/metal_tube.mdl", Edge + (vec(-48,0,20):rotate(BuildAngle)), ang(90,0,0) + BuildAngle, 1)
+            PropList[NumProps, entity]:setMass(1406)
+        }
+        if(SpawnItem==2)
+        {
+            PropList[NumProps, entity] = propSpawn("models/props_wasteland/gaspump001a.mdl", Edge + (vec(-25,0,40):rotate(BuildAngle)), ang(0,90,0) + BuildAngle, 1)
+            PropList[NumProps, entity]:setMass(1406)
+            Edge = PropList[NumProps-2, entity]:pos() + (vec(-48,0,0):rotate(BuildAngle))
+        }
+    }
+    #7= lift
+    if(Sequence[SpawnLoop, number]==7)
+    {
+        SpawnItemMax=5
+        if(SpawnItem==0)
+        {
+            PropList[NumProps, entity] = propSpawn("models/mechanics/solid_steel/i_beam2_16.mdl", Edge + (vec(-38,0,0):rotate(BuildAngle)), ang(90,0,90) + BuildAngle, 1)
+            PropList[NumProps, entity]:setMass(1407)
+        }
+        if(SpawnItem==1)
+        {
+            PropList[NumProps, entity] = propSpawn("models/hunter/plates/plate075x105.mdl", Edge + (vec(-20,0,-15):rotate(BuildAngle)), ang(0,90,0) + BuildAngle, 1)
+            PropList[NumProps, entity]:setMass(1407)
+        }
+        if(SpawnItem==2)
+        {
+            PropList[NumProps, entity] = propSpawn("models/hunter/plates/plate025x3.mdl", Edge + (vec(-20,18.5,60):rotate(BuildAngle)), ang(0,0,90) + BuildAngle, 1)
+            PropList[NumProps, entity]:setMass(1407)
+        }
+        if(SpawnItem==3)
+        {
+            PropList[NumProps, entity] = propSpawn("models/hunter/plates/plate025x3.mdl", Edge + (vec(-20,-18.5,60):rotate(BuildAngle)), ang(0,0,90) + BuildAngle, 1)
+            PropList[NumProps, entity]:setMass(1407)
+        }
+        if(SpawnItem==4)
+        {
+            PropList[NumProps, entity] = propSpawn("models/hunter/blocks/cube05x075x025.mdl", Edge + (vec(-18,0,-5):rotate(BuildAngle)), ang(0,90,0) + BuildAngle, 0)
+            PropList[NumProps, entity]:setMass(1407)
+            #lift objects - a table to check box ranger and look up which lift it is in the lift array
+            Lifts[LiftNum, entity] = PropList[NumProps, entity]
+            Lifts[LiftNum, entity]:propFreeze(0)
+            LiftTable[PropList[NumProps, entity]:id(), number] = LiftNum
+            Lifts[LiftNum, entity]:setMass(1000)
+            LiftStart[LiftNum, vector] = Edge + (vec(-18,0,-5):rotate(BuildAngle))
+            LiftPos[LiftNum, vector] = Edge + (vec(-18,0,-5):rotate(BuildAngle))
+            LiftAng[LiftNum, angle] = ang(0,90,0) + BuildAngle
+            LiftNum+=1
+            Edge = PropList[NumProps-4, entity]:pos() + (vec(0,0,95):rotate(BuildAngle))
+        }
+    }
+    #8= Splitter
+    if(Sequence[SpawnLoop, number]==8)
+    {
+        SpawnItemMax=9
+        if(SpawnItem==0)
+        {
+            PropList[NumProps, entity] = propSpawn("models/hunter/plates/plate3x3.mdl", Edge + (vec(-71,0,-0.5):rotate(BuildAngle)), ang(0,0,0)+BuildAngle, 1)
+            PropList[NumProps, entity]:setMass(1408)
+        }
+        if(SpawnItem==1)
+        {
+            PropList[NumProps, entity] = propSpawn("models/mechanics/solid_steel/i_beam2_8.mdl", Edge + (vec(-190,-54,0):rotate(BuildAngle)), ang(0,0,90)+BuildAngle, 1)
+            PropList[NumProps, entity]:setMass(1408)
+        }
+        if(SpawnItem==2)
+        {
+            PropList[NumProps, entity] = propSpawn("models/mechanics/solid_steel/i_beam2_8.mdl", Edge + (vec(-190,54,0):rotate(BuildAngle)), ang(0,0,90)+BuildAngle, 1)
+            PropList[NumProps, entity]:setMass(1408)
+        }
+        if(SpawnItem==3)
+        {
+            PropList[NumProps, entity] = propSpawn("models/hunter/plates/plate025x3.mdl", Edge + (vec(-51.5,48,0):rotate(BuildAngle)), ang(90,70,0)+BuildAngle, 1)
+            PropList[NumProps, entity]:setMass(1408)
+        }
+        if(SpawnItem==4)
+        {
+            PropList[NumProps, entity] = propSpawn("models/hunter/plates/plate025x3.mdl", Edge + (vec(-51.5,-48,0):rotate(BuildAngle)), ang(90,-70,0)+BuildAngle, 1)
+            PropList[NumProps, entity]:setMass(1408)
+        }
+        if(SpawnItem==5)
+        {
+            PropList[NumProps, entity] = propSpawn("models/hunter/plates/plate025x125.mdl", Edge + (vec(-118,19.8,0):rotate(BuildAngle)), ang(90,60,0)+BuildAngle, 1)
+            PropList[NumProps, entity]:setMass(1408)
+        }
+        if(SpawnItem==6)
+        {
+            PropList[NumProps, entity] = propSpawn("models/hunter/plates/plate025x125.mdl", Edge + (vec(-118,-19.8,0):rotate(BuildAngle)), ang(90,-60,0)+BuildAngle, 1)
+            PropList[NumProps, entity]:setMass(1408)
+        }
+        if(SpawnItem==7)
+        {
+            PropList[NumProps, entity] = propSpawn("models/hunter/plates/plate025x05.mdl", Edge + (vec(-130.5,72.5,0):rotate(BuildAngle)), ang(90,90,0)+BuildAngle, 1)
+            PropList[NumProps, entity]:setMass(1408)
+        }
+        if(SpawnItem==8)
+        {
+            PropList[NumProps, entity] = propSpawn("models/hunter/plates/plate025x05.mdl", Edge + (vec(-130.5,-72.5,0):rotate(BuildAngle)), ang(90,-90,0)+BuildAngle, 1)
+            PropList[NumProps, entity]:setMass(1408)
+            Edge = PropList[NumProps-8, entity]:pos() + (vec(-167,-54,0.5):rotate(BuildAngle))
+            SplitEdge = PropList[NumProps-8, entity]:pos() + (vec(-167,54,0.5):rotate(BuildAngle))
+            SplitAngle = BuildAngle
+        }
+    }
+    #9= split return
+    if(Sequence[SpawnLoop, number]==9)
+    {
+        Edge = SplitEdge
+        BuildAngle = SplitAngle
+        SpawnItemMax=1
+        PropList[NumProps, entity] = propSpawn("models/mechanics/solid_steel/i_beam2_8.mdl", Edge + (vec(-48,0,0):rotate(BuildAngle)), ang(0,0,90) + BuildAngle, 1)
+        PropList[NumProps, entity]:setMass(1401)
+        Edge = PropList[NumProps, entity]:pos() + (vec(-48,0,0):rotate(BuildAngle))
+    }
+    
+    PropList[NumProps, entity]:setColor(Col)
+    PropList[NumProps, entity]:setMaterial(Material)
+    PropList[NumProps, entity]:propPhysicalMaterial("ice")
+    NumProps+=1
+    SpawnTimer=SpawnDelay
+    SpawnItem+=1
+    if(SpawnItem==SpawnItemMax)
+    { 
+        SpawnItem = 0
+        SpawnLoop+=1
+        if(SpawnLoop == NumPieces){ SpawnMode=0 }
+    }
+}
+
+#when spawning is complete, the boxes will become active
+if(SpawnLoop == NumPieces)
+{
+    if(InitMode==0)
+    {
+        InitMode=1
+    }
+    RD2 = rangerOffset(Center + vec(-20,0,10), Center + vec(20,0,10))
+    Tempent2 = RD2:entity()
+    #spawning boxes spaced apart enough to work with the lift, stops spawning when a prop reaches the end or has been reset
+    if(InitMode==1)
+    {
+        if(InitTimer>0)
+        {
+            InitTimer-=1
+        }
+        if(InitTimer==0)
+        {
+            if(Tempent2==noentity() & StartFree==0)
+            {
+                StartFree=1
+                NumID+=1
+                Boxes[NumBoxes, entity] = propSpawn(BoxModel, PropList[0, entity]:pos() + vec(0,0,14), ang(0,90,0), 0)
+                Boxes[NumBoxes, entity]:propFreeze(0)
+                Boxes[NumBoxes, entity]:setMass(100)
+                BoxID[NumBoxes, number] = NumID
+                InitTimer=InitDelay
+                NumBoxes+=1
+            }
+        }
+    }
+
+    #processing all boxes
+    StartFree=0
+    I=0
+    while(I<NumBoxes)
+    {
+        BoxSpeed=10
+        #boxes are destructible so they can be removed from the boxes array
+        if(Boxes[I, entity] != noentity())
+        {
+            rangerFilter(Boxes[I, entity])
+            #RD = rangerOffset(Boxes[I, entity]:pos() + (Boxes[I, entity]:up()*5), Boxes[I, entity]:pos() + (Boxes[I, entity]:up()*-40))
+            RD = rangerOffsetHull(Boxes[I, entity]:pos() + (Boxes[I, entity]:up()*5), Boxes[I, entity]:pos() + (Boxes[I, entity]:up()*-40) , vec(1,1,1))
+            Tempent = RD:entity()
+            #V = V:setZ( RD:position():z() )
+            #boxes that are no longer on top of a prop or go too slow are teleported to the beginning
+            if(Tempent==noentity() | Boxes[I, entity]:vel():length()<5)
+            {
+                if((Tempent2==noentity() | Tempent2==Boxes[I, entity]) & StartFree==0 & Tempent!=StartProp)
+                {
+                    StartFree=1
+                    NumID+=1
+                    Boxes[I, entity]:setPos(PropList[0, entity]:pos() + vec(0,0,14))
+                    Boxes[I, entity]:setAng(ang(0,90,0))
+                    Boxes[I, entity]:setColor(vec(255,255,255))
+                    BoxID[I, number] = NumID
+                    #stops spawning boxes
+                    InitMode=2
+                    #hint("done spawning", 4)
+                }
+            }
+            if(!RD:hitWorld())
+            {
+                if(Tempent!=noentity())
+                {
+                    SideSpeed=0
+                    if(Tempent:mass()==1404)
+                    {
+                        BoxSpeed=15
+                    }
+                    if(Tempent:mass()==1408)
+                    {
+                        if(BoxID[I, number]%2==0){ SideSpeed=-15 }
+                        else{ SideSpeed=15 }
+                    }
+                    if(Tempent:mass()==1406 & Boxes[I, entity]:getColor()==vec(255,255,255))
+                    {
+                        Boxes[I, entity]:setColor(ColourList[ColourSpawn, vector])
+                        ColourSpawn+=1
+                        if(ColourSpawn>=NumColours){ ColourSpawn=0 }
+                    }
+                    if(LiftTable[Tempent:id(), number]>0)
+                    {
+                        #hint("lift " + LiftTable[Tempent:id(), number], 6)
+                        #freezing breaks sometimes
+                        #Lifts[LiftTable[Tempent:id(), number], entity]:propFreeze(0)
+                        if(LiftPos[LiftTable[Tempent:id(), number], vector]:z() < LiftStart[LiftTable[Tempent:id(), number], vector]:z() + 100)
+                        {
+                            LiftPos[LiftTable[Tempent:id(), number], vector] = LiftPos[LiftTable[Tempent:id(), number], vector] + vec(0,0,LiftSpeed)
+                        }
+                        if(LiftTimer[LiftTable[Tempent:id(), number], number]==0)
+                        {
+                            LiftTimer[LiftTable[Tempent:id(), number], number]=1
+                        }
+                    }
+                    
+                    Boxes[I, entity]:applyForce((Boxes[I, entity]:right() * Boxes[I, entity]:mass() * -BoxSpeed) + (Boxes[I, entity]:vel() * -0.05 * Boxes[I, entity]:mass()) + (Boxes[I, entity]:forward() * Boxes[I, entity]:mass() * SideSpeed))
+                }
+            }
+        }
+        else
+        {
+            #hint("Blap", 4)
+            Boxes:removeEntity(I)
+            BoxID:removeNumber(I)
+            NumBoxes-=1
+            I-=1
+        }
+        I+=1
+    }
+}
+
+#lifts are controlled here
+if(LiftNum>1)
+{
+    I=1
+    while(I<LiftNum)
+    {
+        #Lifts[I, entity]:applyForce
+        V = (LiftPos[I, vector]) - Lifts[I, entity]:pos()
+        if(V:length()>3){
+            #if(Lfrozen==1){ Ent:propFreeze(0) }
+            Lifts[I, entity]:applyForce( ( (V*5) + (Lifts[I, entity]:vel()*-0.5) ) * Lifts[I, entity]:mass() )
+            
+            Ang = Lifts[I, entity]:toLocal( LiftAng[I, angle] )
+            
+            Lifts[I, entity]:applyAngForce( ( (Ang*2) + (Lifts[I, entity]:angVel()*-1) ) * Lifts[I, entity]:mass() )
+        }
+        if(LiftTimer[I, number] > 0)
+        {
+            LiftTimer[I, number] = LiftTimer[I, number] + 1
+        }
+        if(LiftTimer[I, number] >= LiftDelay)
+        {
+            Lifts[I, entity]:setPos(LiftStart[I, vector])
+            Lifts[I, entity]:setAng(LiftAng[I, angle])
+            if(!Lifts[I, entity]:isFrozen())
+            {
+                #breaks sometimes
+                #Lifts[I, entity]:propFreeze(1)
+            }
+            LiftPos[I, vector] = LiftStart[I, vector]
+            LiftTimer[I, number] = 0
+        }
+        I+=1
+    }
+}
+
+#can press E on the e2 to spawn another box - maybe some timer could be added to stop you spawning them inside other boxes
+if(owner():aimEntity()==entity())
+{
+    if(owner():keyUse() & ClickE==0)
+    {
+        ClickE=1
+        Boxes[NumBoxes, entity] = propSpawn(BoxModel, PropList[0, entity]:pos() + vec(0,0,14), ang(0,90,0), 0)
+        Boxes[NumBoxes, entity]:propFreeze(0)
+        Boxes[NumBoxes, entity]:setMass(100)
+        NumBoxes+=1
+    }
+    if(!owner():keyUse() & ClickE==1)
+    {
+        ClickE=0
+    }
+}
+
+#when the e2 is removed or updated, all the props and boxes are deleted automatically
+if(last())
+{
+    PropList:propDelete()
+    Boxes:propDelete()
+}
+
+#NOTES:
+#many other pieces like slopes, loops?, up and down, possible box lift?, colourer, box jump gap?
+#need a tool to create pieces dynamically rather than an array in code - might not bother
+#piece ideas: destroyer/fire
+#if you destroy enough boxes the entire thing stops moving for some reason
+#bug: sometimes a box will reset and go onto its front becoming stuck at the start and preventing further boxes, not sure why it...
+#doesn't consider it going too slow and respawns it. Actually I see now that it's not respawning because it's being blocked by itself

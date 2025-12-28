@@ -1,0 +1,94 @@
+@name CuteStuff
+@persist Mul T Jumped [O E Ply]:entity [Sound_Jump]:string 
+@trigger all
+#Index, Position, Scale, Angle, Color (RGB), Model
+
+#Source: https://youtu.be/iST15zDX_ng?si=yjV7LwXeABcMnGlQ
+
+if(first()){
+    Jumped = 0
+    T = 0
+    Sound_Jump = "npc/headcrab_poison/ph_idle1.wav"
+    runOnTick(1)
+    runOnChat(1)
+    O = owner()
+    Ply = O
+    E = entity()
+    E:setAlpha(0)
+    E:constraintBreak()
+    E:propFreeze(0)
+    #body
+    holoCreate(1,E:pos(),vec(1,1,1),E:angles(),vec(128,240,192),"hqsphere")
+    #Hidden gyro sphere
+    holoCreate(10)
+    holoAlpha(10,0)
+    holoParent(10,1)
+    
+    #eyes
+    holoCreate(2,E:pos()+holoEntity(1):forward()*5+vec(0,2,4),vec(1,1,1)*0.2,E:angles(),vec(255,240,192),"hqsphere")
+    holoCreate(3,E:pos()+holoEntity(1):forward()*5+vec(0,-2,4),vec(1,1,1)*0.2,E:angles(),vec(255,240,192),"hqsphere")
+    holoCreate(4,E:pos()+holoEntity(1):forward()*5+vec(0.7,2,4.5),vec(1,1,1)*0.1,E:angles(),vec(),"hqsphere")
+    holoCreate(5,E:pos()+holoEntity(1):forward()*5+vec(0.7,-2,4.5),vec(1,1,1)*0.1,E:angles(),vec(),"hqsphere")
+    #parenting
+    holoParent(1,E)
+    holoParent(2,10)
+    holoParent(3,10)
+    holoParent(4,10)
+    holoParent(5,10)
+        
+    timer("re",1500)
+}
+
+if(chatClk(O))
+{
+    LS = O:lastSaid():explode(" ")
+    if(LS[1,string] == "-follow"){
+        Ply = findPlayerByName(LS[2,string])
+        if(!Ply:isPlayer())
+        {
+            Ply = O
+        }
+    }
+}
+holoPos(10,E:pos())
+holoAng(10,(Ply:pos()-holoEntity(1):pos()+vec(0,0,10)):toAngle())
+
+
+if(Ply:pos():distance(E:pos())>64){
+    if(clk("re")){
+        stoptimer("re")
+        timer("re",1500)
+        if(E:isPlayerHolding() || E:isFrozen()){
+            
+        }else{
+        Sound_Jump = "npc/headcrab_poison/ph_idle1.wav"
+            Vec = Ply:pos()-E:pos()
+            Force = Vec/Ply:pos():distance(E:pos())*200+vec(0,0,200)
+            E:applyForce(Force)
+            E:soundPlay(1,0,Sound_Jump)
+            Jumped = 1
+            timer("jump_cooldown",250)
+        }
+    }
+}
+if(Ply:pos():distance(E:pos())<64)
+{
+    timer("re",1)
+}
+
+if(Jumped != 0){
+    T+=6
+    holoScale(1,vec(1,1,0.2+sin(T)))
+}
+
+if(clk("jump_cooldown")){
+    Jumped = 0
+    holoScale(1,vec(1,1,1))
+}
+
+
+if(changed(E:isPlayerHolding())&&E:isPlayerHolding())
+{
+    E:soundPlay(2,0,"vo/trainyard/man_whereyoutakingme.wav")
+    soundPitch(2,randint(120,150))
+}
