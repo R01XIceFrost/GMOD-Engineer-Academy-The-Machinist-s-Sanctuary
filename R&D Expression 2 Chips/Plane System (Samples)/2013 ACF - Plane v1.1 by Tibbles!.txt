@@ -1,0 +1,531 @@
+@name ACF - Plane v1.1
+@inputs [Pod Cam EGP Gun]:wirelink [WingLeft WingRight WingElevator]:entity
+@outputs Alt KPH StallWarning AimPos:vector ERPM
+@persist [E Holo Seat Driver GE]:entity [Mod_T PV RV Yaw Speed Mass Throttle ERPM STime Alt W A S D VelLY IdealRPM] [Scale Origin]:vector2 Damage Engine 
+@persist [EngineSound EngineStartSound]:string Alive Brake CamX CamY TTime Cooldown [Props]:array [AltR ForDisR]:ranger Timer [Agility]:vector TaxiStr CamMode
+@persist FCamX FCamY AdvancedMouse
+
+
+#Source: https://youtu.be/IhTqqTHjx9s?si=bV5dhZTlLX1i0g6j
+
+
+#[
+
+INFO:
+
+
+Features
+*Full 3D Mouse Controlled Flight
+*Realistic Flight Model
+*Balance and limitations. All copies of the E2 should be balanced for fair fighting. Better engineering leads to better planes.
+*Holo HUD for lag reduction. A decent server can run 6 running copies of this E2.
+*Damage model with collision detection and wing/elevator damage simulation.
+*Simulation of aircraft stalling and tailspins.
+*Realistic Landings and Take-offs [Now Supports landing on entities, such as an player built aircraft carrier]
+*Easy and fun to fly and dogfight your friends!
+
+Controls
+
+W/S - Throttle Control. Holding W at 100% Throttle activates WEP
+WEP is a temporary boost running the plane at 115% power. This has a use limitation and a cooldown
+Holding S at 0% Throttle brakes the plane when on the ground
+A/D - Manual Roll adjustment. This is for fine tuning your turns
+Alt - Mouse Freelook
+Right Click - Aim Zoom
+
+Installation and Setup
+
+1. Spawn the E2 on a baseplate. It will create holograms showing you the forward and up orientations of the plate
+2. Apply the Ice physical material using the Physical Properties tool under Building. Leave the gravity box checked
+3. Spawn an Advanced Pod Controller, Camera Controller, and an EGP HUD entity (This is found under Wire - Display) Make sure to select HUD from the Screen drop down box.
+4. Using Entity Markers (or just one Advanced Entity Marker), link the props you want to use as your wings and elevator and wire them to the E2's inputs respectively.
+VERY IMPORTANT NOTE: If these props are not parented, make sure that the prop's gravity is disabled. You can do this using the Physical Properties tool, and unchecking the gravity box.
+5. If you're using ACF guns, make sure your ammo crates are parented
+6. Additional note: ANYTHING besides the base prop needs to have no gravity. This includes landing gears, wheels, your propellers. EVERYTHING.
+
+
+Convergence
+Pros: A very concentrated point of fire, will blow shit out of the sky if you can get someone in that range.
+Cons: Strafing is much harder, stuck to getting targets within that zone.
+
+Network Impact
+The E2 with EGP which now updates every 40 ticks (~3 times a second), The E2 itself creates 100 ins of network traffic. The plane itself pulls about 400 just from physical entities.
+This E2 is server friendly.
+
+Expect v1.0.6 to be released very soon!
+Changelog
+Open Beta v1.0.5
+Updated: Flight model. Planes now roll more realistically and handling is improved
+Updated: Crash model. Now ranger based. No more death from stall turning!
+Added: Gun Hit position. Helps with strafing
+Added: Landing on entities now supported!
+
+Closed Beta v1
+Initial release 
+
+]#
+
+runOnTick(1)
+
+if(dupefinished()){
+    reset()
+}
+    
+if(first()){
+    #Controls
+        #W & S are throttle controls. Greater than 100% throttle is WEP (Wartime Emergency Power). Its a turbo that runs out and has a cooldown.
+        #A & D are to manually adjust roll. This chip supports full 3D flight. While on ground A & D yaw the plane so you can taxi.
+        #Mouse controls your Pitch & Roll/Yaw. Simply aim your mouse where you wish to fly towards.
+        #The White Ring is your desired direction, the White Circle is your plane's current direction.
+        #Your plane can stall if you do not heed the stall warnings, if damage is on, you will die if you crash into shit.
+    
+    #Installation:
+        #Spawn this on your base prop. The hologram will point in the direction that is forward and will be on the top of the prop.
+        #Spawn a pod controller, an EGP HUD entity, and a Cam controller. If you're using damage, spawn some entity markers.
+        #If Damage = 1. Using an Entity Marker, select each of your wing "Base Props". THe E2 will automatically weight them for you.
+        #These props can be parented
+        #I recommend parenting the props of your wings to these new wing props so it looks like shit gets blown off
+        
+        #VERY IMPORTANT: IF YOU HAVE GUNS ON YOUR PLANE OR YOU HAVE THOSE WING PROPS I JUST TALKED ABOUT. NO GRAV THEM! SAME GOES FOR AMMO!
+        #VERY IMPORTANT: SET THE PHYSICAL MAT (Friction setting) OF THE BASE PROP TO ICE! KEEP GRAVITY ON!
+        
+        #Ignore if damage = 0
+        #Continue to the setup portion of the E2 right below and adjust your values. Have fun flying!
+    
+    #Setup: Read the comments to know what eat thing does.
+    AdvancedMouse = 0  
+    
+    Damage =  1               #Simulate Damage? If true then surface entity inputs required for flight. 
+                              #Plane can be damaged by landing too hard and crashing into stuff.
+    
+    Agility = vec( 0.8 , 0.8 , 0.8) #The first component of this vector is pitch agility. It is clamped from 0.4 to 0.9
+                                  #The second component is roll agility. It is clamped from 0.5 to 1.2
+                                  #The last component is Yaw agility. This is clamped from 0.5 to 1.2
+    TaxiStr = 3                   #This adjust the Yaw strength of your runway taxi. clamped from 0.5 to 1.5
+                            
+            
+    Engine = 10               #Engine strength multiplier. Clamped from 7 to 11. 
+                              # 7 for slow Biplanes. 8 for Bombers. 9/10 for Fighters. 11 for Jets.
+                            
+    CamX = 360                #Where the camera should be length wise 
+    CamY = 150                #Height Wise as well
+    FCamX = 10              #This is used for 1st person flight. This variable is forward/backwards
+    FCamY = -5               #First person up/down
+                            
+    EngineSound = "acf_extra/airfx/Spitfire.wav"
+    EngineStartSound = "acf_extra/airfx/spitfire (2).wav"
+    EngineInternalSound = "acf_extra/airfx/FW1902.wav"            #If you're making a jet, change this to just your Engine Sound
+    
+    #End of Setup
+    
+    Seat = Pod["Entity",entity]
+    Driver = Seat:driver()
+    
+    E = entity():isWeldedTo()
+    Alive = 1
+    Mass = 4000
+    E:setMass(Mass)
+    WingLeft:setMass(Mass/100)
+    WingRight:setMass(Mass/100)
+    WingElevator:setMass(Mass/100)
+    holoCreate(1,E:massCenter()+E:forward()*E:boxSize():x()*0.5+E:up()*E:boxSize():z()*0.6,vec(1,1,1),E:toWorld(ang(90,0,0)),vec(1,1,1)*250,"hqcone")
+    holoParent(1,E)
+    holoCreate(2,Driver:shootPos() + E:forward()*10 - E:up() * 4)
+    
+    holoParent(2,E)
+    Props = entity():getConstraints()
+
+    Holo = holoEntity(2)
+    ERPM = 800
+    Throttle = 0
+    soundPurge()
+    holoEntity(1):soundPlay(1,0,EngineSound)
+    Seat = Pod["Entity",entity]
+    Driver = Seat:driver()
+    if(Driver){
+        holoEntity(2):soundPlay(2,0,EngineStartSound)
+    }
+    
+    TTime = 800
+    GE = Gun["Entity",entity]
+    holoCreate(3,E:massCenter(),vec(3,3,0.1),E:angles()+ang(90,0,0),vec(1,1,1)*255,"hq_tube_thin")
+    holoCreate(4,E:massCenter()+E:forward()*350,vec(1,1,0.1),E:toWorld(ang(90,0,0)),vec(1,1,1)*255,"hqcylinder")
+    holoParent(4,E)
+    holoCreate(20,GE:massCenter() + GE:forward()*200,vec(0.1,0.1,20),GE:toWorld(ang(90,0,0)),vec(255,100,100),"hqcylinder")
+    holoCreate(21,GE:massCenter() + GE:forward()*400,vec(0.1,0.1,20),GE:toWorld(ang(90,0,0)),vec(255,100,100),"hqcylinder")
+    holoCreate(22,GE:massCenter() + GE:forward()*600,vec(0.1,0.1,20),GE:toWorld(ang(90,0,0)),vec(255,100,100),"hqcylinder")
+    holoCreate(23,GE:massCenter() + GE:forward()*800,vec(0.1,0.1,20),GE:toWorld(ang(90,0,0)),vec(255,100,100),"hqcylinder")
+    holoCreate(24)
+    holoModel(24,"sphere")
+    holoScale(24,vec(1,1,1)*4)
+    holoColor(24,vec(200,50,50))
+    holoAlpha(1,E:getAlpha())
+    holoAlpha(2,E:getAlpha())
+
+    holoDisableShading(4,1)
+    holoDisableShading(3,1)
+    holoDisableShading(20,1)
+    holoDisableShading(21,1)
+    holoDisableShading(22,1)
+    holoDisableShading(23,1)
+    holoDisableShading(24,1)
+    findByClass("player")
+    Array = findToArray()
+
+    for(I=1,10){
+        
+        holoCreate(4+I,E:massCenter())
+        holoParent(4+I,E)
+        holoAlpha(4+I,0)
+        holoVisible(1+I,Array,0)
+        holoParent(20,E)
+        holoParent(21,E)
+        holoVisible(20,Array,0)
+        holoVisible(21,Array,0)
+        holoParent(22,E)
+        holoParent(23,E)
+        holoVisible(22,Array,0)
+        holoVisible(23,Array,0)
+        holoVisible(24,Array,0)
+    }
+    holoEntity(5):soundPlay(5,0,"acf_extra/vehiclefx/misc/windrush_in.wav")
+    holoEntity(10):soundPlay(10,0,"acf_extra/airfx/cockpit_plane.wav")
+    holoEntity(11):soundPlay(11,0,EngineInternalSound)
+    #holoEntity(6):soundPlay(6,0,"acf_extra/airfx/damagealarm.wav")
+    
+  
+    
+    
+    
+    Scale = egpScrSize(Driver)
+    Origin = vec2(0,0)
+    EGP:egpText(1,"ALT: ",Origin + vec2(Scale:x()*0.01,Scale:y()*0.3))
+    EGP:egpText(2,"IAS: ",Origin + vec2(Scale:x()*0.01,Scale:y()*0.275))
+    EGP:egpText(3,"Throttle: ",Origin + vec2(Scale:x()*0.01,Scale:y()*0.25))
+    EGP:egpTextLayout(4,"CRITICAL AIR SPEED PITCH DOWN",Origin + vec2(Scale:x()*0.42,Scale:y()*0.43),vec2(0.75,0.5)*Scale)
+    EGP:egpText(8,"MG: ",Origin + vec2(Scale:x()*0.01,Scale:y()*0.325))
+    EGP:egpText(5,"LEFT WING",Origin + vec2(Scale:x()*0.01,Scale:y()*0.375))
+    EGP:egpText(6,"ELEVATOR",Origin + vec2(Scale:x()*0.01,Scale:y()*0.425))
+    EGP:egpText(7,"RIGHT WING",Origin + vec2(Scale:x()*0.01,Scale:y()*0.4))
+    EGP:egpAlpha(5,255*Damage)
+    EGP:egpAlpha(6,255*Damage)
+    EGP:egpAlpha(7,255*Damage)
+    
+    rangerPersist(1)
+    rangerFilter(Props)
+    
+    Seat:hintDriver("Greetings " + Driver:name() + "!",7)
+    Seat:hintDriver("W/S controls your throttle!",7)
+    Seat:hintDriver("Mouse controls your Pitch & Roll! A/D is for roll adjustment!",7)
+    Seat:hintDriver("Alt is freelook!",7)
+    Seat:hintDriver("There is a miminum takeoff speed, so make sure youre on a runway!",7)
+    Seat:hintDriver("And fly safe! Hitting walls will result in your death!",7)
+    Seat:hintDriver("E2 made by Tibbles!",7)
+    
+    
+}
+    
+
+Active = Pod["Active",number]
+
+if(Active){
+
+if(changed(Active)){
+    
+    Start = 1
+    holoVisible(3,Driver,1)
+    holoVisible(4,Driver,1)
+    holoVisible(20,Driver,1)
+    holoVisible(21,Driver,1)
+    holoVisible(22,Driver,1)
+    holoVisible(23,Driver,1)
+    holoVisible(24,Driver,1)
+    
+    
+    
+    Pod["Disable HUD",number] = 1
+
+    Throttle = 0
+    CamMode = 0
+    reset()
+    
+
+    
+        
+        
+        
+           
+    
+    
+    
+}
+
+if(changed(Pod["R",number])&Pod["R",number]){
+    CamMode = !CamMode
+}
+
+soundVolume(1,clamp((Throttle/100)*2,0,1)*Active*!CamMode)
+soundVolume(2,1-clamp((Throttle/100),0,1)*Active*!CamMode)
+
+if(Start==1){
+    STime++
+}
+
+
+### Variables
+#Control Variables
+if(AdvancedMouse){
+W = Pod["W",number]
+A = Pod["A",number]
+S = Pod["S",number]
+D = Pod["D",number]
+Shift = Pod["Shift",number] + Pod["NextWeapon",number]*5
+Space = Pod["Space",number] + Pod["PrevWeapon",number]*5
+}else{
+W = 0
+A = Pod["A",number]
+S = 0
+D = Pod["D",number]
+Shift = Pod["S",number]
+Space = Pod["W",number]
+}
+
+Up = E:up()
+For = E:forward()
+Right = E:right()
+Center = E:massCenter()
+rangerHitEntities(1)
+AltR = rangerOffset(999999,Center,vec(0,0,-1))
+ForDisR = rangerOffset(200,Center + Up * 30,For)
+
+
+Eye = Seat:toLocalAxis(Driver:eye())
+rangerHitEntities(0)
+PointPos = rangerOffset(999999999,Center,Eye):position()
+PointAng = (PointPos - Center):toAngle()
+
+
+
+holoAng(2,PointAng)
+
+
+
+
+
+ForVel = For:dot(E:vel():normalized())    
+ZedVel = Up:dot(E:vel():normalized())
+SideVel = Right:dot(E:vel():normalized()) 
+VelL = E:vel():length()
+Vel = E:vel()
+CrashX = $ForVel
+CrashZ = $ZedVel
+Alt = toUnit("m",round(AltR:distance()))
+ForDis = ForDisR:distance()
+SL = VelL > 0 ? VelL : abs(VelL) / 2 
+LMul = 31
+DL =  Up + vec(0,0,90 - abs(E:angles():pitch()))*0.7 / 64 
+
+LeftValid = WingLeft:isValid()
+RightValid = WingRight:isValid()
+ElevValid = WingElevator:isValid()
+   
+if(CamMode==0){
+    soundVolume(5,1)
+    soundVolume(10,0)
+    soundVolume(11,0)
+    if(changed(CamMode)&!CamMode){
+        holoPos(2,E:massCenter())
+        holoParent(2,E)
+    }
+
+    Cam["Activated",number] = Active
+    Cam["Position",vector] = Holo:pos() - Holo:forward()*CamX + Holo:up()*CamY
+    Cam["Direction",vector] = Holo:forward() - vec(0,0,0.2)
+    Pod["Hide Player",number] = 0
+    Cam["Zoom",number] = 100 - 60*Pod["Mouse2",number] 
+    holoParent(2,E)
+}else{
+    if(changed(CamMode)&CamMode){
+        holoPos(2,Driver:shootPos() + For*FCamX + Up*FCamY)
+        holoParent(2,E)
+    }
+    soundVolume(5,0)
+    soundVolume(10,1)
+    soundVolume(1,0)
+    soundVolume(11,clamp((Throttle/100)*2,0,2)*Active*0.2)
+    soundVolume(2,0.2*(1-(Throttle/100)))
+    Cam["Activated",number] = Active
+    Cam["Position",vector] = Holo:pos() + E:vel()*0.015
+    Cam["Direction",vector] = Holo:forward() - vec(0,0,0)
+    Pod["Hide Player",number] = 1
+    Cam["Zoom",number] = 100 - 60*Pod["Mouse2",number] 
+    
+}
+
+if(KPH>40&ForDis<50){
+    
+    Pod["Terminate",number] = 1
+}
+
+
+Speed = toUnit("mph",VelL)
+TopSpeed = 80
+Rat_S = Speed/TopSpeed
+
+Mod_T = 1.25 - clamp((-1.5*Rat_S^2)+(2.45*Rat_S)- (2.55479*10^-16),0,1)
+
+E:applyAngForce(E:angVel()*Mass*-2.6*Mod_T) #Angular Resistance scaled with Speed
+
+Yaw2 = E:toLocal(Holo:angles()):yaw()
+
+if(!W&!S){
+    PV = clamp((E:toLocal(Holo:angles()):pitch()*-1) / 45,-1,1) 
+}else{
+    PV = (W-S)*clamp(Agility:x(),0.4,0.8)
+}
+if(abs(Yaw2)>=5 | PV < 0.1){    
+    Yaw = E:toLocal(Holo:angles()):yaw()*0.9
+    RV = clamp(($Yaw*4 + Yaw*2) / 90,-2,2)
+}else{
+    Yaw = (0 + E:angles():roll())/2
+    RV = clamp(($Yaw*4 + Yaw*2) / 90,-1,1)
+}
+
+Pitch = PV*Active*clamp(Agility:x(),0.4,0.8)*(1 - !ElevValid*Damage)
+
+if((!A&!D)){
+    Roll = RV*Active*clamp(Agility:y(),0.5,1.2)
+}else{
+    Roll = (A-D)*clamp(Agility:y() + 0.2,0.5,1.4) * (1-(!LeftValid*Damage + !RightValid*Damage)/2)
+}
+
+#Flight Forces
+E:applyOffsetForce(Up *Mass*Pitch*!Pod["Alt",number],Center + For*25) #Pitch Force
+E:applyOffsetForce(Up *Mass*!Pod["Alt",number]*(Roll+!LeftValid*10*(Speed/TopSpeed)*Damage)*0.5,Center + Right *50) #Roll Force
+E:applyOffsetForce(Up *Mass*!Pod["Alt",number]*(Roll-!RightValid*10*(Speed/TopSpeed)*Damage)*-0.5,Center - Right *50*!Pod["Alt",number]) #Roll Foce
+E:applyAngForce(ang(0,clamp(Yaw,-10,10)*(1-Mod_T)*15*Agility:z(),0 - clamp(E:angles():roll(),-45,45)*4*(!A&!D))*Mass*0.2*Active*!Pod["Alt",number]) #Yaw and Roll Centering
+E:applyForce(clamp(SL,0,1450) * LMul * 1 * DL * Mass * 0.0001 * (1-(!LeftValid*Damage + !RightValid*Damage)/2)) #Lift Force
+E:applyForce(For*ForVel*Mass*VelL^2*-(0.0000033)) #Air Drag Force
+
+if(Alt<2){
+    E:applyForce(Mass*-E:vel():setZ(0)*Brake*(0.02+(KPH<5))) #Landing Braking Force
+}
+if(Speed>0){E:applyForce(Right *SideVel*Mass*VelL*-0.25)} #Rudder Emulation
+E:applyForce(Up *ZedVel*Mass*VelL*-0.025) #Wing Area Drag Emulation
+
+
+#Engine Simulation
+
+if(Space&Throttle<100){
+    Throttle+=Space*0.5
+}elseif(Shift&Throttle>0){
+    Throttle-=Shift*0.5
+}
+if(Throttle==100&Space&TTime>0&!Cooldown){
+    WEP = 30
+    TTime--
+    if(TTime<1){
+        Cooldown = 1
+    }
+}else{
+    WEP = 0
+    if(TTime<800){
+        TTime+=0.5
+        if(TTime>200){
+            Cooldown = 0
+        }
+        
+    }
+}
+if((Throttle==0&Shift)|!Active){
+    Brake = 0.5
+}else{
+    Brake = 0
+}
+if(ERPM<5000&ERPM>=800){
+    ERPM += (15 * (Throttle+WEP-25)/100) 
+}
+
+if(ERPM<800){ERPM = 850}
+if(ERPM>5000){ERPM = 4950}
+IdealRPM = (Speed*1.25/TopSpeed) * 5000 * (Throttle/100)
+if(ERPM>=800&ERPM<5000){
+    ERPM += ((IdealRPM-(ERPM))/3000)*40
+}
+
+if(!Active){
+    ERPM = 0
+}else{
+    ERPM = ERPM
+}
+
+
+soundPitch(1,(50-25*CamMode)+(ERPM/5000)*100 + WEP*0.5)
+soundPitch(11,(50-25*CamMode)+(ERPM/5000)*100 + WEP*0.5)
+E:applyForce(For * Mass * clamp(Engine,7,11) * (1+(WEP/30)*0.2) *  (ERPM/5000)* (Speed<TopSpeed) * (0.8 + 0.2) *Active * Alive) #Simulated Propeller Force
+E:applyAngForce(Mass*ang(0,(A-D),0)*(KPH<35)*27*TaxiStr) #Ground Taxi Yaw Force
+
+if(dupefinished()){reset()}
+
+
+#Hud Stuff
+holoPos(3,Center + E:forward()*For:dot(Eye)*600 + Right *Right:dot(Eye)*600 + Up *Up:dot(Eye)*600)
+holoAng(3,Eye:toAngle()+ang(90,0,0))
+
+
+soundVolume(5,(Speed/TopSpeed)*!CamMode)
+soundPitch(5,((Speed/TopSpeed)*60+50))
+
+
+KPH = round(toUnit("km/h",E:vel():length()))
+if(!WEP&!Brake){
+    ThrottleString = toString(round(Throttle))+"%"
+    Red = 0
+}elseif(WEP){
+    ThrottleString = "WEP"
+    Red = 1
+}elseif(Brake){
+    ThrottleString = "BRK"
+    Red = 1
+}
+
+if(KPH<60&E:angles():pitch()<-30){
+    StallWarning = 1
+}else{
+    StallWarning = 0
+}
+
+if(For:dot(E:vel())<0){
+    E:applyAngForce(ang(0,For:dot(E:vel()),0)*Mass*0.6)
+}
+
+Timer++
+if(Timer>35){
+
+EGP:egpSetText(1,"ALT: " + toString(round(Alt+1)))
+EGP:egpSetText(2,"IAS: " + toString(round(KPH+1)))
+EGP:egpSetText(3,"THR: " + ThrottleString)
+EGP:egpSetText(8,"MG: " + toString(round(Gun["AmmoCount",number])))
+EGP:egpColor(3,vec(255,255-Red*255,255-Red*255))
+EGP:egpAlpha(4,StallWarning*255)
+EGP:egpColor(5,vec(1,1,1)*50 + vec(1,1,1)*200*WingLeft:isValid())
+EGP:egpColor(6,vec(1,1,1)*50 + vec(1,1,1)*200*WingElevator:isValid())
+EGP:egpColor(7,vec(1,1,1)*50 + vec(1,1,1)*200*WingRight:isValid())
+EGP:egpColor(8,vec(255,255-(Gun["Ready",number]==0)*255,255-(Gun["Ready",number]==0)*255))
+
+Timer = 0
+}
+
+
+AimPos = rangerOffset(99999999,GE:massCenter() + GE:forward()*100,GE:forward()):position()
+holoPos(24,AimPos)
+
+}else{
+
+E:applyForce(E:mass()*E:vel():setZ(0)*-0.005)
+soundVolume(1,0)
+soundVolume(2,0)
+soundVolume(3,0)
+soundVolume(4,0)
+
+}
