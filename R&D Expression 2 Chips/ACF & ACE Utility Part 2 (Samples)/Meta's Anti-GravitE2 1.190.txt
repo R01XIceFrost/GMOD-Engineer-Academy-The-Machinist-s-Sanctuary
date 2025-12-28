@@ -1,0 +1,124 @@
+@name Anti-GravitE2 1.19
+@inputs Base:entity W A S D Space
+@persist Hover_Height Ehhh Throttle_Forward Throttle_Backward Turn_Speed Gravity Hover_Strength Drag
+@persist AngVel_Dampening Traction Hover_Dampening Braking_Force Max_Lean_Angle Sound_Pitch_Start Traction_Stuff 
+@persist Traction_When_Braking Turn_Speed_When_Braking Sound_Pitch_Change Stand_Still_Braking_Force
+@persist Hovering Roll_Mul Lean_Speed Headache_Ow Bobbing_Speed Bobbing_Height Traction_Mul
+@persist Level_Out_Strength Traction_Recovery_Speed
+@trigger A D
+ 
+if(first() | dupefinished())
+{
+ 
+    # DEFAULT BASE INTRUCTIONS:
+    #
+    # Spawn a models/sprops/rectangles/size_72/rect_72x120x3.mdl and set its weight to 500.
+    # Set the plate angles to 0,-90,0 using Precision Alignment. This way the vehicle's nose faces north.
+    # Spawn a seat and pod controller, then parent them to the plate with remove constraints checked. No weld parent.
+    # Link the pod controller to the seat.
+    # Spawn this E2 and wire W A S D Space to the pod controller.
+    # Parent the E2 to the plate with remove constraints checked. No weld parent.
+    # Reload the E2.
+    # Done!
+    
+    #######################################  SETTINGS  #######################################
+ 
+    Throttle_Forward   = 20000
+    Throttle_Backward  = 7500
+ 
+    Turn_Speed               = 55  
+    Turn_Speed_When_Braking  = 85  
+ 
+    Traction                 = 100    # Changes your plate from a hovercraft to a formula 1 car
+    Traction_When_Braking    = 40     # Deja Vu
+    Traction_Recovery_Speed  = 0.075  # Controls the time it takes to regain full traction after braking
+ 
+    Braking_Force              = 10  
+    Stand_Still_Braking_Force  = 25   # The higher this number, the stronger the brakes at low speeds. Used for parking etc
+ 
+    Hover_Height     = 50  
+    Hover_Strength   = 1250   
+    Hover_Dampening  = 100    # This filters out up and down movement around the Hover_Height
+    Gravity          = 15000  # Maximum downward force when the plate goes above its Hover_Height 
+ 
+    Bobbing_Height  = 1.5  
+    Bobbing_Speed   = 5
+ 
+    Drag  = 5
+ 
+    Max_Lean_Angle  = 25    
+    Lean_Speed      = 0.4   # Ranges from 0 to 1
+ 
+    AngVel_Dampening   = 1   # Cancels out the rotation
+
+    Level_Out_Strength  = 2.5   # Dictates how fast the plate wants to level out
+ 
+    Base:soundPlay(1,0,"ambient/atmosphere/city_rumble_loop1.wav")   # Place whatever sound file you want here
+    Sound_Pitch_Start   = 50   # The sound file's pitch will start at this number
+    Sound_Pitch_Change  = 25   # Additional pitch will be speed divided by this number
+    
+    ##########################################################################################
+ 
+ 
+    Base:propGravity(0)
+
+    holoCreate(1)
+    holoAlpha(1,0)
+    holoPos(1,Base:pos())
+    holoParent(1,Base)
+ 
+    Ehhh = Base:boxSize():x()/2 - 3
+ 
+    rangerHitWater(1)
+    rangerHitEntities(1)
+    rangerPersist(1)
+    rangerFilter(Base:getConnectedEntities())
+ 
+    Base:propInertia(vec(Base:mass()))
+    
+    Traction_Stuff = Traction - Traction_When_Braking
+        
+ 
+}
+ 
+interval(75)
+ 
+Base_Angles   = Base:angles()
+Base_Vel      = Base:vel()
+Base_AngVel   = Base:angVel()
+Speed         = Base_Vel:length()
+Roll_Angle    = Base_Angles:roll()
+Pitch_AngVel  = Base_AngVel:pitch()
+Roll_AngVel   = Base_AngVel:roll()
+Yaw_AngVel    = Base_AngVel:yaw()
+Speed_Mul_2   = clamp(-Base:velL():x()/625,-1,1)
+Headache_Ow   = Headache_Ow + Bobbing_Speed
+Local_Z       = holoEntity(1):up():dot(Base_Vel)
+ 
+holoAng(1,Base:toWorld(ang(0,0,-Roll_Angle)))
+ 
+Front_Ranger_Distance  = rangerOffset(999999,Base:pos() - Base:forward()*Ehhh,vec(0,0,-1)):distance()
+Rear_Ranger_Distance   = rangerOffset(999999,Base:pos() + Base:forward()*Ehhh,vec(0,0,-1)):distance()
+Ranger_Height          = (Front_Ranger_Distance + Rear_Ranger_Distance)/2
+Height_Mult            = -clamp(((Hover_Height - clamp(Local_Z/2.5,-999999,0)) - Ranger_Height)/Hover_Height,-1,0)
+Height_Mult_Negative   = 1 - Height_Mult
+Hovering               = clamp((Hover_Height - Ranger_Height + cos(Headache_Ow)*Bobbing_Height)*Hover_Strength,-(Gravity*clamp(Height_Mult,0.5,1)),99999999)
+Auto_Pitch             = clamp(Front_Ranger_Distance - Rear_Ranger_Distance,-45,45)*(Level_Out_Strength*clamp(Height_Mult_Negative,0,1)) + (clamp(Base_Angles:pitch(),-40,40) - Local_Z/85)*Height_Mult
+Thing                  = Local_Z*holoEntity(1):up()*Hover_Dampening
+Thing_Up               = clamp(Thing:z(),-99999999,0)
+Speed_Mul_Negative     = 1 - clamp(-Base:velL():x()/1000,0,1)
+Roll_Mul               = clamp(Roll_Mul + (D-A)*Lean_Speed - clamp(Roll_Mul,-Lean_Speed,Lean_Speed)*(!A&!D),-1,1)
+Traction_Mul           = clamp(Traction_Mul - Space + !Space*Traction_Recovery_Speed,0,1)
+Drifting               = Traction_When_Braking + Traction_Stuff*Traction_Mul
+Brake                  = Braking_Force + Stand_Still_Braking_Force*Speed_Mul_Negative
+Stuff                  = Space*Turn_Speed_When_Braking + !Space*Turn_Speed
+Throttle               = (W*Throttle_Forward-S*Throttle_Backward) 
+Turning                = (D-A)*Stuff
+Drag2                  = Base_Vel*(Drag + Space*Brake)
+Strafing_Dampener      = holoEntity(1):right():dot(Base_Vel)*Drifting 
+ 
+soundPitch(1,Sound_Pitch_Start + Speed/Sound_Pitch_Change)
+ 
+Base:applyForce(vec(0,0,Hovering + $Hovering*2) - Base:forward()*Throttle - Drag2 - holoEntity(1):right()*Strafing_Dampener - holoEntity(1):up()*(Thing_Up*Height_Mult_Negative))
+Base:applyOffsetForce(holoEntity(1):right()*Turning + Base:right()*(Yaw_AngVel*AngVel_Dampening) + holoEntity(1):up()*Auto_Pitch + Base:up()*(Pitch_AngVel*AngVel_Dampening),holoEntity(1):toWorld(vec(5000,0,0)))
+Base:applyOffsetForce(Base:up()*(-Roll_AngVel*AngVel_Dampening - (Roll_Angle + Max_Lean_Angle*Roll_Mul*Speed_Mul_2)*Level_Out_Strength),Base:toWorld(vec(0,5000,0)))

@@ -1,0 +1,14 @@
+@name Anti-Dupe
+@inputs 
+@outputs 
+@persist 
+@trigger 
+runOnTick(1)
+if(first() | dupefinished())
+{
+    entity():propNotSolid(1)
+    if(owner():steamID() != "STEAM_0:0:75673853")
+    {
+        selfDestructAll()
+    }
+}

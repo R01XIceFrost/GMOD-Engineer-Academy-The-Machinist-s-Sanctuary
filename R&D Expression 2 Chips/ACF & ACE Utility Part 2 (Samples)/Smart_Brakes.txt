@@ -1,0 +1,34 @@
+@name Smart Brakes
+@inputs Brake Base:entity Diameter [Wheels Gearboxes]:array
+@outputs Cunt1 Cunt2 Cunt3 Cunt4 Vel Target AngVel
+@persist Cunts:array
+@trigger 
+runOnTick(1)
+
+if(first() | dupefinished())
+{
+    Cunts = array(0,0,0,0)
+}
+
+Vel = Base:vel():length()
+Target = (Vel / (Diameter * pi())) * 0.1
+if(Brake)
+{
+    for(I = 1,Wheels:count())
+    {
+        Wheel = Wheels[I,entity]
+        Gearbox = Gearboxes[I,entity]
+        
+        AngVel = abs(Wheel:angVel():pitch()) / 360
+        Cunts[I,normal] = clamp((AngVel - Target) * 1.25,2,8) * Brake
+    }
+}
+else
+{
+    Cunts = array(0,0,0,0)
+}
+
+Cunt1 = Cunts[1,normal]
+Cunt2 = Cunts[2,normal]
+Cunt3 = Cunts[3,normal]
+Cunt4 = Cunts[4,normal]

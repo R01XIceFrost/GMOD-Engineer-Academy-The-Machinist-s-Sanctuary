@@ -1,0 +1,15 @@
+@name AirshipSteeringController
+@inputs A D Prop:entity
+@outputs Thrust 
+@persist Angle
+@trigger 
+runOnTick(1)
+
+if(first() | dupefinished())
+{
+    Angle = Prop:angles():yaw()
+}
+
+Angle += (A - D) * 0.5
+Yaw = Prop:angles():yaw()
+Thrust = Angle - Yaw - $Yaw

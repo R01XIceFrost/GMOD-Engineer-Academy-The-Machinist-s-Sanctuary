@@ -1,0 +1,25 @@
+@name SupercarSteering
+@inputs A D
+@outputs L R
+@persist 
+@trigger 
+runOnTick(1)
+
+Base = 82.48
+Mod = 20
+
+if(A)
+{
+    L = Base - Mod
+    R = Base + Mod
+}
+elseif(D)
+{
+    L = Base + Mod
+    R = Base - Mod
+}
+else
+{
+    L = Base
+    R = Base
+}
