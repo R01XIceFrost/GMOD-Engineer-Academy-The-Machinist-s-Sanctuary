@@ -1,4 +1,4 @@
-@name Hologram Base
+@name Medic Sign Floating + Rotate
 @persist PrevTime Dir Offset
 
 #INIT
@@ -39,3 +39,4 @@ if(PrevTime + 1 < curtime()) {
 holoAng(1,holoEntity(1):angles() + ang(vec(0,5,0)))
 holoAng(2,holoEntity(1):angles())
 holoAng(3,ang(0,holoEntity(1):angles():yaw()+90,90))
+
