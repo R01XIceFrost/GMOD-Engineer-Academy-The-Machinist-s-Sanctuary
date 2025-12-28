@@ -1,0 +1,61 @@
+@name Setang steering BikeTuned
+@inputs A D CHASSIS:entity LowTurn HighTurn
+@outputs TURN TurnRate
+@persist SLAVE:entity [TURN_RATE TURN_ANGLE TURN] B C
+@model models/sprops/rectangles/size_2_5/rect_18x18x3.mdl
+@autoupdate
+if (dupefinished()) {reset()}
+
+B = round(toUnit("mi/h",CHASSIS:vel():length()))
+if(->CHASSIS & CHASSIS:type() != "gmod_wire_expression2")
+{
+    entity():setPos(CHASSIS:pos() + vec(0,0,300))
+}
+
+if(->LowTurn == 0)
+{
+    LowTurn = 40
+}
+
+if(->HighTurn == 0)
+{
+    HighTurn = 30
+}
+
+if(B >= 20)
+{
+    TURN_ANGLE = HighTurn
+}
+else
+{
+    TURN_ANGLE = LowTurn
+}
+
+if (first())    {
+    interval(20)
+    
+    TURN_RATE = 2.5
+
+    
+    SLAVE = entity()
+} elseif (clk())    {
+    interval(20)
+
+    if (!SLAVE:isPlayerHolding())
+    {
+        if(A | D)
+        {
+            Target = (A-D)*TURN_ANGLE
+        }
+        else
+        {
+            #[Vel = CHASSIS:angVel():yaw()
+            TurnRate = (0 - Vel - $Vel)
+            Target = clamp(TurnRate * 0.15,-TURN_ANGLE / 4,TURN_ANGLE / 4)]#
+            Target = 0
+        }
+        TURN += clamp(Target - TURN, -TURN_RATE, TURN_RATE)
+        SLAVE:setAng(CHASSIS:toWorld(ang(0,0,-TURN)))
+        SLAVE:propFreeze(1)
+    }
+}

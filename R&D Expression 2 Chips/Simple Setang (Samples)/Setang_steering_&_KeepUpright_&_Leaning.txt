@@ -1,0 +1,43 @@
+@name Setang steering & KeepUpright & Leaning
+@inputs A D CHASSIS:entity LowTurn HighTurn
+@outputs TURN Entity:entity
+@persist SLAVE:entity [TURN_RATE TURN_ANGLE TURN] B C Pitch
+@model models/sprops/rectangles/size_2_5/rect_18x18x3.mdl
+@autoupdate
+if (dupefinished())
+{
+    reset()
+}
+
+if(->LowTurn == 0)
+{
+    LowTurn = 45
+}
+
+if(->HighTurn == 0)
+{
+    HighTurn = 35
+}
+B = round(toUnit("mi/h",CHASSIS:vel():length()))
+if(B >= 20)
+{
+    TURN_ANGLE = HighTurn
+}
+else
+{
+    TURN_ANGLE = LowTurn
+}
+
+if (first())
+{
+    runOnTick(1)
+    TURN_RATE = 5 
+    SLAVE = entity()
+}
+
+if (!SLAVE:isPlayerHolding() & !CHASSIS:isPlayerHolding())
+{
+        TURN += clamp((A-D)*TURN_ANGLE - TURN, -TURN_RATE, TURN_RATE)
+        SLAVE:setAng(ang(0,CHASSIS:angles():yaw(),TURN * 0.1))
+        SLAVE:propFreeze(1)
+}

@@ -1,0 +1,29 @@
+@name Setang steering Mechs
+@inputs Prop:entity ForwardLimit BackwardLimit TurnRate Turn ZeroPoint
+@persist Target Angle
+@model models/sprops/rectangles/size_2_5/rect_18x18x3.mdl
+runOnTick(1)
+if(->TurnRate == 0)
+{
+    TurnRate = 1
+}
+
+if(sign(Turn) == 1)
+{
+    Target = ForwardLimit
+}
+elseif(sign(Turn) == -1)
+{
+    Target = BackwardLimit
+}
+else
+{
+    Target = ZeroPoint
+}
+
+if (entity():isPlayerHolding() == 0)
+{
+    Angle += clamp(Target - Angle, -TurnRate,TurnRate)
+    entity():setAng(Prop:toWorld(ang(0,Angle,0)))
+    entity():propFreeze(1)
+}

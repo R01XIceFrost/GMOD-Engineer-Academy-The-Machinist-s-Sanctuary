@@ -1,0 +1,50 @@
+@name Setang steering Hunterplate
+@inputs TurnMul CHASSIS:entity LowTurn HighTurn
+@outputs TURN
+@persist SLAVE:entity [TURN_RATE TURN_ANGLE TURN] B C
+@model models/hunter/plates/plate1x1.mdl
+@autoupdate
+if (dupefinished()) {reset()}
+
+B = round(toUnit("mi/h",CHASSIS:vel():length()))
+if(->CHASSIS)
+{
+    entity():setPos(CHASSIS:pos() + vec(0,0,300))
+}
+
+if(->LowTurn == 0)
+{
+    LowTurn = 45
+}
+
+if(->HighTurn == 0)
+{
+    HighTurn = 35
+}
+
+if(B >= 20)
+{
+    TURN_ANGLE = HighTurn
+}
+else
+{
+    TURN_ANGLE = LowTurn
+}
+
+if (first())    {
+    interval(20)
+    
+    TURN_RATE = 5 
+
+    
+    SLAVE = entity()
+} elseif (clk())    {
+    interval(20)
+
+    if (!SLAVE:isPlayerHolding())    {
+        TURN += clamp((-TurnMul * TURN_ANGLE) - TURN, -TURN_RATE, TURN_RATE)
+        SLAVE:setAng(CHASSIS:toWorld(ang(0,TURN-180,TURN * 0.1)))
+        SLAVE:propFreeze(1)
+        entity():setMass(50000)
+    }
+}

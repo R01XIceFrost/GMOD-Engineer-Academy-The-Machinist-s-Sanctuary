@@ -1,0 +1,30 @@
+@name Setang steeringInverse
+@inputs CHASSIS:entity
+@persist SLAVE:entity [TURN_RATE TURN_ANGLE TURN] B C
+@model models/sprops/rectangles/size_66/rect_66x108x3.mdl
+
+if(dupefinished())
+{
+    reset()
+}
+
+if(first())
+{
+    interval(20)
+    
+    TURN_RATE = 5 
+
+    
+    SLAVE = entity()
+}
+elseif(clk())
+{
+    interval(20)
+
+    if(!SLAVE:isPlayerHolding())
+    {
+        TURN += clamp(0 - TURN, -TURN_RATE, TURN_RATE)
+        SLAVE:setAng(CHASSIS:toWorld(ang(0,TURN-180,0)))
+        SLAVE:propFreeze(1)
+    }
+}

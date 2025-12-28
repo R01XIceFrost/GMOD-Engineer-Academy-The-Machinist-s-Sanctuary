@@ -1,0 +1,26 @@
+@name Setang steering ThingsAngleInput
+@inputs Active Prop:entity Angle:angle TurnRate
+@outputs CurrentAngle:angle
+@persist PitchTarget YawTarget RollTarget Pitch Yaw Roll
+@model models/sprops/rectangles/size_2_5/rect_18x18x3.mdl
+interval(20 * Active)
+if(->TurnRate == 0)
+{
+    TurnRate = 1
+}
+
+PitchTarget = Angle:pitch()
+YawTarget = Angle:yaw()
+RollTarget = Angle:roll()
+
+Entity = entity()
+if (entity():isPlayerHolding() == 0)
+{
+    Pitch += clamp(PitchTarget - Pitch,-TurnRate,TurnRate)
+    Yaw += clamp(YawTarget - Yaw,-TurnRate,TurnRate)
+    Roll += clamp(RollTarget - Roll,-TurnRate,TurnRate)
+    
+    entity():setAng(Prop:toWorld(ang(Pitch,Yaw,Roll)))
+    entity():propFreeze(1)
+    CurrentAngle = ang(Pitch,Yaw,Roll)
+}

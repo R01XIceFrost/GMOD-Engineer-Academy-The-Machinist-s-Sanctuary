@@ -1,0 +1,21 @@
+@name Setang steering Things
+@inputs Prop:entity PitchTarget YawTarget RollTarget TurnRate Click
+@outputs Pitch Yaw Roll Entity:entity
+@persist PitchTarget YawTarget RollTarget Pitch Yaw Roll
+@model models/sprops/rectangles/size_2_5/rect_18x18x3.mdl
+@trigger all
+interval(40)
+if(->TurnRate == 0)
+{
+    TurnRate = 1
+}
+Entity = entity()
+if (entity():isPlayerHolding() == 0)
+{
+    Pitch += clamp(PitchTarget - Pitch,-TurnRate,TurnRate)
+    Yaw += clamp(YawTarget - Yaw,-TurnRate,TurnRate)
+    Roll += clamp(RollTarget - Roll,-TurnRate,TurnRate)
+    
+    entity():setAng(Prop:toWorld(ang(Pitch,Yaw,Roll)))
+    entity():propFreeze(1)
+}

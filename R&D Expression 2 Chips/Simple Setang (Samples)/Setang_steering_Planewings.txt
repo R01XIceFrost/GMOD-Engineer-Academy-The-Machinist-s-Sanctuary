@@ -1,0 +1,31 @@
+@name Setang steering Planewings
+@inputs Up Down CHASSIS:entity
+@persist SLAVE:entity [TURN_RATE TURN_ANGLE TURN] B C
+@model models/sprops/rectangles/size_2_5/rect_18x18x3.mdl
+
+if (dupefinished()) {reset()}
+
+if(->CHASSIS)
+{
+    entity():setPos(CHASSIS:pos() + vec(0,0,300))
+}
+
+TURN_ANGLE = 35
+
+
+if (first())    {
+    interval(20)
+    
+    TURN_RATE = 5 
+
+    
+    SLAVE = entity()
+} elseif (clk())    {
+    interval(20)
+
+    if (!SLAVE:isPlayerHolding())    {
+        TURN += clamp((Up-Down)*TURN_ANGLE - TURN, -TURN_RATE, TURN_RATE)
+        SLAVE:setAng(CHASSIS:toWorld(ang(-TURN,0,0)))
+        SLAVE:propFreeze(1)
+    }
+}

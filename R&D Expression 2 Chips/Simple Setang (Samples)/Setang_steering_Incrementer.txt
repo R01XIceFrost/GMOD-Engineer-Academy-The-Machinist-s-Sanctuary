@@ -1,0 +1,32 @@
+@name Setang steering Incrementer
+@inputs Prop:entity Increment Decrement TurnRate
+@outputs Pitch Yaw Roll Entity:entity
+@persist PitchTarget YawTarget RollTarget Pitch Yaw Roll Angle
+@model models/sprops/rectangles/size_2_5/rect_18x18x3.mdl
+runOnTick(1)
+if(->TurnRate == 0)
+{
+    TurnRate = 1
+}
+Entity = entity()
+
+Mod = Increment - Decrement
+
+if(changed(Mod) & Mod == 1)
+{
+    RollTarget += 90
+}
+elseif(changed(Mod) & Mod == 1)
+{
+    RollTarget -= 90
+}
+
+
+if (entity():isPlayerHolding() == 0)
+{
+
+    Angle += clamp(RollTarget - Angle,-TurnRate,TurnRate)
+    
+    entity():setAng(Prop:toWorld(ang(0,0,Angle)))
+    entity():propFreeze(1)
+}

@@ -1,0 +1,38 @@
+@name Setang steeringPodracer
+@inputs A D CHASSIS:entity
+@persist SLAVE:entity [TURN_RATE TURN_ANGLE TURN] B C
+@model models/sprops/rectangles/size_2_5/rect_18x18x3.mdl
+
+if (dupefinished()) {reset()}
+
+B = round(toUnit("km/h",CHASSIS:vel():length()))
+if(->CHASSIS)
+{
+    entity():setPos(CHASSIS:pos() + vec(0,0,300))
+}
+
+
+if(B >= 20)  {
+    TURN_ANGLE = 35
+}
+else
+{
+    TURN_ANGLE = 15
+}
+
+if (first())    {
+    interval(20)
+    
+    TURN_RATE = 5 
+
+    
+    SLAVE = entity()
+} elseif (clk())    {
+    interval(20)
+
+    if (!SLAVE:isPlayerHolding())    {
+        TURN += clamp((D-A)*TURN_ANGLE - TURN, -TURN_RATE, TURN_RATE)
+        SLAVE:setAng(CHASSIS:toWorld(ang(0,TURN-180,0)))
+        SLAVE:propFreeze(1)
+    }
+}
