@@ -1,0 +1,40 @@
+@name Mrkykun's Thirdperson
+@outputs 
+@persist Player:entity On
+
+#Required (maybe) Addon Wiremod Extras?
+
+#Source: Wiremod Discord
+
+runOnTick(1)
+
+if(first()|dupefinished()){
+    On=0
+    Player=owner()   
+    cameraCreate(1,Player:toWorld(vec(-150,0,50)),Player:toWorld(ang(0,0,0)),0)
+    cameraZoom(1,0)
+    
+    holoCreate(1)
+    holoPos(1,Player:pos())
+    holoParent(1,Player)
+}
+
+Click=Player:keyPressed("Y")
+
+if(Player:inVehicle()){  
+    cameraPos(1,holoEntity(1):toWorld(vec(-150,0,70)))
+    cameraParent(1,holoEntity(1))
+    cameraAng(1,holoEntity(1):toWorld(ang(0,0,0)))
+    holoAng(1,Player:eyeAnglesVehicle())
+}else{
+    cameraPos(1,Player:toWorld(vec(-150,0,50)))
+    cameraParent(1,Player)
+    cameraAng(1,Player:toWorld(ang(0,0,0)))
+} 
+
+
+if(changed(Click)&Click){
+    On=!On  
+}
+
+cameraToggle(1,On)
