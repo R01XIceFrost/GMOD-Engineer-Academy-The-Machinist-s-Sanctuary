@@ -1,0 +1,23 @@
+@name Vending Machine
+@inputs
+@model models/props_interiors/VendingMachineSoda01a.mdl
+@persist Prop:entity C:array Props:array
+interval(10)
+timer("delete",25000)
+    E = entity()
+    P = owner()
+    Random = 1
+    A = 1
+ if( Random ){
+        A++
+        if( randint(1,125) == 1 )
+        
+        {
+    Prop = propSpawn("models/props_junk/PopCan01a.mdl", E:toWorld(vec(0,0,-1)), E:angles(), 0)
+, soundPlay(1,0, "ambient/machines/hydraulic_1.wav")}
+Props:pushEntity(Prop)
+}
+if(clk("delete") & Props:count())
+{Props:shiftEntity():propDelete()
+Props:propDelete()}
+if (duped()) {selfDestruct(), hint("You cannot duplicate this",10)}

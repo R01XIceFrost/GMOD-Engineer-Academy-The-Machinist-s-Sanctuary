@@ -1,0 +1,37 @@
+@name Prop Fun
+@persist Holding Use Ent:entity 
+interval(100)
+P = owner()
+E = entity()
+if(first()){
+    E:setAlpha(0)
+    E:propNotSolid(1)
+}
+runOnTick(1)
+Use = owner():keyUse()
+if(Use&$Use){
+    if(Holding){
+        Holding = 0
+    }else{
+        Ent = owner():aimEntity()
+        if((Ent:type()=="sent_"&!Ent:isFrozen()))
+        {Holding = 1}
+    }
+}
+if(Use&$Use){
+    if(Holding){
+        Holding = 0
+    }else{
+        Ent = owner():aimEntity()
+        if((Ent:type()=="prop_physics"&!Ent:isFrozen()))
+        {Holding = 1}
+    }
+}
+if(Holding){
+        Ent:setMass(0)
+        Ent:setColor(random(255),random(255),random(255))
+        Ent:setMaterial("models/shiny")
+        Ent:propFreeze(1)
+        Ent:propGravity(0)
+    }
+

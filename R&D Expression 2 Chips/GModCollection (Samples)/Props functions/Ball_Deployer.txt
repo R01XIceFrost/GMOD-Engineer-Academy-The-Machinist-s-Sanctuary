@@ -1,0 +1,34 @@
+@name Ball Deployer
+@inputs On Reset
+@outputs Count
+@persist Balls:array
+@trigger 
+runOnLast(1)
+interval(2000)
+Limit = 25
+
+if(Balls:count() < (Limit + 1) & On)
+{
+    Ball = propSpawn("models/XQM/Rails/gumball_1.mdl",entity():toWorld(vec(0,0,24)),0)
+    Balls[Balls:count() + 1,entity] = Ball
+    Ball:setColor(randvec(0,255))
+    Ball:setMass(300)
+}
+if(Balls:count() > Limit)
+{
+    Balls[1,entity]:propDelete()
+    Balls:shift()
+}
+Count = Balls:count()
+if(~Reset & Reset)
+{
+    for(I = 1,Count)
+    {
+        Balls[I,entity]:propDelete()
+    }
+    Balls = array()
+}
+if(last())
+{
+    propDeleteAll()
+}

@@ -1,0 +1,83 @@
+@name Explosive
+@inputs
+@outputs Tracked:entity Stage [New1 Old1]:vector
+@persist Ent:entity Tracked:entity Old New Stage HitPos:vector [New1 Old1]:vector
+@trigger 
+
+function void beamTo(Index,StartPos:vector,EndPos:vector,Width)
+{
+    holoCreate(Index,(StartPos + EndPos) / 2)
+    holoModel(Index,"models/hunter/plates/plate8.mdl")
+    holoScale(Index,vec(Width,StartPos:distance(EndPos) / 380,Width))
+    holoAng(Index,(EndPos - StartPos):toAngle() + ang(90,0,90))
+    holoMaterial(Index,"models/debug/debugwhite")
+}
+
+function entity closest(Array:array,Point:vector)
+{
+    Closest = 1
+    for(I = 0,Array:count())
+    {
+        if(Array[Closest,entity]:pos():distance(Point) > Array[I,entity]:pos():distance(Point))
+        {
+            Closest = 1
+        }
+    }
+    return Array[Closest,entity]
+}
+
+if(first() | dupefinished())
+{
+    runOnTick(1)
+    propSpawnEffect(0)
+    Stage = 0
+}
+if(Stage == 0)
+{
+    if(Ent:id() != 0)
+    {
+        New = Ent:pos():distance(owner():shootPos())
+        Delta = New - Old
+        if(Delta > 10)
+        {
+            Tracked = Ent
+            Stage = 1
+            holoCreate(1,Tracked:pos())
+            holoParent(1,Tracked)
+            holoModel(1,"hqsphere")
+            holoColor(1,vec(255,0,0),175)
+        }
+        Old = New
+    }
+    else
+    {
+        findByClass("weapon_crossbow")
+        findInCone(owner():shootPos(),owner():eye(),500,20)
+        Ent = closest(findToArray(),owner():shootPos())
+    }
+}
+
+if(Stage == 1)
+{
+    #beamTo(1,Tracked:pos(),owner():weapon():pos(),1)
+    New1 = holoEntity(1):pos()
+    New1 - Old1
+    if(New1 == Old1 | New1 == vec(0))
+    {
+        Stage = 2
+    }
+    else
+    {
+        HitPos = Tracked:pos()
+    }
+    Old1 = New1
+}
+
+if(Stage == 2)
+{
+    #print(HitPos)
+    B = propSpawn("models/props_c17/oildrum001_explosive.mdl",HitPos,1)
+    B:setAlpha(0)
+    B:propBreak()
+    Stage = 0
+}

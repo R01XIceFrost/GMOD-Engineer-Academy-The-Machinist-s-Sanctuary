@@ -1,0 +1,8 @@
+@name DriverAimPos
+@inputs Seat:entity
+@outputs Vec:vector
+@persist
+@trigger
+
+runOnTick(1)
+Vec = Seat:driver():aimPos()

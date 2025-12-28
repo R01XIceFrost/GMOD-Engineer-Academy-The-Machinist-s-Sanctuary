@@ -1,0 +1,57 @@
+@name 
+@inputs
+@outputs Vector:vector Angle:angle VectorA:vector VectorB:vector
+@persist Length Color:vector ReferenceA:entity ReferenceB:entity
+@trigger 
+
+if (first()){
+    runOnTick(1)
+    
+    
+    Length = 500 #admin only command wire_holograms_size_max controls this
+    
+    for(I = 1, 3){
+        Color = randvec(vec(0,0,0), vec(255,255,255))
+        
+        #base
+        Base = I*2 - 1
+        holoCreate(Base)
+        holoModel(Base, "hq_sphere")
+        holoScaleUnits(Base, vec(5,5,5))
+        holoColor(Base, Color)
+        
+        #wand thingy
+        Wand = I*2
+        holoCreate(Wand)
+        holoModel(Wand, "hq_cylinder")
+        holoScaleUnits(Wand, vec(1, 1, Length))
+        holoPos(Wand, entity():pos() + vec(0,0,1)*Length/2)
+        holoParent(Wand, Base)
+        holoColor(Wand, Color)
+    }
+    
+    entity():setAlpha(0)
+    
+    
+    ReferenceA = propSpawn("models/props_junk/PopCan01a.mdl", entity():pos() + entity():up()*50, 1)
+    rope(1, ReferenceA, vec(0,0,0), entity(), vec(0,0,1))
+    
+    ReferenceB = propSpawn("models/props_junk/PopCan01a.mdl", entity():pos() + entity():up()*50, 1)
+    rope(2, ReferenceB, vec(0,0,0), entity(), vec(0,0,1))
+}
+
+holoPos(1, entity():pos())
+holoPos(3, entity():pos())
+holoPos(5, entity():pos())
+
+VectorA = (ReferenceA:pos() - entity():pos()):normalized()
+Angle = VectorA:toAngle() + ang(90,0,0)
+holoAng(3, Angle)
+
+VectorB = (ReferenceB:pos() - entity():pos()):normalized()
+Angle = VectorB:toAngle() + ang(90,0,0)
+holoAng(5, Angle)
+
+Vector = (VectorA:cross(VectorB)):normalized()
+Angle = Vector:toAngle() + ang(90,0,0)
+holoAng(1, Angle)

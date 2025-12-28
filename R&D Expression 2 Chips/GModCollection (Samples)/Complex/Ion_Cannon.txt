@@ -1,0 +1,298 @@
+@name Ion Cannon
+@persist BeamEnt:entity ShootPos:vector SpinSpeed Firing MaxSpeed AimPos:vector BeamEnt2:entity ShootPos2:vector WorldPos:vector FIRE Target:entity Size
+@persist ExpNumb GoTroughSurfaces MaxBarrels BarrelRate
+
+if( first() | duped() | dupefinished() )
+{
+    ### -- Variables -- ###
+    GoTroughSurfaces = 1 # 1 = go trough walls etc, 0 = no
+    MaxBarrels = 140   # Max. amount of barrels on explosion
+    BarrelRate = 0.0   # How often explosion barrels should spawn. ( in seconds )
+    
+    ### -- Holos -- ##
+    # Base
+    holoCreate( 1 )
+    holoModel( 1, "hq_cylinder")
+    holoScale( 1, vec( 10, 10, 1) )
+    holoPos( 1, holoEntity(1):toWorld( vec( 0, 0, 5) ) )
+    holoParent( 1, entity() )
+    holoMaterial( 1, "phoenix_storms/iron_rails")
+    
+    # Cannon Base
+    holoCreate( 2 )
+    holoModel( 2, "hq_cylinder")
+    holoScale( 2, vec( 4, 4, 10) )
+    holoPos( 2, holoEntity(2):toWorld( vec( 0, 0, 60) ) )
+    holoParent( 2, entity() )
+    holoMaterial( 2, "phoenix_storms/grey_chrome")
+    
+    # Cannon
+    holoCreate( 3 )
+    holoModel( 3, "hq_cylinder")
+    holoScale( 3, vec( 2, 2, 10) )
+    holoPos( 3, holoEntity(3):toWorld( vec( 0, 0, 180) ) )
+    holoParent( 3, entity() )
+    holoMaterial( 3, "phoenix_storms/iron_rails")
+    
+    # Spinning Base Parent   
+    holoCreate( 5 )
+    holoModel( 5, "cube")
+    holoScale( 5, vec( 1, 1, 1) )
+    holoPos( 5, holoEntity(5):toWorld( vec( 0, 0, 60) ) )
+    holoParent( 5, entity() )
+    holoAlpha( 5, 0)
+    
+    # Spinning Holos
+    holoCreate( 6 )
+    holoModel( 6, "cube")
+    holoScale( 6, vec( 2, 0.3, 10) )
+    holoPos( 6, holoEntity(5):toWorld( vec( 0, 40, 20) ) )
+    holoAng( 6, holoEntity(5):angles() + ang( 0, 0, -10) )
+    holoParent( 6, holoEntity(5) )
+    holoMaterial( 6, "phoenix_storms/grey_chrome")
+    
+    holoCreate( 7 )
+    holoModel( 7, "cube")
+    holoScale( 7, vec( 2, 0.3, 10) )
+    holoPos( 7, holoEntity(5):toWorld( vec( 0, -40, 20) ) )
+    holoAng( 7, holoEntity(5):angles() + ang( 0, 0, 10) )
+    holoParent( 7, holoEntity(5) )
+    holoMaterial( 7, "phoenix_storms/grey_chrome")
+    
+    #Spinning holder
+    holoCreate( 8 )
+    holoModel( 8, "cube")
+    holoScale( 8, vec( 0.6, 6.5, 0.6) )
+    holoPos( 8, holoEntity(5):toWorld( vec( 0, 0, 20) ) )
+    holoParent( 8, holoEntity(5) )
+    holoMaterial( 8, "phoenix_storms/iron_rails")
+    
+    #Aim holo
+    holoCreate( 9 )
+    holoModel(9, "hq_cylinder")
+    holoScale(9, vec(5,5,0.1))
+    holoColor(9, vec(255,0,0))
+    holoAlpha(9,200)
+    holoDisableShading(9, 1)
+    holoVisible( 9, players(), 0)
+    holoVisible( 9, owner(), 1)
+    
+    #Thingy
+    holoCreate(10)
+    holoModel(10, "hq_sphere")
+    holoScale(10, vec(Size,Size,Size))
+    holoAlpha(10, 180)
+    holoColor(10, vec( 150, 150, 205) )
+    holoDisableShading(10, 1)
+    holoPos( 10, holoEntity(10):toWorld( vec( 0, 0, 230+(Size*5)) ) )
+    holoParent( 10, entity() )
+    
+    # Thingy 2
+    holoCreate( 11 )
+    holoModel( 11, "hq_cylinder")
+    holoScale( 11, vec( 4.3, 4.3, 0.8) )
+    holoPos( 11, holoEntity(11):toWorld( vec( 0, 0, 80) ) )
+    holoParent( 11, entity() )
+    holoMaterial( 11, "phoenix_storms/iron_rails")
+     
+    SpinSpeed = 0
+    Firing = 0
+    MaxSpeed = 50
+    FIRE = 0
+    Size = 0
+    
+    timer( "Tick", 250 )
+}
+
+
+interval( 20 )
+runOnChat( 1 )
+
+## Chat command
+if( chatClk( owner() ) ) 
+{
+    Msg = owner():lastSaid():explode(" ")
+    
+    if ( Msg:string(1) == "!fire" ) 
+    {
+        if( Msg:string(2) == "" )
+        {
+            FIRE = 1
+            WorldPos = owner():aimPos()
+            Target = noentity()
+            print("Firing at aim position.")
+        }
+        else
+        {
+            Temp_Target = findPlayerByName( Msg:string(2) )
+            if( Temp_Target:isPlayer() )
+            {
+                FIRE = 1
+                Target = Temp_Target
+                WorldPos = Target:pos()
+                print("Firing at "+Target:name())
+            }
+            else
+            {
+                print("Could not find player with name: '"+Msg:string(2)+"'")
+            }
+        }
+        hideChat(1) #Hide message
+    }
+}
+
+## Update target pos to player pos
+if( Target:isPlayer() && Firing && !BeamEnt2:isFrozen() )
+{
+    WorldPos = Target:pos()
+}
+
+rangerFilter( entity() ) 
+rangerFilter( BeamEnt )
+rangerFilter( players() )
+rangerFilter( BeamEnt2 )
+Aim=rangerOffset(100000, entity():pos(), entity():up() )
+ShootPos = ( Aim:pos() - vec( 0, 0, 0 ) )
+
+## Ranger for second firing pos
+
+rangerFilter( entity() ) 
+rangerFilter( BeamEnt )
+rangerFilter( players() )
+rangerFilter( BeamEnt2 )
+
+Aim2=rangerOffset( 100000, vec( WorldPos:x(), WorldPos:y(), ShootPos:z() ), vec(0,0,-1) )
+ 
+if( GoTroughSurfaces == 1 )
+{
+    ShootPos2 = WorldPos
+}
+else
+{
+    ShootPos2 = Aim2:pos()
+}
+
+holoPos(9, ShootPos2 )
+
+if( changed( FIRE ) && FIRE && Firing == 0 && SpinSpeed <= 0 )
+{
+    if( BeamEnt:isValid() ) { BeamEnt:propDelete() }
+    if( BeamEnt2:isValid() ) { BeamEnt2:propDelete() }
+    
+    Firing = 1
+    entity():soundPlay( 1, 0, "weapons/physcannon/hold_loop.wav")
+    soundPitch(1, SpinSpeed * 4)
+    
+    FIRE = 0
+}
+
+## Apply forces for Beam props
+if( BeamEnt:isValid() && !BeamEnt:isFrozen() )
+{
+    BeamEnt:applyForce( ( ( ShootPos - BeamEnt:pos() ) * 100 - BeamEnt:vel() ) * ( BeamEnt:mass() ) )
+}
+
+if( BeamEnt2:isValid() && !BeamEnt2:isFrozen() )
+{
+    BeamEnt2:applyForce( ( ( ShootPos2 - BeamEnt2:pos() ) * 100 - BeamEnt2:vel() ) * BeamEnt2:mass() )
+}
+
+## Spinning
+if( changed(SpinSpeed) || SpinSpeed != 0 )
+{
+    holoAng(5, holoEntity(5):toWorld( ang( 0, SpinSpeed, 0) ) )
+    soundPitch(1, SpinSpeed * 4)
+    if( SpinSpeed >= 30 && Size < 3 && Firing )
+    {
+        Size += 0.01
+        holoScale(10, vec(Size,Size,Size))
+        holoPos( 10, entity():toWorld( vec( 0, 0, 238+(Size*5)) ) )
+    }elseif( !Firing && Size > 0 )
+    {
+        Size -= 0.05
+        holoScale(10, vec(Size,Size,Size))
+        holoPos( 10, entity():toWorld( vec( 0, 0, 238+(Size*5)) ) )
+    }
+}
+
+if( clk("Tick") )
+{
+    if( Firing == 0 && SpinSpeed > 0 )
+    {
+        SpinSpeed -= 1
+    }
+    if( Firing == 1 )
+    {
+        if( SpinSpeed < MaxSpeed )
+        {
+            SpinSpeed += 1
+        }
+        elseif( !BeamEnt:isValid() )
+        {
+            timer( "FIRE", 3500 )
+        }
+    }
+    
+    ## Freeze first & Spawn second beam prop
+    if( BeamEnt:isValid() && BeamEnt:pos():distance( ShootPos ) <= 50 && !BeamEnt2:isValid() )
+    {     
+        propSpawnEffect(0)
+        BeamEnt:propFreeze(1)
+        BeamEnt2 = propSpawn("models/hunter/blocks/cube025x025x025.mdl", vec( WorldPos:x(), WorldPos:y(), ShootPos:z()), 0)
+        BeamEnt2:propGravity(0)
+        BeamEnt2:setTrails( 300, 300, 2000, "trails/laser", vec( 200, 200, 255), 200)
+        BeamEnt2:setMass(1000)
+        BeamEnt2:setAlpha(0)
+        BeamEnt2:propNotSolid(1)
+    }
+    
+    ## Start exploding
+    if( BeamEnt2:isValid() && BeamEnt2:pos():distance( ShootPos2 ) <= 200 && Firing && !BeamEnt2:isFrozen() )
+    {
+        BeamEnt2:propFreeze(1)
+        ExpNumb = 0
+        timer( "Explosion", 250)
+    }
+    
+    timer("Tick", 250 )
+}
+
+## Spawn first beam prop
+if( clk("FIRE") )
+{
+    propSpawnEffect(0)
+    BeamEnt = propSpawn("models/hunter/blocks/cube025x025x025.mdl", entity():pos(), 0)
+    BeamEnt:propGravity(0)
+    BeamEnt:setTrails( 300, 300, 2000, "trails/laser", vec( 200, 200, 255), 200)
+    BeamEnt:setMass(1000)
+    BeamEnt:setAlpha(0)
+    BeamEnt:propNotSolid(1)
+}
+
+if( clk("StopSpin") )
+{
+    Firing = 0
+    BeamEnt:propDelete()
+    BeamEnt2:propDelete()
+}
+
+## Explosion
+if( clk("Explosion") )
+{
+    if( ExpNumb <= MaxBarrels )
+    {
+        ExpNumb += 1
+        timer( "Explosion", (BarrelRate*1000) )
+        
+        BoomPos = holoEntity(9):pos()
+        BoomPos = BoomPos + vec( randint(-250,250), randint(-250,250) , 0)
+        
+        Boom = propSpawn("models/props_phx/mk-82.mdl", BoomPos, 1)
+        Boom:propBreak()
+    }
+    else
+    {
+        timer( "StopSpin", 150 )
+        holoDelete(9)
+    }
+}

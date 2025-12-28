@@ -1,0 +1,34 @@
+@name cloaking tech
+@inputs Cloak
+@outputs 
+@persist Ents:array Cloaked
+@trigger 
+@autoupdate
+if(first() | dupefinished())
+{
+    Ents = entity():getConstraints()
+    Ents:pushEntity(entity())
+}
+
+if(Cloak & ~Cloak & Cloaked == 0)
+{
+    Cloaked = 1
+    for(I=1,Ents:count())
+    {
+        Ents[I,entity]:setAlpha(0)
+        Ents[I,entity]:setSolid(0)
+        Ents[I,entity]:soundPlay("POP"+I, 0.1, "garrysmod/balloon_pop_cute.wav")
+        soundPitch("POP"+I, randint(95,125))
+    }
+}elseif(Cloak & ~Cloak & Cloaked == 1)
+{
+    Cloaked = 0
+    for(I=1,Ents:count())
+    {
+        Ents[I,entity]:setAlpha(255)
+        Ents[I,entity]:setSolid(1)
+        Ents[I,entity]:soundPlay("POP"+I, 0.1, "garrysmod/balloon_pop_cute.wav")
+        soundPitch("POP"+I, randint(75,100))
+    }
+}
+

@@ -1,0 +1,481 @@
+@name Projectile Shooter
+@inputs Fire
+@outputs Pct ProjsC Ammo Loading
+# Options variables
+@persist Force Mass TarDist MaxDist Delay [ProjM BombM Key FSound Preset SpnSnd]:string Explode Gravity Homing ScanIntval
+@persist SpedThrsh ReloadWndow [Origin TargetPos E P B]:entity ReloadTime MagSize MinDist BurstSize Trail IntDly
+# Internal variables
+@persist ProjSpeed Prematr Ammo Hold Reloadchk OriginI:vector [Projs ProjVel Targets TarEnts Const]:array FireI Loading Burst
+#*************************************************  **************type "sbox_E2_maxPropsPerSecond 10000000" into console without quotes for reliable operation********
+#******************************setting "wire_expression2_unlimited 1" also helps if you want to kick more ass with the gau. Warning: might require a super-computer. 
+#******************************type /preset and then the preset name into chat to change the current mode at any time.
+if (first()) {
+runOnTick(1)
+runOnChat(1) #comment out this line to disable chat preset switching
+
+rangerPersist(1)
+rangerHitWater(1)
+
+findIncludeClass("player")
+findIncludeClass("npc")
+findIncludeClass("vehicle")
+findExcludeClass("prop_physics")
+timer("tar-scan",ScanIntval)
+
+E = entity()
+P = owner()
+B = E:isWeldedTo()
+
+Const = E:getConstraints() 
+#-------------------------------------------------------------------------------------------------------------------------------------Options. Preset will override.
+
+Preset = ""#Sets a preset that is fine tuned to work. Overrides variables below. Still keep settings default if you're going to use a preset.
+#"gau": Extremely high ROF HE round autocannon. Lag inducing. Requires first convar to be set.
+#"cbomb": Carpet Bomb. designed for use with airplane. drops a payload of bombs
+#"railgun": Extreme amount of joules.
+#"rgl": Rotary grenade launcher.
+#"rpg": High damage single shot rocket launcher.
+#"rifle": Assault rifle.
+#"airburst": Airburst rifle. Explodes just in front of target.
+
+Key = "T"
+
+Force = 100#Default 100
+Mass = 1#Default 1
+
+TarDist = 200 #Distance to explode from target. Default 200
+MaxDist = 100000000 #Max distance from player before self destructing. Default 100000
+MinDist = 100 #Projectile will become solid at distances from origin higher than this. Prevents projectiles from colliding. Default 100
+SpedThrsh = 1000 #Projectile will self destruct at speeds lower than this. Default 1000
+
+Delay = 100 #Delay between shots in milliseconds. With no convars set, unreliable under 100.
+
+IntDly = 0 #Initial shot delay. Spin up time in milliseconds. Set to 0 to disable.
+
+BombM = "models/props_phx/misc/potato_launcher_explosive.mdl"
+#"models/props_c17/oildrum001_explosive.mdl"                     Range 200, gibs
+#"models/props_phx/ww2bomb.mdl"                                  Range 125-200
+#"models/props_phx/torpedo.mdl"                                  Range 500-700
+#"models/props_phx/misc/potato_launcher_explosive.mdl"           Range very small, rarely lethal
+#"models/props_phx/misc/flakshell_big.mdl"                       Range 300-500, shrapnel, may cause lag
+#"models/props_phx/amraam.mdl"                                   Range 325
+
+ProjM = "models/items/ar2_grenade.mdl"
+#"models/weapons/w_missile_closed.mdl"
+
+FSound = "weapons/ar2/fire1.wav" #Fire sound
+#"weapons/ar2/fire1.wav"
+#"phx/epicmetal_hard7.wav"
+#"Weapon_Pistol.Single"
+#"ambient.electrical_zap_1"
+#npc/ministrider/flechette_flesh_impact2.wav
+#npc/ministrider/hunter_fire_loop3.wav
+#wac/a10/gun.wav
+
+SpnSnd = "hl1/ambience/particle_suck2.wav" #Spin up sounds
+#hl1/ambience/particle_suck1.wav
+#hl1/ambience/particle_suck2.wav
+#hl1/ambience/alien_minddrill.wav
+#npc/strider/striderx_pain8.wav
+#npc/ministrider/alert4.wav
+#npc/ministrider/hunter_flechette_preexplode2.wav
+#npc/ministrider/hunter_laugh1.wav
+#npc/ministrider/ministrider_preflechette.wav
+
+Explode = 1 #Set to 1 to spawn explosive prop and detonate
+
+Gravity = 0 #Set to 1 to have the projectile affected by gravity
+
+Trail = 1#Smoke Trail Size
+
+Homing = 0 #Set to 1 to have the projectile home in on nearest target (heat seeking) NOT FUNCTIONAL
+
+MagSize = (-1)#Set to -1 to disable
+
+BurstSize = 3#Fire in bursts. Set to 0 for full-auto, Set to 1 for semi-auto.
+
+ReloadTime = (5000)#Reload time in milliseconds
+
+ReloadWndow = 150#Window to detect double-tap in milliseconds (How fast you have to tap button)
+
+ScanIntval = 5000 #How often to automatically rescan for homing targets in milliseconds
+
+Origin = P #Where the projectile will be produced from. E for the e2 chip itself, B for whatever prop its welded to, and P for the owner of the chip.
+TargetPos = P #Set target Position. E for where chip is pointing, P for player aim position.
+}
+#-------------------------------------------------------------------------------------------------------------------------------------presets and stuff
+Pct = int((ops()/hardQuota()) * 1000) 
+
+if (Pct < 95) #ops failsafe
+{
+
+ProjsC = Projs:count()
+
+if (chatClk(P) | first())
+{
+    if (chatClk(P))
+    {
+        FirstW=P:lastSaid():explode(" ")[1,string]:lower()
+        SecondW=P:lastSaid():explode(" ")[2,string]:lower()
+        print(SecondW," mode enabled.")
+    }
+    if ((FirstW == "/preset") | first())
+    {
+        if (FirstW == "/preset")
+        {
+            Preset = SecondW
+            Loading = 0    #reset, just in case
+            Burst = 0
+            soundPurge()
+            stopAllTimers()
+            if (ProjsC)
+            {
+                for (I=1,ProjsC)
+                {
+                    Projs[I,entity]:propBreak()
+                    Projs:remove(I)
+                    Targets:remove(I)
+                }
+            }
+        }
+        if (Preset == "gau")
+        {
+        Force = 50000
+        Mass = 50000
+        TarDist = 1
+        MinDist = 300 
+        SpedThrsh = 4500 
+        Delay = 1
+        IntDly = 500
+        BombM = "models/props_phx/ww2bomb.mdl"                        
+        ProjM = "models/items/ar2_grenade.mdl"
+        FSound = "wac/a10/gun.wav"
+        SpnSnd = "hl1/ambience/particle_suck2.wav"
+        Explode = 1 
+        Gravity = 0 
+        Trail = 1
+        Homing = 0 
+        MagSize = (-1)
+        BurstSize = 0
+        }
+        
+        if (Preset == "cbomb")
+        {
+        Force = 0
+        Mass = 50000
+        TarDist = 10
+        MinDist = 300 
+        SpedThrsh = (50) 
+        Delay = 200
+        IntDly = 0                        
+        ProjM = "models/props_phx/ww2bomb.mdl"
+        FSound = "phx/epicmetal_hard7.wav"
+        Explode = 0 
+        Gravity = 1 
+        Trail = 0
+        Homing = 0 
+        MagSize = (10)
+        BurstSize = 10
+        }
+        
+        if (Preset == "railgun")
+        {
+        Force = 10^30
+        Mass = 50000
+        TarDist = 2
+        MinDist = 100
+        SpedThrsh = 1000
+        Delay = 100
+        IntDly = 1000                   
+        ProjM = "models/items/ar2_grenade.mdl"
+        FSound = "npc/ministrider/flechette_flesh_impact2.wav"
+        SpnSnd = "npc/ministrider/ministrider_preflechette.wav"
+        Explode = 0 
+        Gravity = 0 
+        Trail = 25
+        Homing = 0 
+        MagSize = (1)
+        BurstSize = 0
+        }
+        
+        if (Preset == "rgl")
+        {
+        Force = 25
+        Mass = 1
+        TarDist = 50
+        MinDist = 100
+        SpedThrsh = 1000 
+        Delay = 1000
+        IntDly = 0                      
+        ProjM = "models/items/ar2_grenade.mdl"
+        BombM = "models/props_phx/amraam.mdl"
+        FSound = "phx/epicmetal_hard7.wav"
+        Explode = 1 
+        Gravity = 1 
+        Trail = 5
+        Homing = 0 
+        MagSize = 5
+        BurstSize = 1
+        ReloadTime = 5000
+        }
+        
+        if (Preset == "rpg")
+        {
+        Force = 10^20
+        Mass = 250
+        TarDist = 100
+        MinDist = 100
+        SpedThrsh = 4000
+        Delay = 100
+        IntDly = 0                 
+        ProjM = "models/weapons/w_missile_closed.mdl"
+        BombM = "models/props_phx/torpedo.mdl"
+        FSound = "HL1Weapon_rpg.RocketIgnite"
+        Explode = 1 
+        Gravity = 1 
+        Trail = 50
+        Homing = 0 
+        MagSize = 1
+        BurstSize = 0
+        ReloadTime = 5000
+        }
+        
+        if (Preset == "rifle")
+        {
+        Force = 10^30
+        Mass = 4
+        TarDist = -1
+        MinDist = 100
+        SpedThrsh = 2000 
+        Delay = 51
+        IntDly = 0                      
+        ProjM = "models/items/ar2_grenade.mdl"
+        FSound = "Weapon_Pistol.Single"
+        Explode = 0 
+        Gravity = 0 
+        Trail = 0.2
+        Homing = 0 
+        MagSize = (31)
+        BurstSize = 3
+        ReloadTime = 2000
+        }
+        
+        if (Preset == "airburst")
+        {
+        Force = 10^2
+        Mass = 2
+        TarDist = 110
+        MinDist = 150
+        SpedThrsh = 1500 
+        Delay = 100       
+        IntDly = 0               
+        ProjM = "models/items/ar2_grenade.mdl"
+        BombM = "models/props_phx/misc/potato_launcher_explosive.mdl"
+        FSound = "Weapon_357.Single"
+        Explode = 1 
+        Gravity = 0 
+        Trail = 1
+        Homing = 0 
+        MagSize = (20)
+        BurstSize = 2
+        ReloadTime = 3000
+        }
+        if (Preset == "lmg")
+        {
+        Force = 10^30
+        Mass = 4
+        TarDist = -1
+        MinDist = 100
+        SpedThrsh = 2000 
+        Delay = 51
+        IntDly = 0                      
+        ProjM = "models/items/ar2_grenade.mdl"
+        FSound = "Weapon_357.Single"
+        Explode = 0 
+        Gravity = 0 
+        Trail = 0.2
+        Homing = 0 
+        MagSize = (101)
+        BurstSize = 0
+        ReloadTime = 3000
+        }
+        Ammo = MagSize
+    }
+}
+
+#-------------------------------------------------------------------------------------------------------------------------------------Input
+FireI = P:keyPressed(Key)
+
+if (FireI | Fire) #Held down
+    {Input = 1}
+
+if ((FireI & $FireI) | (~Fire & Fire)) #If pressed this tick
+    {Input = 2}
+    elseif (($FireI == (-1)) | (~Fire & !Fire)) #If released this tick
+        {Input = 3}
+        
+if (Input == 2)
+    {
+        if (IntDly & !Loading & Ammo)
+        {
+            Loading = 1
+            P:soundPlay(6,100,SpnSnd)
+            timer("IntDly",IntDly)
+        }
+        timer("reloadchk",ReloadWndow)
+        if (Reloadchk)
+        {
+            Ammo = 0
+            P:soundPlay(4,2,"Weapon_Pistol.Reload")
+            timer("reload",ReloadTime)
+        }
+        if ((Ammo == 0) & !Reloadchk)
+            {P:soundPlay(3,2,"Weapon_Shotgun.Empty")}
+        Reloadchk = 1
+        if (BurstSize)
+            {Burst = BurstSize}
+        if ((Delay <= 50) & !Loading)
+            {P:soundPlay(2,100,FSound)}
+    }
+    elseif (Input == 3)
+    {
+        soundStop(6)
+        if (Delay <= 50)
+            {soundStop(2)}
+    }
+#-------------------------------------------------------------------------------------------------------------------------------------Detection
+
+#-------------------------------------------------------------------------------------------------------------------------------------Fire function 
+if (!Loading & (((Input == 1) & !BurstSize) | Burst) & Ammo )
+{
+    if (Ammo > 0)
+        {Ammo--}
+    if (Burst > 0)
+        {Burst--}
+    if (Delay > 50)
+        {P:soundPlay(2,2,FSound)}
+    if (Origin == E)
+    {OriginI = E:pos()}
+    if (Origin == P)
+    {OriginI = P:toWorld(vec(0,-20,60))}
+    if (Origin == B)
+    {OriginI = B:pos()}
+    Temp = propSpawn(ProjM,OriginI,0)     
+    Projs:pushEntity(Temp)
+    Temp:propNotSolid(1) 
+    Temp:setMass(Mass)
+    Temp:propGravity(Gravity)
+    if (Trail)
+        {Temp:setTrails(Trail,3,2,"trails/smoke",vec(255,255,255),255)}
+    Temp:setMaterial("models/debug/debugwhite")
+    rangerFilter(Projs)
+    rangerFilter(Const)
+    if (TargetPos == P)
+        {Target = P:aimPos()}
+    if (TargetPos == E)
+        {Target = ranger(50000):position()}
+    Temp:applyForce((Target-Temp:pos())*Force*Mass)
+    Targets:pushVector(Target)
+    timer("repeat",Delay)
+    Loading = 1
+}
+    elseif ((Ammo == 0) & (Input == 2))
+        {P:soundPlay(3,2,"Weapon_Shotgun.Empty")}
+#-------------------------------------------------------------------------------------------------------------------------------------Hit detection
+if (ProjsC) 
+{
+    if (!Homing)
+    {
+        for (I=1,ProjsC)
+        {
+            Proj = Projs[I,entity]
+            Target = Targets[I,vector]
+            if (!Proj)
+            {
+                Projs:remove(I)
+                Targets:remove(I)
+                continue
+            }
+            ODist = OriginI:distance(Proj:pos())
+            if (ODist > MinDist)
+            {
+                Proj:propNotSolid(0)
+                if (((Target:distance(Proj:pos()) <= TarDist) | (ODist >= MaxDist) | (Proj:vel():length() < SpedThrsh)))
+                {
+                    Proj:propBreak()
+                    if (Explode)
+                    {
+                        Bomb = propSpawn(BombM,Proj:pos(),0)
+                        Bomb:propBreak()
+                    }
+                }
+            }
+        }
+    }
+        else
+        {
+            for (I=1,ProjsC)
+            {
+                Proj = Projs[I,entity]
+                Target = Targets[I,vector]
+                if (!Proj)
+                {
+                    Projs:remove(I)
+                    Targets:remove(I)
+                    continue
+                }
+                ODist = OriginI:distance(Proj:pos())
+                if (ODist > MinDist)
+                {
+                    Proj:propNotSolid(0)
+                    if (((Target:distance(Proj:pos()) <= TarDist) | (ODist >= MaxDist) | (Proj:vel():length() < SpedThrsh)))
+                    {
+                        Proj:propBreak()
+                        if (Explode)
+                        {
+                            Bomb = propSpawn(BombM,Proj:pos(),0)
+                            Bomb:propBreak()
+                        }
+                    }
+                }
+            }
+        }
+}
+    elseif (clk("tar-scan"))                         #Automatically rescan for new targets
+    {
+        findInSphere(E:pos(),50000)                              
+        TarEnts = findToArray()
+        TarEntsC = TarEnts:count()
+        if (TarEntsC)
+        {
+            for (I=1,TarEntsC)
+            {
+                if (!(TarEnts[I,entity]))
+                    {TarEnts:remove(I)}
+            }
+        }
+    }
+if (clk("tar-scan"))
+    {timer("tar-scan",ScanIntval)}
+#-------------------------------------------------------------------------------------------------------------------------------------Timers and stuff
+if (clk("repeat") | clk("IntDly"))
+{
+    if ((Input == 1) & clk("IntDly"))
+        {P:soundPlay(2,100,FSound)}
+    Loading = 0
+    soundStop(6)
+}
+
+if (clk("reloadchk"))
+    {Reloadchk = 0}
+    
+if (clk("reload"))
+    {
+        Ammo = MagSize
+        Burst = 0
+        P:soundPlay(5,2,"Weapon_SMG1.Reload")
+    }
+
+if (duped())
+    {reset()}
+}

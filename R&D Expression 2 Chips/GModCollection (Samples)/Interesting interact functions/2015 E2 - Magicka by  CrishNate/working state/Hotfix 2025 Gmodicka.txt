@@ -1,0 +1,3294 @@
+@name Gmodicka v1
+
+@inputs EGP:wirelink
+@persist [Spheres Shield_arr Shield_type Shield_curt Holo_effect Ice Ice_curt Sound_ent Sound_curt Freez Freez_prop Wet Remove Remove_curt Earthquake Earthquake_type Earthquake_time Ice_spear Ice_spear_curt]:array
+@persist [Freez_time Wet_curt]:table [Combination Shield_self_type Weapon_enchante_type]:string [Shield_ent]:entity
+@persist Cast Casting Timer_1 Timer_2 Timer_6 EGP_valid I_3 I_4 I_8 Hide I_10 I_11 I_13 I_14 Casting_around Weapon_enchante_reload Armor_health I_16
+@persist Water_el Life_el Shield_el Cold_el Lightning_el Death_el Earth_el Fire_el Timer_7 Healing Timer_8 Shield_active I_15 Damage_taken
+
+@persist [Beam Beam_last]:array
+@persist I_1 I_2 Holo_remove
+
+@persist [Lightnings Lightnings_remove]:array 
+@persist Timer_3 I_5 I_6 Holo_num
+
+@persist I_7
+
+@persist [Rock Rock_curt Rock_type]:array
+@persist I_9 Charging Timer_4
+
+@persist [Ice_shard Ice_shard_type]:array
+@persist Shoot_shard Timer_5 I_12
+
+runOnTick(1)
+
+O = owner()
+runOnKeys(O,1)
+
+#//////////////////////////////////////////////////////////////
+#////////////////////////// SETTING ///////////////////////////
+#//////////////////////////////////////////////////////////////
+
+Floating_Spheres = 1
+
+Water_button = "pad_1"
+Life_button = "pad_2"
+Shield_button = "pad_3"
+Cold_button = "pad_4"
+Lightning_button = "pad_5"
+Death_button = "pad_6"
+Earth_button = "pad_7"
+Fire_button = "pad_8"
+
+Cast_button = O:keyAttack2()
+Cast_self_button = O:keyPressed("mouse_middle")
+Cast_special_button = O:keySprint()
+
+#//////////////////////////////////////////////////////////////
+#//////////////////////////// MAIN ////////////////////////////
+#//////////////////////////////////////////////////////////////
+
+Water = O:keyPressed(Water_button)
+Life = O:keyPressed(Life_button)
+Shield = O:keyPressed(Shield_button)
+Cold = O:keyPressed(Cold_button)
+Lightning = O:keyPressed(Lightning_button)
+Death = O:keyPressed(Death_button)
+Earth = O:keyPressed(Earth_button)
+Fire = O:keyPressed(Fire_button)
+
+Staff_cast_pos = holoEntity(0):toWorld(vec(0,0,45))
+Weapon_pos = O:attachmentPos("anim_attachment_rh")
+
+if(first()){
+    function soundPlayWorld(Sound:string,Sound_pitch,Sound_pos:vector){
+        Sound_spawn_ent = propSpawn("models/props_c17/FurnitureDrawer001a_Shard01.mdl",Sound_pos,1)
+        #noCollideAll(Sound_spawn_ent,1)
+        Sound_spawn_ent:setAlpha(0)
+        Sound_spawn_ent:soundPlay(Sound_spawn_ent:id(),0,Sound) soundPitch(Sound_spawn_ent:id(),Sound_pitch)
+        Sound_ent[Sound_ent:count() + 1,entity] = Sound_spawn_ent
+        Sound_curt[Sound_ent:count(),number] = curtime() + soundDuration(Sound)
+    }
+    
+    function entity:magickFreez(Number:number){
+        String = Freez:concat("/")
+
+        String_2 = Wet:concat("/")
+        if(String_2:find(This:toString())){WET = 2}
+        
+        if(!String:find(This:toString())){
+            Freez[Freez:count() + 1,entity] = This
+            Freez_time[This:toString(),number] = min(max(Freez_time[This:toString(),number],(WET + 1) * 99),Freez_time[This:toString(),number] + Number)
+        }
+        else{
+            Freez_time[This:toString(),number] = min(max(Freez_time[This:toString(),number],(WET + 1) * 99),Freez_time[This:toString(),number] + Number)
+        }
+    }
+    
+    function entity:removeAt(Sec:number){
+        String = Remove:concat("/")
+        
+        if(!String:find(This:toString())){
+            Remove[Remove:count() + 1,entity] = This
+            Remove_curt[Remove:count(),number] = curtime() + Sec
+        }
+    }
+    
+    function entity:magickWet(Number_2:number){
+        String = Wet:concat("/")
+        
+        if(!String:find(This:toString())){
+            Wet[Wet:count() + 1,entity] = This
+            Wet_curt[This:toString(),number] = curtime() + Number_2
+        }
+        else{
+            Wet_curt[This:toString(),number] = curtime() + Number_2
+        }
+    }
+
+    propSpawnEffect(0)
+    EGP:egpClear()
+    Color_2 = vec(127,111,63)
+    Color = vec(127,111,63) * 1.5
+    E = entity()
+    I = 0 holoCreate(I,vec(),vec(0.15,0.15,5.5),ang(0,180,0),Color_2,"hqcylinder") holoMaterial(I,"models/shiny") holoParent(0,E)
+    I = 1 holoCreate(I,vec(0,0,32.3),vec(0.45,0.17,0.16),ang(0,90,180),Color,"prism") holoMaterial(I,"models/shiny") holoParent(I,0)
+    I = 2 holoCreate(I,vec(0,0,33.86),vec(0.45,0.17,0.101),ang(0,90,0),Color,"prism") holoMaterial(I,"models/shiny") holoParent(I,0)
+
+    I = 3 holoCreate(I,vec(0,0,32.63),vec(0.45 / 1.5,0.171,0.162 / 1.5),ang(0,90,180),vec(),"prism") holoMaterial(I,"models/shiny") holoParent(I,0)
+    I = 4 holoCreate(I,vec(0,0,33.6),vec(0.45 / 1.5,0.171,0.101 / 1.8),ang(0,90,0),vec(),"prism") holoMaterial(I,"models/shiny") holoParent(I,0)
+
+    I = 5 holoCreate(I,vec(0,0,32.3),vec(0.3,0.2,0.172),ang(0,90,90),Color,"hq_tube_thick") holoMaterial(I,"models/shiny") holoParent(I,0)
+    I_1 = 1 holoClipEnabled(I,I_1,1) holoClip(I,I_1,vec(0,-0.35,0),vec(1,1.4,0),0)
+    I_1 = 2 holoClipEnabled(I,I_1,1) holoClip(I,I_1,vec(0,-0.35,0),vec(-1,1.4,0),0)
+
+    I = 6 holoCreate(I,vec(0,0,32.3),vec(0.08,0.172,0.04),ang(0,90,180),Color,"prism") holoMaterial(I,"models/shiny") holoParent(I,0)
+    I = 7 holoCreate(I,vec(0,0,32.50),vec(0.028,0.08,0.172),ang(90,0,0),Color,"hqcylinder") holoMaterial(I,"models/shiny") holoParent(I,0)
+    I_1 = 1 holoClipEnabled(I,I_1,1) holoClip(I,I_1,vec(),vec(-1,0,0),0)
+
+    I = 8 holoCreate(I,vec(0,0,33.2),vec(0.25,0.172,0.16),ang(0,90,180),Color,"prism") holoMaterial(I,"models/shiny") holoParent(I,0)
+    I_1 = 1 holoClipEnabled(I,I_1,1) holoClip(I,I_1,vec(),vec(0,0,-1),0)
+    I = 9 holoCreate(I,vec(0,0,34.65),vec(0.25,0.172,0.08),ang(0,90,0),Color,"prism") holoMaterial(I,"models/shiny") holoParent(I,0)
+
+    I = 10 holoCreate(I,vec(0,0,33.53),vec(0.25 / 1.5,0.173,0.16 / 1.5),ang(0,90,180),vec(),"prism") holoMaterial(I,"models/shiny") holoParent(I,0)
+    I_1 = 1 holoClipEnabled(I,I_1,1) holoClip(I,I_1,vec(0,0,0.1),vec(0,0,-1),0)
+    I = 11 holoCreate(I,vec(0,0,34.48),vec(0.25 / 1.5,0.173,0.08 / 1.5),ang(0,90,0),vec(),"prism") holoMaterial(I,"models/shiny") holoParent(I,0)
+
+    I = 12 holoCreate(I,vec(0,0,33.60),vec(0.25 / 1.7,0.174,0.16 / 1.7),ang(0,90,180),Color,"prism") holoMaterial(I,"models/shiny") holoParent(I,0)
+    I_1 = 1 holoClipEnabled(I,I_1,1) holoClip(I,I_1,vec(0,0,0.16),vec(0,0,-1),0)
+    I = 13 holoCreate(I,vec(0,0,34.44),vec(0.25 / 1.7,0.174,0.08 / 1.7),ang(0,90,0),Color,"prism") holoMaterial(I,"models/shiny") holoParent(I,0)
+
+    I = 14 holoCreate(I,vec(0,-1,35),vec(0.1,0.07,0.197),ang(0,0,45),Color,"") holoMaterial(I,"models/shiny") holoParent(I,0)
+    I = 15 holoCreate(I,vec(0,-0.3,35.8),vec(0.1,0.06,0.22),ang(0,0,135),Color,"") holoMaterial(I,"models/shiny") holoParent(I,0)
+    I = 16 holoCreate(I,vec(0,-0.84,36.4),vec(0.1,0.05,0.12),ang(0,0,135),Color,"") holoMaterial(I,"models/shiny") holoParent(I,0)
+
+    I = 17 holoCreate(I,vec(0,1,35),vec(0.06,0.07,0.197),ang(0,0,-45),Color,"") holoMaterial(I,"") holoParent(I,0)
+    I = 18 holoCreate(I,vec(0,0.3,35.8),vec(0.06,0.06,0.22),ang(0,0,-135),Color,"") holoMaterial(I,"models/shiny") holoParent(I,0)
+    I = 19 holoCreate(I,vec(0,0.84,36.4),vec(0.06,0.05,0.12),ang(0,0,-135),Color,"") holoMaterial(I,"models/shiny") holoParent(I,0)
+
+    I = 20 holoCreate(I,vec(0,-1.5,37.3),vec(0.22,0.1,0.12),ang(-30,90,0),Color,"prism") holoMaterial(I,"models/shiny") holoParent(I,0)
+    I = 21 holoCreate(I,vec(0,1.5,37.3),vec(0.22,0.1,0.12),ang(30,90,0),Color,"prism") holoMaterial(I,"models/shiny") holoParent(I,0)
+
+    I = 22 holoCreate(I,vec(0.35,13.5,50),vec(1,1,1),ang(0,0,-65),Color,"models/props_junk/meathook001a.mdl") holoMaterial(I,"models/shiny") holoParent(I,0)
+    I_1 = 1 holoClipEnabled(I,I_1,1) holoClip(I,I_1,vec(0,0,-15),vec(0,-0.9,-1),0)
+
+    I = 23 holoCreate(I,vec(-0.3,4,54.3),vec(1,0.8,0.8),ang(0,180,20),Color,"models/props_junk/meathook001a.mdl") holoMaterial(I,"models/shiny") holoParent(I,0)
+    I_1 = 1 holoClipEnabled(I,I_1,1) holoClip(I,I_1,vec(0,0,0),vec(0,-1,0),0)
+
+    I = 24 holoCreate(I,vec(0,-1.5,39),vec(0.22,0.5,0.24) / 1.1,ang(0,180,20),Color,"hqsphere") holoMaterial(I,"models/shiny") holoParent(I,0)
+    I = 25 holoCreate(I,vec(0,0,-33),vec(0.15),ang(0,180,20),Color_2,"hqsphere") holoMaterial(I,"models/shiny") holoParent(I,0)
+    I_1 = 0
+    Holo_num = 0
+}
+
+if(EGP:entity():isValid() & !EGP_valid){
+    EGP_valid = 1
+    I = 1 EGP:egpCircle(I,vec2(50,50),vec2(25,25)) EGP:egpColor(I,vec())
+    I = 2 EGP:egpCircle(I,vec2(110,50),vec2(25,25)) EGP:egpColor(I,vec())
+    I = 3 EGP:egpCircle(I,vec2(170,50),vec2(25,25)) EGP:egpColor(I,vec())
+    I = 4 EGP:egpCircle(I,vec2(230,50),vec2(25,25)) EGP:egpColor(I,vec())
+    I = 5 EGP:egpCircle(I,vec2(80,110),vec2(25,25)) EGP:egpColor(I,vec())
+    I = 6 EGP:egpCircle(I,vec2(140,110),vec2(25,25)) EGP:egpColor(I,vec())
+    I = 7 EGP:egpCircle(I,vec2(200,110),vec2(25,25)) EGP:egpColor(I,vec())
+    I = 8 EGP:egpCircle(I,vec2(260,110),vec2(25,25)) EGP:egpColor(I,vec())
+
+    I = 9 EGP:egpCircle(I,vec2(50,50),vec2(23,23)) EGP:egpColor(I,vec(200))
+    I = 10 EGP:egpCircle(I,vec2(110,50),vec2(23,23)) EGP:egpColor(I,vec(200))
+    I = 11 EGP:egpCircle(I,vec2(170,50),vec2(23,23)) EGP:egpColor(I,vec(200))
+    I = 12 EGP:egpCircle(I,vec2(230,50),vec2(23,23)) EGP:egpColor(I,vec(200))
+    I = 13 EGP:egpCircle(I,vec2(80,110),vec2(23,23)) EGP:egpColor(I,vec(200))
+    I = 14 EGP:egpCircle(I,vec2(140,110),vec2(23,23)) EGP:egpColor(I,vec(200))
+    I = 15 EGP:egpCircle(I,vec2(200,110),vec2(23,23)) EGP:egpColor(I,vec(200))
+    I = 16 EGP:egpCircle(I,vec2(260,110),vec2(23,23)) EGP:egpColor(I,vec(200))
+
+    I = 17 EGP:egpCircle(I,vec2(50,50),vec2(21,21)) EGP:egpMaterial(I,"phoenix_storms/wire/pcb_blue")
+    I = 18 EGP:egpCircle(I,vec2(110,50),vec2(21,21)) EGP:egpMaterial(I,"phoenix_storms/wire/pcb_green")
+    I = 19 EGP:egpCircle(I,vec2(170,50),vec2(21,21)) EGP:egpMaterial(I,"models/props_lab/xencrystal_sheet")
+        I = 20 EGP:egpCircle(I,vec2(230,50),vec2(21,21)) EGP:egpColor(I,vec(200))
+    I = 42 EGP:egpCircle(I,vec2(230,50),vec2(21,21)) EGP:egpMaterial(I,"models/props/cs_office/clouds")
+    I = 21 EGP:egpCircle(I,vec2(80,110),vec2(21,21)) EGP:egpColor(I,vec())
+        I = 41 EGP:egpCircle(I,vec2(80,110),vec2(21,21)) EGP:egpMaterial(I,"models/alyx/emptool_glow")
+    I = 22 EGP:egpCircle(I,vec2(140,110),vec2(21,21)) EGP:egpMaterial(I,"phoenix_storms/wire/pcb_red")
+    I = 23 EGP:egpCircle(I,vec2(200,110),vec2(21,21)) EGP:egpMaterial(I,"models/props_wasteland/dirtwall001a")
+    I = 24 EGP:egpCircle(I,vec2(260,110),vec2(21,21)) EGP:egpMaterial(I,"models/effects/splode_sheet")
+    
+    X = 24
+    Y = 40
+    I = 25 EGP:egpText(I,Water_button,vec2(50 - X,50 - Y)) EGP:egpColor(I,vec(0))
+    I = 26 EGP:egpText(I,Life_button,vec2(110 - X,50 - Y)) EGP:egpColor(I,vec(0))
+    I = 27 EGP:egpText(I,Shield_button,vec2(170 - X,50 - Y)) EGP:egpColor(I,vec(0))
+    I = 28 EGP:egpText(I,Cold_button,vec2(230 - X,50 - Y)) EGP:egpColor(I,vec(0))
+    I = 29 EGP:egpText(I,Lightning_button,vec2(80 - X,110 - Y)) EGP:egpColor(I,vec(0))
+    I = 30 EGP:egpText(I,Death_button,vec2(140 - X,110 - Y)) EGP:egpColor(I,vec(0))
+    I = 31 EGP:egpText(I,Earth_button,vec2(200 - X,110 - Y)) EGP:egpColor(I,vec(0))
+    I = 32 EGP:egpText(I,Fire_button,vec2(260 - X,110 - Y)) EGP:egpColor(I,vec(0))
+
+    X = 25
+    Y = 41
+    I = 33 EGP:egpText(I,Water_button,vec2(50 - X,50 - Y))
+    I = 34 EGP:egpText(I,Life_button,vec2(110 - X,50 - Y))
+    I = 35 EGP:egpText(I,Shield_button,vec2(170 - X,50 - Y))
+    I = 36 EGP:egpText(I,Cold_button,vec2(230 - X,50 - Y))
+    I = 37 EGP:egpText(I,Lightning_button,vec2(80 - X,110 - Y))
+    I = 38 EGP:egpText(I,Death_button,vec2(140 - X,110 - Y))
+    I = 39 EGP:egpText(I,Earth_button,vec2(200 - X,110 - Y))
+    I = 40 EGP:egpText(I,Fire_button,vec2(260 - X,110 - Y))
+}
+Timer_1 += 1 if(Timer_1 > 2){Timer_1 = 0}
+Timer_6 += 1 if(Timer_6 > 10){Timer_6 = 0}
+
+holoPos(0,O:attachmentPos("anim_attachment_lh"))
+
+if(!Cast & O:weapon():type() == "weapon_crowbar" & !Healing){
+    if(changed(Water)){
+        if(Water){
+            EGP:egpColor(9,vec(255,0,0))
+            if(Combination:length() < 5){
+                Combination = Combination + "1" Test = 1 Water_el += 1
+            }
+        }else{EGP:egpColor(9,vec(200))}
+    }
+    if(changed(Life)){
+        if(Life){
+            EGP:egpColor(10,vec(255,0,0))
+            if(Combination:length() < 5){
+                Combination = Combination + "2" Test = 1 Life_el += 1
+            }
+        }else{EGP:egpColor(10,vec(200))}
+    }
+    if(changed(Shield)){
+        if(Shield){
+            EGP:egpColor(11,vec(255,0,0))
+            if(Combination:length() < 5){
+                Combination = Combination + "3" Test = 1 Shield_el += 1
+            }
+        }else{EGP:egpColor(11,vec(200))}
+    }
+    if(changed(Cold)){
+        if(Cold){
+            EGP:egpColor(12,vec(255,0,0))
+            if(Combination:length() < 5){
+                Combination = Combination + "4" Test = 1 Cold_el += 1
+            }
+        }else{EGP:egpColor(12,vec(200))}
+    }
+    if(changed(Lightning)){
+        if(Lightning){
+            String = Wet:concat("/")
+            
+            if(!String:find(O:toString())){
+                EGP:egpColor(13,vec(255,0,0))
+                if(Combination:length() < 5){
+                    Combination = Combination + "5" Test = 1 Lightning_el += 1
+                }
+            }
+        }else{EGP:egpColor(13,vec(200))}
+    }
+    if(changed(Death)){
+        if(Death){
+            EGP:egpColor(14,vec(255,0,0))
+            if(Combination:length() < 5){
+                Combination = Combination + "6" Test = 1 Death_el += 1
+            }
+        }else{EGP:egpColor(14,vec(200))}
+    }
+    if(changed(Earth)){
+        if(Earth){
+            EGP:egpColor(15,vec(255,0,0))
+            if(Combination:length() < 5){
+                Combination = Combination + "7" Test = 1 Earth_el += 1
+            }
+        }else{EGP:egpColor(15,vec(200))}
+    }
+    if(changed(Fire)){
+        if(Fire){
+            EGP:egpColor(16,vec(255,0,0))
+            if(Combination:length() < 5){
+                Combination = Combination + "8" Test = 1 Fire_el += 1
+            }
+        }else{EGP:egpColor(16,vec(200))}
+    }
+}
+if(O:weapon():type() == "weapon_crowbar"){
+    if(Hide){Hide = 0 for(H = 0,25){holoVisible(H,players(),1)}}
+}
+else{
+    if(!Hide){Hide = 1 for(H = 0,25){holoVisible(H,players(),0)}}
+}
+Test_li = 0 Test_d = 0 Test_s = 0 Test_f = 0 Test_e = 0 Test_w = 0 Test_l = 0 Test_c = 0
+
+if(Test){
+    for(I = 1,Combination:length()){
+        EGP:egpRemove(43 + (I - 1) * 3)
+        EGP:egpRemove(43 + (I - 1) * 3 + 1)
+        EGP:egpRemove(43 + (I - 1) * 3 + 2)
+        
+        Sn = Combination:sub(I,I)
+        if(Sn == "1"){if(Test_li){Combination = Combination:left(Test_li - 1) + Combination:sub(Test_li + 1,Combination:length() - 1) holoDelete((I - 2) * 2 + 26) holoDelete((I - 2) * 2 + 27) Lightning_el -= 1 Water_el -= 1} Test_w = I}
+        if(Sn == "2"){if(Test_d){Combination = Combination:left(Test_d - 1) + Combination:sub(Test_d + 1,Combination:length() - 1)  holoDelete((I - 2) * 2 + 26) holoDelete((I - 2) * 2 + 27) Death_el -= 1 Life_el -= 1} Test_l = I}
+        if(Sn == "3"){if(Test_s){Combination = Combination:left(Test_s - 1) + Combination:sub(Test_s + 1,Combination:length() - 1)  holoDelete((I - 2) * 2 + 26) holoDelete((I - 2) * 2 + 27) Shield_el -= 2} Test_s = I}
+        if(Sn == "4"){if(Test_f){Combination = Combination:left(Test_f - 1) + Combination:sub(Test_f + 1,Combination:length() - 1)  holoDelete((I - 2) * 2 + 26) holoDelete((I - 2) * 2 + 27) Fire_el -= 1 Cold_el -= 1} Test_c = I}
+        if(Sn == "5"){
+            if(Test_e){Combination = Combination:left(Test_e - 1) + Combination:sub(Test_e + 1,Combination:length() - 1) holoDelete((I - 2) * 2 + 26) holoDelete((I - 2) * 2 + 27) Earth_el -= 1 Lightning_el -= 1 Break = 1}
+            if(Test_w & !Break){Combination = Combination:left(Test_w - 1) + Combination:sub(Test_w + 1,Combination:length() - 1) holoDelete((I - 2) * 2 + 26) holoDelete((I - 2) * 2 + 27) Water_el -= 1 Lightning_el -= 1} Test_li = I
+        }
+        if(Sn == "6"){if(Test_l){Combination = Combination:left(Test_l - 1) + Combination:sub(Test_l + 1,Combination:length() - 1)  holoDelete((I - 2) * 2 + 26) holoDelete((I - 2) * 2 + 27) Life_el -= 1 Death_el -= 1} Test_d = I}
+        if(Sn == "7"){if(Test_li){Combination = Combination:left(Test_li - 1) + Combination:sub(Test_li + 1,Combination:length() - 1)  holoDelete((I - 2) * 2 + 26) holoDelete((I - 2) * 2 + 27) Lightning_el -= 1 Earth_el -= 1} Test_e = I}
+        if(Sn == "8"){if(Test_c){Combination = Combination:left(Test_c - 1) + Combination:sub(Test_c + 1,Combination:length() - 1)  holoDelete((I - 2) * 2 + 26) holoDelete((I - 2) * 2 + 27) Cold_el -= 1 Fire_el -= 1} Test_f = I}
+    }
+
+    if(Combination != ""){
+        for(I = 0,Combination:length() - 1){
+            Sn = Combination:sub(I + 1,I + 1)
+            Vec2n = vec2(50 + I * 60,170)
+            
+            Tnx = 43 + I * 3 EGP:egpCircle(Tnx,Vec2n,vec2(23,23)) EGP:egpColor(Tnx,vec(50))
+    
+            if(Sn == "1"){Tnx = 43 + I * 3 + 1 EGP:egpCircle(Tnx,Vec2n,vec2(21,21)) EGP:egpMaterial(Tnx,"phoenix_storms/wire/pcb_blue")}
+            if(Sn == "2"){Tnx = 43 + I * 3 + 1 EGP:egpCircle(Tnx,Vec2n,vec2(21,21)) EGP:egpMaterial(Tnx,"phoenix_storms/wire/pcb_green")}
+            if(Sn == "3"){Tnx = 43 + I * 3 + 1 EGP:egpCircle(Tnx,Vec2n,vec2(21,21)) EGP:egpMaterial(Tnx,"models/props_lab/xencrystal_sheet")}
+            if(Sn == "4"){
+                Tnx = 43 + I * 3 + 1 EGP:egpCircle(Tnx,Vec2n,vec2(21,21)) EGP:egpColor(Tnx,vec(200))
+                Tnx = 43 + I * 3 + 2 EGP:egpCircle(Tnx,Vec2n,vec2(21,21)) EGP:egpMaterial(Tnx,"models/props/cs_office/clouds")
+            }
+            if(Sn == "5"){
+                Tnx = 43 + I * 3 + 1 EGP:egpCircle(Tnx,Vec2n,vec2(21,21)) EGP:egpColor(Tnx,vec())
+                Tnx = 43 + I * 3 + 2 EGP:egpCircle(Tnx,Vec2n,vec2(21,21)) EGP:egpMaterial(Tnx,"models/alyx/emptool_glow")
+            }
+            if(Sn == "6"){Tnx = 43 + I * 3 + 1 EGP:egpCircle(Tnx,Vec2n,vec2(21,21)) EGP:egpMaterial(Tnx,"phoenix_storms/wire/pcb_red")}
+            if(Sn == "7"){Tnx = 43 + I * 3 + 1 EGP:egpCircle(Tnx,Vec2n,vec2(21,21)) EGP:egpMaterial(Tnx,"models/props_wasteland/dirtwall001a")}
+            if(Sn == "8"){Tnx = 43 + I * 3 + 1 EGP:egpCircle(Tnx,Vec2n,vec2(21,21)) EGP:egpMaterial(Tnx,"models/effects/splode_sheet")}
+        }
+    }else{
+        EGP:egpRemove(43)
+        EGP:egpRemove(43 + 1)
+        EGP:egpRemove(43 + 2)
+    }
+}
+
+if(Casting){
+    if(!Cast_button & !Cast_self_button | curtime() >= Casting){Casting = 0 Casting_around = 0}
+    if(curtime() < Casting){Cast = 1}
+}
+
+if(Holo_remove){
+    if(Beam_last:count() > Beam:count()){
+        while(perf()){
+            I_2 += 1
+            holoDelete(I_2 * 6 + 103 - 5)
+            holoDelete(I_2 * 6 + 103 - 4)
+            holoDelete(I_2 * 6 + 103 - 3)
+            holoDelete(I_2 * 6 + 103 - 2)
+            holoDelete(I_2 * 6 + 103 - 1)
+            holoDelete(I_2 * 6 + 103)
+            if(I_2 >= Beam_last:count()){I_2 = 0 break}
+        }
+    }
+    if(Cast < 1){
+        holoDelete(100)
+        holoDelete(101)
+        holoDelete(102)
+    }
+    if(!I_2 | Beam_last:count() <= Beam:count()){Holo_remove = 0}
+}
+
+if(O:weapon():type() == "weapon_crowbar"){
+
+    #//////////////////////////////////////////////////////////////
+    #/////////////////////////// ICE //////////////////////////////
+    #//////////////////////////////////////////////////////////////
+
+    if(Cold_el & Water_el & !Shield_el & !Earth_el){
+
+        if(changed(Cast_button) & Cast_button & !Casting & !Cast_special_button){
+            holoEntity(0):soundPlay(2,0,"ambient/wind/wind_rooftop1.wav")
+        }
+        if(Cast_button & !Casting & !Cast_special_button){
+
+            soundPitch(2,Charging * 2.55)
+            Cast = 1
+            Charging += 0.25
+            if(Charging > 100){Charging = 100}
+            if(changed(Charging) & Charging == 100){holoEntity(1):soundPlay(3,0,"weapons/mortar/mortar_fire1.wav") soundPitch(3,150)}
+        
+            Timer_4 += 1
+            if(Timer_4 > (100 - Charging) / 10 + 5){
+                Timer_4 = 0
+        
+                for(Inx = 1,2){
+                    Pl = (360 / 2) * Inx
+                    Vec = vec(cos(curtime() * 200 + Pl),sin(curtime() * 200 + Pl),0)
+                    Vec_2 = vec(cos(curtime() * 200 + 90 + Pl),sin(curtime() * 200 + 90 + Pl),0)
+                    particleGravity(-Vec * 10) particle(2,20,0,"sprites/light_glow02_add",vec(255),O:pos() + Vec * 25,Vec_2 * 10 + vec(0,0,Charging / 4),random(360),random(10) - 5)
+                }
+            }
+        }
+        
+        if(changed(Cast_self_button) & Cast_self_button & !Casting & !Cast_special_button){
+            
+            for(Spawn = 1,min(Water_el,Cold_el) * 3){
+                Sh_pos = O:shootPos() + vec(random(50) - 25,random(50) - 25,100)
+                Num = 0.01
+                Vel = ((O:shootPos() - Sh_pos):normalized() + randvec(Num,-Num)):normalized()
+                Prop_spawn = propSpawn("models/Gibs/wood_gib01d.mdl",Sh_pos,Vel:toAngle() + ang(180,0,0),0)
+                Prop_spawn:setMass(1000)
+                if(Prop_spawn:isValid()){
+                    Prop_spawn:applyForce(Vel * Prop_spawn:mass() * 400)
+                    Prop_spawn:setMaterial("models/shiny")
+
+                    holoEntity(0):soundPlay(2,0,"physics/glass/glass_impact_bullet2.wav") soundPitch(2,255)
+                    
+                    if(Water_el > Cold_el){
+                        Prop_spawn:setTrails(10,0,0.5,"trails/smoke",vec(100,150,255),255)
+                    }
+                    if(Cold_el >= Water_el){
+                        Prop_spawn:setTrails(10,0,0.5,"trails/smoke",vec(255),255)
+                    }
+                    if(Death_el){
+                        Prop_spawn:setTrails(10,0,0.5,"effects/beam_generic01",vec(255,0,0),255)
+                    }
+                    if(Life_el){
+                        Prop_spawn:setTrails(10,0,0.5,"effects/beam_generic01",vec(0,255,0),255)
+                    }
+                    Ice_shard[Ice_shard:count() + 1,entity] = Prop_spawn
+                    Ice_shard_type[Ice_shard:count(),string] = Cold_el + "_" + Water_el + "_" + Death_el + "_" + Life_el + "_" + Lightning_el
+                }
+            }
+            Block_this = 1
+            Shoot_shard = 0
+            Combination = ""
+            Charging = 0
+            Cast = 0.1
+            Casting = curtime() + 0.1
+        }
+
+        if(changed(Cast_button) & Charging & !Cast_button & !Shoot_shard){
+            Shoot_shard = 1
+            soundStop(2)
+        }
+
+        if(Shoot_shard){
+            Cast = 1
+
+            Timer_5 += 1 if(Timer_5 > 5){Timer_5 = 0 Shoot_shard += 1}
+            if(!Timer_5){
+                Num = (0.5 - Charging / 200) + 0.01
+                Vel = ((O:aimPos() - Staff_cast_pos):normalized() + randvec(Num,-Num)):normalized()
+                Prop_spawn = propSpawn("models/Gibs/wood_gib01d.mdl",Staff_cast_pos,Vel:toAngle() + ang(180,0,0),0)
+                Prop_spawn:setMass(1000)
+                if(Prop_spawn:isValid()){
+                    Prop_spawn:applyForce(Vel * (Charging / 10) * Prop_spawn:mass() * 400)
+                    Prop_spawn:setMaterial("models/shiny")
+
+                    holoEntity(0):soundPlay(2,0,"physics/glass/glass_impact_bullet2.wav") soundPitch(2,255)
+                    
+                    if(Water_el > Cold_el){
+                        Prop_spawn:setTrails(10,0,0.5,"trails/smoke",vec(100,150,255),255)
+                    }
+                    if(Cold_el >= Water_el){
+                        Prop_spawn:setTrails(10,0,0.5,"trails/smoke",vec(255),255)
+                    }
+                    if(Death_el){
+                        Prop_spawn:setTrails(10,0,0.5,"effects/beam_generic01",vec(255,0,0),255)
+                    }
+                    if(Life_el){
+                        Prop_spawn:setTrails(10,0,0.5,"effects/beam_generic01",vec(0,255,0),255)
+                    }
+                    Ice_shard[Ice_shard:count() + 1,entity] = Prop_spawn
+                    Ice_shard_type[Ice_shard:count(),string] = Cold_el + "_" + Water_el + "_" + Death_el + "_" + Life_el + "_" + Lightning_el
+                }
+            }
+            if(Shoot_shard > min(Water_el,Cold_el) * 4){
+                Block_this = 1
+                Shoot_shard = 0
+                Combination = ""
+                Charging = 0
+                Cast = 0.1
+                Casting = curtime() + 0.1
+            }
+        }
+    }
+}
+    #//////////////////////////////////////////////////////////////
+    #////////////////////////// EARTH /////////////////////////////
+    #//////////////////////////////////////////////////////////////
+
+    if(Earth_el & !Shield_el){
+
+        if(changed(Cast_button) & Cast_button & !Cast_special_button & !Casting){
+            holoEntity(0):soundPlay(2,0,"ambient/wind/wind_rooftop1.wav")
+        }
+        if(Cast_button & !Cast_special_button & !Casting){
+            soundPitch(2,Charging * 2.55)
+            Cast = 1
+            Charging += 0.25
+            if(Charging > 100){Charging = 100}
+            if(changed(Charging) & Charging == 100){holoEntity(1):soundPlay(3,0,"weapons/mortar/mortar_fire1.wav") soundPitch(3,150)}
+        
+            Timer_4 += 1
+            if(Timer_4 > (100 - Charging) / 10 + 5){
+                Timer_4 = 0
+        
+                for(Inx = 1,2){
+                    Pl = (360 / 2) * Inx
+                    Vec = vec(cos(curtime() * 200 + Pl),sin(curtime() * 200 + Pl),0)
+                    Vec_2 = vec(cos(curtime() * 200 + 90 + Pl),sin(curtime() * 200 + 90 + Pl),0)
+                    particleGravity(-Vec * 10) particle(2,20,0,"sprites/light_glow02_add",vec(255),O:pos() + Vec * 25,Vec_2 * 10 + vec(0,0,Charging / 4),random(360),random(10) - 5)
+                }
+            }
+        }
+        if(changed(Cast_self_button) & Cast_self_button & !Cast_special_button){
+            if(Earth_el == 1){Rock_model = "models/props_junk/rock001a.mdl"}
+            if(Earth_el == 2){Rock_model = "models/props_wasteland/rockgranite03b.mdl"}
+            if(Earth_el == 3){Rock_model = "models/props_wasteland/rockgranite03a.mdl"}
+            if(Earth_el == 4){Rock_model = "models/props_wasteland/rockgranite02b.mdl"}
+            if(Earth_el == 5){Rock_model = "models/props_wasteland/rockgranite02a.mdl"}
+
+            Prop_spawn = propSpawn(Rock_model,O:shootPos() + vec(0,0,100),0)
+            Prop_spawn:applyForce(vec(0,0,-1) * Prop_spawn:mass())
+            Prop_spawn:applyTorque(randvec(1,-1) * Prop_spawn:mass() * 200 * Earth_el)
+            Rock[Rock:count() + 1,entity] = Prop_spawn
+            Rock_curt[Rock:count(),number] = curtime() + 10
+            holoEntity(0):soundPlay(1,0,"physics/concrete/boulder_impact_hard1.wav")
+
+            Color = vec(150,100,0) Prop_spawn:setTrails(Prop_spawn:radius() * 2,Prop_spawn:radius(),1,"trails/smoke",Color,50)
+            Rock_type[Rock:count(),string] = Earth_el + "_" + Cold_el + "-" + Fire_el + "=" + Water_el + "+" + Life_el + "/" + Death_el
+            
+            Cast = 0.1
+            Combination = ""
+            Charging = 0
+            Casting = curtime() + 0.1            
+        }
+        if(changed(Cast_button) & Charging & !Cast_button & !Cast_special_button){
+            soundStop(2)
+            if(Earth_el == 1){Rock_model = "models/props_junk/rock001a.mdl"}
+            if(Earth_el == 2){Rock_model = "models/props_wasteland/rockgranite03b.mdl"}
+            if(Earth_el == 3){Rock_model = "models/props_wasteland/rockgranite03a.mdl"}
+            if(Earth_el == 4){Rock_model = "models/props_wasteland/rockgranite02b.mdl"}
+            if(Earth_el == 5){Rock_model = "models/props_wasteland/rockgranite02a.mdl"}
+
+            OAM = O:aimPos()
+            Prop_spawn = propSpawn(Rock_model,Staff_cast_pos + O:eye() * Earth_el * 10,0)
+            Prop_spawn:applyForce((OAM - Staff_cast_pos):normalized() * Charging * Prop_spawn:mass() * 50)
+            Prop_spawn:applyTorque(randvec(1,-1) * Prop_spawn:mass() * 200 * Earth_el)
+            Rock[Rock:count() + 1,entity] = Prop_spawn
+            Rock_curt[Rock:count(),number] = curtime() + 10
+            holoEntity(0):soundPlay(1,0,"physics/concrete/boulder_impact_hard1.wav")
+
+            Color = vec(150,100,0) Prop_spawn:setTrails(Prop_spawn:radius() * 2,Prop_spawn:radius(),1,"trails/smoke",Color,50)
+            Rock_type[Rock:count(),string] = Earth_el + "_" + Cold_el + "-" + Fire_el + "=" + Water_el + "+" + Life_el + "/" + Death_el
+            
+            Cast = 0.2
+            Combination = ""
+            Charging = 0
+            Casting = curtime() + 0.2
+        }
+    }
+    
+    #//////////////////////////////////////////////////////////////
+    #///////////////////////// SHIELD /////////////////////////////
+    #//////////////////////////////////////////////////////////////
+    
+    if(Shield_el){
+        if(changed(Cast_button) & Cast_button & !Cast_special_button){
+            
+            if(Earth_el){
+                if(Earth_el == 1){Model = "models/props_wasteland/rockgranite02b.mdl"}
+                if(Earth_el == 2){Model = "models/props_wasteland/rockcliff01k.mdl"}
+                if(Earth_el == 3){Model = "models/props_wasteland/rockcliff01j.mdl"}
+                if(Earth_el == 4){Model = "models/props_wasteland/rockcliff01f.mdl"}
+                
+                holoEntity(0):soundPlay(1,0,"physics/concrete/boulder_impact_hard" + randint(1,4) + ".wav")
+                for(I = 0,3){
+                    Pos = O:shootPos() + vec(cos(O:eyeAngles():yaw() - 67.5 + I * 45),sin(O:eyeAngles():yaw() - 67.5 + I * 45),0) * (75 + Earth_el * 10)
+                    rangerFilter(Shield_arr)
+                    R_H = rangerOffset(100,Pos,vec(0,0,-1))
+                    if(R_H:hit()){
+                         
+                        Prop_spawn = propSpawn(Model,R_H:position(),ang(0,O:eyeAngles():yaw() - 67.5 + I * 45,0),1)
+
+                        if(Prop_spawn:isValid()){
+                            #Prop_spawn:teleport(Prop_spawn:toWorld(vec(0,0,-Prop_spawn:height() / 2 - random(10) - 5)))
+                            #if(Fire_el > Water_el){Prop_spawn:ignite()}
+
+                            Shield_arr[Shield_arr:count() + 1,entity] = Prop_spawn
+                            Shield_type[Shield_arr:count(),string] = Water_el + "_" + Life_el + "_" + Cold_el + "_" + Lightning_el + "_" + Death_el + "_" + Earth_el + "_" + Fire_el
+                            Shield_curt[Shield_arr:count(),number] = curtime() + 10 + random(0.1)
+                        }
+
+                        for(I = 1,4){
+                            particleGravity(vec(0,0,-100)) particle(3,Earth_el * 20,0,"particles/smokey",vec(100,70,50),R_H:position() + vec(random(40) - 20,random(40) - 20,0),(vec(0,0,2) + randvec(1,-1)) * 30,random(360),random(10) - 5,255,0)
+                        }
+                    }
+                    Cast = 1
+                    Combination = ""
+                }
+            }
+            
+            if(!Lightning_el & !(Water_el & Cold_el)){
+                if(Life_el | Death_el){
+                    holoEntity(0):soundPlay(1,0,"ambient/energy/whiteflash.wav") soundPitch(1,255)
+                    for(I = 0,3){
+                        Pos = O:shootPos() + vec(cos(O:eyeAngles():yaw() - 67.5 + I * 45),sin(O:eyeAngles():yaw() - 67.5 + I * 45),0) * (75 + Earth_el * 10)
+                        rangerFilter(Shield_arr)
+                        R_H = rangerOffset(100,Pos,vec(0,0,-1))
+                        if(R_H:hit()){
+                            Prop_spawn = propSpawn("models/holograms/hq_icosphere.mdl",R_H:position() + vec(0,0,10),ang(),1)
+    
+                            if(Prop_spawn:isValid()){
+                                if(Life_el){Color = vec(200,255,200)}
+                                if(Death_el){Color = vec(255,200,200)}
+                                if(Water_el){Color = vec(200,225,255)}
+                                if(Cold_el){Color = vec(255)}
+                                if(Fire_el){Color = vec(255,200,100)}
+                                if(Water_el & Fire_el){Color = vec(230)}
+                                Prop_spawn:setColor(Color)
+                                #noCollideAll(Prop_spawn,1)
+                                Prop_spawn:setMaterial("lights/white")
+                                
+                                Shield_arr[Shield_arr:count() + 1,entity] = Prop_spawn
+                                Shield_type[Shield_arr:count(),string] = Water_el + "_" + Life_el + "_" + Cold_el + "_" + Lightning_el + "_" + Death_el + "_" + Earth_el + "_" + Fire_el
+                                Shield_curt[Shield_arr:count(),number] = 0
+                            }
+                        }
+                        Cast = 1
+                        Combination = ""
+                    }
+                }
+            }
+            
+            if(Water_el & Cold_el & !Earth_el){
+                if(min(Cold_el,Water_el) == 1){Model = "models/props_wasteland/rockgranite02b.mdl"}
+                if(min(Cold_el,Water_el) == 2){Model = "models/props_wasteland/rockcliff01k.mdl"}
+                
+                holoEntity(0):soundPlay(1,0,"physics/metal/metal_sheet_impact_bullet" + randint(1,2) + ".wav") soundPitch(1,255)
+
+                for(I = 0,3){
+                    Pos = O:shootPos() + vec(cos(O:eyeAngles():yaw() - 67.5 + I * 45),sin(O:eyeAngles():yaw() - 67.5 + I * 45),0) * (75 + min(Cold_el,Water_el) * 10)
+                    rangerFilter(Shield_arr)
+                    R_H = rangerOffset(100,Pos,vec(0,0,-1))
+
+                    if(R_H:hit()){
+                        Prop_spawn = propSpawn(Model,R_H:position(),ang(0,O:eyeAngles():yaw() - 67.5 + I * 45,0),1)
+
+                        if(Prop_spawn:isValid()){
+                           # Prop_spawn:teleport(Prop_spawn:toWorld(vec(0,0,-Prop_spawn:height() / 2 - random(10) - 5)))
+                            Prop_spawn:setMaterial("models/shiny")
+                            Prop_spawn:setColor(vec(220,255,255),230)
+
+                            Shield_arr[Shield_arr:count() + 1,entity] = Prop_spawn
+                            Shield_type[Shield_arr:count(),string] = Water_el + "_" + Life_el + "_" + Cold_el + "_" + Lightning_el + "_" + Death_el + "_" + Earth_el + "_" + Fire_el
+                            Shield_curt[Shield_arr:count(),number] = curtime() + 5 + random(0.05)
+                        }
+                    }
+                    Cast = 1
+                    Combination = ""
+                }
+            }
+            if(!(Water_el & Cold_el) & !Earth_el){
+                if(Water_el | Cold_el | Lightning_el | Fire_el){
+                    for(I = 0,3){
+                        Pos = O:shootPos() + vec(cos(O:eyeAngles():yaw() - 67.5 + I * 45),sin(O:eyeAngles():yaw() - 67.5 + I * 45),0) * (75 + Earth_el * 10)
+                        rangerFilter(Shield_arr)
+                        R_H = rangerOffset(100,Pos,vec(0,0,-1))
+                        if(R_H:hit()){
+                            Prop_spawn = propSpawn("models/hunter/blocks/cube025x025x025.mdl",R_H:position() + vec(0,0,(Lightning_el) * 50),R_H:hitNormal():toAngle() + ang(90,0,0),1)
+  
+
+                            if(Prop_spawn:isValid()){
+                                #noCollideAll(Prop_spawn,1)
+                                
+                                Prop_spawn:setAlpha(0)
+                                Shield_arr[Shield_arr:count() + 1,entity] = Prop_spawn
+                                Shield_type[Shield_arr:count(),string] = Water_el + "_" + Life_el + "_" + Cold_el + "_" + Lightning_el + "_" + Death_el + "_" + Earth_el + "_" + Fire_el
+                                Shield_curt[Shield_arr:count(),number] = curtime() + 6
+                            }
+    
+                            for(I = 1,4){
+                                particleGravity(vec(0,0,-100)) particle(3,Earth_el * 20,0,"particles/smokey",vec(100,70,50),R_H:position() + vec(random(40) - 20,random(40) - 20,0),(vec(0,0,2) + randvec(1,-1)) * 30,random(360),random(10) - 5,255,0)
+                            }
+                        }
+
+                        Cast = 1
+                        Combination = ""
+                    }
+                }
+            }
+
+            if(!Earth_el & !Water_el & !Cold_el & !Lightning_el & !Life_el & !Death_el & !Fire_el){
+                Prop_spawn = propSpawn("models/hunter/plates/plate2x4.mdl",O:shootPos() + O:eye() * 200,O:eyeAngles() + ang(90,0,0),1)
+                Prop_spawn:setMaterial("models/props_lab/xencrystal_sheet")
+                Prop_spawn:setColor(vec(152,235,154))
+                #noCollideAll(Prop_spawn,1)
+                
+                Prop_spawn:soundPlay(Prop_spawn:id(),0,"ambient/machines/city_ventpump_loop1.wav")
+                Shield_arr[Shield_arr:count() + 1,entity] = Prop_spawn
+                Shield_type[Shield_arr:count(),string] = Water_el + "_" + Life_el + "_" + Cold_el + "_" + Lightning_el + "_" + Death_el + "_" + Earth_el + "_" + Fire_el
+                Shield_curt[Shield_arr:count(),number] = curtime() + 10
+                Cast = 1
+                Combination = ""
+            }
+        }
+    }
+    #//////////////////////////////////////////////////////////////
+    #//////////////////////////// COLD ////////////////////////////
+    #//////////////////////////////////////////////////////////////
+    
+    if(Cold_el & !Shield_el & !Lightning_el & !Death_el & !Life_el & !Water_el & !Earth_el){
+        if(changed(Cast_button) & Cast_button & !Cast_special_button){
+            Casting = curtime() + 8
+            Cast = 1
+            Combination = ""
+            findClearBlackList()
+            findClearWhiteList()
+            findExcludeEntity(O)
+            findExcludeEntities(Sound_ent)
+            holoEntity(0):soundPlay(1,0,"ambient/wind/wind_gusty1.wav") soundPitch(1,50 + Cold_el * 10)
+        }
+
+        if(Casting & !Cast_special_button){
+            for(Fr_water = 1,Cold_el){
+                rangerHitEntities(1)
+                rangerHitWater(1)
+                R_water = rangerOffset(Fr_water * 10 + 60,O:shootPos() + O:eye() * Fr_water * 100,vec(0,0,-1))
+                if(R_water:matType() == "slosh"){Make_ice = 1 break}
+            }
+            if(Make_ice){
+                Prop_spawn = propSpawn("models/hunter/tubes/circle4x4.mdl",R_water:position(),ang(),1)
+                if(Prop_spawn:isValid()){
+                    Prop_spawn:setMaterial("models/shiny")
+                    Prop_spawn:setColor(vec(200,240,255))
+                    Ice[Ice:count() + 1,entity] = Prop_spawn
+                    Ice_curt[Ice:count(),number] = curtime() + 10
+                }
+            }
+            if(!Timer_1){
+                particleGravity(vec(0,0,-50)) particle(1,10,50 + Cold_el * 10,"particle/smokesprites_0001",vec(255),Staff_cast_pos,O:eye() * (100 + Cold_el * 50) + randvec(10,-10),random(360),random(10) - 5,255,0)
+                particleGravity(randvec(1,-1) * (100 + Cold_el * 50) - vec(0,0,50)) particle(1.5,2,0,"sprites/light_glow02_add",vec(255),Staff_cast_pos,O:eye() * (100 + Cold_el * 50) + randvec(1,-1) * Cold_el * 10,random(360),random(10) - 5,255,0)
+            }
+
+            findInCone(O:shootPos(),O:eye(),200 + Cold_el * 50,45)
+            Ar = findToArray()
+            while(perf()){
+                I_7 += 1
+                En = Ar[I_7,entity]
+                if(En:mass() | En:isAlive()){
+                    if(En:isAlive()){
+                       # En:takeDamage(Cold_el / 100)
+                        En:magickFreez(Cold_el / 5)
+                    }
+                    if(En:mass()){En:applyForce(O:eye() * Cold_el * 40)}
+                    #if(En:isPlayer()){En:applyPlayerForce(O:eye() * Cold_el * 10)}
+                }
+                else{
+                    findExcludeEntity(En)
+                }
+                if(I_7 >= Ar:count()){I_7 = 0 break}
+            }
+        }
+    }
+    #//////////////////////////////////////////////////////////////
+    #////////////////////////// STEAM /////////////////////////////
+    #//////////////////////////////////////////////////////////////
+    
+    if(Water_el & Fire_el & !Shield_el & !Lightning_el & !Death_el & !Life_el & !Earth_el){
+        if(changed(Cast_button) & Cast_button & !Cast_special_button){
+            Casting = curtime() + 8
+            Cast = 1
+            Combination = ""
+            findClearBlackList()
+            findClearWhiteList()
+            findExcludeEntity(O)
+            findExcludeEntities(Sound_ent)
+            holoEntity(0):soundPlay(1,0,"ambient/gas/steam2.wav") soundPitch(1,150 + min(Water_el,Fire_el) * 20)
+        }
+        
+        if(Casting & !Cast_special_button){
+            if(!Timer_1){particleGravity(vec()) particle(1,10,50 + min(Water_el,Fire_el) * 10,"particle/smokesprites_0001",vec(200),Staff_cast_pos,O:eye() * (100 + min(Water_el,Fire_el) * 50) + randvec(10,-10),random(360),random(10) - 5,255,0)}
+    
+            findInCone(O:shootPos(),O:eye(),200 + min(Water_el,Fire_el) * 50,45)
+            Ar = findToArray()
+            while(perf()){
+                I_7 += 1
+                En = Ar[I_7,entity]
+                if(En:mass() | En:isAlive()){
+                    if(En:isOnFire() & Water_el > Fire_el){
+                        if(!En:isAlive()){
+                            #En:extinguish()
+                        }
+                        else{
+                            En:magickWet(10)
+                        }
+                    }
+                    #if(!En:isOnFire() & Fire_el > Water_el){En:ignite()}
+                   # En:takeDamage(min(Water_el,Fire_el) / 20)
+                    if(En:mass()){En:applyForce(O:eye() * min(Water_el,Fire_el) * 20)}
+                    #if(En:isPlayer()){En:applyPlayerForce(O:eye() * min(Water_el,Fire_el) * 20)}
+                }
+                else{
+                    findExcludeEntity(En)
+                }
+                if(I_7 >= Ar:count()){I_7 = 0 break}
+            }
+        }
+    }
+    
+    #//////////////////////////////////////////////////////////////
+    #/////////////////////////// WATER ////////////////////////////
+    #//////////////////////////////////////////////////////////////
+    
+    if(Water_el & !Shield_el & !Lightning_el & !Death_el & !Life_el & !Fire_el & !Earth_el & !Cold_el){
+        if(changed(Cast_button) & Cast_button & !Cast_special_button){
+            Casting = curtime() + 8
+            Cast = 1
+            Combination = ""
+            findClearBlackList()
+            findClearWhiteList()
+            findExcludeEntity(O)
+            findExcludeEntities(Sound_ent)
+            holoEntity(0):soundPlay(1,0,"ambient/water/water_run1.wav") soundPitch(1,150 + Water_el * 20)
+        }
+        
+        if(Casting & !Cast_special_button){
+            if(!Timer_1){
+                particleGravity(vec(0,0,-100)) particle(1,10,50 + Water_el * 10,"effects/splash1",vec(200,200,255),Staff_cast_pos,O:eye() * (100 + Water_el * 50) + randvec(10,-10),random(360),random(10) - 5,255,0)
+                particleGravity(randvec(1,-1) * (100 + Water_el * 50) - vec(0,0,100)) particle(1,10,0,"sprites/light_glow02_add",vec(150,200,255),Staff_cast_pos,O:eye() * (100 + Water_el * 50) + randvec(1,-1) * Water_el * 10,random(360),random(10) - 5)
+            }
+    
+            findInCone(O:shootPos(),O:eye(),200 + Water_el * 50,45)
+            Ar = findToArray()
+            while(perf()){
+                I_7 += 1
+                En = Ar[I_7,entity]
+                if(En:mass() | En:isAlive()){
+                    if(!En:isAlive()){
+                        #if(En:isOnFire()){En:extinguish()}
+                    }else{
+                        En:magickWet(10)
+                    }
+                    if(En:mass()){En:applyForce(O:eye() * Water_el * 40)}
+                    #if(En:isPlayer()){En:applyPlayerForce(O:eye() * Water_el * 40)}
+                }
+                else{
+                    findExcludeEntity(En)
+                }
+                if(I_7 >= Ar:count()){I_7 = 0 break}
+            }
+        }
+    }
+    #//////////////////////////////////////////////////////////////
+    #////////////////////////// FIRE //////////////////////////////
+    #//////////////////////////////////////////////////////////////
+    
+    if(Fire_el & !Shield_el & !Lightning_el & !Death_el & !Life_el & !Water_el & !Earth_el){
+        if(changed(Cast_button) & Cast_button & !Cast_special_button){
+            Casting = curtime() + 8
+            Cast = 1
+            Combination = ""
+            findClearBlackList()
+            findClearWhiteList()
+            findExcludeEntity(O)
+            findExcludeEntities(Sound_ent)
+            holoEntity(0):soundPlay(1,0,"ambient/fire/fire_med_loop1.wav") soundPitch(1,150 + Fire_el * 20)
+        }
+        
+        if(Casting & !Cast_special_button){
+            if(!Timer_1){
+                Rand = random(1) particleGravity(vec(0,0,50)) particle(1,10,50 + Fire_el * 10,"effects/fire_cloud2",vec(255,255 - Rand * 100,255 - Rand * 205),Staff_cast_pos,O:eye() * (100 + Fire_el * 50) + randvec(10,-10),random(360),random(10) - 5,255,0)
+                particleGravity(randvec(1,-1) * (100 + Fire_el * 50)) particle(1,20,0,"sprites/light_glow02_add",vec(255,150,0),Staff_cast_pos,O:eye() * (100 + Fire_el * 50) + randvec(1,-1) * Fire_el * 10,random(360),random(10) - 5)
+            }
+    
+            findExcludeEntity(O)
+            findInCone(O:shootPos(),O:eye(),200 + Fire_el * 50,45)
+            Ar = findToArray()
+            while(perf()){
+                I_7 += 1
+                En = Ar[I_7,entity]
+                if(En:mass() | En:isAlive()){
+                    #if(!En:isOnFire()){En:ignite()}
+                }
+                else{
+                    findExcludeEntity(En)
+                }
+                if(I_7 >= Ar:count()){I_7 = 0 break}
+            }
+        }
+    }
+    
+    #//////////////////////////////////////////////////////////////
+    #//////////////////////// LIGHTNING ///////////////////////////
+    #//////////////////////////////////////////////////////////////
+    
+    if(changed(Cast_button) & Cast_button & !Cast_special_button){
+        if(Lightning_el & !Shield_el){
+            if(!(Water_el & Cold_el)){
+                Casting = curtime() + 5
+                Cast = 1
+                Combination = ""
+            }
+        }
+    }
+    
+    if(changed(Cast_self_button) & Cast_self_button & Cast_special_button){
+        if(Lightning_el & !Shield_el){
+            if(!(Water_el & Cold_el)){
+                Casting = curtime() + 5
+                Casting_around = 1
+                Combination = ""
+                Cast = 1
+            }
+        }
+    }
+    
+    if(!Shield_el & Lightning_el & Casting & !Block_this){
+        Timer_3 += 1 if(Timer_3 > 5){Timer_3 = 0}
+
+        if(Casting_around){
+            findIncludeClass("npc")
+            findIncludePlayer("player")
+            findExcludeEntity(O)
+            Rot = curtime() * 600
+            findInCone(O:shootPos(),vec(cos(Rot),sin(Rot),0),200 + Lightning_el * 50,45)
+            Closest_ent = findClosest(O:shootPos())
+        }
+        else{
+            findIncludeClass("npc")
+            findIncludePlayer("player")
+            findExcludeEntity(O)
+            findInCone(O:shootPos(),O:eye(),200 + Lightning_el * 50,45)
+            Closest_ent = findClosest(O:shootPos())
+        }
+        
+        if(Timer_3 == 1){
+            rangerFilter(O)
+            rangerHitWater(1)
+            if(Closest_ent:isValid()){
+                L_ranger = rangerOffset(200 + Lightning_el * 50,O:shootPos(),Closest_ent:boxCenterW() - O:shootPos())
+            }
+            else{
+                if(Casting_around){
+                    L_ranger = rangerOffset(200 + Lightning_el * 50,O:shootPos(),vec(cos(Rot),sin(Rot),0))
+                }
+                else{
+                    L_ranger = rangerOffset(200 + Lightning_el * 50,O:shootPos(),O:eye())
+                }
+            }
+            L_ent = L_ranger:entity()
+            L_end = L_ranger:position()
+            L_pos = Staff_cast_pos
+        
+            if(Lightning_el){Color = vec(255,100,255) Color_2 = vec(255)
+                String_2 = Wet:concat("/")
+                if(String_2:find(L_ent:toString())){WET_2 = 2}
+
+                #L_ent:takeDamage(Lightning_el * (WET_2 + 1) / 8)
+            }
+            if(Death_el){Color = vec(255,0,0) Color_2 = vec()
+               # L_ent:takeDamage(Death_el / 4)
+            }
+            if(Life_el){Color = vec(0,255,0) Color_2 = vec(255)
+                if(L_ent:isAlive()){
+                    if(L_ent:isPlayer()){
+                        #if(L_ent:health() < 100){L_ent:setHealth(min(100,L_ent:health() + Life_el))}
+                    }
+                    else{
+                       # L_ent:setHealth(L_ent:health() + Life_el)
+                    }
+                }
+            }
+    
+            if(Fire_el){
+                Color = vec(255,150,0) if(!Death_el){Color_2 = vec(255,255,0)}else{Color = vec(255,200,0)}
+                #if(!L_ent:isOnFire()){L_ent:ignite()}
+            }
+            if(Cold_el){Color = vec(200,255,255) if(!Death_el){Color_2 = vec(255)}
+                if(L_ranger:matType() == "slosh"){
+                    Prop_spawn = propSpawn("models/hunter/tubes/circle4x4.mdl",L_ranger:position(),ang(),1)
+                    if(Prop_spawn:isValid()){
+                        Prop_spawn:setMaterial("models/shiny")
+                        Prop_spawn:setColor(vec(200,240,255))
+                        Ice[Ice:count() + 1,entity] = Prop_spawn
+                        Ice_curt[Ice:count(),number] = curtime() + 10
+                    }
+                }
+                if(L_ent:isAlive()){L_ent:magickFreez(Cold_el * 2)}
+            }
+
+            if(Fire_el){
+                Rand = random(1) particleGravity(vec(0,0,200) + randvec(1,-1) * 50) particle(0.5,30,0,"effects/fire_cloud2",vec(255,255 - Rand * 100,255 - Rand * 205),Staff_cast_pos,vec(),random(360),random(10) - 5)
+            }
+            particleGravity(vec()) particle(1,70,0,"sprites/light_glow02_add",Color,Staff_cast_pos,vec(),random(360),random(10) - 5)
+            if(!Death_el){particleGravity(vec()) particle(1,25,0,"sprites/light_glow02_add",Color_2,Staff_cast_pos,vec(),random(360),random(10) - 5)}
+            else{particleGravity(vec()) particle(1,15,0,"decals/dark",vec(255),Staff_cast_pos,vec(),random(360),random(10) - 5)}
+            Holo_num += 1
+        
+            Lightnings[Lightnings:count() + 1,vector] = L_pos
+            for(I = 1,5){
+                L_pos_2 = L_pos + (randvec(1,-1) + (L_end - Staff_cast_pos):normalized() * 2):normalized() * (Staff_cast_pos:distance(L_end) / 5 + random(-1,1) * 5)
+                if(I == 5){L_pos_2 = L_end + randvec(20,-20)}
+        
+                Lightnings[Lightnings:count() + 1,vector] = L_pos_2
+                L_pos = L_pos_2
+            }
+            Inx = Holo_num * 2 + 102 holoCreate(Inx,Staff_cast_pos,vec()) holoAlpha(Inx,0) holoVisible(Inx,players(),0) holoParent(Inx,entity()) holoEntity(Inx):setTrails(15,0,0.5,"effects/beam_generic01",Color,200) holoEntity(Inx):soundPlay(Inx,0,"ambient/energy/zap9.wav") soundPitch(Inx,100 + random(40) - 10)
+            Inx = Holo_num * 2 + 103 holoCreate(Inx,Staff_cast_pos,vec()) holoAlpha(Inx,0) holoVisible(Inx,players(),0) holoParent(Inx,Inx - 1) holoEntity(Inx):setTrails(5,0,0.5,"effects/beam_generic01",Color_2,255)
+            Lightnings[Lightnings:count() + 1,number] = Inx
+            Lightnings[Lightnings:count() + 1,number] = 0
+    
+            if(!holoEntity(100):isValid()){
+                Inx = 100 holoCreate(Inx) holoColor(Inx,Color) holoParent(Inx,E) holoMaterial(Inx,"models/props/cs_office/clouds") holoModel(Inx,"hqsphere")
+                Inx = 101 holoCreate(Inx) holoColor(Inx,Color) holoParent(Inx,E) holoMaterial(Inx,"lights/white") holoAlpha(Inx,100) holoModel(Inx,"hqsphere")
+                Inx = 102 holoCreate(Inx) holoColor(Inx,Color_2) holoParent(Inx,E) holoMaterial(Inx,"lights/white") holoModel(Inx,"hqsphere")
+            }
+        }
+        Inx = 100 holoPos(Inx,Staff_cast_pos) holoScaleUnits(Inx,vec(-16,16,16) * 1.5 + randvec(2,-2))
+        Inx = 101 holoPos(Inx,Staff_cast_pos) holoScaleUnits(Inx,vec(-10,10,10) * 1.5)
+        Inx = 102 holoPos(Inx,Staff_cast_pos) holoScaleUnits(Inx,vec(6,6,6) * 1.5)
+    }
+    #//////////////////////////////////////////////////////////////
+    #/////////////////////////// BEAM /////////////////////////////
+    #//////////////////////////////////////////////////////////////
+    
+    if(changed(Cast_button) & Cast_button & !Cast_special_button){
+        if(!Lightning_el & !Earth_el & !Shield_el){
+            if(Life_el | Death_el){
+                    if(!(Water_el & Cold_el)){
+                    Casting = curtime() + 10
+                    Cast = 1 
+                    Combination = ""
+                    if(Life_el){holoEntity(0):soundPlay(1,0,"ambient/atmosphere/undercity_loop1.wav") soundPitch(1,255)}
+                    if(Death_el){holoEntity(0):soundPlay(1,0,"ambient/cp_harbor/cauldron_lp_main.wav") soundPitch(1,255)}
+                }
+            }
+        }
+    }
+
+    if(Life_el & !Holo_remove | Death_el & !Holo_remove){
+        if(Casting & !Lightning_el & !Earth_el & !Shield_el & !Block_this & !Cast_special_button){
+            Timer_2 += 1 if(Timer_2 > 2){Timer_2 = 0}
+            if(I_1 == 0){Beam_last = Beam Beam = array()}
+            
+            rangerFilter(E)
+            rangerHitWater(1)
+            R_1 = rangerOffset(100000,Staff_cast_pos,(O:aimPos() - Staff_cast_pos))
+            Beam[1,ranger] = R_1
+            while(perf()){
+                I_1 += 1
+                Bn = Beam[I_1,ranger]
+                Pn = Bn:position()
+                En = Bn:entity()
+                if(I_1 == 1){PPn = Staff_cast_pos}else{PPn = Beam[I_1 - 1,ranger]:position()}
+
+                if(Life_el){Color = vec(0,255,0) Color_2 = vec(150,255,150)
+                    if(En:isAlive()){
+                        if(En:isPlayer()){
+                          #  if(En:health() < 100){En:setHealth(min(100,En:health() + Life_el))}
+                        }
+                        else{
+                          #  En:setHealth(En:health() + Life_el)
+                        }
+                    }
+                }
+                if(Death_el){Color = vec(255,0,0) Color_2 = vec()
+                    
+                    if(En:isAlive()){
+                      #  En:takeDamage(Death_el / 20)
+                        
+                        if(En:health() <= Death_el / 20 & En:type() != "npc_manhack" & En:type() != "npc_clawscanner" & En:type() != "npc_cscanner" & En:type() != "npc_combine_camera" & En:type() != "npc_turret_ceiling"){
+                            Eff_size = 2
+                            Inx = Holo_effect:count() / 5 + 40
+                            Holo_effect[Holo_effect:count() + 1,number] = Inx holoCreate(Inx,En:pos() + vec(0,0,30),vec()) holoColor(Inx,vec(200)) holoParent(Inx,E) holoMaterial(Inx,"models/flesh") holoModel(Inx,"hqsphere")
+                            Holo_effect[Holo_effect:count() + 1,vector] = vec(Eff_size)
+                            Holo_effect[Holo_effect:count() + 1,vector] = vec(Eff_size) * 10
+                            Holo_effect[Holo_effect:count() + 1,number] = curtime() + 0.3
+                            Holo_effect[Holo_effect:count() + 1,number] = 0.3
+    
+                            Eff_size = 8
+                            Inx = Holo_effect:count() / 5 + 40
+                            Holo_effect[Holo_effect:count() + 1,number] = Inx holoCreate(Inx,En:pos() + vec(0,0,30),vec()) holoColor(Inx,vec(255,100,100)) holoParent(Inx,E) holoMaterial(Inx,"models/effects/splode1_sheet") holoModel(Inx,"hqsphere")
+                            Holo_effect[Holo_effect:count() + 1,vector] = vec(Eff_size)
+                            Holo_effect[Holo_effect:count() + 1,vector] = vec(Eff_size) * 1.5
+                            Holo_effect[Holo_effect:count() + 1,number] = curtime() + 1
+                            Holo_effect[Holo_effect:count() + 1,number] = 1
+    
+                            Eff_size = 1
+                            Inx = Holo_effect:count() / 5 + 40
+                            Holo_effect[Holo_effect:count() + 1,number] = Inx holoCreate(Inx,En:pos(),vec()) holoColor(Inx,vec(200,0,0)) holoParent(Inx,E) holoMaterial(Inx,"lights/white") holoModel(Inx,"hq_torus") holoEntity(Inx):soundPlay(holoEntity(Inx):id(),0,"physics/flesh/flesh_bloody_break.wav")
+                            Holo_effect[Holo_effect:count() + 1,vector] = vec(Eff_size,Eff_size,0)
+                            Holo_effect[Holo_effect:count() + 1,vector] = vec(Eff_size,Eff_size,0) * (14 + Death_el * 4)
+                            Holo_effect[Holo_effect:count() + 1,number] = curtime() + 1
+                            Holo_effect[Holo_effect:count() + 1,number] = 1
+                            
+                            findClearBlackList()
+                            findClearWhiteList()
+                            findExcludeEntities(Sound_ent)
+                            findInSphere(En:pos(),150 + Death_el * 25)
+                            Ar = findToArray()
+                            for(Inx = 1,Ar:count()){
+                                En_2 = Ar[Inx,entity]
+                                if(En_2:mass() | En_2:isAlive()){
+                                    if(En_2:isAlive()){
+                            #            En_2:takeDamage(Death_el * 5)
+                                    }
+                                }
+                            }
+                            for(I = 1,10){
+                                Rand_v = (randvec(1,-1) + vec(0,0,1)):normalized()
+                                particleGravity(vec()) particle(1,400,0,"sprites/light_glow02_add",vec(200,0,0),En:pos(),Rand_v * 100,random(360),random(10) - 5)
+                                particleGravity(vec()) particle(1,100,0,"particle/smokesprites_0001",vec(),En:pos(),Rand_v * 150,random(360),random(10) - 5)
+                                particleGravity(vec(0,0,-200)) particle(2,60,0,"decals/blood" + randint(1,8),vec(),En:pos(),Rand_v * 150,random(360),random(10) - 5)
+                            }
+                           # En:teleport(En:toWorld(vec(0,0,-1000))) En:takeDamage(Death_el / 20)
+                        }
+                    }
+                }
+                if(Cold_el){Color = vec(200,255,255) if(Life_el){Color_2 = vec(255,255,255)}
+                    if(R_1:matType() == "slosh"){
+                        Prop_spawn = propSpawn("models/hunter/tubes/circle4x4.mdl",R_1:position(),ang(),1)
+                        if(Prop_spawn:isValid()){
+                            Prop_spawn:setMaterial("models/shiny")
+                            Prop_spawn:setColor(vec(200,240,255))
+                            Ice[Ice:count() + 1,entity] = Prop_spawn
+                            Ice_curt[Ice:count(),number] = curtime() + 10
+                        }
+                    }
+                    if(R_1:entity():isAlive()){
+                        R_1:entity():magickFreez(Cold_el * 2)
+                    }
+                }
+                if(Water_el & Water_el > Fire_el){
+                    Color = vec(100,200,255) if(Life_el){Color_2 = vec(100,150,255)}
+                    if(!En:isAlive()){
+                     #   En:extinguish()
+                    }
+                    else{
+                        En:magickWet(10)
+                    }
+                }
+                if(Water_el == Fire_el & Water_el){Color = vec(150) if(Life_el){Color_2 = vec(150)} #En:takeDamage(min(Water_el,Water_el) / 20)}
+                
+                if(Fire_el & Fire_el > Water_el){Color = vec(255,150,0) if(Life_el){Color = vec(255,150,0) Color_2 = vec(255,255,50)}
+                    #En:ignite()
+                }
+    
+                if(!holoEntity(I_1 * 6 + 103):isValid()){
+                    Inx = I_1 * 6 + 103 - 5 holoCreate(Inx) holoColor(Inx,Color) holoParent(Inx,E) holoMaterial(Inx,"models/props/cs_office/clouds") holoAlpha(Inx,255) holoModel(Inx,"hqsphere") holoEntity(Inx):removeTrails()
+                    Inx = I_1 * 6 + 103 - 4 holoCreate(Inx) holoColor(Inx,Color) holoParent(Inx,E) holoMaterial(Inx,"lights/white") holoAlpha(Inx,100) holoModel(Inx,"hqsphere") holoEntity(Inx):removeTrails()
+                    Inx = I_1 * 6 + 103 - 3 holoCreate(Inx) holoColor(Inx,Color_2) holoParent(Inx,E) holoMaterial(Inx,"lights/white") holoAlpha(Inx,255) holoModel(Inx,"hqsphere") holoEntity(Inx):removeTrails()
+        
+                    Inx = I_1 * 6 + 103 - 2 holoCreate(Inx) holoColor(Inx,Color_2) holoParent(Inx,E) holoMaterial(Inx,"lights/white") holoAlpha(Inx,255) holoModel(Inx,"hqcylinder") holoEntity(Inx):removeTrails()
+                    Inx = I_1 * 6 + 103 - 1 holoCreate(Inx) holoColor(Inx,Color + vec(100)) holoMaterial(Inx,"lights/white") holoAlpha(Inx,100) holoParent(Inx,Inx - 1) holoModel(Inx,"hqcylinder") holoEntity(Inx):removeTrails()
+                    Inx = I_1 * 6 + 103 holoCreate(Inx) holoColor(Inx,Color) holoMaterial(Inx,"models/props/cs_office/clouds") holoAlpha(Inx,255) holoParent(Inx,Inx - 2) holoModel(Inx,"hqcylinder") holoEntity(Inx):removeTrails()
+                }
+        
+                if(En:getMaterial() == "models/props_lab/xencrystal_sheet" & En:getColor() == vec(152,235,154) | En:getColor() == vec(220,255,255) & En:mass() & En:getMaterial() == "models/shiny"){
+                    rangerFilter(E)
+                    rangerHitWater(1)
+                    R_1 = rangerOffset(100000,Pn,Bn:hitNormal():dot(-(Pn - PPn):normalized()) * Bn:hitNormal() * 2 + (Pn - PPn):normalized())
+                    Beam[Beam:count() + 1,ranger] = R_1
+                }
+                
+                if(!Timer_2){
+                    if(Death_el){
+                        particleGravity(randvec(1,-1) * 40) particle(0.5,60,0,"sprites/light_glow02_add",Color,PPn,randvec(1,-1) * 10)
+                        particleGravity(randvec(1,-1) * 40) particle(0.5,20,0,"particle/smokesprites_0001",vec(),PPn,randvec(1,-1) * 20,random(360),random(10) - 5)
+
+                        if(Fire_el & !Water_el){
+                            Rand = random(1) particleGravity(randvec(1,-1) * 40 + vec(0,0,300)) particle(0.5,30,0,"effects/fire_cloud2",vec(255,255 - Rand * 100,255 - Rand * 205),Pn,randvec(1,-1) * 20,random(360),random(10) - 5)
+                            Rand = random(1) particleGravity(vec()) particle(0.5,25,0,"effects/fire_cloud2",vec(255,255 - Rand * 100,255 - Rand * 205),PPn,randvec(1,-1) * 20 + (Pn - PPn):normalized() * 150,random(360),random(10) - 5)
+                        }
+                        if(Water_el & !Fire_el){
+                            particleGravity(vec()) particle(0.5,25,0,"effects/splash1",vec(100,150,255),PPn,randvec(1,-1) * 20 + (Pn - PPn):normalized() * 150,random(360),random(10) - 5)
+                            particleGravity(randvec(1,-1) * 40 - vec(0,0,300)) particle(0.5,30,0,"effects/splash1",vec(100,150,255),Pn,randvec(1,-1) * 100,random(360),random(10) - 5)
+                        }
+
+                        if(!Fire_el & !Water_el | Fire_el & Water_el){
+                            particleGravity(vec()) particle(0.5,25,0,"particle/smokesprites_0001",Color,PPn,randvec(1,-1) * 20 + (Pn - PPn):normalized() * 150,random(360),random(10) - 5)
+                            particleGravity(randvec(1,-1) * 40) particle(0.5,30,0,"particle/smokesprites_0001",Color,Pn,randvec(1,-1) * 20,random(360),random(10) - 5)
+                        }
+                    }
+                    if(Life_el){
+                        particleGravity(randvec(1,-1) * 40) particle(0.5,60,0,"sprites/gmdm_pickups/light",Color,PPn,randvec(1,-1) * 10)
+                        if(Fire_el & !Water_el){
+                            Rand = random(1) particleGravity(randvec(1,-1) * 40 + vec(0,0,300)) particle(0.5,30,0,"effects/fire_cloud2",vec(255,255 - Rand * 100,255 - Rand * 205),Pn,randvec(1,-1) * 20,random(360),random(10) - 5)
+                            Rand = random(1) particleGravity(vec()) particle(0.5,25,0,"effects/fire_cloud2",vec(255,255 - Rand * 100,255 - Rand * 205),PPn,randvec(1,-1) * 20 + (Pn - PPn):normalized() * 150,random(360),random(10) - 5)
+                        }
+                        if(Water_el & !Fire_el){
+                            particleGravity(vec()) particle(0.5,25,0,"effects/splash1",vec(100,150,255),PPn,randvec(1,-1) * 20 + (Pn - PPn):normalized() * 150,random(360),random(10) - 5)
+                            particleGravity(randvec(1,-1) * 40 - vec(0,0,300)) particle(0.5,30,0,"effects/splash1",vec(100,150,255),Pn,randvec(1,-1) * 100,random(360),random(10) - 5)
+                        }
+
+                        if(!Fire_el & !Water_el | Fire_el & Water_el){
+                            particleGravity(vec()) particle(0.5,20,0,"sprites/gmdm_pickups/light",Color,PPn,randvec(1,-1) * 20 + (Pn - PPn):normalized() * 150)
+                            particleGravity(randvec(1,-1) * 40) particle(0.5,60,0,"sprites/gmdm_pickups/light",Color,Pn,randvec(1,-1) * 20)
+                        }
+                    }
+                }
+                Inx = I_1 * 6 + 103 - 5 holoPos(Inx,PPn) holoScaleUnits(Inx,vec(-16,16,16) * 1.5 + randvec(2,-2))
+                Inx = I_1 * 6 + 103 - 4 holoPos(Inx,PPn) holoScaleUnits(Inx,vec(-10,10,10) * 1.5)
+                Inx = I_1 * 6 + 103 - 3 holoPos(Inx,PPn) holoScaleUnits(Inx,vec(6,6,6) * 1.5)
+        
+                #if(clk("effect")){particleGravity(vec()) particle(2,1,30,"decals/scorch1",vec(),PPn,vec(),random(360),random(2) - 4)}
+        
+                Inx = I_1 * 6 + 103 - 2 holoPos(Inx,(Pn + PPn) / 2) holoScaleUnits(Inx,vec(2,2,(Pn - PPn):length())) holoAng(Inx,(Pn - PPn):toAngle() + ang(90,0,0))
+                Inx = I_1 * 6 + 103 - 1 holoPos(Inx,(Pn + PPn) / 2) holoScaleUnits(Inx,vec(-4,4,(Pn - PPn):length())) holoAng(Inx,(Pn - PPn):toAngle() + ang(90,0,0))
+                Inx = I_1 * 6 + 103 holoPos(Inx,(Pn + PPn) / 2) holoScaleUnits(Inx,vec(-16,16,(Pn - PPn):length())) holoAng(Inx,(Pn - PPn):toAngle() + ang(90,0,0)) holoAng(Inx,holoEntity(Inx):toWorld(ang(0,curtime() * 4000,0)))
+        
+                if(I_1 >= Beam:count()){I_1 = 0 Holo_remove = 1 I_2 = Beam:count() Beam_scan = 1 break}
+            }
+            if(!holoEntity(100):isValid()){
+                Inx = 100 holoCreate(Inx) holoColor(Inx,Color) holoParent(Inx,E) holoMaterial(Inx,"models/props/cs_office/clouds") holoAlpha(Inx,255) holoModel(Inx,"hqsphere")
+                Inx = 101 holoCreate(Inx) holoColor(Inx,Color) holoParent(Inx,E) holoMaterial(Inx,"lights/white") holoAlpha(Inx,100) holoModel(Inx,"hqsphere")
+                Inx = 102 holoCreate(Inx) holoColor(Inx,Color_2) holoParent(Inx,E) holoMaterial(Inx,"lights/white") holoAlpha(Inx,255) holoModel(Inx,"hqsphere")
+            }
+            Inx = 100 holoPos(Inx,Pn) holoScaleUnits(Inx,vec(-16,16,16) * 1.5 + randvec(2,-2))
+            Inx = 101 holoPos(Inx,Pn) holoScaleUnits(Inx,vec(-10,10,10) * 1.5)
+            Inx = 102 holoPos(Inx,Pn) holoScaleUnits(Inx,vec(6,6,6) * 1.5)
+        }
+    }
+}
+
+#//////////////////////////////////////////////////////////////
+#//////////////////////// CAST SELF ///////////////////////////
+#//////////////////////////////////////////////////////////////
+
+if(changed(Cast_self_button) & Cast_self_button & !Cast_special_button & O:weapon():type() == "weapon_crowbar"){
+    Block_effect = 0
+    if(!Shield_el & !Earth_el & !(Water_el & Cold_el) & !Casting & !Charging){
+        if(Cold_el){
+            Block_effect = 1
+            soundPlayWorld("physics/glass/glass_impact_bullet4.wav",100,O:shootPos())
+            O:magickFreez(Cold_el * 40)
+            particleGravity(vec()) particle(1,5,Cold_el * 30,"particle/smokesprites_0001",vec(200,250,255),O:boxCenterW(),vec(),random(360),random(10) - 5,255,0)
+        }
+        if(Water_el & Fire_el){
+            #O:takeDamage(min(Water_el,Fire_el) * 10)
+            if(!Block_effect){
+                Block_effect = 1
+                soundPlayWorld("ambient/machines/steam_release_2.wav",100,O:shootPos())
+                particleGravity(vec()) particle(1,5,min(Water_el,Fire_el) * 50,"particle/smokesprites_0001",vec(200),O:boxCenterW(),vec(),random(360),random(10) - 5,255,0)
+            }
+        }
+        if(Fire_el > Water_el){
+            #O:ignite()
+            if(!Block_effect){
+                Block_effect = 1
+                Rand = random(1)
+                soundPlayWorld("ambient/fire/ignite.wav",100,O:shootPos())
+                particleGravity(vec(0,0,50)) particle(1,5,(Fire_el - Water_el) * 30,"effects/fire_cloud2",vec(255,255 - Rand * 100,255 - Rand * 205),O:boxCenterW(),vec(),random(360),random(10) - 5,255,0)
+            }
+        }
+        if(Water_el > Fire_el){
+            O:magickWet(Water_el * 4)
+            if(!Block_effect){
+                Block_effect = 1
+                soundPlayWorld("ambient/water/water_splash" + randint(1,3) + ".wav",70,O:shootPos())
+                particleGravity(vec(0,0,-50)) particle(1,5,(Water_el - Fire_el) * 30,"effects/splash1",vec(100,150,255),O:boxCenterW(),vec(),random(360),random(10) - 5,255,0)
+            }
+        }
+
+        if(Death_el){
+            #O:takeDamage(Death_el * 4)
+            if(!Block_effect){
+                Block_effect = 1
+                soundPlayWorld("items/para_open.wav",100,O:shootPos())
+                particleGravity(vec()) particle(1,Death_el * 35,0,"sprites/light_glow02_add",vec(255,0,0),O:boxCenterW(),vec(),random(360),random(10) - 5,255,0)
+            }
+        }
+
+        if(Life_el){
+            #if(O:health() < 100){O:setHealth(min(100,O:health() + Life_el))}
+            Healing = 1
+            O:soundPlay(5,0,"items/suitcharge1.wav") soundPitch(5,150)
+            Combination = ""
+
+            Inx = Holo_effect:count() / 5 + 40
+            Holo_effect[Holo_effect:count() + 1,number] = Inx holoCreate(Inx,O:pos() + vec(0,0,300),vec()) holoModel(Inx,"models/effects/vol_light128x128.mdl") holoColor(Inx,vec(0,255,0)) holoParent(Inx,E)
+            Holo_effect[Holo_effect:count() + 1,vector] = vec(1,1,3) / 1.3
+            Holo_effect[Holo_effect:count() + 1,vector] = vec(1,1,3) / 1.2
+            Holo_effect[Holo_effect:count() + 1,number] = curtime() + 1
+            Holo_effect[Holo_effect:count() + 1,number] = 1
+        }
+        
+        if(!Life_el){
+            Casting = curtime() + 0.1
+            Cast = 0.1
+            Combination = ""
+        }
+    }
+    if(Shield_el){
+        Shield_active = 1
+        if(!(Water_el & Cold_el) & !Earth_el){
+            Casting = curtime() + 0.2
+            Cast = 0.2
+            Combination = ""
+            Shield_ent:propDelete()
+        }
+        
+        if(Earth_el){
+            Inx = 1000000 if(!holoEntity(Inx):isValid()){holoCreate(Inx,O:attachmentPos("chest"),vec(0.23,0.27,0.13),O:attachmentAng("chest"),vec(255),"models/props_wasteland/rockcliff01e.mdl")}
+            holoMaterial(Inx,"")
+            holoAlpha(Inx,255)
+            holoColor(Inx,vec(255))
+            Armor_health = 100
+
+            Casting = curtime() + 0.2
+            Cast = 0.2
+            Combination = ""
+            Shield_ent:propDelete()
+        }
+        
+        if(Water_el & Cold_el & !Earth_el){
+            Inx = 1000000 if(!holoEntity(Inx):isValid()){holoCreate(Inx,O:attachmentPos("chest"),vec(0.23,0.27,0.13),O:attachmentAng("chest"),vec(255),"models/props_wasteland/rockcliff01e.mdl")}
+            holoMaterial(Inx,"models/shiny")
+            holoAlpha(Inx,200)
+            holoColor(Inx,vec(200,255,255))
+            Armor_health = 100
+
+            Casting = curtime() + 0.2
+            Cast = 0.2
+            Combination = ""
+            Shield_ent:propDelete()
+        }
+        Shield_self_type = Water_el + "_" + Fire_el + "_" + Lightning_el + "_" + Death_el + "_" + Life_el + "_" + Cold_el + "_" + Earth_el
+
+        for(I = 0,4){holoDelete(10000 + I)}
+    }
+}
+
+if(Shield_active){
+    W_n = Shield_self_type:sub(1,1):toNumber()
+    F_n = Shield_self_type:sub(3,3):toNumber()
+    Li_n = Shield_self_type:sub(5,5):toNumber()
+    D_n = Shield_self_type:sub(7,7):toNumber()
+    L_n = Shield_self_type:sub(9,9):toNumber()
+    C_n = Shield_self_type:sub(11,11):toNumber()
+    E_n = Shield_self_type:sub(13,13):toNumber()
+
+    Circle = 0
+    if(W_n > C_n & !F_n){
+        for(I = 1,W_n - C_n){
+            Inx = 10000 + Circle X = (Circle * 1) ^ 1.2 if(!holoEntity(Inx):isValid()){Circle += 1 holoCreate(Inx) holoModel(Inx,"hq_torus_thin") holoColor(Inx,vec(50,150,255)) holoMaterial(Inx,"lights/white") holoScale(Inx,vec(4 + X,4 + X,0))}
+        }
+    }
+
+    if(F_n & !W_n){
+        for(I = 1,F_n){
+            Inx = 10000 + Circle X = (Circle * 1) ^ 1.2 if(!holoEntity(Inx):isValid()){Circle += 1 holoCreate(Inx) holoModel(Inx,"hq_torus_thin") holoColor(Inx,vec(255,150,0)) holoMaterial(Inx,"lights/white") holoScale(Inx,vec(4 + X,4 + X,0))}
+        }
+    }
+    
+    if(Li_n){
+        for(I = 1,Li_n){
+            Inx = 10000 + Circle X = (Circle * 1) ^ 1.2 if(!holoEntity(Inx):isValid()){Circle += 1 holoCreate(Inx) holoModel(Inx,"hq_torus_thin") holoColor(Inx,vec(255,0,255)) holoMaterial(Inx,"lights/white") holoScale(Inx,vec(4 + X,4 + X,0))}
+        }
+    }
+    
+    if(D_n){
+        for(I = 1,D_n){
+            Inx = 10000 + Circle X = (Circle * 1) ^ 1.2 if(!holoEntity(Inx):isValid()){Circle += 1 holoCreate(Inx) holoModel(Inx,"hq_torus_thin") holoColor(Inx,vec(255,0,0)) holoMaterial(Inx,"lights/white") holoScale(Inx,vec(4 + X,4 + X,0))}
+        }
+    }
+    
+    if(L_n){
+        for(I = 1,L_n){
+            Inx = 10000 + Circle X = (Circle * 1) ^ 1.2 if(!holoEntity(Inx):isValid()){Circle += 1 holoCreate(Inx) holoModel(Inx,"hq_torus_thin") holoColor(Inx,vec(0,255,0)) holoMaterial(Inx,"lights/white") holoScale(Inx,vec(4 + X,4 + X,0))}
+        }
+    }
+    
+    if(C_n > W_n){
+        for(I = 1,C_n - W_n){
+            Inx = 10000 + Circle X = (Circle * 1) ^ 1.2 if(!holoEntity(Inx):isValid()){Circle += 1 holoCreate(Inx) holoModel(Inx,"hq_torus_thin") holoColor(Inx,vec(255)) holoMaterial(Inx,"lights/white") holoScale(Inx,vec(4 + X,4 + X,0))}
+        }
+    }
+    if(W_n & F_n){
+        for(I = 1,min(W_n,F_n)){
+            Inx = 10000 + Circle X = (Circle * 1) ^ 1.2 if(!holoEntity(Inx):isValid()){Circle += 1 holoCreate(Inx) holoModel(Inx,"hq_torus_thin") holoColor(Inx,vec(150)) holoMaterial(Inx,"lights/white") holoScale(Inx,vec(4 + X,4 + X,0))}
+        }
+    }
+    if(W_n == 4){
+        if(Wet:concat("/"):find(O:toString())){
+            Wet_curt[O:toString(),number] = curtime()
+        }
+        Inx = 10000 + Circle if(!holoEntity(Inx):isValid()){holoCreate(Inx) holoModel(Inx,"hq_tube_thick") holoColor(Inx,vec(50,150,255) / 1.5) holoMaterial(Inx,"lights/white") holoScale(Inx,vec(7.5,7.5,0.2))}
+    }
+
+    if(F_n == 4){
+        #if(O:isOnFire()){O:extinguish()}
+        Inx = 10000 + Circle if(!holoEntity(Inx):isValid()){holoCreate(Inx) holoModel(Inx,"hq_tube_thick") holoColor(Inx,vec(255,150,0) / 1.5) holoMaterial(Inx,"lights/white") holoScale(Inx,vec(7.5,7.5,0.2))}
+    }
+    if(C_n == 4){
+
+        if(Freez:concat("/"):find(O:toString())){
+            Freez_time[O:toString(),number] = 0
+        }
+
+        Inx = 10000 + Circle if(!holoEntity(Inx):isValid()){holoCreate(Inx) holoModel(Inx,"hq_tube_thick") holoColor(Inx,vec(200)) holoMaterial(Inx,"lights/white") holoScale(Inx,vec(7.5,7.5,0.2))}
+    }
+    if(Li_n == 4){Inx = 10000 + Circle if(!holoEntity(Inx):isValid()){holoCreate(Inx) holoModel(Inx,"hq_tube_thick") holoColor(Inx,vec(255,0,255) / 1.5) holoMaterial(Inx,"lights/white") holoScale(Inx,vec(7.5,7.5,0.2))}}
+    if(L_n == 4){Inx = 10000 + Circle if(!holoEntity(Inx):isValid()){holoCreate(Inx) holoModel(Inx,"hq_tube_thick") holoColor(Inx,vec(0,255,0) / 1.5) holoMaterial(Inx,"lights/white") holoScale(Inx,vec(7.5,7.5,0.2))}}
+    if(D_n == 4){Inx = 10000 + Circle if(!holoEntity(Inx):isValid()){holoCreate(Inx) holoModel(Inx,"hq_tube_thick") holoColor(Inx,vec(255,0,0) / 1.5) holoMaterial(Inx,"lights/white") holoScale(Inx,vec(7.5,7.5,0.2))}}
+
+    for(I = 0,4){Inx = 10000 + I holoPos(Inx,O:pos() + O:vel() / 10) holoAng(Inx,ang())}
+
+    if(E_n | (W_n & C_n)){
+        Inx = 1000000
+        holoPos(Inx,O:attachmentPos("chest"))
+        holoPos(Inx,holoEntity(Inx):toWorld(vec(0,0,-5)))
+        holoAng(Inx,O:attachmentAng("chest"))
+        holoParentAttachment(Inx,O,"chest")
+        
+        if(Damage_taken > O:health() & E_n){
+            #O:setHealth(O:health() + (Damage_taken - O:health()) / 2)
+            Armor_health -= (Damage_taken - O:health()) / 2
+        }
+        if(Damage_taken > O:health() & (W_n & C_n) & !E_n){
+            #O:setHealth(O:health() + (Damage_taken - O:health()) / 3)
+            Armor_health -= (Damage_taken - O:health()) / 2
+        }
+    }
+    if(Armor_health < 0){
+        Armor_health = 0
+        Shield_active = -1
+        holoAlpha(1000000,0)
+        soundStop(11)
+    }
+
+    if(W_n & C_n & O:isOnFire() & !E_n){
+        Shield_active = -1
+        holoAlpha(1000000,0)
+        soundStop(11)
+       # O:extinguish()
+        #O:magickWet(10)
+    }
+    if(!W_n & !F_n & !Li_n & !D_n & !C_n & !L_n & !E_n){
+        if(!Shield_ent:isValid()){
+            Shield_ent = propSpawn("models/hunter/misc/sphere175x175.mdl",ang(),1)
+            Shield_ent:setMaterial("models/props_lab/xencrystal_sheet")
+            Shield_ent:setColor(vec(152,235,154))
+            O:soundPlay(9,0,"weapons/mortar/mortar_fire1.wav") soundPitch(9,200)
+            Shield_ent:soundPlay(11,0,"ambient/machines/city_ventpump_loop1.wav")
+            #noCollideAll(Shield_ent,1)
+        }
+    }
+    Shield_active += 1
+    if(Shield_active > 2000){
+        Shield_active = 0
+        if(Shield_ent:isValid()){
+            Shield_ent:propDelete()
+            holoAlpha(1000000,0)
+            soundStop(11)
+            Shield_self_type = ""
+        }
+        for(I = 0,4){holoDelete(10000 + I)}
+    }
+
+    if(Shield_ent:isValid()){    
+        Shield_ent:setPos(O:boxCenterW() + O:vel() / 10)
+        Shield_ent:propFreeze(1)
+    }
+}
+
+if(Healing > 0){
+    Cast = 1
+    Healing += 1
+    Timer_8 += 1 if(Timer_8 > 40){Timer_8 = 0}
+    if(!Timer_8){
+        #if(O:health() < 100){O:setHealth(min(100,O:health() + Life_el))}
+    }
+    
+    Timer_4 += 1
+    if(Timer_4 > 10){
+        Timer_4 = 0
+
+        for(Inx = 1,2){
+            Pl = (360 / 2) * Inx
+            Vec = vec(cos(curtime() * 700 + Pl),sin(curtime() * 700 + Pl),0)
+            Vec_2 = vec(cos(curtime() * 700 + 90 + Pl),sin(curtime() * 700 + 90 + Pl),0)
+            particleGravity(-Vec * 10) particle(2,20,0,"sprites/gmdm_pickups/light",vec(100,255,100),O:pos() + Vec * 20,Vec_2 * 10 + vec(0,0,40),random(360),random(10) - 5)
+        }
+    }
+    if(changed(Cast_self_button) & !Cast_self_button & !Cast_special_button){
+        Casting = curtime() + 0.1
+        Cast = 0.1
+        Combination = ""
+        Healing = 0
+        soundStop(5,0.5)
+    }
+}
+
+#//////////////////////////////////////////////////////////////
+#//////////////////////// CAST AROUND /////////////////////////
+#//////////////////////////////////////////////////////////////
+Break_effect = 0
+if(changed(Cast_self_button) & Cast_self_button & Cast_special_button & O:weapon():type() == "weapon_crowbar"){
+    if(!Shield_el){
+        if(!Earth_el & !(Cold_el & Water_el) & !Lightning_el){
+            if(!(Cold_el & Water_el) | Earth_el){
+                if(Cold_el & !Water_el){
+                    soundPlayWorld("physics/glass/glass_impact_bullet4.wav",100,O:boxCenterW())
+                    for(I = 1,8){
+                        Vel = vec(cos(I * (360 / 8)),sin(I * (360 / 8)),0.1)
+                        particleGravity(vec()) particle(1,20,150,"particle/smokesprites_0001",vec(255),O:boxCenterW(),Vel * Cold_el * 50,random(360),random(10) - 5,255,0)
+                    }
+                    Break_eff = 1
+                    En:propDelete()
+                }
+                
+                if(Water_el & !Fire_el & !Break_eff){
+                    soundPlayWorld("ambient/water/water_splash" + randint(1,3) + ".wav",70,O:boxCenterW())
+                    for(I = 1,8){
+                        Vel = vec(cos(I * (360 / 8)),sin(I * (360 / 8)),0.1)
+                        particleGravity(vec(0,0,0)) particle(1,20,150,"effects/splash1",vec(100,150,255),O:boxCenterW(),Vel * Water_el * 50,random(360),random(10) - 5,255,0)
+                    }
+                    Break_eff = 1
+                    En:propDelete()
+                }
+                
+                if(Fire_el & !Water_el & !Break_eff){
+                    soundPlayWorld("ambient/fire/ignite.wav",100,O:boxCenterW())
+                    for(I = 1,8){
+                        Vel = vec(cos(I * (360 / 8)),sin(I * (360 / 8)),0.1)
+                        Rand = random(1) particleGravity(vec(0,0,100)) particle(1,20,150,"effects/fire_cloud2",vec(255,255 - Rand * 100,255 - Rand * 205),O:boxCenterW(),Vel * Fire_el * 50,random(360),random(10) - 5,255,0)
+                    }
+                    Break_eff = 1
+                    En:propDelete()
+                }
+                
+                if(Water_el & Fire_el & !Break_eff){
+                    soundPlayWorld("ambient/machines/steam_release_2.wav",100,O:boxCenterW())
+                    for(I = 1,8){
+                        Vel = vec(cos(I * (360 / 8)),sin(I * (360 / 8)),0.1)
+                        particleGravity(vec()) particle(1,20,150,"particle/smokesprites_0001",vec(200),O:boxCenterW(),Vel * min(Water_el,Fire_el) * 50,random(360),random(10) - 5,255,0)
+                    }
+                    Break_eff = 1
+                    En:propDelete()
+                }
+            
+                if(Life_el & !Break_eff){
+                    soundPlayWorld("ambient/explosions/explode_8.wav",255,O:boxCenterW())
+                    for(I = 1,8){
+                        Vel = vec(cos(I * (360 / 8)),sin(I * (360 / 8)),0.1)
+                        particleGravity(vec()) particle(1,200,0,"sprites/light_glow02_add",vec(0,255,0),O:boxCenterW(),Vel * Life_el * 50,random(360),random(10) - 5,255,0)
+                    }
+                    Eff_size = 1
+                    Inx = Holo_effect:count() / 5 + 40
+                    Holo_effect[Holo_effect:count() + 1,number] = Inx holoCreate(Inx,O:pos(),vec(),ang()) holoColor(Inx,vec(0,200,0)) holoParent(Inx,E) holoMaterial(Inx,"lights/white") holoModel(Inx,"hq_torus")
+                    Holo_effect[Holo_effect:count() + 1,vector] = vec(Eff_size,Eff_size,0)
+                    Holo_effect[Holo_effect:count() + 1,vector] = vec(Eff_size,Eff_size,0) * (14 + Life_el * 4)
+                    Holo_effect[Holo_effect:count() + 1,number] = curtime() + 1
+                    Holo_effect[Holo_effect:count() + 1,number] = 1
+            
+                    Break_eff = 1
+                    En:propDelete()
+                }
+                
+                if(Death_el & !Break_eff){
+                    soundPlayWorld("ambient/explosions/explode_8.wav",200,O:boxCenterW())
+                    Eff_size = 1
+                    Inx = Holo_effect:count() / 5 + 40
+                    Holo_effect[Holo_effect:count() + 1,number] = Inx holoCreate(Inx,O:pos(),vec(),ang()) holoColor(Inx,vec(200,0,0)) holoParent(Inx,E) holoMaterial(Inx,"lights/white") holoModel(Inx,"hq_torus")
+                    Holo_effect[Holo_effect:count() + 1,vector] = vec(Eff_size,Eff_size,0)
+                    Holo_effect[Holo_effect:count() + 1,vector] = vec(Eff_size,Eff_size,0) * (14 + Death_el * 4)
+                    Holo_effect[Holo_effect:count() + 1,number] = curtime() + 1
+                    Holo_effect[Holo_effect:count() + 1,number] = 1
+            
+                    for(I = 1,8){
+                        Vel = vec(cos(I * (360 / 8)),sin(I * (360 / 8)),0.1)
+                        particleGravity(vec()) particle(1,200,0,"sprites/light_glow02_add",vec(255,0,0),O:boxCenterW(),Vel * Death_el * 50,random(360),random(10) - 5,255,0)
+                    }
+                    Break_eff = 1
+                    En:propDelete()
+                }
+                
+                if(Break_eff){
+                    Casting = curtime() + 0.1
+                    Cast = 0.1
+                    Combination = ""
+                }
+            }
+
+            Force = 0
+            Damage = 0
+            if(Cold_el & !Water_el){Rad = Cold_el Damage += Cold_el / 10 Force += Cold_el}
+            if(Water_el & !Fire_el){Rad = Water_el Force += Water_el * 4}
+            if(Fire_el & !Water_el){Rad = Fire_el Damage += Fire_el / 2}
+            if(Fire_el & Water_el){Rad = min(Fire_el,Water_el) Force += min(Fire_el,Water_el) Damage += min(Fire_el,Water_el)}
+            if(Death_el){Rad = Death_el Damage += Death_el}
+            if(Life_el){Rad = Life_el}
+        
+            findClearBlackList()
+            findClearWhiteList()
+            findExcludeEntities(Sound_ent)
+            findExcludeEntity(O)
+            findInSphere(O:boxCenterW(),Rad * 60)
+            Ar = findToArray()
+            for(Inx = 1,Ar:count()){
+                En_2 = Ar[Inx,entity]
+                if(En_2:mass() | En_2:isAlive()){
+        
+                    if(Fire_el > Water_el){
+                       # if(!En_2:isOnFire()){En_2:ignite()}
+                    }
+                    if(Water_el > Fire_el){
+                    if(!En_2:isAlive()){
+                            #if(En_2:isOnFire()){En_2:extinguish()}
+                        }
+                        else{
+                            En_2:magickWet(10)
+                        }
+                    }
+                    if(Cold_el){
+                        if(En_2:isAlive()){En_2:magickFreez(Cold_el * 40)}
+                    }
+                    #if(Damage){En_2:takeDamage(Damage * 10)}
+                    if(Life_el){
+                        if(En_2:isAlive()){
+                            if(En_2:isPlayer()){
+                               # if(En_2:health() < 100){En_2:setHealth(min(100,En_2:health() + Life_el * 5))}
+                            }
+                            else{
+                                #En_2:setHealth(En_2:health() + Life_el * 5)
+                            }
+                        }
+                    }
+                    if(Force){
+                        if(En_2:mass()){En_2:applyForce(O:eye() * Force * En_2:mass() * 40)}
+                        #if(En_2:isPlayer()){En_2:applyPlayerForce(O:eye() * Force * En_2:mass() * 10)}
+                    }
+                }
+                if(!perf()){break}
+            }
+        }
+        elseif(!Lightning_el){
+            if(Earth_el){
+                holoEntity(0):soundPlay(1,0,"physics/concrete/concrete_break" + randint(2,3) + ".wav")
+                if(O:isOnGround()){
+                    for(Break = 1,40){
+                        Break_eff = 0
+                        Rand = random(360)
+                        Rand_2 = (20 + random(Earth_el * 50 + 100))
+                        particleGravity(vec(0,0,-100)) particle(2,(350 - Rand_2) / 10,0,"particles/smokey",vec(100,70,50),O:pos() + vec(cos(Rand),sin(Rand),0) * Rand_2,vec(),random(360),random(10) - 5)
+                        
+                        Break_eff = 0
+    
+                        Rand = random(360)
+                        Rand_2 = (20 + random(Earth_el * 50 + 100))
+    
+                        if(Water_el & Fire_el & !Break_eff){
+                            Break_eff = 1
+                            particleGravity(vec(0,0,0)) particle(1,5,(350 - Rand_2) / 4,"particle/smokesprites_0001",vec(200),O:pos() + vec(cos(Rand),sin(Rand),0) * Rand_2,vec(),random(360),random(10) - 5,255,0)
+                        }
+    
+                        if(Fire_el & !Water_el & !Break_eff){
+                            Break_eff = 1
+                            particleGravity(vec(0,0,100)) Rand_c = randint(1) particle(1,5,(350 - Rand_2) / 6,"effects/fire_cloud2",vec(255,255 - Rand_c * 100,255 - Rand_c * 205),O:pos() + vec(cos(Rand),sin(Rand),0) * Rand_2,vec(),random(360),random(10) - 5,255,0)
+                        }
+    
+                        if(Cold_el & !Break_eff){
+                            Break_eff = 1
+                            particleGravity(vec(0,0,0)) particle(1,5,(350 - Rand_2) / 4,"particle/smokesprites_0001",vec(255),O:pos() + vec(cos(Rand),sin(Rand),0) * Rand_2,vec(),random(360),random(10) - 5,255,0)
+                        }
+    
+                        if(Water_el & !Fire_el & !Break_eff){
+                            Break_eff = 1
+                            particleGravity(vec(0,0-10,0)) particle(1,5,(350 - Rand_2) / 4,"effects/splash1",vec(200,200,255),O:pos() + vec(cos(Rand),sin(Rand),0) * Rand_2,vec(),random(360),random(10) - 5,255,0)
+                        }
+                        if(Life_el & !Break_eff){
+                            Break_eff = 1
+                            particleGravity(vec(0,0-10,0)) particle(1,(350 - Rand_2) / 4,0,"sprites/light_glow02_add",vec(0,255,0),O:pos() + vec(cos(Rand),sin(Rand),0) * Rand_2,vec(),random(360),random(10) - 5,255,0)
+                        }
+                        if(Death_el & !Break_eff){
+                            Break_eff = 1
+                            particleGravity(vec(0,0-10,0)) particle(1,(350 - Rand_2) / 4,0,"sprites/light_glow02_add",vec(255,0,0),O:pos() + vec(cos(Rand),sin(Rand),0) * Rand_2,vec(),random(360),random(10) - 5,255,0)
+                        }
+                        if(!perf()){break}
+                    }
+                }
+                
+                Sound = 0
+                if(Water_el & Fire_el & !Sound){
+                    Sound = 1
+                    soundPlayWorld("ambient/machines/steam_release_2.wav",100,O:pos())
+                }
+                if(Water_el & !Fire_el & !Sound){
+                    Sound = 1
+                    soundPlayWorld("ambient/water/water_splash" + randint(1,3) + ".wav",100,O:pos())
+                }
+                if(!Water_el & Fire_el & !Sound){
+                    Sound = 1
+                    soundPlayWorld("ambient/fire/ignite.wav",100,O:pos())
+                }
+                if(!Water_el & Cold_el & !Sound){
+                    Sound = 1
+                    soundPlayWorld("physics/glass/glass_impact_bullet4.wav",100,O:pos())
+                }
+                if(Death_el & !Sound){
+                    Sound = 1
+                    soundPlayWorld("items/para_open.wav",100,O:pos())
+                }
+                if(Life_el & !Sound){
+                    Sound = 1
+                    soundPlayWorld("weapons/teleporter_ready.wav",150,O:pos())
+                }
+            }
+
+            if(Water_el & Cold_el & O:isOnGround()){
+                holoEntity(0):soundPlay(5,0,"physics/metal/metal_sheet_impact_bullet" + randint(1,2) + ".wav") soundPitch(5,255)
+
+                if(min(Water_el,Cold_el) == 1){Model = "models/props_wasteland/rockcliff01k.mdl"}
+                if(min(Water_el,Cold_el) == 2){Model = "models/props_wasteland/rockcliff01j.mdl"}
+
+                for(I = 1,4){
+                    Prop_spawn = propSpawn(Model,O:pos() + vec(cos(I * 90),sin(I * 90),0) * min(Water_el,Cold_el) * 75,ang(45,I * 90,0),1)
+
+                    for(Particls = 1,4){
+                        particleGravity(vec(0,0,-100)) particle(3,min(Cold_el,Water_el) * 20,0,"particle/smokesprites_0001",vec(255),O:pos() + vec(cos(I * 90),sin(I * 90),0) * min(Water_el,Cold_el) * 75 + vec(random(40) - 20,random(40) - 20,0),(randvec(1,-1)) * 30,random(360),random(10) - 5,255,0)
+                    }
+                    if(Prop_spawn:isValid()){
+                        Prop_spawn:setMaterial("models/shiny")
+                        Prop_spawn:setColor(vec(200,255,255),250)
+                        #Prop_spawn:teleport(Prop_spawn:toWorld(vec(0,0,-Prop_spawn:height() / 2)))
+
+                        Ice_spear[Ice_spear:count() + 1,entity] = Prop_spawn
+                        Ice_spear_curt[Ice_spear:count(),number] = curtime()
+                    }
+                }
+            }
+
+            Casting = curtime() + 0.1
+            Cast = 0.1
+            Combination = ""
+
+            Force = 0
+            Damage = 0
+            if(Cold_el & !Water_el){Damage += Cold_el / 10 Force += Cold_el}
+            if(Water_el & !Fire_el){Force += Water_el * 4}
+            if(Fire_el & !Water_el){Damage += Fire_el / 2}
+            if(Fire_el & Water_el){Force += min(Fire_el,Water_el) Damage += min(Fire_el,Water_el)}
+            if(Death_el){Damage += Death_el}
+        
+            findClearBlackList()
+            findClearWhiteList()
+            findExcludeEntities(Sound_ent)
+            findExcludeEntity(O)
+            findInSphere(O:boxCenterW(),20 + random((Earth_el + min(Water_el,Cold_el)) * 50 + 100))
+            Ar = findToArray()
+            for(Inx = 1,Ar:count()){
+                En_2 = Ar[Inx,entity]
+                if(En_2:mass() | En_2:isAlive()){
+        
+                    if(Fire_el > Water_el){
+                        #if(!En_2:isOnFire()){En_2:ignite()}
+                    }
+                    if(Water_el > Fire_el){
+                    if(!En_2:isAlive()){
+                            #if(En_2:isOnFire()){En_2:extinguish()}
+                        }
+                        else{
+                            En_2:magickWet(10)
+                        }
+                    }
+                    if(Cold_el){
+                        if(En_2:isAlive()){En_2:magickFreez(Cold_el * 40)}
+                    }
+                    #if(Damage){En_2:takeDamage(Damage * 10)}
+                    if(Life_el){
+                        if(En_2:isAlive()){
+                            if(En_2:isPlayer()){
+                                #if(En_2:health() < 100){En_2:setHealth(min(100,En_2:health() + Life_el * 5))}
+                            }
+                            else{
+                                #En_2:setHealth(En_2:health() + Life_el * 5)
+                            }
+                        }
+                    }
+                    if(Force){
+                        if(En_2:mass()){En_2:applyForce(O:eye() * Force * En_2:mass() * 40)}
+                        #if(En_2:isPlayer()){En_2:applyPlayerForce(O:eye() * Force * En_2:mass() * 10)}
+                    }
+                }
+                if(!perf()){break}
+            }
+        }
+    }
+    else{
+        if(!Water_el & !Life_el & !Cold_el & !Lightning_el & !Death_el & !Earth_el & !Fire_el){
+            if(!Earth_el & !Water_el & !Cold_el & !Lightning_el & !Life_el & !Death_el & !Fire_el){
+                Prop_spawn = propSpawn("models/balloons/hot_airballoon.mdl",O:pos() - vec(0,0,400),ang(),1)
+                Prop_spawn:setMaterial("models/props_lab/xencrystal_sheet")
+                Prop_spawn:setColor(vec(152,235,154))
+                #noCollideAll(Prop_spawn,1)
+                
+                Prop_spawn:soundPlay(Prop_spawn:id(),0,"ambient/machines/city_ventpump_loop1.wav")
+                Shield_arr[Shield_arr:count() + 1,entity] = Prop_spawn
+                Shield_type[Shield_arr:count(),string] = Water_el + "_" + Life_el + "_" + Cold_el + "_" + Lightning_el + "_" + Death_el + "_" + Earth_el + "_" + Fire_el
+                Shield_curt[Shield_arr:count(),number] = curtime() + 10
+                Cast = 1
+                Combination = ""
+            }
+        }
+        if(Earth_el){
+            if(Earth_el == 1){Model = "models/props_wasteland/rockgranite02b.mdl"}
+            if(Earth_el == 2){Model = "models/props_wasteland/rockcliff01k.mdl"}
+            if(Earth_el == 3){Model = "models/props_wasteland/rockcliff01j.mdl"}
+            if(Earth_el == 4){Model = "models/props_wasteland/rockcliff01f.mdl"}
+            
+            holoEntity(0):soundPlay(1,0,"physics/concrete/boulder_impact_hard" + randint(1,6) + ".wav")
+            for(I = 0,3){
+                Pos = O:shootPos() + vec(cos(O:eyeAngles():yaw() - 67.5 + I * (360 / 4)),sin(O:eyeAngles():yaw() - 67.5 + I * (360 / 4)),0) * (75 + Earth_el * 10)
+    
+                rangerFilter(Shield_arr)
+                R_H = rangerOffset(100,Pos,vec(0,0,-1))
+                if(R_H:hit()){
+                    Prop_spawn = propSpawn(Model,R_H:position(),ang(0,O:eyeAngles():yaw() - 67.5 + I * (360 / 4),0),1)
+    
+                    if(Prop_spawn:isValid()){
+                        #Prop_spawn:teleport(Prop_spawn:toWorld(vec(0,0,-Prop_spawn:height() / 2 - random(10) - 5)))
+                        #if(Fire_el > Water_el){Prop_spawn:ignite()}
+    
+                        Shield_arr[Shield_arr:count() + 1,entity] = Prop_spawn
+                        Shield_type[Shield_arr:count(),string] = Water_el + "_" + Life_el + "_" + Cold_el + "_" + Lightning_el + "_" + Death_el + "_" + Earth_el + "_" + Fire_el
+                        Shield_curt[Shield_arr:count(),number] = curtime() + 10 + random(0.1)
+                    }
+    
+                    for(I = 1,4){
+                        particleGravity(vec(0,0,-100)) particle(3,Earth_el * 20,0,"particles/smokey",vec(100,70,50),R_H:position() + vec(random(40) - 20,random(40) - 20,0),(vec(0,0,2) + randvec(1,-1)) * 30,random(360),random(10) - 5,255,0)
+                    }
+                }
+                Cast = 1
+                Combination = ""
+            }
+        }
+    
+        if(Water_el & Cold_el & !Earth_el){
+            if(min(Cold_el,Water_el) == 1){Model = "models/props_wasteland/rockgranite02b.mdl"}
+            if(min(Cold_el,Water_el) == 2){Model = "models/props_wasteland/rockcliff01k.mdl"}
+            
+            holoEntity(0):soundPlay(1,0,"physics/metal/metal_sheet_impact_bullet" + randint(1,2) + ".wav") soundPitch(1,255)
+    
+            for(I = 0,3){
+                Pos = O:shootPos() + vec(cos(O:eyeAngles():yaw() - 67.5 + I * (360 / 4)),sin(O:eyeAngles():yaw() - 67.5 + I * (360 / 4)),0) * (75 + min(Cold_el,Water_el) * 10)
+                rangerFilter(Shield_arr)
+                R_H = rangerOffset(100,Pos,vec(0,0,-1))
+    
+                if(R_H:hit()){
+                    Prop_spawn = propSpawn(Model,R_H:position(),ang(0,O:eyeAngles():yaw() - 67.5 + I * (360 / 4),0),1)
+    
+                    if(Prop_spawn:isValid()){
+                        #Prop_spawn:teleport(Prop_spawn:toWorld(vec(0,0,-Prop_spawn:height() / 2 - random(10) - 5)))
+                        Prop_spawn:setMaterial("models/shiny")
+                        Prop_spawn:setColor(vec(220,255,255),230)
+    
+                        Shield_arr[Shield_arr:count() + 1,entity] = Prop_spawn
+                        Shield_type[Shield_arr:count(),string] = Water_el + "_" + Life_el + "_" + Cold_el + "_" + Lightning_el + "_" + Death_el + "_" + Earth_el + "_" + Fire_el
+                        Shield_curt[Shield_arr:count(),number] = curtime() + 5 + random(0.05)
+                    }
+    
+                    for(I = 1,4){
+                        particleGravity(vec(0,0,-100)) particle(3,min(Cold_el,Water_el) * 20,0,"particle/smokesprites_0001",vec(255),R_H:position() + vec(random(40) - 20,random(40) - 20,0),(vec(0,0,2) + randvec(1,-1)) * 30,random(360),random(10) - 5,255,0)
+                    }
+                }
+                Cast = 1
+                Combination = ""
+            }
+        }
+    
+        if(!Lightning_el & !(Water_el & Cold_el)){
+            if(Life_el | Death_el){
+                holoEntity(0):soundPlay(1,0,"ambient/energy/whiteflash.wav") soundPitch(1,255)
+                for(I = 0,3){
+                    Pos = O:shootPos() + vec(cos(O:eyeAngles():yaw() - 67.5 + I * (360 / 4)),sin(O:eyeAngles():yaw() - 67.5 + I * (360 / 4)),0) * (75 + Earth_el * 10)
+                    rangerFilter(Shield_arr)
+                    R_H = rangerOffset(100,Pos,vec(0,0,-1))
+                    if(R_H:hit()){
+                        Prop_spawn = propSpawn("models/holograms/hq_icosphere.mdl",R_H:position() + vec(0,0,10),ang(),1)
+    
+                        if(Prop_spawn:isValid()){
+                            if(Life_el){Color = vec(200,255,200)}
+                            if(Death_el){Color = vec(255,200,200)}
+                            if(Water_el){Color = vec(200,225,255)}
+                            if(Cold_el){Color = vec(255)}
+                            if(Fire_el){Color = vec(255,200,100)}
+                            if(Water_el & Fire_el){Color = vec(230)}
+                            Prop_spawn:setColor(Color)
+                            #noCollideAll(Prop_spawn,1)
+                            Prop_spawn:setMaterial("lights/white")
+                            
+                            Shield_arr[Shield_arr:count() + 1,entity] = Prop_spawn
+                            Shield_type[Shield_arr:count(),string] = Water_el + "_" + Life_el + "_" + Cold_el + "_" + Lightning_el + "_" + Death_el + "_" + Earth_el + "_" + Fire_el
+                            Shield_curt[Shield_arr:count(),number] = 0
+                        }
+    
+                        for(I = 1,4){
+                            particleGravity(vec(0,0,-100)) particle(3,Earth_el * 20,0,"particles/smokey",vec(100,70,50),R_H:position() + vec(random(40) - 20,random(40) - 20,0),(vec(0,0,2) + randvec(1,-1)) * 30,random(360),random(10) - 5,255,0)
+                        }
+                    }
+                    Cast = 1
+                    Combination = ""
+                }
+            }
+        }
+    
+        if(!(Water_el & Cold_el) & !Earth_el){
+            if(Water_el | Cold_el | Lightning_el | Fire_el){
+                for(I = 0,3){
+                    Pos = O:shootPos() + vec(cos(O:eyeAngles():yaw() - 67.5 + I * (360 / 4)),sin(O:eyeAngles():yaw() - 67.5 + I * (360 / 4)),0) * (75 + Earth_el * 10)
+                    rangerFilter(Shield_arr)
+                    R_H = rangerOffset(100,Pos,vec(0,0,-1))
+                    if(R_H:hit()){
+                        Prop_spawn = propSpawn("models/hunter/blocks/cube025x025x025.mdl",R_H:position() + vec(0,0,(Lightning_el) * 50),R_H:hitNormal():toAngle() + ang(90,0,0),1)
+    
+                        if(Prop_spawn:isValid()){
+                            #noCollideAll(Prop_spawn,1)
+                            
+                            Prop_spawn:setAlpha(0)
+                            Shield_arr[Shield_arr:count() + 1,entity] = Prop_spawn
+                            Shield_type[Shield_arr:count(),string] = Water_el + "_" + Life_el + "_" + Cold_el + "_" + Lightning_el + "_" + Death_el + "_" + Earth_el + "_" + Fire_el
+                            Shield_curt[Shield_arr:count(),number] = curtime() + 6
+                        }
+    
+                        for(I = 1,4){
+                            particleGravity(vec(0,0,-100)) particle(3,Earth_el * 20,0,"particles/smokey",vec(100,70,50),R_H:position() + vec(random(40) - 20,random(40) - 20,0),(vec(0,0,2) + randvec(1,-1)) * 30,random(360),random(10) - 5,255,0)
+                        }
+                    }
+    
+                    Cast = 1
+                    Combination = ""
+                }
+            }
+        }
+    }
+}
+#//////////////////////////////////////////////////////////////
+#//////////////////// ENCHANTING WEAPON ///////////////////////
+#//////////////////////////////////////////////////////////////
+
+if(changed(Cast_button) & Cast_button & Cast_special_button & O:weapon():type() == "weapon_crowbar"){
+    Casting = curtime() + 0.1
+    Cast = 0.1
+    Combination = ""
+    
+    P_pos = Weapon_pos + vec(0,0,15):rotate(O:attachmentAng("anim_attachment_rh"))
+    Weapon_enchante_type = Water_el + "_" + Life_el + "_" + Shield_el + "_" + Cold_el + "_" + Lightning_el + "_" + Death_el + "_" + Earth_el + "_" + Fire_el
+    if(!Earth_el & !(Water_el & Cold_el)){
+        if(Water_el & Fire_el){
+            particleGravity(vec(0,0,0)) particle(0.2,40,0,"particle/smokesprites_0001",vec(200),P_pos,vec(),random(360),random(2) - 1)
+            soundPlayWorld("ambient/machines/steam_release_2.wav",100,P_pos)
+        }
+        if(Water_el & !Fire_el & !Cold_el){
+            particleGravity(vec(0,0,0)) particle(0.2,40,0,"effects/splash1",vec(100,200,255),P_pos,vec(),random(360),random(2) - 1)
+            soundPlayWorld("ambient/water/water_splash" + randint(1,3) + ".wav",100,P_pos)
+        }
+        if(Fire_el & !Water_el){
+            particleGravity(vec(0,0,0)) Rand = random(1) particle(0.2,40,0,"effects/fire_cloud2",vec(255,255 - Rand * 100,255 - Rand * 205),P_pos,vec(),random(360),random(2) - 1)
+            soundPlayWorld("ambient/fire/ignite.wav",100,P_pos)
+        }
+        if(Cold_el){
+            particleGravity(vec(0,0,0)) particle(0.2,40,0,"effects/splashwake1",vec(200,255,255),P_pos,vec(),random(360),random(2) - 1)
+            particleGravity(vec(0,0,0)) particle(0.3,30,0,"effects/splashwake3",vec(200),P_pos,vec(),random(360),random(2) - 1)
+            soundPlayWorld("physics/glass/glass_impact_bullet4.wav",100,P_pos)
+        }
+        if(Lightning_el){
+            Color = vec(150,0,150)
+            if(Death_el){Color = vec(255,0,0)}
+            if(Life_el){Color = vec(0,255,0)}
+            particleGravity(vec(0,0,0)) particle(0.2,40,0,"particle/water/watersplash_001a_refract",Color,Weapon_pos,vec(),random(360),random(360) - 180)
+            soundPlayWorld("ambient/energy/zap9.wav",100,Weapon_pos)
+        }
+    }
+    else{
+        if(Earth_el){
+            soundPlayWorld("physics/concrete/boulder_impact_hard1.wav",100,P_pos)
+        }
+        if(Cold_el & Water_el){
+            soundPlayWorld("physics/glass/glass_impact_bullet4.wav",100,P_pos)
+        }
+    }
+}
+
+if(Weapon_enchante_type != ""){
+    W_n = Weapon_enchante_type:sub(1,1):toNumber()
+    L_n = Weapon_enchante_type:sub(3,3):toNumber()
+    S_n = Weapon_enchante_type:sub(5,5):toNumber()
+    C_n = Weapon_enchante_type:sub(7,7):toNumber()
+    Li_n = Weapon_enchante_type:sub(9,9):toNumber()
+    D_n = Weapon_enchante_type:sub(11,11):toNumber()
+    E_n = Weapon_enchante_type:sub(13,13):toNumber()
+    F_n = Weapon_enchante_type:sub(15,15):toNumber()
+    
+    Sound = 0
+    if(O:keyAttack1() & !Weapon_enchante_reload){
+        if(!(W_n & C_n) & !E_n & !S_n){
+            Weapon_enchante_reload = 1
+            findIncludeClass("npc")
+            findIncludePlayer("player")
+            findExcludeEntity(O)
+            findInCone(O:shootPos(),O:eye(),70,50)
+            Closest_ent = findClosest(O:shootPos())
+            
+            if(F_n & W_n){
+                if(!Sound){Sound = 1 soundPlayWorld("ambient/machines/steam_release_2.wav",100,Weapon_pos)}
+                if(Closest_ent:isValid()){
+                    #Closest_ent:ignite()
+                }
+            }
+            if(F_n & !W_n){
+                if(!Sound){Sound = 1 soundPlayWorld("ambient/fire/mtov_flame2.wav",100,Weapon_pos)}
+                if(Closest_ent:isValid()){
+                    #Closest_ent:ignite()
+                }
+            }
+            if(W_n & !F_n){
+                if(!Sound){Sound = 1 soundPlayWorld("ambient/water/water_splash" + randint(1,3) + ".wav",100,Weapon_pos)}
+                if(Closest_ent:isAlive()){
+                    Closest_ent:magickWet(W_n * 2)
+                }
+            }
+            if(C_n & !W_n){
+                if(!Sound){Sound = 1 soundPlayWorld("physics/glass/glass_impact_bullet" + randint(1,3) + ".wav",150,Weapon_pos)}
+                if(Closest_ent:isValid()){Closest_ent:magickFreez(C_n * 5)}
+            }
+            if(Li_n){
+                if(!Sound){Sound = 1 soundPlayWorld("ambient/energy/newspark" + randint(10,11) + ".wav",100,Weapon_pos)}
+                WET = 1
+                String_2 = Wet:concat("/")
+                if(String_2:find(Closest_ent:toString())){WET = 2}
+
+                if(Closest_ent:isValid()){
+                    #Closest_ent:takeDamage(Li_n * 2 * WET)
+                }
+            }
+            if(D_n){
+                if(!Sound){Sound = 1 soundPlayWorld("items/para_open.wav",100,Weapon_pos)}
+                if(Closest_ent:isValid()){
+                    #Closest_ent:takeDamage(D_n * 10)
+                }
+            }
+            if(L_n){
+                if(!Sound){Sound = 1 soundPlayWorld("weapons/teleporter_ready.wav",150,Weapon_pos)}
+                if(Closest_ent:health() < 100 & Closest_ent:isPlayer()){
+                    #Closest_ent:setHealth(min(100,Closest_ent:health() + L_n))
+                }
+            }
+        }
+        else{
+            Weapon_enchante_reload = 1
+            if(!S_n){
+                if(E_n){
+                    for(I = 1,4){
+                        rangerFilter(O)
+                        rangerHitEntities(0)
+                        R_H = rangerOffset(150,O:shootPos() + O:eye() * (50 + I * 80),vec(0,0,-1))
+                        
+                        if(R_H:hit()){
+                            Prop_spawn = propSpawn("models/props_debris/plaster_floorpile001a.mdl",R_H:position() - vec(0,0,10),R_H:hitNormal():toAngle() + ang(90,0,0),1)
+                            Prop_spawn:setAng(Prop_spawn:toWorld(ang(0,random(360),0)))
+                            Earthquake[Earthquake:count() + 1,entity] = Prop_spawn
+                            Earthquake_type[Earthquake:count(),string] = W_n + "_" + L_n + "_" + C_n + "_" + D_n + "_" + E_n + "_" + F_n
+                            Earthquake_time[Earthquake:count(),number] = curtime() + ((I - 1) / 10)
+                        }
+                    }
+                }
+                if(W_n & C_n & !E_n){
+                    for(I = 1,4){
+                        rangerFilter(O)
+                        rangerHitEntities(0)
+                        R_H = rangerOffset(150,O:shootPos() + O:eye() * (50 + I * 80),vec(0,0,-1))
+                        
+                        if(R_H:hit()){
+                            Prop_spawn = propSpawn("models/props_debris/plaster_floorpile001a.mdl",R_H:position() - vec(0,0,10),R_H:hitNormal():toAngle() + ang(90,0,0),1)
+                            Prop_spawn:setAng(Prop_spawn:toWorld(ang(0,random(360),0)))
+                            Prop_spawn:setMaterial("models/shiny")
+                            Prop_spawn:setColor(vec(200,255,255))
+                            Prop_spawn:setAlpha(200)
+    
+                            Earthquake[Earthquake:count() + 1,entity] = Prop_spawn
+                            Earthquake_type[Earthquake:count(),string] = W_n + "_" + L_n + "_" + C_n + "_" + D_n + "_" + E_n + "_" + F_n
+                            Earthquake_time[Earthquake:count(),number] = curtime() + ((I - 1) / 10)
+                        }
+                    }
+                }
+            }
+            else{
+                if(W_n & C_n & !E_n){
+                    if(min(C_n,W_n) == 1){Model = "models/props_wasteland/rockgranite02b.mdl"}
+                    if(min(C_n,W_n) == 2){Model = "models/props_wasteland/rockcliff01k.mdl"}
+                    
+                    holoEntity(0):soundPlay(1,0,"physics/metal/metal_sheet_impact_bullet" + randint(1,2) + ".wav") soundPitch(1,255)
+    
+                    for(I = 1,4){
+                        rangerFilter(Shield_arr)
+                        R_H = rangerOffset(100,O:shootPos() + O:eye() * (40 + I * 75),vec(0,0,-1))
+                        if(R_H:hit()){
+                            Prop_spawn = propSpawn(Model,R_H:position(),ang(0,random(360),0),1)
+    
+                            if(Prop_spawn:isValid()){
+                                #Prop_spawn:teleport(Prop_spawn:toWorld(vec(0,0,-Prop_spawn:height() / 2 - random(10) - 5)))
+                                Prop_spawn:setMaterial("models/shiny")
+                                Prop_spawn:setColor(vec(220,255,255),230)
+    
+                                Shield_arr[Shield_arr:count() + 1,entity] = Prop_spawn
+                                Shield_type[Shield_arr:count(),string] = W_n + "_" + L_n + "_" + C_n + "_" + Li_n + "_" + D_n + "_" + E_n + "_" + F_n
+                                Shield_curt[Shield_arr:count(),number] = curtime() + 5 + random(0.05)
+                            }
+    
+                            for(Particle = 1,4){
+                                particleGravity(vec(0,0,-100)) particle(3,min(C_n,W_n) * 20,0,"particle/smokesprites_0001",vec(255),R_H:position() + vec(random(40) - 20,random(40) - 20,0),(vec(0,0,2) + randvec(1,-1)) * 30,random(360),random(10) - 5,255,0)
+                            }
+                        }
+                    }
+                }
+                
+                if(!(W_n & C_n) & !E_n & !L_n & !D_n){
+                    if(W_n | C_n | F_n){
+                        for(I = 0,3){
+                            rangerFilter(Shield_arr)
+                            R_H = rangerOffset(100,O:shootPos() + O:eye() * (40 + I * 75),vec(0,0,-1))
+                            if(R_H:hit()){
+                                Prop_spawn = propSpawn("models/hunter/blocks/cube025x025x025.mdl",R_H:position(),R_H:hitNormal():toAngle() + ang(90,0,0),1)
+                                if(Prop_spawn:isValid()){
+                                    #noCollideAll(Prop_spawn,1)
+                                    
+                                    Prop_spawn:setAlpha(0)
+                                    Shield_arr[Shield_arr:count() + 1,entity] = Prop_spawn
+                                    Shield_type[Shield_arr:count(),string] = W_n + "_" + L_n + "_" + C_n + "_" + Li_n + "_" + D_n + "_" + E_n + "_" + F_n
+                                    Shield_curt[Shield_arr:count(),number] = curtime() + 6
+                                }
+                            }
+                        }
+                    }
+                }
+                if(!Li_n & !(W_n & C_n) & !E_n){
+                    if(L_n | D_n){
+                        holoEntity(0):soundPlay(1,0,"ambient/energy/whiteflash.wav") soundPitch(1,255)
+                        for(I = 0,3){
+                            rangerFilter(Shield_arr)
+                            R_H = rangerOffset(100,O:shootPos() + O:eye() * (40 + I * 75),vec(0,0,-1))
+                            if(R_H:hit()){
+                                Prop_spawn = propSpawn("models/holograms/hq_icosphere.mdl",R_H:position() + vec(0,0,10),ang(),1)
+        
+                                if(Prop_spawn:isValid()){
+                                    if(L_n){Color = vec(200,255,200)}
+                                    if(D_n){Color = vec(255,200,200)}
+                                    if(W_n){Color = vec(200,225,255)}
+                                    if(C_n){Color = vec(255)}
+                                    if(F_n){Color = vec(255,200,100)}
+                                    if(W_n & F_n){Color = vec(230)}
+                                    Prop_spawn:setColor(Color)
+                                    #noCollideAll(Prop_spawn,1)
+                                    Prop_spawn:setMaterial("lights/white")
+                                    
+                                    Shield_arr[Shield_arr:count() + 1,entity] = Prop_spawn
+                                    Shield_type[Shield_arr:count(),string] = W_n + "_" + L_n + "_" + C_n + "_" + Li_n + "_" + D_n + "_" + E_n + "_" + F_n
+                                    Shield_curt[Shield_arr:count(),number] = 0
+                                }
+        
+                                for(I = 1,4){
+                                    particleGravity(vec(0,0,-100)) particle(3,Earth_el * 20,0,"particles/smokey",vec(100,70,50),R_H:position() + vec(random(40) - 20,random(40) - 20,0),(vec(0,0,2) + randvec(1,-1)) * 30,random(360),random(10) - 5,255,0)
+                                }
+                            }
+                        }
+                    }
+                }
+                if(E_n){
+                    if(E_n == 1){Model = "models/props_wasteland/rockgranite02b.mdl"}
+                    if(E_n == 2){Model = "models/props_wasteland/rockcliff01k.mdl"}
+                    if(E_n == 3){Model = "models/props_wasteland/rockcliff01j.mdl"}
+                    if(E_n == 4){Model = "models/props_wasteland/rockcliff01f.mdl"}
+                    
+                    holoEntity(0):soundPlay(1,0,"physics/concrete/boulder_impact_hard" + randint(1,4) + ".wav")
+                    for(I = 1,4){
+                        rangerFilter(Shield_arr)
+                        R_H = rangerOffset(100,O:shootPos() + O:eye() * (40 + I * 75),vec(0,0,-1))
+                        if(R_H:hit()){
+                            Prop_spawn = propSpawn(Model,R_H:position(),ang(0,random(360),0),1)
+    
+                            if(Prop_spawn:isValid()){
+                                #rop_spawn:teleport(Prop_spawn:toWorld(vec(0,0,-Prop_spawn:height() / 2 - random(10) - 5)))
+                                #if(F_n > W_n){Prop_spawn:ignite()}
+    
+                                Shield_arr[Shield_arr:count() + 1,entity] = Prop_spawn
+                                Shield_type[Shield_arr:count(),string] = W_n + "_" + L_n + "_" + C_n + "_" + Li_n + "_" + D_n + "_" + E_n + "_" + F_n
+                                Shield_curt[Shield_arr:count(),number] = curtime() + 10 + random(0.1)
+                            }
+    
+                            for(Particle = 1,4){
+                                particleGravity(vec(0,0,-100)) particle(3,E_n * 20,0,"particles/smokey",vec(100,70,50),R_H:position() + vec(random(40) - 20,random(40) - 20,0),(vec(0,0,2) + randvec(1,-1)) * 30,random(360),random(10) - 5,255,0)
+                            }
+                        }
+                    }
+                }
+            }
+            
+            if(!W_n & !L_n & !C_n & !Li_n & !D_n & !E_n & !F_n){
+                Prop_spawn = propSpawn("models/hunter/plates/plate2x4.mdl",O:shootPos() + O:eye() * 200,O:eyeAngles() + ang(90,0,0),1)
+                Prop_spawn:setAng(Prop_spawn:toWorld(ang(0,0,90)))
+                Prop_spawn:setMaterial("models/props_lab/xencrystal_sheet")
+                Prop_spawn:setColor(vec(152,235,154))
+                #noCollideAll(Prop_spawn,1)
+                
+                Prop_spawn:soundPlay(Prop_spawn:id(),0,"ambient/machines/city_ventpump_loop1.wav")
+                Shield_arr[Shield_arr:count() + 1,entity] = Prop_spawn
+                Shield_type[Shield_arr:count(),string] = Water_el + "_" + Life_el + "_" + Cold_el + "_" + Lightning_el + "_" + Death_el + "_" + Earth_el + "_" + Fire_el
+                Shield_curt[Shield_arr:count(),number] = curtime() + 10
+            }
+        }
+    }
+
+    P_pos = Weapon_pos + vec(random(5) - 2.5,random(5) - 2.5,random(30) - 5):rotate(O:attachmentAng("anim_attachment_rh"))
+    
+    if(O:weapon():type() == "weapon_crowbar"){
+        Break_effect = 0
+        if(Li_n){
+            Color = vec(150,0,150)
+            if(D_n){Color = vec(255,0,0)}
+            if(L_n){Color = vec(0,255,0)}
+            particleGravity(vec()) particle(0.5,5,0,"particle/water/watersplash_001a_refract",Color,P_pos,vec(),random(360),random(2) - 1,255,0)
+            Break_effect = 1
+        }
+        if(F_n & W_n & !Break_effect){
+            particleGravity(vec()) particle(1,5,10,"particle/smokesprites_0001",vec(200),P_pos,vec(),random(360),random(2) - 1,255,0)
+            Break_effect = 1
+        }
+        if(D_n & !Break_effect){
+            particleGravity(vec()) particle(0.5,20,0,"sprites/light_glow02_add",vec(255,0,0),P_pos,vec(),random(360),random(2) - 1,255,0)
+            Break_effect = 1
+        }
+        if(L_n & !Break_effect){
+            particleGravity(vec()) particle(0.5,20,0,"sprites/light_glow02_add",vec(0,255,0),P_pos,vec(),random(360),random(2) - 1,255,0)
+            Break_effect = 1
+        }
+        if(C_n & !Break_effect){
+            particleGravity(vec()) particle(1,5,10,"particle/smokesprites_0001",vec(255),P_pos,vec(),random(360),random(2) - 1,255,0)
+            Break_effect = 1
+        }
+        if(F_n & !W_n & !Break_effect){
+            particleGravity(vec(0,0,50)) Rand = random(1) particle(1,5,0,"effects/fire_cloud2",vec(255,255 - Rand * 100,255 - Rand * 205),P_pos,vec(),random(360),random(2) - 1)
+            Break_effect = 1
+        }
+        if(W_n & !F_n & !Break_effect){
+            particleGravity(vec(0,0,-50)) particle(1,5,0,"effects/splash1",vec(100,200,255),P_pos,vec(),random(360),random(2) - 1,255,0)
+            Break_effect = 1
+        }
+        if(S_n & !Break_effect){
+            particleGravity(vec()) particle(0.5,20,0,"sprites/light_glow02_add",vec(255,255,0),P_pos,vec(),random(360),random(2) - 1,255,0)
+            Break_effect = 1
+        }
+    }
+}
+
+if(Weapon_enchante_reload){
+    Weapon_enchante_reload += 1
+
+    if(Weapon_enchante_reload > 20){
+        if(W_n & C_n | E_n | S_n | L_n | D_n){
+            Weapon_enchante_type = ""
+            Weapon_enchante_reload = 0
+        }
+    }
+
+    if(Weapon_enchante_reload > 40){
+        Weapon_enchante_reload = 0
+    }
+}
+
+#//////////////////////////////////////////////////////////////
+#/////////////////////////// MAIN /////////////////////////////
+#//////////////////////////////////////////////////////////////
+if(Cast){
+    Cast -= 0.1
+    if(Cast <= 0){
+        Cast = 0 Water_el = 0 Life_el = 0 Shield_el = 0 Cold_el = 0 Lightning_el = 0 Death_el = 0 Earth_el = 0 Fire_el = 0
+        for(I = 0,4){
+            holoDelete(I * 2 + 26)
+            holoDelete(I * 2 + 27)
+            EGP:egpRemove(43 + I * 3)
+            EGP:egpRemove(43 + I * 3 + 1)
+            EGP:egpRemove(43 + I * 3 + 2)
+        }
+    }
+}
+if(Cast & !Healing & !Casting_around){
+    holoAng(0,holoEntity(0):toWorld(holoEntity(0):toLocal(O:eye():toAngle() + ang(90,0,0)) / 10))
+    holoParentAttachment(0,O,"anim_attachment_lh")
+}
+else{
+    holoAng(0,holoEntity(0):toWorld(holoEntity(0):toLocal(O:attachmentAng("anim_attachment_lh") + ang(-20,20,-60 + min(60,O:vel():length() / 6))) / 10))
+    holoParentAttachment(0,O,"anim_attachment_lh")
+}
+
+if(changed(Cast)){
+    if(Cast){
+        for(I = 0,4){
+            holoDelete(I * 2 + 26)
+            holoDelete(I * 2 + 27)
+            EGP:egpRemove(43 + I * 3)
+            EGP:egpRemove(43 + I * 3 + 1)
+            EGP:egpRemove(43 + I * 3 + 2)
+        }
+    }
+}
+
+while(perf() & Ice_spear:count()){
+    I_16 += 1
+    En = Ice_spear[I_16,entity]
+    Curt = Ice_spear_curt[I_16,number]
+    
+    if(curtime() < Curt + 0.1){En:setPos(En:toWorld(vec(0,0,En:height() / 15)))}
+    if(curtime() > Curt + 0.5){
+        En:setPos(En:toWorld(vec(0,0,-En:height() / 15)))
+    }
+    
+    
+    if(curtime() > Curt + 0.6){En:propDelete() Ice_spear:remove(I_16) Ice_spear_curt:remove(I_16)}
+    
+    if(I_16 > Ice_spear:count()){I_16 = 0 break}
+}
+
+while(perf() & Ice_shard:count()){
+    I_12 += 1
+    
+    En = Ice_shard[I_12,entity]
+    T_n = Ice_shard_type[I_12,string]
+
+    C_n = T_n:sub(1,1):toNumber()
+    W_n = T_n:sub(3,3):toNumber()
+    D_n = T_n:sub(5,5):toNumber()
+    L_n = T_n:sub(7,7):toNumber()
+    
+    En:applyAngForce(En:toLocal(En:vel():toAngle() - ang(180,0,0)) * En:mass() - En:angVel() * En:mass() / 6)
+    
+    rangerFilter(Ice_shard)
+    R_H = rangerOffsetHull(En:vel():length() / 10,En:pos(),En:vel(),vec(5))
+    R_H_ent = R_H:entity()
+    if(R_H:hit()){
+        if(C_n){
+            #R_H_ent:takeDamage(C_n)
+            if(C_n == W_n & !L_n & !D_n){particleGravity(vec()) particle(1,30,0,"particle/smokesprites_0001",vec(255),R_H:position(),vec(),random(360),random(10) - 5)}
+
+            if(W_n > C_n){
+                if(R_H_ent:isAlive()){R_H_ent:magickFreez((C_n - W_n) * 20)}
+            }
+        }
+        if(W_n > C_n){
+            R_H_ent:magickWet(10) R_H_ent:applyForce(En:vel() / 4)
+            if(!L_n & !D_n){particleGravity(vec()) particle(1,30,0,"effects/splash1",vec(100,150,255),R_H:position(),vec(),random(360),random(10) - 5)}
+        }
+        if(D_n){
+            #R_H_ent:takeDamage(D_n * 3)
+            particleGravity(vec()) particle(1,40,0,"sprites/light_glow02_add",vec(255,0,0),R_H:position(),vec(),random(360),random(10) - 5)
+        }
+        if(L_n){
+            if(R_H_ent:isAlive()){
+                if(R_H_ent:isPlayer()){
+                    #R_H_ent:setHealth(min(100,R_H_ent:health() + L_n))
+                }
+                else{
+                    #R_H_ent:setHealth(R_H_ent:health() + L_n)
+                }
+            }
+            particleGravity(vec()) particle(1,40,0,"sprites/light_glow02_add",vec(0,255,0),R_H:position(),vec(),random(360),random(10) - 5)
+        }
+    }
+    if(!Timer_1 & En:isValid()){
+        if(!L_n & !D_n){
+            if(C_n >= W_n){particleGravity(vec()) particle(1,En:radius() / 2,En:radius(),"particle/smokesprites_0001",vec(255),En:pos(),vec(),random(360),random(10) - 5,255,0)}
+            if(W_n > C_n){particleGravity(vec(0,0,-20)) particle(1,En:radius() / 2,En:radius(),"effects/splash1",vec(100,150,255),En:pos(),vec(),random(360),random(10) - 5,255,0)}
+        }
+        if(L_n){particleGravity(vec()) particle(1,En:radius() * 2,0,"sprites/light_glow02_add",vec(0,255,0),En:pos(),vec(),random(360),random(10) - 5)}
+        if(D_n){particleGravity(vec()) particle(1,En:radius() * 2,0,"sprites/light_glow02_add",vec(255,0,0),En:pos(),vec(),random(360),random(10) - 5)}
+    }
+    if(R_H:hit() | !En:isValid()){
+        Ice_shard:remove(I_12)
+        Ice_shard_type:remove(I_12)
+        if(En:isValid()){
+            En:removeAt(2)
+            En:setPos(R_H:position())
+            En:propFreeze(1)
+            En:setAlpha(0)
+            #noCollideAll(En,1)
+        }
+    }
+
+    if(I_12 >= Ice_shard:count()){I_12 = 0 break}
+}
+
+if(Combination != "" & Floating_Spheres){
+    for(I = 0,Combination:length() - 1){
+        Sn = Combination:sub(I + 1,I + 1)
+        Inx = I * 2 + 26
+        Tick = curtime() * 300 + I * 400
+        Floating = vec(cos(Tick + I * 90) * 30,sin(Tick + I * 90) * 30,cos(Tick / 2) * 30)
+
+        if(Test | !holoEntity(Inx):isValid()){
+            if(!holoEntity(Inx):isValid()){
+                holoCreate(Inx,vec(),vec()) holoParent(Inx,entity())
+                holoCreate(Inx + 1,vec(),vec()) holoModel(Inx + 1,"hqsphere") holoParent(Inx + 1,Inx)
+                if(Sn == "1"){
+                    particleGravity(vec(0,0,0)) particle(0.2,40,0,"effects/splash1",vec(100,200,255),O:boxCenterW() + Floating,vec(),random(360),random(2) - 1)
+                }
+                if(Sn == "2"){
+                    particleGravity(vec(0,0,0)) particle(0.2,80,0,"sprites/light_glow02_add",vec(255),O:boxCenterW() + Floating,vec(),random(360),random(2) - 1)
+                    particleGravity(vec(0,0,0)) particle(0.2,40,0,"effects/splashwake3",vec(0,150,0),O:boxCenterW() + Floating,vec(),random(360),random(2) - 1)
+                }
+                if(Sn == "3"){
+                    particleGravity(vec(0,0,0)) particle(0.2,40,0,"particle/particle_ring_wave_additive",vec(255),O:boxCenterW() + Floating,vec(),random(360),random(2) - 1)
+                }
+               if(Sn == "4"){
+                    particleGravity(vec(0,0,0)) particle(0.2,40,0,"effects/splashwake1",vec(200,255,255),O:boxCenterW() + Floating,vec(),random(360),random(2) - 1)
+                    particleGravity(vec(0,0,0)) particle(0.3,30,0,"effects/splashwake3",vec(200),O:boxCenterW() + Floating,vec(),random(360),random(2) - 1)
+                }
+                if(Sn == "5"){
+                    particleGravity(vec(0,0,0)) particle(0.2,40,0,"particle/water/watersplash_001a_refract",vec(150,0,150),O:boxCenterW() + Floating,vec(),random(360),random(360) - 180)
+                }
+                if(Sn == "6"){
+                    particleGravity(vec(0,0,0)) particle(0.2,40,0,"effects/splashwake1",vec(150,0,0),O:boxCenterW() + Floating,vec(),random(360),random(2) - 1)
+                    particleGravity(vec(0,0,0)) particle(0.3,30,0,"effects/splashwake3",vec(),O:boxCenterW() + Floating,vec(),random(360),random(2) - 1)
+                }
+                if(Sn == "8"){
+                    particleGravity(vec(0,0,0)) Rand = random(1) particle(0.2,40,0,"effects/fire_cloud2",vec(255,255 - Rand * 100,255 - Rand * 205),O:boxCenterW() + Floating,vec(),random(360),random(2) - 1)
+                }
+            }
+            if(Sn == "1"){
+                holoScaleUnits(Inx,vec(5)) holoModel(Inx,"hqsphere") holoColor(Inx,vec(50,100,255)) holoMaterial(Inx,"lights/white") holoEntity(Inx):setTrails(10,0,0.1,"trails/smoke",vec(100,200,255),255)
+                holoScaleUnits(Inx + 1,vec(-10)) holoColor(Inx + 1,vec(100,150,255),200) holoMaterial(Inx + 1,"lights/white")
+            }
+            if(Sn == "2"){
+                holoScaleUnits(Inx,vec(3)) holoModel(Inx,"hqsphere") holoColor(Inx,vec(200)) holoMaterial(Inx,"lights/white") holoEntity(Inx):setTrails(15,4,0.5,"effects/beam001_white",vec(0,255,0),255)
+                holoScaleUnits(Inx + 1,vec(-10)) holoColor(Inx + 1,vec(0,200,0),200) holoMaterial(Inx + 1,"lights/white")
+            }
+            if(Sn == "3"){
+                holoScaleUnits(Inx,vec(3)) holoModel(Inx,"hqsphere") holoColor(Inx,vec(200,200,100)) holoMaterial(Inx,"lights/white") holoEntity(Inx):setTrails(15,4,0.2,"effects/beam001_white",vec(255,255,0),150)
+                holoScaleUnits(Inx + 1,vec(-10)) holoAlpha(Inx,200) holoMaterial(Inx + 1,"models/props_lab/xencrystal_sheet")
+            }
+            if(Sn == "4"){
+                holoScaleUnits(Inx,vec(3)) holoModel(Inx,"hqsphere") holoColor(Inx,vec(200)) holoMaterial(Inx,"lights/white") holoEntity(Inx):setTrails(15,10,0.5,"trails/smoke",vec(200,255,255),100)
+                holoScaleUnits(Inx + 1,vec(-10)) holoColor(Inx + 1,vec(200,255,255),200) holoMaterial(Inx + 1,"models/props/cs_office/clouds")
+            }
+            if(Sn == "5"){
+                holoScaleUnits(Inx,vec(3)) holoModel(Inx,"hqsphere") holoColor(Inx,vec(0)) holoMaterial(Inx,"models/alyx/emptool_glow") holoEntity(Inx):setTrails(25,0,0.2,"trails/electric",vec(255,0,255),255)
+                holoScaleUnits(Inx + 1,vec(-10)) holoColor(Inx + 1,vec(255,0,255),200) holoMaterial(Inx + 1,"models/alyx/emptool_glow")
+            }
+            if(Sn == "6"){
+                holoScaleUnits(Inx,vec(3)) holoModel(Inx,"hqsphere") holoColor(Inx,vec(200)) holoMaterial(Inx,"lights/white") holoEntity(Inx):setTrails(15,4,0.5,"trails/smoke",vec(),255)
+                holoScaleUnits(Inx + 1,vec(-10)) holoColor(Inx + 1,vec(200,0,0),200) holoMaterial(Inx + 1,"lights/white")
+            }
+            if(Sn == "7"){
+                holoModel(Inx,"models/props_wasteland/rockgranite04c.mdl") holoScaleUnits(Inx,vec(10,10,10)) holoColor(Inx,vec(255),255) holoMaterial(Inx,"") holoEntity(Inx):setTrails(10,4,0.5,"trails/smoke",vec(100,80,0),100)
+            }
+            if(Sn == "8"){
+                holoScaleUnits(Inx,vec(6)) holoModel(Inx,"hqsphere") holoColor(Inx,vec(255)) holoMaterial(Inx,"models/effects/splode_sheet") holoEntity(Inx):setTrails(15,4,0.5,"trails/smoke",vec(),150)
+                holoScaleUnits(Inx + 1,vec(-10)) holoColor(Inx + 1,vec(255),200) holoMaterial(Inx + 1,"models/effects/splode1_sheet")
+            }
+        }
+
+        holoPos(Inx,O:boxCenterW() + Floating)
+        if(!Timer_1){
+            if(Sn == "1"){particleGravity(vec(0,0,-100)) particle(0.5,5,20,"effects/splash1",vec(50,150,255),holoEntity(Inx):pos() + randvec(1,-1),randvec(10,-10),random(360),random(2) - 1,255,0)}
+            if(Sn == "2"){particleGravity(vec()) particle(0.5,40,0,"sprites/light_glow02_add",vec(0,150,0),holoEntity(Inx):pos(),randvec(20,-20),random(360),random(2) - 1)}
+            if(Sn == "3"){particleGravity(vec()) particle(0.5,40,0,"sprites/light_glow02_add",vec(150,150,0),holoEntity(Inx):pos() + randvec(4,-4),randvec(20,-20),random(360),random(2) - 1)}
+            if(Sn == "4"){particleGravity(vec()) particle(1,4,0,"sprites/light_glow02_add",vec(200,255,255),holoEntity(Inx):pos() + randvec(4,-4),randvec(10,-10),random(360),random(2) - 1)}
+
+            if(Sn == "6"){particleGravity(vec()) particle(0.5,10,0,"particle/smokesprites_0001",vec(150,0,0),holoEntity(Inx):pos(),vec(),random(360),random(2) - 1)}
+            if(Sn == "7"){holoAng(Inx,ang(curtime() * 100 + I * 100,curtime() * 20 + I * 200,0))}
+            if(Sn == "8"){
+                holoAng(Inx + 1,ang(random(360),random(360),0)) 
+                Rand = random(1) particleGravity(vec(0,0,100)) particle(0.5,10,0,"effects/fire_cloud2",vec(255,255 - Rand * 100,255 - Rand * 205),holoEntity(Inx):pos(),randvec(10,-10),random(360),random(2) - 1,255,0)
+            }
+        }
+    }
+}
+
+while(perf() & Sound_ent:count()){
+    I_10 += 1
+    En = Sound_ent[I_10,entity]
+    Curt = Sound_curt[I_10,number]
+    
+    #if(En:isOnFire()){En:extinguish()}
+    
+    if(curtime() > Curt){Sound_ent:remove(I_10) Sound_curt:remove(I_10) En:propDelete()}
+    if(I_10 >= Sound_ent:count()){I_10 = 0 break}
+}
+
+while(perf() & Remove:count()){
+    I_14 += 1
+    En = Remove[I_14,entity]
+    Curt = Remove_curt[I_14,number]
+
+    if(curtime() > Curt){Remove:remove(I_14) Remove_curt:remove(I_14) En:propDelete()}
+    if(I_14 >= Remove:count()){I_14 = 0 break}
+}
+
+while(perf() & Rock:count()){
+    I_9 += 1
+    En = Rock[I_9,entity]
+    Curt = Rock_curt[I_9,number]
+    Type = Rock_type[I_9,string]
+    
+    E_n = Type:sub(1,1):toNumber()
+    C_n = Type:sub(3,3):toNumber()
+    F_n = Type:sub(5,5):toNumber()
+    W_n = Type:sub(7,7):toNumber()
+    L_n = Type:sub(9,9):toNumber()
+    D_n = Type:sub(11,11):toNumber()
+
+    if(!Timer_1){
+        if(C_n & !W_n){particleGravity(vec()) particle(1,En:radius() * 2,En:radius() * 4,"particle/smokesprites_0001",vec(255),En:pos(),vec(),random(360),random(10) - 5,255,0)}
+        if(W_n & !F_n){particleGravity(vec(0,0,-20)) particle(1,En:radius() * 2,En:radius() * 4,"effects/splash1",vec(100,150,255),En:pos(),vec(),random(360),random(10) - 5,255,0)}
+        if(F_n & !W_n){Rand = random(1) particleGravity(vec(0,0,100)) particle(1,En:radius() * 2,En:radius() * 4,"effects/fire_cloud2",vec(255,255 - Rand * 100,255 - Rand * 205),En:pos(),vec(),random(360),random(10) - 5,255,0)}
+        if(F_n & W_n){particleGravity(vec()) particle(1,En:radius() * 2,En:radius() * 4,"particle/smokesprites_0001",vec(200),En:pos(),vec(),random(360),random(10) - 5,255,0)}
+        if(L_n){particleGravity(vec()) particle(1,En:radius() * 4,0,"sprites/light_glow02_add",vec(0,255,0),En:pos(),vec(),random(360),random(10) - 5)}
+        if(D_n){particleGravity(vec()) particle(1,En:radius() * 4,0,"sprites/light_glow02_add",vec(255,0,0),En:pos(),vec(),random(360),random(10) - 5)}
+    }
+    rangerFilter(Rock)
+    rangerHitWater(1)
+    R_H = rangerOffsetHull(En:vel():length() / 5,En:pos(),En:vel(),vec(En:radius()))
+    if(R_H:hit()){
+        if(C_n | W_n | F_n | D_n | L_n){
+            
+            Force = 0
+            Damage = 0
+            if(C_n & !W_n){Damage += C_n / 10 Force += C_n}
+            if(W_n & !F_n){Force += W_n * 4}
+            if(F_n & !W_n){Damage += F_n / 2}
+            if(F_n & W_n){Force += min(F_n,W_n) Damage += min(F_n,W_n)}
+            if(D_n){Damage += D_n}
+
+            findClearBlackList()
+            findClearWhiteList()
+            findExcludeEntities(Sound_ent)
+            findInSphere(R_H:position(),E_n * 60)
+            Ar = findToArray()
+            for(Inx = 1,Ar:count()){
+                En_2 = Ar[Inx,entity]
+                if(En_2:mass() | En_2:isAlive()){
+                    if(F_n > W_n){
+                        #if(!En_2:isOnFire()){En_2:ignite()}
+                    }
+                    if(W_n > F_n){
+                    if(!En_2:isAlive()){
+                            #if(En_2:isOnFire()){En_2:extinguish()}
+                        }
+                        else{
+                            En_2:magickWet(10)
+                        }
+                    }
+                    if(C_n){
+                        if(En_2:isAlive()){En_2:magickFreez(C_n * 40)}
+                    }
+                    #if(Damage){En_2:takeDamage(Damage * 10)}
+                    if(L_n){
+                        if(En_2:isAlive()){
+                            if(En_2:isPlayer()){
+                                #if(En_2:health() < 100){En_2:setHealth(min(100,En_2:health() + L_n * 5))}
+                            }
+                            else{
+                                #En_2:setHealth(En_2:health() + L_n * 5)
+                            }
+                        }
+                    }
+                    if(Force){
+                        if(En_2:mass()){En_2:applyForce(O:eye() * Force * En_2:mass() * 40)}
+                        #if(En_2:isPlayer()){En_2:applyPlayerForce(O:eye() * Force * En_2:mass() * 10)}
+                    }
+                }
+                if(!perf()){break}
+            }
+        }
+        if(C_n){
+            rangerFilter(Rock)
+            rangerHitWater(1)
+            R_W = rangerOffset(En:vel():length(),En:pos(),En:vel())
+            if(R_W:matType() == "slosh"){
+                Prop_spawn = propSpawn("models/hunter/tubes/circle4x4.mdl",R_W:position(),ang(),1)
+                if(Prop_spawn:isValid()){
+                    Prop_spawn:setMaterial("models/shiny")
+                    Prop_spawn:setColor(vec(200,240,255))
+                    Ice[Ice:count() + 1,entity] = Prop_spawn
+                    Ice_curt[Ice:count(),number] = curtime() + 10
+                }
+            }
+            if(!W_n){
+                soundPlayWorld("physics/glass/glass_impact_bullet4.wav",100,R_H:position())
+                for(I = 1,10){
+                    Vel = vec(cos(I * (360 / 10)),sin(I * (360 / 10)),0.1):rotate(R_H:hitNormal():toAngle() + ang(90,0,0))
+                    particleGravity(vec()) particle(1,20,150,"particle/smokesprites_0001",vec(255),R_H:position(),Vel * E_n * 50,random(360),random(10) - 5,255,0)
+                    particleGravity(vec()) particle(5,200,0,"particle/smokesprites_0001",vec(255),R_H:position(),Vel * E_n * 20,random(360),random(10) - 5,255,0)
+                }
+            }
+            En:propDelete()
+        }
+        if(W_n & !F_n){
+            soundPlayWorld("ambient/water/water_splash" + randint(1,3) + ".wav",70,R_H:position())
+            for(I = 1,10){
+                Vel = vec(cos(I * (360 / 10)),sin(I * (360 / 10)),0.1):rotate(R_H:hitNormal():toAngle() + ang(90,0,0))
+                particleGravity(vec(0,0,-20)) particle(1,20,150,"effects/splash1",vec(100,150,255),R_H:position(),Vel * E_n * 50,random(360),random(10) - 5,255,0)
+                particleGravity(vec(0,0,-1)) particle(5,200,0,"effects/splash1",vec(150,200,255),R_H:position(),Vel * E_n * 20,random(360),random(10) - 5,255,0)
+            }
+            En:propDelete()
+        }
+        if(F_n & !W_n){
+            soundPlayWorld("ambient/fire/ignite.wav",100,R_H:position())
+            for(I = 1,10){
+                Vel = vec(cos(I * (360 / 10)),sin(I * (360 / 10)),0.1):rotate(R_H:hitNormal():toAngle() + ang(90,0,0))
+                Rand = random(1) particleGravity(vec(0,0,100)) particle(1,20,150,"effects/fire_cloud2",vec(255,255 - Rand * 100,255 - Rand * 205),R_H:position(),Vel * E_n * 50,random(360),random(10) - 5,255,0)
+                particleGravity(vec(0,0,5)) particle(5,200,0,"particle/smokesprites_0001",vec(50),R_H:position(),Vel * E_n * 20,random(360),random(10) - 5,255,0)
+            }
+            En:propDelete()
+        }
+        if(W_n & F_n){
+            soundPlayWorld("ambient/machines/steam_release_2.wav",100,R_H:position())
+            for(I = 1,10){
+                Vel = vec(cos(I * (360 / 10)),sin(I * (360 / 10)),0.1):rotate(R_H:hitNormal():toAngle() + ang(90,0,0))
+                particleGravity(vec()) particle(1,20,150,"particle/smokesprites_0001",vec(200),R_H:position(),Vel * E_n * 50,random(360),random(10) - 5,255,0)
+                particleGravity(vec()) particle(5,200,0,"particle/smokesprites_0001",vec(200),R_H:position(),Vel * E_n * 20,random(360),random(10) - 5,255,0)
+            }
+            En:propDelete()
+        }
+        if(L_n){
+            soundPlayWorld("weapons/teleporter_ready.wav",150,R_H:position())
+            Eff_size = 1
+            Inx = Holo_effect:count() / 5 + 40
+            Holo_effect[Holo_effect:count() + 1,number] = Inx holoCreate(Inx,R_H:position(),vec(),R_H:hitNormal():toAngle() + ang(90,0,0)) holoColor(Inx,vec(0,200,0)) holoParent(Inx,E) holoMaterial(Inx,"lights/white") holoModel(Inx,"hq_torus")
+            Holo_effect[Holo_effect:count() + 1,vector] = vec(Eff_size,Eff_size,0)
+            Holo_effect[Holo_effect:count() + 1,vector] = vec(Eff_size,Eff_size,0) * (14 + E_n * 4)
+            Holo_effect[Holo_effect:count() + 1,number] = curtime() + 1
+            Holo_effect[Holo_effect:count() + 1,number] = 1
+            for(I = 1,10){
+                Vel = vec(cos(I * (360 / 10)),sin(I * (360 / 10)),0.1):rotate(R_H:hitNormal():toAngle() + ang(90,0,0))
+                particleGravity(vec()) particle(1,100,0,"sprites/light_glow02_add",vec(0,255,0),R_H:position(),Vel * E_n * 50,random(360),random(10) - 5,255,0)
+                particleGravity(vec()) particle(5,200,0,"sprites/light_glow02_add",vec(0,255,0),R_H:position(),Vel * E_n * 20,random(360),random(10) - 5,255,0)
+            }
+            En:propDelete()
+        }
+        if(D_n){
+            soundPlayWorld("items/para_open.wav",100,R_H:position())
+            Eff_size = 1
+            Inx = Holo_effect:count() / 5 + 40
+            Holo_effect[Holo_effect:count() + 1,number] = Inx holoCreate(Inx,R_H:position(),vec(),R_H:hitNormal():toAngle() + ang(90,0,0)) holoColor(Inx,vec(200,0,0)) holoParent(Inx,E) holoMaterial(Inx,"lights/white") holoModel(Inx,"hq_torus")
+            Holo_effect[Holo_effect:count() + 1,vector] = vec(Eff_size,Eff_size,0)
+            Holo_effect[Holo_effect:count() + 1,vector] = vec(Eff_size,Eff_size,0) * (14 + E_n * 4)
+            Holo_effect[Holo_effect:count() + 1,number] = curtime() + 1
+            Holo_effect[Holo_effect:count() + 1,number] = 1
+            for(I = 1,10){
+                Vel = vec(cos(I * (360 / 10)),sin(I * (360 / 10)),0.1):rotate(R_H:hitNormal():toAngle() + ang(90,0,0))
+                particleGravity(vec()) particle(1,100,0,"sprites/light_glow02_add",vec(255,0,0),R_H:position(),Vel * E_n * 50,random(360),random(10) - 5,255,0)
+                particleGravity(vec()) particle(2,200,0,"sprites/light_glow02_add",vec(255,0,0),R_H:position(),Vel * E_n * 30,random(360),random(10) - 5,255,0)
+            }
+            En:propDelete()
+        }
+    }
+    if(curtime() > Curt | !En:isValid()){
+        Rock:remove(I_9)
+        Rock_curt:remove(I_9)
+        Rock_type:remove(I_9)
+        if(En:isValid()){
+            soundPlayWorld("physics/concrete/concrete_break" + randint(2,3) + ".wav",100,En:pos())
+            for(Break = 1,10){particleGravity(vec(0,0,-100)) particle(5,En:radius() / 2,0,"particles/smokey",vec(100,70,50),En:toWorld(randvec(En:boxSize(),-En:boxSize()) / 2),vec(),random(360),random(10) - 5)}
+            En:propDelete()
+        }
+    }
+
+    if(I_9 >= Rock:count()){I_9 = 0 break}
+}
+
+while(perf() & Wet:count()){
+    I_13 += 1
+    En = Wet[I_13,entity]
+    Tn = Wet_curt[En:toString(),number]
+
+    String = Freez:concat("/")        
+    if(String:find(En:toString())){Freezed = 1}
+
+    if(!Timer_6 & !Freezed){particleGravity(vec(0,0,-100)) particle(5,1,10,"effects/splash1",vec(150,200,255),En:boxCenterW() + randvec(-En:boxSize(),En:boxSize()) / 2,randvec(1,-1) * 10,random(360),random(10) - 5,255,0)}
+    if(curtime() >= Tn | En:isOnFire()){
+
+        if(En:isOnFire()){
+            #En:extinguish()
+            particleGravity(vec(0,0,200)) particle(1,En:radius() / 2,En:radius(),"particle/smokesprites_0001",vec(200),En:boxCenterW(),randvec(1,-1) * 10,random(360),random(10) - 5,255,0)
+        }
+        Wet_curt[En:toString(),number] = 0
+        Wet:remove(I_13)
+    }
+    if(I_13 >= Wet:count()){I_13 = 0 break}
+}
+
+while(perf() & Freez:count()){
+    I_11 += 1
+    En = Freez[I_11,entity]
+    Tn = Freez_time[En:toString(),number]
+    PSn = Freez_prop[I_11,entity]
+    
+    Freez_time[En:toString(),number] = Tn - (0.1 + 10 * En:isOnFire())
+
+    if(Tn > 200){Freez_time[En:toString(),number] = 200}
+    if(Tn >= 100){
+        if(En:isPlayer()){
+            if(!PSn:isValid()){
+                Propspawn = propSpawn("models/props_wasteland/rockcliff01k.mdl",ang(),1)
+                Propspawn:setMaterial("models/shiny")
+                Propspawn:setColor(vec(200,250,255))
+                Freez_prop[I_11,entity] = Propspawn
+            }
+            else{
+                PSn:setPos(En:boxCenterW() + vec(0,-15,20))
+                PSn:setAng(ang())
+                PSn:propFreeze(1)
+                PSn:setMaterial("models/shiny")
+                PSn:setColor(vec(200,250,255),200)
+            }
+        }
+
+        if(En:health() <= 0){
+            if(En:pos() != vec()){
+                for(Break = 1,3){
+                    propSpawn("models/props_phx/construct/glass/glass_plate1x1.mdl",En:pos() + vec(0,0,(En:height() / 3) * Break),1):propBreak()
+                }
+            }   
+        }
+        if(En:isNPC()){
+            En:npcStop()
+            En:npcSetTarget(noentity())
+            En:npcGoWalk(En:pos())
+            En:npcFace(En:pos() + ang(0,En:angles():yaw(),0):forward() * 10000000)
+            En:setMaterial("models/shiny")
+            En:setColor(vec(200,250,255))
+        }
+    }
+    else{
+        En:setMaterial("")
+        En:setColor(vec(200,250,255) * (Tn / 100) + vec(255) * (1 - (Tn / 100)))
+        if(PSn:isValid()){
+            for(Break = 1,3){
+                propSpawn("models/props_phx/construct/glass/glass_plate1x1.mdl",PSn:pos() + vec(0,0,(PSn:height() / 3) * Break - PSn:height() / 2),1):propBreak()
+            }
+            PSn:propDelete()
+        }
+    }
+    
+    if(En:health() <= 0 | Tn <= 0){Freez_time[En:toString(),number] = 0 Freez:remove(I_11) PSn:propDelete() Freez_prop:remove(I_11)}
+    if(I_11 >= Freez:count()){I_11 = 0 break}
+}
+
+while(perf() & Ice:count()){
+    I_8 += 1
+    En = Ice[I_8,entity]
+    Curt = Ice_curt[I_8,number]
+    if(En:isOnFire()){
+        if((Curt - curtime()) > 2){Ice_curt[I_8,number] = curtime() + 1 Curt = curtime() + 1}
+        #En:extinguish()
+    }
+
+    if(curtime() <= (Curt - 1) & (Curt - curtime()) < 9){En:setAlpha(255)}
+    if(curtime() <= (Curt - 9)){En:setAlpha((1 - (Curt - curtime() - 9)) * 255)}
+    if(curtime() <= Curt & (Curt - curtime()) < 2){En:setAlpha((Curt - curtime()) * 255)}
+
+    if(curtime() > Curt){Ice:remove(I_8) Ice_curt:remove(I_8) En:propDelete()}
+    if(I_8 >= Ice:count()){I_8 = 0 break}
+}
+while(perf() & Earthquake:count()){
+    I_15 += 1
+    En = Earthquake[I_15,entity]
+    Tyn = Earthquake_type[I_15,string]
+    Ti_n = Earthquake_time[I_15,number]
+
+    W_n = Tyn:sub(1,1):toNumber()
+    L_n = Tyn:sub(3,3):toNumber()
+    C_n = Tyn:sub(5,5):toNumber()
+    D_n = Tyn:sub(7,7):toNumber()
+    E_n = Tyn:sub(9,9):toNumber()
+    F_n = Tyn:sub(11,11):toNumber()
+    
+    if(curtime() > Ti_n & curtime() < (Ti_n + 0.25)){
+        En:setPos(En:toWorld(vec(0,0,1)))
+    }
+    if(curtime() > (Ti_n + 0.25) & En:getColor() != vec(254)){
+        En:setColor(vec(254))
+
+        rangerFilter(Earthquake)
+        R_H = rangerOffsetHull(1,En:pos() + vec(0,0,20),vec(0,0,1),vec(30))
+        R_ent = R_H:entity()
+        
+        Break_eff = 0
+        
+        if(W_n & C_n & !E_n){
+            En:soundPlay(I_15 + 10,0,"ambient/machines/slicer" + randint(1,4) + ".wav")
+            #R_ent:takeDamage(min(C_n,W_n) * 30)
+        }
+        if(E_n){En:soundPlay(I_15 + 10,0,"physics/concrete/boulder_impact_hard1.wav")}
+
+        if(F_n & W_n){
+            #R_ent:takeDamage(min(F_n,W_n) * 15)
+            
+            if(!Break_eff){particleGravity(vec(0,0,-50)) particle(0.5,5,75,"particle/smokesprites_0001",vec(200),En:pos(),vec(),random(360),random(2) - 1,255,0) Break_eff = 1}
+        }
+        if(W_n > F_n & W_n > C_n){
+            if(R_H:hit()){R_ent:magickWet(W_n * 2)}
+            if(!Break_eff){particleGravity(vec(0,0,-100)) particle(0.5,5,75,"effects/splash1",vec(100,200,255),En:pos(),vec(),random(360),random(2) - 1,255,0) Break_eff = 1}
+        }
+        if(L_n){
+            if(R_ent:isValid()){
+                #if(R_ent:health() < 100){R_ent:setHealth(min(100,R_ent:health() + L_n))}
+            }
+            if(!Break_eff){particleGravity(vec(0,0,-50)) particle(0.5,150,0,"sprites/light_glow02_add",vec(0,255,0),En:pos(),vec(),random(360),random(2) - 1,255,0) Break_eff = 1}
+        }
+        if(C_n > W_n){
+            if(R_ent:isValid()){
+                R_ent:magickFreez(C_n * 20)
+            }
+            if(!Break_eff){particleGravity(vec(0,0,-50)) particle(0.5,5,75,"particle/smokesprites_0001",vec(255),En:pos(),vec(),random(360),random(2) - 1,255,0) Break_eff = 1}
+        }
+        if(D_n){
+            if(R_ent:isValid()){
+                #R_ent:takeDamage(D_n * 5)
+            }
+            if(!Break_eff){particleGravity(vec(0,0,-50)) particle(0.5,150,0,"sprites/light_glow02_add",vec(255,0,0),En:pos(),vec(),random(360),random(2) - 1,255,0) Break_eff = 1}
+        }
+        if(E_n){
+            if(R_ent:isValid()){
+                #R_ent:takeDamage(E_n * 2)
+            }
+        }
+        if(F_n > W_n){
+            if(R_ent:isValid()){
+                #R_ent:ignite()
+            }
+            if(!Break_eff){particleGravity(vec(0,0,-100)) Rand = random(1) particle(0.5,5,75,"effects/fire_cloud2",vec(255,255 - Rand * 100,255 - Rand * 205),En:pos(),randvec(1,-1) * 30,random(360),random(2) - 1,255,0) Break_eff = 1}
+        }
+    }
+    if(curtime() > (Ti_n + 0.5)){
+        En:setPos(En:toWorld(vec(0,0,-1)))
+    }
+    
+    if(curtime() > (Ti_n + 0.75) | !En:isValid()){
+        En:propDelete()
+        Earthquake:remove(I_15)
+        Earthquake_type:remove(I_15)
+        Earthquake_time:remove(I_15)
+    }
+
+    if(I_15 >= Earthquake:count()){I_15 = 0 break}
+}
+while(perf() & Lightnings:count()){
+    I_5 += 1
+    In = Lightnings[I_5 * 8 - 1,number] - 1
+    In_pos = Lightnings[I_5 * 8,number]
+    Pn = Lightnings[I_5 * 8 - 7 + floor(In_pos),vector]
+
+    if(holoEntity(In):pos():distance(Lightnings[I_5 * 8 - 6,vector]) & In_pos < 1){Lightnings[I_5 * 8,number] = In_pos + 0.4}
+    else{
+        if(holoEntity(In):pos():distance(Pn) < 1){Lightnings[I_5 * 8,number] = In_pos + 1}
+    }
+    holoPos(In,Pn)
+    
+    if(holoEntity(In):pos():distance(Lightnings[I_5 * 8 - 2,vector]) < 1){
+        Lightnings_remove[Lightnings_remove:count() + 1,number] = In
+        Lightnings_remove[Lightnings_remove:count() + 1,number] = curtime() + 1
+
+        for(Remov = 1,8){Lightnings:remove(I_5)}
+    }
+    if(I_5 >= Lightnings:count() / 8){I_5 = 0 break}
+}
+
+if(changed(Casting) & !Casting){
+    I_2 = 0
+    Beam = array()
+    Holo_remove = 1
+
+    I_5 = 0
+    I_6 = 0
+    Holo_num = 0
+    soundStop(1,1)
+}
+while(perf() & Lightnings_remove:count()){
+    I_6 += 1
+    In = Lightnings_remove[I_6 * 2 - 1,number]
+    Curt = Lightnings_remove[I_6 * 2,number]
+    if(curtime() >= Curt){holoDelete(In) for(Remov = 1,2){Lightnings_remove:remove(I_6)}}
+    
+    if(I_6 >= Lightnings_remove:count() / 2){I_6 = 0 break}
+}
+
+while(perf() & Holo_effect:count()){
+    I_4 += 1
+    In = Holo_effect[I_4 * 5 - 4,number]
+    Siz_s = Holo_effect[I_4 * 5 - 3,vector]
+    Siz_e = Holo_effect[I_4 * 5 - 2,vector]
+    Curt = Holo_effect[I_4 * 5 - 1,number]
+    Leng = Holo_effect[I_4 * 5,number]
+    
+    X = (Curt - curtime()) / Leng
+
+    holoScale(In,Siz_s * X + Siz_e * (1 - X))
+    holoAlpha(In,min(255,X * 1000))
+    if(curtime() >= Curt & Curt & holoEntity(In):isValid()){
+        Holo_effect:remove(I_4) Holo_effect:remove(I_4) Holo_effect:remove(I_4) Holo_effect:remove(I_4) Holo_effect:remove(I_4)
+        holoDelete(In)
+    }
+    if(I_4 >= Holo_effect:count() / 5){I_4 = 0 break}
+}
+
+Sound = 0
+Timer_7 += 1 if(Timer_7 > 10){Timer_7 = 0}
+while(perf() & Shield_arr:count()){
+    I_3 += 1
+    En = Shield_arr[I_3,entity]
+    Ty_n = Shield_type[I_3,string]
+    Curt = Shield_curt[I_3,number]
+    
+    W_n = Ty_n:sub(1,1):toNumber()
+    L_n = Ty_n:sub(3,3):toNumber()
+    C_n = Ty_n:sub(5,5):toNumber()
+    Li_n = Ty_n:sub(7,7):toNumber()
+    D_n = Ty_n:sub(9,9):toNumber()
+    E_n = Ty_n:sub(11,11):toNumber()
+    F_n = Ty_n:sub(13,13):toNumber()
+
+    Mine_exp = 0
+    if(En:isValid()){
+        if(E_n | W_n & C_n){
+            if(E_n){
+                if(curtime() < (Curt - 9.5)){En:setPos(En:toWorld(vec(0,0,En:height() / 40)))}
+                if(curtime() > (Curt - 0.5)){En:setPos(En:toWorld(vec(0,0,-En:height() / 40)))}
+            }
+            else{
+                if(curtime() < (Curt - 4.75)){En:setPos(En:toWorld(vec(0,0,En:height() / 25)))}
+                if(curtime() > (Curt - 0.25)){En:setPos(En:toWorld(vec(0,0,-En:height() / 25)))}
+            }
+
+            Break_eff = 0
+            if(!Timer_7){
+                if(!(C_n & W_n) | E_n){
+                    if(W_n & !F_n){particleGravity(vec(0,0,-100)) particle(floor(E_n / 3 + 1),En:radius() / 3,En:radius() / 2,"effects/splash1",vec(100,200,255),En:toWorld(vec(0,0,En:height() / 2)),randvec(1,-1) * 30,random(360),random(2) - 1,255,0) Break_eff = 1}
+                    if(F_n & !W_n & !Break_eff){particleGravity(vec(0,0,-100)) Rand = random(1) particle(floor(E_n / 3 + 1),En:radius() / 3,En:radius() / 2,"effects/fire_cloud2",vec(255,255 - Rand * 100,255 - Rand * 205),En:toWorld(vec(0,0,En:height() / 2)),randvec(1,-1) * 30,random(360),random(2) - 1,255,0) Break_eff = 1}
+                    if(F_n & W_n & !Break_eff){particleGravity(vec(0,0,-50)) particle(floor(E_n / 3 + 1),En:radius() / 3,En:radius() / 2,"particle/smokesprites_0001",vec(200),En:toWorld(vec(0,0,En:height() / 2)),randvec(1,-1) * 30,random(360),random(2) - 1,255,0) Break_eff = 1}
+                    if(C_n & !Break_eff){particleGravity(vec(0,0,-50)) particle(floor(E_n / 3 + 1),En:radius() / 3,En:radius() / 2,"particle/smokesprites_0001",vec(255),En:toWorld(vec(0,0,En:height() / 2)),randvec(1,-1) * 30,random(360),random(2) - 1,255,0) Break_eff = 1}
+                    
+                    rangerFilter(Shield_arr)
+                    rangerIgnoreWorld(1)
+                    R_H = rangerOffsetHull(En:height() - En:radius() / 2,En:pos() + vec(0,0,En:radius() / 2),vec(0,0,1),vec(En:radius()))
+
+                    if(R_H:hit()){
+                        R_ent = R_H:entity()
+                        
+                        if(W_n > F_n){
+                            if(!R_ent:isAlive()){
+                                #if(R_ent:isOnFire()){R_ent:extinguish()}
+                            }else{
+                                R_ent:magickWet(10)
+                            }
+                        }
+                        
+                        if(F_n > W_n){
+                            #if(!R_ent:isOnFire()){R_ent:ignite()}
+                        }
+                        
+                        if(C_n){
+                            if(R_ent:isAlive()){R_ent:magickFreez(C_n / 4)}
+                        }
+                        
+                        if(F_n & W_n){
+                            #R_ent:takeDamage(min(F_n,W_n) / 10)
+                        }
+                    }
+                }
+                if(L_n & !Break_eff){particleGravity(vec(0,0,50)) particle(floor(E_n / 3 + 1),En:radius() / 2,0,"sprites/light_glow02_add",vec(0,255,0),En:toWorld(randvec(En:boxSize(),-En:boxSize()) / 3),(randvec(1,-1)) * 5,random(360),random(2) - 1,255,0) Break_eff = 1}
+                if(D_n & !Break_eff){particleGravity(vec(0,0,50)) particle(floor(E_n / 3 + 1),En:radius() / 2,0,"sprites/light_glow02_add",vec(255,0,0),En:toWorld(randvec(En:boxSize(),-En:boxSize()) / 3),(randvec(1,-1)) * 5,random(360),random(2) - 1,255,0) Break_eff = 1}
+            }
+        }
+        elseif(!Li_n){
+            if(L_n | D_n){
+                rangerFilter(Shield_arr)
+                rangerIgnoreWorld(1)
+                R_H = rangerOffsetHull(10,En:pos(),vec(0,0,1),vec(10))
+                if(R_H:hit()){
+                    Mine_exp = 1
+                }
+    
+                if(L_n){Color = vec(0,255,0)}
+                if(D_n){Color = vec(255,0,0)}
+                if(W_n){Color = vec(150,200,255)}
+                if(C_n){Color = vec(255)}
+                if(F_n){Color = vec(255,150,0)}
+                if(W_n & F_n){Color = vec(200)}
+    
+                Inx = En:id() + 100000 if(!holoEntity(Inx):isValid()){holoCreate(Inx,En:pos(),vec(1.2),ang()) holoModel(Inx,"icosphere3") holoParent(Inx,En) holoMaterial(Inx,"models/props/cs_office/clouds") holoColor(Inx,Color)}
+            }
+        }
+        if(!(W_n & C_n) & !E_n){
+
+            if(!Li_n){
+                rangerFilter(Shield_arr)
+                rangerIgnoreWorld(1)
+                R_H = rangerOffsetHull(70,En:pos() + vec(0,0,30),vec(0,0,1),vec(30))
+
+                if(!(L_n | D_n)){
+                    if(R_H:hit()){
+                        R_ent = R_H:entity()
+                        
+                        if(W_n > F_n){
+                            if(!R_ent:isAlive()){
+                                #if(R_ent:isOnFire()){R_ent:extinguish()}
+                            }else{
+                                R_ent:magickWet(10)
+                            }
+                        }
+                        
+                        if(F_n > W_n){
+                            #if(!R_ent:isOnFire()){R_ent:ignite()}
+                        }
+                        
+                        if(C_n){
+                            if(R_ent:isAlive()){R_ent:magickFreez(C_n / 4)}
+                        }
+                        
+                        if(F_n & W_n){
+                            #R_ent:takeDamage(min(F_n,W_n) / 10)
+                        }
+                    }
+                    
+                    Break_eff = 0
+                    if(!Timer_7){
+                        if(W_n & !F_n){
+                            particleGravity(vec(0,0,-100)) particle(1,50,15,"effects/splash1",vec(100,200,255),En:pos() + vec(0,0,10),randvec(1,-1) * 15 + vec(0,0,100),random(360),random(2) - 1,255,0) Break_eff = 1
+                            if(!Sound){
+                                En:soundPlay(9,0,"ambient/water/water_splash" + randint(1,3) + ".wav") soundPitch(9,100 + random(40) - 10)
+                                Sound = 1
+                            }
+                        }
+                        if(F_n & !W_n & !Break_eff){
+                            particleGravity(vec(0,0,100)) Rand = random(1) particle(1,50,15,"effects/fire_cloud2",vec(255,255 - Rand * 100,255 - Rand * 205),En:pos() + vec(0,0,10),randvec(1,-1) * 15 + vec(0,0,50),random(360),random(2) - 1,255,0) Break_eff = 1
+                            if(!Sound){
+                                En:soundPlay(9,0,"ambient/fire/gascan_ignite1.wav") soundPitch(9,100 + random(40) - 10)
+                                Sound = 1
+                            }
+                        }
+                        if(F_n & W_n & !Break_eff){particleGravity(vec(0,0,50)) particle(1,50,15,"particle/smokesprites_0001",vec(200),En:pos() + vec(0,0,10),randvec(1,-1) * 15 + vec(0,0,50),random(360),random(2) - 1,255,0) Break_eff = 1
+                            if(!Sound){
+                                En:soundPlay(9,0,"ambient/machines/steam_release_2.wav") soundPitch(9,100 + random(40) - 10)
+                                Sound = 1
+                            }
+                        }
+                        if(C_n & !Break_eff){
+                            particleGravity(vec(0,0,50)) particle(1,50,15,"particle/smokesprites_0001",vec(255),En:pos() + vec(0,0,10),randvec(1,-1) * 15 + vec(0,0,50),random(360),random(2) - 1,255,0) Break_eff = 1
+                            if(!Sound){
+                                En:soundPlay(9,0,"ambient/wind/wind_hit3.wav") soundPitch(9,100 + random(40) - 10)
+                                Sound = 1
+                            }
+                        }
+                    }
+                }
+            }
+            else{
+                if(Timer_7 == 1){
+                    rangerFilter(Shield_arr)
+                    rangerIgnoreWorld(1)
+                    R_H = rangerOffsetHull(70,En:pos() + vec(0,0,-20),vec(0,0,1),vec(30))
+
+                    L_ent = R_H:entity()
+                    if(R_H:hit()){L_end = R_H:position()}
+                    else{L_end = En:pos() - vec(0,0,100)}
+
+                    L_pos = En:pos() + vec(0,0,10)
+                
+                    if(Li_n){
+                        Color = vec(255,100,255)
+                        String_2 = Wet:concat("/")
+                        if(String_2:find(L_ent:toString())){WET_2 = 2}
+        
+                        #L_ent:takeDamage(Li_n * (WET_2 + 1) / 8)
+                    }
+                    if(D_n){
+                        Color = vec(255,0,0)
+                        #L_ent:takeDamage(D_n / 4)
+                    }
+                    if(L_n){
+                        Color = vec(0,255,0)
+                        if(L_ent:isAlive()){
+                            if(L_ent:isPlayer()){
+                                #if(L_ent:health() < 100){L_ent:setHealth(min(100,L_ent:health() + L_n))}
+                            }
+                            else{
+                                #L_ent:setHealth(L_ent:health() + L_n)
+                            }
+                        }
+                    }
+            
+                    if(F_n){
+                        Color = vec(255,150,0) if(!D_n){}else{Color = vec(255,200,0)}
+                        #if(!L_ent:isOnFire()){L_ent:ignite()}
+                    }
+                    if(C_n){
+                        Color = vec(255)
+                        if(L_ent:isAlive()){L_ent:magickFreez(C_n * 2)}
+                    }
+                    Holo_num += 1
+                
+                    Part_s = vec(random(20) - 10,random(20) - 10,random(100) - 50)
+                    
+                    if(!Sound){
+                        En:soundPlay(9,0,"ambient/energy/zap9.wav") soundPitch(9,100 + random(40) - 10)
+                        Sound = 1
+                    }
+
+                    if(!C_n & !F_n){
+                        if(L_n | D_n | Li_n){particleGravity(vec()) particle(1,100,0,"sprites/light_glow02_add",Color,En:pos() + Part_s,vec(0,0,0),random(360),random(10) - 5)}
+                    }
+
+                    if(C_n){particleGravity(vec()) particle(1,50,0,"particle/smokesprites_0001",Color,En:pos() + Part_s,vec(0,0,0),random(360),random(10) - 5)}
+                    if(F_n){particleGravity(vec()) Rand = random(1) particle(1,50,0,"effects/fire_cloud2",vec(255,255 - Rand * 100,255 - Rand * 205),En:pos() + Part_s,vec(0,0,0),random(360),random(10) - 5)}
+
+                    particleGravity(vec()) particle(1,25,0,"particle/water/watersplash_001a_refract",Color,En:pos() + vec(random(20) - 10,random(20) - 10,random(100) - 50),vec(0,0,0),random(360),random(10) - 5)
+                    #particle/water/watersplash_001a_refract
+                }
+            }
+        }
+
+        if(E_n | W_n & C_n | Mine_exp){
+            if(L_n | D_n | Mine_exp){
+                Break_eff = 0
+                if(curtime() >= (Curt - 1) | Mine_exp){
+                    Force = 0
+                    Damage = 0
+                    if(C_n & !W_n){Rad = C_n Damage += C_n / 10 Force += C_n}
+                    if(W_n & !F_n){Rad = W_n Force += W_n * 4}
+                    if(F_n & !W_n){Rad = F_n Damage += F_n / 2}
+                    if(F_n & W_n){Rad = min(F_n,W_n) Force += min(F_n,W_n) Damage += min(F_n,W_n)}
+                    if(D_n){Rad = D_n Damage += D_n}
+                    if(L_n){Rad = L_n}
+            
+                    findClearBlackList()
+                    findClearWhiteList()
+                    findExcludeEntities(Sound_ent)
+                    findInSphere(En:pos(),Rad * 60)
+                    Ar = findToArray()
+                    for(Inx = 1,Ar:count()){
+                        En_2 = Ar[Inx,entity]
+                        if(En_2:mass() | En_2:isAlive()){
+
+                            if(F_n > W_n){
+                                #if(!En_2:isOnFire()){En_2:ignite()}
+                            }
+                            if(W_n > F_n & W_n > C_n){
+                            if(!En_2:isAlive()){
+                                    #if(En_2:isOnFire()){En_2:extinguish()}
+                                }
+                                else{
+                                    En_2:magickWet(10)
+                                }
+                            }
+                            if(C_n > W_n){
+                                if(En_2:isAlive()){En_2:magickFreez((C_n - W_n) * 40)}
+                            }
+                            #if(Damage){En_2:takeDamage(Damage * 10)}
+                            if(L_n){
+                                if(En_2:isAlive()){
+                                    if(En_2:isPlayer()){
+                                        #if(En_2:health() < 100){En_2:setHealth(min(100,En_2:health() + L_n * 5))}
+                                    }
+                                    else{
+                                        #En_2:setHealth(En_2:health() + L_n * 5)
+                                    }
+                                }
+                            }
+                            if(Force){
+                                if(En_2:mass()){En_2:applyForce(O:eye() * Force * En_2:mass() * 40)}
+                                #if(En_2:isPlayer()){En_2:applyPlayerForce(O:eye() * Force * En_2:mass() * 10)}
+                            }
+                        }
+                        if(!perf()){break}
+                    }
+                    
+                    if(En:isValid()){
+                        if(!(C_n & W_n) | Earth_el){
+                            if(C_n & !W_n){
+                                soundPlayWorld("physics/glass/glass_impact_bullet4.wav",100,En:pos())
+                                for(I = 1,4){
+                                    Vel = vec(cos(I * (360 / 4)),sin(I * (360 / 4)),0.1)
+                                    particleGravity(vec()) particle(1,20,150,"particle/smokesprites_0001",vec(255),En:pos(),Vel * C_n * 50,random(360),random(10) - 5,255,0)
+                                }
+                                Break_eff = 1
+                                En:propDelete()
+                            }
+                            
+                            if(W_n & !F_n & !Break_eff){
+                                soundPlayWorld("ambient/water/water_splash" + randint(1,3) + ".wav",70,En:pos())
+                                for(I = 1,4){
+                                    Vel = vec(cos(I * (360 / 4)),sin(I * (360 / 4)),0.1)
+                                    particleGravity(vec(0,0,0)) particle(1,20,150,"effects/splash1",vec(100,150,255),En:pos(),Vel * W_n * 50,random(360),random(10) - 5,255,0)
+                                }
+                                Break_eff = 1
+                                En:propDelete()
+                            }
+                            
+                            if(F_n & !W_n & !Break_eff){
+                                soundPlayWorld("ambient/fire/ignite.wav",100,En:pos())
+                                for(I = 1,4){
+                                    Vel = vec(cos(I * (360 / 4)),sin(I * (360 / 4)),0.1)
+                                    Rand = random(1) particleGravity(vec(0,0,100)) particle(1,20,150,"effects/fire_cloud2",vec(255,255 - Rand * 100,255 - Rand * 205),En:pos(),Vel * F_n * 50,random(360),random(10) - 5,255,0)
+                                }
+                                Break_eff = 1
+                                En:propDelete()
+                            }
+                            
+                            if(W_n & F_n & !Break_eff){
+                                soundPlayWorld("ambient/machines/steam_release_2.wav",100,En:pos())
+                                for(I = 1,4){
+                                    Vel = vec(cos(I * (360 / 4)),sin(I * (360 / 4)),0.1)
+                                    particleGravity(vec()) particle(1,20,150,"particle/smokesprites_0001",vec(200),En:pos(),Vel * min(W_n,F_n) * 50,random(360),random(10) - 5,255,0)
+                                }
+                                Break_eff = 1
+                                En:propDelete()
+                            }
+                        }
+                        
+                        if(L_n & !Break_eff){
+                            soundPlayWorld("ambient/explosions/explode_8.wav",255,En:pos())
+                            Eff_size = 1
+                            Inx = Holo_effect:count() / 5 + 40
+                            Holo_effect[Holo_effect:count() + 1,number] = Inx holoCreate(Inx,En:pos(),vec(),R_H:hitNormal():toAngle() + ang(90,0,0)) holoColor(Inx,vec(0,200,0)) holoParent(Inx,E) holoMaterial(Inx,"lights/white") holoModel(Inx,"hq_torus")
+                            Holo_effect[Holo_effect:count() + 1,vector] = vec(Eff_size,Eff_size,0)
+                            Holo_effect[Holo_effect:count() + 1,vector] = vec(Eff_size,Eff_size,0) * (14 + L_n * 4)
+                            Holo_effect[Holo_effect:count() + 1,number] = curtime() + 1
+                            Holo_effect[Holo_effect:count() + 1,number] = 1
+
+                            for(I = 1,4){
+                                Vel = vec(cos(I * (360 / 4)),sin(I * (360 / 4)),0.1)
+                                particleGravity(vec()) particle(1,200,0,"sprites/light_glow02_add",vec(0,255,0),En:pos(),Vel * L_n * 50,random(360),random(10) - 5,255,0)
+                            }
+                            Break_eff = 1
+                            En:propDelete()
+                        }
+                        
+                        if(D_n & !Break_eff){
+                            soundPlayWorld("ambient/explosions/explode_8.wav",200,En:pos())
+                            Eff_size = 1
+                            Inx = Holo_effect:count() / 5 + 40
+                            Holo_effect[Holo_effect:count() + 1,number] = Inx holoCreate(Inx,En:pos(),vec(),R_H:hitNormal():toAngle() + ang(90,0,0)) holoColor(Inx,vec(200,0,0)) holoParent(Inx,E) holoMaterial(Inx,"lights/white") holoModel(Inx,"hq_torus")
+                            Holo_effect[Holo_effect:count() + 1,vector] = vec(Eff_size,Eff_size,0)
+                            Holo_effect[Holo_effect:count() + 1,vector] = vec(Eff_size,Eff_size,0) * (14 + D_n * 4)
+                            Holo_effect[Holo_effect:count() + 1,number] = curtime() + 1
+                            Holo_effect[Holo_effect:count() + 1,number] = 1
+        
+                            for(I = 1,4){
+                                Vel = vec(cos(I * (360 / 4)),sin(I * (360 / 4)),0.1)
+                                particleGravity(vec()) particle(1,200,0,"sprites/light_glow02_add",vec(255,0,0),En:pos(),Vel * D_n * 50,random(360),random(10) - 5,255,0)
+                            }
+                            En:propDelete()
+                        }
+                    }
+                }
+            }
+        }
+    
+        if(!W_n & !C_n & !L_n & !Li_n & !D_n & !E_n & !F_n){
+            if(!Timer_1 & En:model() != "models/balloons/hot_airballoon.mdl"){
+                Rand = randint(1,4)
+                if(Rand == 1){Vec_p = vec(En:boxSize():x() / 2 - random(En:boxSize():x()),En:boxSize():y() / 2,0)}
+                if(Rand == 2){Vec_p = vec(En:boxSize():x() / 2,En:boxSize():y() / 2 - random(En:boxSize():y()),0)}
+                if(Rand == 3){Vec_p = vec(En:boxSize():x() / 2 - random(En:boxSize():x()),-En:boxSize():y() / 2,0)}
+                if(Rand == 4){Vec_p = vec(-En:boxSize():x() / 2,En:boxSize():y() / 2 - random(En:boxSize():y()),0)}
+                particleGravity(vec()) particle(5,20,0,"sprites/light_glow02_add",vec(200,100,0),En:toWorld(Vec_p),vec())
+            }
+        
+            if(curtime() >= Curt & Curt){
+                X_C = 6
+                Y_C = 12
+    
+                if(!W_n & !C_n & !L_n & !Li_n & !D_n & !E_n & !F_n){
+                    for(I = 0,X_C * Y_C - 1){
+                        Vec_p = vec(En:boxSize():x() / 2 - (I - floor(I / X_C) * X_C) * En:boxSize():x() / (X_C - 1),En:boxSize():y() / 2 - floor(I / X_C) * En:boxSize():y() / (Y_C - 1),0)
+                        particleGravity(vec(0,0,-100)) particle(1,40,0,"sprites/light_glow02_add",vec(200,100,0),En:toWorld(Vec_p),randvec(-80,80),random(360),random(2) - 1)
+                    }
+                }
+                soundStop(En:id(),1)
+            }
+        }
+        if(curtime() >= Curt & Curt){En:propBreak()}
+    }
+
+    if(!En:isValid()){Shield_arr:remove(I_3) Shield_type:remove(I_3) Shield_curt:remove(I_3)}
+    if(I_3 >= Shield_arr:count()){I_3 = 0 break}
+}
+Damage_taken = O:health()

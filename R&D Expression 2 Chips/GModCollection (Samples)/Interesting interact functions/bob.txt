@@ -1,0 +1,144 @@
+#Thank You Liquos For Making That Prop Controller Where I Learned From
+
+### ### ### ### ### ###
+### Made By Perli55 ###
+### ### ### ### ### ###
+ 
+@name Bob
+@inputs AdvP:wirelink CamC:wirelink 
+@outputs Pos:vector HeadAng:angle Dist Boost Cols:array
+@outputs Skins:array Skin Full:vector F B L R LF LB RF RB HPos:vector Fix
+@model 
+runOnTick(1)
+runOnChat(1)
+if (duped()) {reset()}
+if (first()) {
+    holoCreate(0,vec(),vec())
+    holoCreate(1,entity():pos()+vec(15,0,2.3),vec(0.25,0.25,0.45),ang(),
+    vec(0,255,0),"cylinder")
+    holoCreate(2,entity():pos()+vec(15,0,5.6),vec(0.25,0.25,0.25),ang(),
+    vec(255,255,0),"sphere2")
+    holoCreate(3,entity():pos()+vec(15,0,6.5),vec(0.21,0.21,0.15),ang(),
+    vec(255,55,55),"dome")
+    holoCreate(4,entity():pos()+vec(16.2,0.6,6.2),vec(0.05,0.05,0.05),ang(),
+    vec(255,255,255),"sphere")
+    holoCreate(5,entity():pos()+vec(16.2,-0.6,6.2),vec(0.05,0.05,0.05),ang(),
+    vec(255,255,255),"sphere")
+    holoCreate(6,entity():pos()+vec(15,0,0),vec())
+    holoParent(3,2)
+    holoParent(4,2)
+    holoParent(5,2)
+    holoParent(6,1)
+    Skins=array("models/xqm/cellshadedcamo_diffuse",
+    "models/props/cs_assault/moneytop",
+    "models/props_c17/paper01",
+    "models/alyx/emptool_glow",
+    "models/xqm/lightlinesgb")
+    Dist=30
+    Cols=array(vec(255,0,0),vec(0,255,0),vec(0,0,255))
+    Full=vec(255,255,255)
+    Fix=entity():angles():yaw()
+    }
+
+if (changed(AdvP:entity("Entity"):driver())) {CamC:setNumber("Zoom",30)
+    CamC:setNumber("Activated",1)
+    AdvP:entity("Entity"):printDriver(4,"Type BobHelp For Instructions")    
+    }
+if (AdvP:number("Active")) {
+
+#Help Function
+if (chatClk(AdvP:entity("Entity"):driver())&lastSaid():lower()=="bobhelp") {
+    AdvP:entity("Entity"):printColorDriver(vec(0,255,0),"  Instructions:")
+    AdvP:entity("Entity"):printColorDriver(vec(255,170,0),"  Use W,A,S,D To Move")
+    AdvP:entity("Entity"):printColorDriver(vec(255,170,0),"  Use Alt Or Shift To To Boost Or Reduce Moving Speed")
+    AdvP:entity("Entity"):printColorDriver(vec(255,170,0),"  Press Alt + Mouse 1 or Alt + Mouse 2 To Zoom In And Out")
+    AdvP:entity("Entity"):printColorDriver(vec(255,170,0),"  Press Space To Make Bob Fly Up")
+    #AdvP:entity("Entity"):printColorDriver(vec(255,170,0)," Press Mouse 2 To Start Useing Bob's Hand")
+    #AdvP:entity("Entity"):printColorDriver(vec(255,170,0)," Press Mouse 1 To Shoot Something With Bob's Gun")
+    AdvP:entity("Entity"):printColorDriver(vec(255,170,0),"  Press R To Change Bob's Skin")
+    AdvP:entity("Entity"):printColorDriver(vec(255,170,0),"  Hold Alt And Shift To View Bob")
+    AdvP:entity("Entity"):printColorDriver(vec(0,170,255),"  Made By Perli555 a.k.a Joosep")
+    }
+
+#ThirdPerson View Screws This Up So This Tells To Switch To First Person View
+if (AdvP:number("ThirdPerson")) {AdvP:entity("Entity"):printDriver(4,"---- Press Ctrl ----")}
+
+#Zoom Function
+if (AdvP:number("Alt")&AdvP:number("Mouse1")) {Dist-=1}
+if (AdvP:number("Alt")&AdvP:number("Mouse2")) {Dist+=1}
+if (Dist<=0) {Dist=0.1}
+
+#Skins
+if (changed(AdvP:number("R"))&!first()) {Skin+=0.5}
+if (Skin==0) {holoColor(1,vec(0,255,0)),holoColor(3,vec(255,55,55))
+    holoAlpha(3,255),holoAlpha(2,255),holoAlpha(4,255),holoAlpha(5,255)}
+elseif (Skin==1) {holoColor(1,Full),holoColor(3,Full),
+    holoMaterial(1,Skins:string(1)),holoMaterial(3,Skins:string(1))}
+elseif (Skin==2) {holoColor(1,vec(0,255,0)),holoColor(3,vec(0,255,0))}
+elseif (Skin==3) {holoColor(1,Full),holoColor(3,Full),
+    holoMaterial(1,Skins:string(2)),holoMaterial(3,Skins:string(2))}
+elseif (Skin==4) {holoMaterial(1,Skins:string(3)),holoMaterial(3,Skins:string(3))}
+elseif (Skin==5) {holoMaterial(1,Skins:string(4)),holoMaterial(2,Skins:string(4))
+    holoMaterial(3,Skins:string(4)),holoMaterial(4,Skins:string(4)),holoMaterial(5,Skins:string(4))
+    holoColor(1,vec(0,255,0)),holoColor(3,vec(255,55,55))}
+elseif (Skin==6) {holoAlpha(3,0),holoMaterial(1,Skins:string(5)),holoMaterial(2,"")
+    holoMaterial(3,""),holoMaterial(4,""),holoMaterial(5,"")}
+elseif (Skin==7) {holoAlpha(3,0),holoAlpha(1,0)}
+elseif (Skin==8) {holoAlpha(2,0),holoAlpha(5,0),holoAlpha(4,0),
+    holoMaterial(1,""),holoAlpha(1,255)}
+if (Skin>=9) {Skin=0}
+
+#Camera Position And Camera Angles
+Pos=vec((holoEntity(0):pos()+AdvP:entity("Entity"):driver():eye()*Dist):x(),
+    (holoEntity(0):pos()+AdvP:entity("Entity"):driver():eye()*Dist):y(),
+    (holoEntity(0):pos()+(-AdvP:entity("Entity"):driver():eye())*Dist):z())
+if (Pos:z()<0) {Pos=Pos:setZ(1)}
+if(rangerOffset(holoEntity(0):pos(),Pos):hit()){Pos=rangerOffset(holoEntity(0):pos(),Pos):position()}
+CamC:setVector("Position",Pos)
+CamC:setAngle("Angle",ang((holoEntity(0):pos()-Pos):toAngle():pitch(),
+(holoEntity(0):pos()-Pos):toAngle():yaw(),0))
+
+#Bob's Head Angles
+HeadAng=ang(holoEntity(0):heading(Pos):pitch(),-holoEntity(0):heading(Pos):yaw()+180+-Fix,0)
+if (HeadAng:pitch()<-35) {HeadAng=HeadAng:setPitch(-35)} 
+elseif (HeadAng:pitch()>20) {HeadAng=HeadAng:setPitch(20)}
+
+#Viewing Bob
+if (!(AdvP:number("Alt")&AdvP:number("Shift"))) {holoAng(2,HeadAng),holoAng(1,ang(0,HeadAng:yaw(),0))}
+
+#Boost Function
+Boost=1
+if (AdvP:number("Shift")) {Boost=3} elseif (AdvP:number("Alt")) {Boost=0.5}
+
+#Flying Up
+if (changed(AdvP:number("Space"))) {holoEntity(6):setTrails(1,3,1,"trails/smoke",Cols:vector(randint(1,3)),255)}
+if (AdvP:number("Space")&!(rangerOffset(holoEntity(1):pos(),holoEntity(1):pos()+vec(0,0,3.8)):hit())) {
+    holoPos(1,holoEntity(1):pos()+vec(0,0,0.09*Boost*Boost))} else {holoEntity(6):removeTrails()}
+
+#Falling
+if (!(AdvP:number("Space"))&!(rangerOffset(holoEntity(1):pos(),holoEntity(1):pos()-vec(0,0,2.8)):hit())) 
+    {holoPos(1,holoEntity(1):pos()-vec(0,0,0.3))}
+
+#World Detection
+Hpos=holoEntity(1):pos()
+F=!(rangerOffset(Hpos+holoEntity(1):forward()*2.2+vec(0,0,2.5),Hpos+holoEntity(1):forward()*2.2+vec(0,0,-2.5)):hit())
+B=!(rangerOffset(Hpos+-holoEntity(1):forward()*2.2+vec(0,0,2.5),Hpos+-holoEntity(1):forward()*2.2+vec(0,0,-2.5)):hit())
+L=!(rangerOffset(Hpos+-holoEntity(1):right()*2.2+vec(0,0,2.5),Hpos+-holoEntity(1):right()*2.2+vec(0,0,-2.5)):hit())
+R=!(rangerOffset(Hpos+holoEntity(1):right()*2.2+vec(0,0,2.5),Hpos+holoEntity(1):right()*2.2+vec(0,0,-2.5)):hit())
+RF=!(rangerOffset(Hpos+(holoEntity(1):forward()+holoEntity(1):right())*2+vec(0,0,2.5),
+    Hpos+(holoEntity(1):forward()+holoEntity(1):right())*2+-vec(0,0,2.5)):hit())
+RB=!(rangerOffset(Hpos+(-holoEntity(1):forward()+holoEntity(1):right())*2+vec(0,0,2.5),
+    Hpos+(-holoEntity(1):forward()+holoEntity(1):right())*2+-vec(0,0,2.5)):hit())
+LF=!(rangerOffset(Hpos+(holoEntity(1):forward()+-holoEntity(1):right())*2+vec(0,0,2.5),
+    Hpos+(holoEntity(1):forward()+-holoEntity(1):right())*2+vec(0,0,-2.5)):hit())
+LB=!(rangerOffset(Hpos+(-holoEntity(1):forward()+-holoEntity(1):right())*2+vec(0,0,2.5),
+    Hpos+(-holoEntity(1):forward()+-holoEntity(1):right())*2+vec(0,0,-2.5)):hit()) 
+
+#Movement
+if (AdvP:number("W")&F&RF&LF) {holoPos(1,holoEntity(1):pos()+(holoEntity(1):forward()*Boost))}
+if (AdvP:number("S")&B&RB&LB) {holoPos(1,holoEntity(1):pos()+(-holoEntity(1):forward()*Boost))}
+if (AdvP:number("D")&R&RF&RB) {holoPos(1,holoEntity(1):pos()+(holoEntity(1):right()*Boost))}
+if (AdvP:number("A")&L&LF&LB) {holoPos(1,holoEntity(1):pos()+(-holoEntity(1):right()*Boost))}
+holoPos(2,holoEntity(1):pos()+vec(0,0,3.3))
+holoPos(0,holoEntity(2):pos())
+        } else {CamC:setNumber("Activated",0)}

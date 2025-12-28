@@ -1,0 +1,14 @@
+@name TrueNOTGate
+@inputs In
+@outputs Out
+@persist 
+@trigger 
+runOnTick(1)
+if(In)
+{
+    Out = 0
+}
+else
+{
+    Out = 1
+}

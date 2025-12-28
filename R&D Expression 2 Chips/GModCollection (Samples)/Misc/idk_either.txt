@@ -1,0 +1,22 @@
+@name idk_either
+@inputs 
+@outputs 
+@persist [Delay,HoloCount,MaxHolo]:number
+@trigger 
+
+if(first())
+{
+    HoloCount = 0
+    Delay = 300
+    MaxHolo = 36
+    timer("idk",200)
+}
+if(clk("idk") && HoloCount < MaxHolo)
+{
+    holoCreate(HoloCount,entity():pos(),vec(2,2,0.5),ang(0,HoloCount*10,0))
+    holoModel(HoloCount,"models/Combine_Strider.mdl")
+    holoParent(HoloCount,entity())
+    soundPlay(1,0.5,"common/wpn_select.wav")
+    HoloCount++
+    timer("idk",Delay)
+}

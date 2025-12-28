@@ -1,0 +1,48 @@
+@name Aimboat
+@inputs 
+@outputs Players:array Toggle Clock
+@persist Clock Toggle Delay Angle
+@trigger 
+runOnTick(1)
+Delay = 1
+Key = owner():keyPressed("k")
+Angle += 15
+if(changed(Key) & Key)
+{
+    if(Toggle == 1)
+    {
+        Toggle = 0
+    }
+    elseif(Toggle == 0)
+    {
+        Toggle = 1
+    }
+}
+
+if(Toggle)
+{
+    Pos = owner():shootPos()
+    findInSphere(Pos,2500)
+    findIncludeEntities(players())
+    findExcludeEntity(owner())
+    findSortByDistance(Pos)
+    Players = findToArray()
+    Clock += 1
+    if(Clock >= Delay)
+    {
+        Target = Players[1,entity]:bone(1):pos()
+        owner():plySetAng((Target - Pos):toAngle())
+        
+        if(owner():keyAttack1())
+        {
+            Clock = 0
+        }
+    }
+    else
+    {
+        owner():plySetAng(ang(90,Angle,0))
+    }
+}
+
+
+ 

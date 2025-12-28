@@ -1,0 +1,45 @@
+@name Nuke Launcher - XninjazXxx
+@persist Alk:vector Prop:entity Player:entity Props:array  Shots:array
+@model models/hunter/plates/plate.mdl
+ interval(1)
+if (first()){entity():setMaterial("models/props_c17/frostedglass_01a")
+        entity():setColor(random(255),random(255),random(255))
+        hint("[!reset] to reset",10)
+        hint("[keyAttack2] shoot computers freely",10)
+        hint("[!E2help] to see this menu again",10)
+        entity():setAlpha(0) 
+}
+#Sounds
+    Shots[1, string] = "weapons/ar2/ar2_altfire.wav"
+    Shots[2, string] = "weapons/ar2/npc_ar2_altfire.wav"
+    Shots[3, string] = "weapons/crossbow/fire1.wav"
+    Shots[4, string] = "ambient/machines/catapult_throw.wav"
+#Timer
+        timer("delete",5000)
+#Apply Force
+        interval(1)
+        Alk=entity():pos()-entity():pos() + vec(0,0,60) + vec(0,0,60)
+        Prop:applyForce(owner():eye()*99999999+ Alk) 
+        #Variables
+LastSaid = lastSaid()
+E = entity()
+P = owner()
+#Spawn Props
+    if(changed(P:keyZoom())& P:keyZoom() ){Prop = propSpawn("models/props_phx/torpedo.mdl", P:pos()+(vec(60,60,60)), P:eyeAngles(), 0)
+        , P:soundPlay(1,0, Shots:string(round(random(4))))
+        Prop:setTrails(50,1,1, "trails/smoke", vec(100,100,100),250)
+        Prop:setAlpha(255)
+        Props:pushEntity(Prop)
+}
+if(clk("delete") & Props:count()) {
+      Props:shiftEntity():propBreak()
+       Prop:propBreak()
+}
+#E2Help
+if((LastSaid=="!E2help" & changed(LastSaid=="!E2help"))){
+print("[!reset] to reset")
+print("[Attack2] shoot computers freely")
+print("[!E2help] to see this menu again")
+}
+#Anti-Dupe Coding (Remove # for it to work) 
+#if (duped()){selfDestructAll()}

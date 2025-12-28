@@ -1,0 +1,17 @@
+@name AdditionalPodButtons
+@inputs Seat:entity
+@outputs F Attack3 G Comma FullStop LeftStraightBracket RightStraightBracket V Crouch
+@persist 
+@trigger 
+interval(40)
+Driver = Seat:driver()
+
+F = Driver:keyPressed("f")
+G = Driver:keyPressed("g")
+Comma = Driver:keyPressed("comma")
+FullStop = Driver:keyPressed("period")
+Attack3 = Driver:keyPressed("mouse_middle")
+LeftStraightBracket = Driver:keyPressed("lbracket")
+RightStraightBracket = Driver:keyPressed("rbracket")
+V = Driver:keyPressed("V")
+Crouch = Driver:keyDuck()

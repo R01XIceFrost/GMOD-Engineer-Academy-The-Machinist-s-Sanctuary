@@ -1,0 +1,5 @@
+@name Chip Buddy
+@persist Vector:vector
+interval(10)
+Vector=owner():pos()-(entity():pos()-vec(0,0,105)) #the -vec(0,0,105) part is so that it floats above your head instead of at your feet. 
+applyForce($Vector*15+Vector)

@@ -1,0 +1,11 @@
+@name EyeAngles
+@inputs 
+@outputs X Y Z
+@persist 
+@trigger 
+runOnTick(1)
+Ang = owner():eyeAngles()
+
+X = Ang:pitch()
+Y = Ang:yaw()
+Z = Ang:roll()

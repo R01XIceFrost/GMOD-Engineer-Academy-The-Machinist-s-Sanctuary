@@ -1,0 +1,354 @@
+@name Mini Crewmate
+@inputs 
+@outputs 
+@persist Vec:vector Ranger:ranger Dad:entity PrevPos:array RandomDistance RandomSpeed Move Anim [Legs1 Legs2 Legs3 AvailableColors]:array AngPos:angle Look Time Sit Height Range [KeyUse,ForceSit,SitOnHead,KeyReload]:number
+@trigger 
+@model models/hunter/blocks/cube025x025x025.mdl
+
+runOnTick(1)
+
+Vec = Ranger:position() + vec(0,0,Height) - entity():pos()
+
+if(duped()){reset()}
+
+if(first())
+{
+    AvailableColors = array(vec(197,17,17),vec(19,46,214),vec(20,126,47),vec(248,244,85),vec(236,84,184),vec(238,124,12),vec(110,48,188),vec(65,69,79),vec(113,72,29),vec(59,251,221),vec(82,239,58),vec(214,223,239))
+    #entity():propFreeze(1)
+    entity():setAlpha(0)
+    entity():setMass(100)
+    ForceSit = 0
+    Height = 16
+
+    #Colour = vec(randint(0,255),randint(0,255),randint(0,255))
+    Colour = AvailableColors[randint(12),vector]
+    #Colour = AvailableColors[1,vector] #Red
+    findByClass("player")
+    Dad = findClosest(entity():pos())
+    #Dad = owner()
+    
+    RandomDistance = randint(0,50)
+    RandomSpeed = randint(0,1500)
+
+    function void holo(Index,Parent:entity,Model:string,Pos:vector,Ang:angle,Scale:vector,Material:string,Color:vector,Alpha)
+    {
+        holoCreate(Index)
+        holoModel(Index,Model)
+        holoPos(Index,Parent:toWorld(+Pos))
+        holoAng(Index,Parent:toWorld(+Ang))
+        holoScale(Index,Scale)
+        holoColor(Index,Color)
+        holoAlpha(Index,Alpha)
+        holoMaterial(Index,Material)
+        holoParent(Index,Parent)
+    }
+       
+    holo(1,entity(),"hq_rcylinder_thick",vec(0,0,0),ang(vec(0,0,0)),vec(1,1,1.2),"",Colour,255)
+    holo(2,entity(),"hq_rcube_thick",vec(-5.5,0,0),ang(vec(0,0,0)),vec(0.5,0.7,1),"",Colour,255)
+ 
+    holo(3,entity(),"hq_icosphere",vec(0,0,4),ang(vec(0,0,0)),vec(1),"",Colour,255)
+    holo(4,holoEntity(3),"hq_rcube_thick",vec(4.5,0,0),ang(vec(0,0,0)),vec(0.3,0.7,0.6),"",vec(150),255)
+
+    holo(5,entity(),"hq_rcylinder_thick",vec(0,3,-9),ang(vec(0,0,0)),vec(0.4,0.4,1),"",Colour,255)
+    holo(6,entity(),"hq_rcylinder_thick",vec(0,-3,-9),ang(vec(0,0,0)),vec(0.4,0.4,1),"",Colour,255)
+
+
+## runing legs
+
+    holo(7,entity(),"hq_rcylinder_thick",vec(-1.5,3,-7),ang(vec(45,0,0)),vec(0.4,0.4,0.8),"",Colour,255)
+    holo(8,entity(),"hq_rcylinder_thick",vec(-6,3,-9),ang(vec(90,0,0)),vec(0.4,0.4,0.55),"",Colour,255)
+    holo(9,entity(),"hq_rcylinder_thick",vec(4,-3,-9),ang(vec(-45,0,0)),vec(0.4,0.4,1),"",Colour,255)
+
+    holo(10,entity(),"hq_rcylinder_thick",vec(-1.5,-3,-7),ang(vec(45,0,0)),vec(0.4,0.4,0.8),"",Colour,255)
+    holo(11,entity(),"hq_rcylinder_thick",vec(-6,-3,-9),ang(vec(90,0,0)),vec(0.4,0.4,0.55),"",Colour,255)
+    holo(12,entity(),"hq_rcylinder_thick",vec(4,3,-9),ang(vec(-45,0,0)),vec(0.4,0.4,1),"",Colour,255)
+
+    for(A=7,12){
+    holoVisible(A,players(),0)}
+
+  # outlines
+
+    holo(13,entity(),"hq_rcylinder_thick",vec(0,0,0),ang(vec(0,0,0)),vec(-1.05,-1.05,-1.25),"",vec(0),255)
+    holo(14,entity(),"hq_rcube_thick",vec(-5.5,0,0),ang(vec(0,0,0)),vec(-0.55,-0.75,-1.05),"",vec(0),255)
+    holo(15,holoEntity(3),"hq_icosphere",vec(0,0,0),ang(vec(0,0,0)),vec(-1.05),"",vec(0),255)
+    holo(16,holoEntity(3),"hq_rcube_thick",vec(4.5,0,0),ang(vec(0,0,0)),vec(-0.35,-0.75,-0.65),"",vec(0),255)
+
+    holo(17,holoEntity(5),"hq_rcylinder_thick",vec(0),ang(vec(0,0,0)),vec(-0.45,-0.45,-1.05),"",vec(0),255)
+    holo(18,holoEntity(6),"hq_rcylinder_thick",vec(0),ang(vec(0,0,0)),vec(-0.45,-0.45,-1.05),"",vec(0),255)
+
+    holo(19,entity(),"hq_rcylinder_thick",vec(-1.5,3,-7),ang(vec(45,0,0)),vec(-0.45,-0.45,-0.85),"",vec(0),255)
+    holo(20,entity(),"hq_rcylinder_thick",vec(-6,3,-9),ang(vec(90,0,0)),vec(-0.45,-0.45,-0.6),"",vec(0),255)
+    holo(21,entity(),"hq_rcylinder_thick",vec(4,-3,-9),ang(vec(-45,0,0)),vec(-0.45,-0.45,-1.05),"",vec(0),255)
+
+    holo(22,entity(),"hq_rcylinder_thick",vec(-1.5,-3,-7),ang(vec(45,0,0)),vec(-0.45,-0.45,-0.85),"",vec(0),255)
+    holo(23,entity(),"hq_rcylinder_thick",vec(-6,-3,-9),ang(vec(90,0,0)),vec(-0.45,-0.45,-0.6),"",vec(0),255)
+    holo(24,entity(),"hq_rcylinder_thick",vec(4,3,-9),ang(vec(-45,0,0)),vec(-0.45,-0.45,-1.05),"",vec(0),255)
+
+
+    for(A=19,24){
+    holoVisible(A,players(),0)}
+
+    Legs1 = array(5,6,17,18)
+    Legs2 = array(7,8,9,19,20,21)
+    Legs3 = array(10,11,12,22,23,24)   
+
+    timer("unfreeze",500)
+    #entity():streamStart(1,"http://kimpan.hu/amongusconnect.ogg")
+    #entity():streamStart(1,"http://kimpan.hu/amongusconnect.ogg")
+    #webAudio("http://kimpan.hu/amongusconnect.ogg"):play()
+}
+#if(clk("unfreeze")){
+#entity():propFreeze(0)}
+
+
+# Ranger and holding up stuff
+#############################
+
+rangerFilter(entity())
+Ranger = rangerOffset(80,entity():pos(),vec(0,0,-1))
+
+if(Ranger:hit())
+{
+    entity():propGravity(0)
+    entity():applyForce((Vec + $Vec*3)*entity():mass()*10)
+}else{
+entity():propGravity(1)
+}
+
+Normal = vec(0,0,1)
+Ang = Normal:toAngle(-entity():forward())
+Ang = Ang:rotateAroundAxis(Ang:right(),-90)
+applyAngForce((entity():toLocal(Ang))*entity():mass()*2 + entity():angVel()*-tickInterval()*entity():mass()*20)
+
+
+
+rangerFilter(Dad)
+DownRanger=rangerOffset(1000000,Dad:pos()+vec(0,0,30),vec(0,0,-1))
+
+rangerFilter(entity())
+LRanger = rangerOffset(15,entity():pos(),-entity():right())
+
+rangerFilter(entity())
+RRanger = rangerOffset(15,entity():pos(),entity():right())
+
+if(LRanger:hit()){
+entity():applyForce(entity():right()*120)}
+
+if(RRanger:hit()){
+entity():applyForce(-entity():right()*120)}
+
+
+
+# Movement
+##############################
+
+Dist = entity():pos():distance(Dad:pos())
+DistPos = entity():pos():distance(PrevPos[1,vector])
+
+if(Dist>(100+RandomDistance) + Range & !Sit)
+{
+    Range = 0
+
+    Move=1
+
+    timer("record",200)
+
+    if(Dist>300){
+    Yaw = entity():bearing(PrevPos[1,vector])}         
+
+    if(Dist<300){
+    Yaw = entity():bearing(Dad:pos())}    
+    
+    AngPos = (-ang(0,Yaw,0)*5)
+    entity():applyAngForce((AngPos + $AngPos)*entity():mass())   
+    
+    entity():applyForce(entity():forward()*(4000+RandomSpeed))
+
+    if(DistPos<150){PrevPos:shiftVector()}
+
+    timer("teleport",30000)
+            
+}else{
+    Range = 100
+Move=0
+stoptimer("teleport")}
+
+
+if(clk("teleport")){
+PrevPos:clear()
+#entity():propFreeze(1)
+timer("zip",10)}
+
+if(clk("zip")){
+entity():setPos(Dad:toWorld(vec(-100,0,15)))
+#entity():propFreeze(0)
+}
+
+if(clk("record")){
+PrevPos:pushVector(DownRanger:position())    
+}
+
+
+# Look Around
+###################################
+
+if(!Move)
+{
+    timer("lookAround",randint(1000,3000))       
+}else{
+stoptimer("lookArround")
+Look=0}
+
+if(clk("lookAround")){
+Look = randint(1,8)
+
+if(Look!=1){
+holoAng(3,entity():toWorld(ang(vec(0,randint(-60,60),0))))}}
+
+if(Look==1 | Move){
+holoAng(3,(Dad:pos()+vec(0,0,Dad:height()/1.5) - holoEntity(3):pos()):toAngle())}
+
+
+
+
+
+
+# Animation
+###################################
+
+if(changed(Move)&!Move)
+{
+for(A=1,6){
+holoVisible(Legs1[A,number],players(),1)
+holoVisible(Legs2[A,number],players(),0)
+holoVisible(Legs3[A,number],players(),0)
+Anim=0
+stoptimer("SwapLegs")
+holoAng(3,entity():toWorld(ang(vec(0))))}
+}
+
+if(Move)
+{
+    timer("SwapLegs",50)    
+}
+
+
+if(clk("SwapLegs"))
+{
+    Anim=Anim+1
+    if(Anim==5){Anim=1}
+
+    if(Anim==1)    
+    {
+    for(A=1,6){
+    holoVisible(Legs1[A,number],players(),0)
+    holoVisible(Legs2[A,number],players(),1)
+    holoVisible(Legs3[A,number],players(),0)
+    }}
+
+    if(Anim==2 | Anim==4)    
+    {
+    soundPlay("footstep",0,"NPC_Eli.FootstepLeft")
+    
+    for(A=1,6){
+    holoVisible(Legs1[A,number],players(),1)
+    holoVisible(Legs2[A,number],players(),0)
+    holoVisible(Legs3[A,number],players(),0)
+    }}
+
+    if(Anim==3)    
+    {
+    for(A=1,6){
+    holoVisible(Legs1[A,number],players(),0)
+    holoVisible(Legs2[A,number],players(),0)
+    holoVisible(Legs3[A,number],players(),1)
+    }}
+   
+}
+
+
+
+# Sit and Wait
+###################################
+if(Dad:keyUse() && !KeyUse && Dad:aimEntity() == entity())
+{
+    if(ForceSit)
+    {
+        ForceSit = 0
+        SitOnHead = 0
+    }
+    else
+    {
+        ForceSit = 1
+        SitOnHead = 0
+    }
+    KeyUse = 1
+}
+elseif(!Dad:keyUse())
+{
+    KeyUse = 0
+}
+if(Dad:keyReload() && !KeyReload)
+{
+    if(Dad:aimEntity() == entity())
+    {
+        if(!SitOnHead)
+        {
+        ForceSit = 1
+        SitOnHead = 1
+        #print("Sitting on head")
+        #holoParent(3,Dad)
+        #print(owner():eye())
+        #print(owner():attachmentPos("head"))
+        }
+        else
+        {
+        ForceSit = 0
+        SitOnHead = 0
+        #print("Not sitting on head")
+        #holoUnparent(3)
+        }
+    }
+    KeyReload = 1
+}
+elseif(!Dad:keyReload())
+{
+    KeyReload = 0
+}
+if(SitOnHead)
+{
+    #Dad:shootPos()
+    #Offset = vec(0,0,10) + Dad:isCrouch() * vec(0,0,20)
+    Offset = vec(0,0,10) + Dad:attachmentPos("eyes")-Dad:shootPos()
+    entity():setPos(Dad:shootPos()+Offset)
+    #entity():propFreeze(1)
+    entity():setAng(ang(0,Dad:eyeAngles():yaw(),0))
+}
+else
+{
+    entity():propFreeze(0)
+}
+if((changed(Dad:isAlive())&!Dad:isAlive()) || ForceSit == 1)
+{
+    Sit=1
+    Height = 8
+    
+    holoAng(5,entity():toWorld(ang(vec(90,10,0))))
+    holoAng(6,entity():toWorld(ang(vec(90,-10,0))))
+    
+    holoPos(5,entity():toWorld(vec(4,3,-5)))
+    holoPos(6,entity():toWorld(vec(4,-3,-5)))
+}
+
+if((changed(Dist<300)&Dist<300 & Sit) || !ForceSit)
+{
+    holoAng(5,entity():toWorld(ang(vec(0))))
+    holoAng(6,entity():toWorld(ang(vec(0))))
+    
+    holoPos(5,entity():toWorld(vec(0,3,-9)))
+    holoPos(6,entity():toWorld(vec(0,-3,-9)))
+    
+    Height = 16
+    Sit=0
+}
+

@@ -1,0 +1,50 @@
+@name HoloArtillery
+@inputs Pod:entity
+@outputs Campos:vector Active Camang:angle
+@persist E:entity Startpos:vector Driver:entity Pressed Dist Dist2
+@trigger 
+@model models/hunter/plates/plate1x1.mdl
+
+interval(100)
+if(first()){
+
+Startpos=entity():toWorld(vec(30,0,20))
+E=entity()
+Driver=Pod:driver()
+}
+
+if(Pod:driver():model()!=""){Active=1}
+else{Active=0}
+
+holoCreate(1)
+holoPos(1,Startpos)
+holoAng(1,ang(Pod:driver():eyeAngles():pitch(),Pod:driver():eyeAngles():yaw(),E:angles():roll()))
+
+Pod:setPos(entity():toWorld(vec(0,0,20)))
+Pod:propFreeze(1)
+Pod:setAng(entity():angles())
+
+if(changed(Pod:driver():keyAttack1())&Pod:driver():keyAttack1()){
+
+        holoCreate(2)
+        holoPos(2,entity():toWorld(vec(30,0,20)))
+        holoAng(2,ang(Pod:driver():eyeAngles():pitch(),Pod:driver():eyeAngles():yaw(),E:angles():roll()))
+        holoModel(2,"models/props_phx/mk-82.mdl")
+
+    
+}
+
+
+holoPos(2,holoEntity(2):toWorld(vec(75,0,0)))
+holoAng(2,holoEntity(2):angles()+ang(5,0,0))
+
+Ranger=rangerOffset(500,holoEntity(2):pos(),holoEntity(2):forward())
+if((Ranger:position() - holoEntity(2):pos()):length() < 150){holoDelete(2)}
+
+if(holoEntity(2):angles():pitch() >=160 | holoEntity(2):angles():pitch() <=-160){holoAng(2,ang(180,holoEntity(2):angles():yaw(),holoEntity(2):angles():roll()))}
+
+Campos=Pod:toWorld(vec(-Dist2*1.8,-Dist*1.8,1350))
+Camang=ang(90,0,0)
+
+Dist=150*(Pod:driver():eyeAngles():pitch()/10)
+Dist2=150*(Pod:driver():eyeAngles():yaw()/10)

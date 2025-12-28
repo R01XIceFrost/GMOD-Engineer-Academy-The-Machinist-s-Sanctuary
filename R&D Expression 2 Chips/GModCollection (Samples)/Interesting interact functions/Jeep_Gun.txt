@@ -1,0 +1,21 @@
+@name Jeep Gun
+@inputs Car:entity Gun:entity
+@outputs Fire
+@persist Chat:array  
+@trigger 
+@model models/hunter/blocks/cube025x025x025.mdl
+interval(100)
+
+
+
+if(Car:driver():model()!=""){entity():setAng(owner():eyeAngles()),Gun:setAng(owner():eyeAngles())}
+else{entity():setAng(Car:angles()+ang(0,90,0)),Gun:setAng(Car:angles()+ang(0,0,0))}
+
+if(Car:driver():keyAttack1()){Fire=1}
+else{Fire=0}
+
+entity():propFreeze(1)
+if(Car:model()!=""){entity():setPos(Car:toWorld(vec(20,20,50))),entity():propNotSolid(1)}
+
+Gun:setPos(Car:toWorld(vec(20,20,50)))
+#Gun:setAng()

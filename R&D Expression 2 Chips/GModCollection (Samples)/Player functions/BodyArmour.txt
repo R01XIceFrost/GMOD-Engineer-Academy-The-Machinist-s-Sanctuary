@@ -1,0 +1,12 @@
+@name BodyArmour
+@inputs 
+@outputs 
+@persist Chest:entity
+@trigger 
+
+if(first())
+{
+    Chest = propSpawn("models/sprops/rectangles/size_2_5/rect_18x24x3.mdl",owner():toWorld(vec(0,0,50)),owner():toWorld(ang(0,0,90)),1)
+    Chest:parentTo(owner())
+    Chest:noCollideTo(1,owner(),0,0)
+}

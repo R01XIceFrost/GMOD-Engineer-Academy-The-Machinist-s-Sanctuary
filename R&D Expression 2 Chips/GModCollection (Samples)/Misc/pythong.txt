@@ -1,0 +1,40 @@
+@name Pythong
+@inputs 
+@outputs 
+@persist [Time,Oscillation,Distance,SnakeLength]:number HeadModel:string [OldPos,NewPos]:vector [BodyPartsPos,BodyPartsAng]:array
+@trigger 
+if(first())
+{
+    SnakeLength = 20
+    Distance = 100
+    HeadModel = "models/Gibs/HGIBS.mdl"
+    holoCreate(1,entity():pos())
+    holoModel(1,HeadModel)
+    #holoMaterial(1,"engine/singlecolor")
+    holoColor(1,vec(0,255,0))
+    BodyPartsPos = array()
+    BodyPartsAng = array()
+    for(I=2,SnakeLength)
+    {
+        holoCreate(I,entity():pos())
+        #holoMaterial(I,"engine/singlecolor")
+        holoModel(I,"models/props_junk/PopCan01a.mdl")
+        holoColor(I,vec(0,255,0))
+        holoScale(I,vec(1,1,2))
+    }
+}
+interval(50)
+Time+=5
+OldPos = NewPos
+NewPos = entity():pos()+vec(sin(Time)*Distance+ (sin(Time*9)*Distance/15),cos(Time)*Distance + (cos(Time*9)*Distance/15),10)
+Direction = (OldPos - NewPos):toAngle()+ang(0,180,0)
+BodyPartsPos:unshiftVector(NewPos)
+BodyPartsAng:unshiftAngle(Direction)
+if(BodyPartsPos:count()>SnakeLength){BodyPartsPos:pop() BodyPartsAng:pop()}
+holoPos(1,NewPos)
+holoAng(1,Direction)
+for(I=2,SnakeLength)
+{
+    holoPos(I,BodyPartsPos[I,vector])
+    holoAng(I,BodyPartsAng[I,angle]+ang(0,90,90))
+}

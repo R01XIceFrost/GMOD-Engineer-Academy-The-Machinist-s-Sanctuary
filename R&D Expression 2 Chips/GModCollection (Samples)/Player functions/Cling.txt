@@ -1,0 +1,11 @@
+@name Cling
+@inputs Base:entity
+@outputs 
+@persist 
+@trigger 
+runOnTick(1)
+LVector = vec(0,0,-100000)
+Vector = owner():toWorld(LVector)
+
+Base:applyForce(Vector - Base:pos())
+

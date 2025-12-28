@@ -1,0 +1,13 @@
+@name Bionic Crane Arm
+@inputs Entity:entity
+@outputs 
+@persist Holo:entity
+@trigger 
+runOnTick(1)
+if(first())
+{
+    Holo = holoCreate(1,owner():toWorld(vec(24,0,36)))
+    holoParent(1,owner())
+}
+holoPos(1,owner():toWorld(vec(24,0,36)))
+Entity:parentTo(Holo)

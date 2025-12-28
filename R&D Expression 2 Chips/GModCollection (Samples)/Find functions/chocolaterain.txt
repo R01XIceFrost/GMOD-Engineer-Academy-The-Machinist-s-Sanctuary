@@ -1,0 +1,21 @@
+@name MelonRain
+@inputs 
+@outputs 
+@persist PlayerList:array CurrentPlayer:number
+@trigger 
+@model models/props_junk/watermelon01.mdl
+if(first())
+{
+    CurrentPlayer = 1
+    PlayerList = players()
+}
+#CurrentPosition = PlayerList[CurrentPlayer,entity]:pos()
+CurrentPosition = entity():owner():pos()
+E=propSpawn("models/props_junk/watermelon01.mdl",CurrentPosition+vec(0,0,3000),0)
+CurrentPlayer += 1
+if(CurrentPlayer>=PlayerList:count()){CurrentPlayer = 1}
+#E=propSpawn("models/props_junk/watermelon01.mdl",entity():pos()+vec(randint(1250),randint(1250),randint(250)+3000),0)
+#E:setColor(vec(0,0,255))
+E:setColor(vec(127,72,0))
+E:setMaterial("engine/singlecolor")
+interval(500)

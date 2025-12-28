@@ -1,0 +1,7 @@
+@name ClassTest
+@inputs 
+@outputs 
+@persist 
+@trigger 
+runOnTick(1)
+print(owner():aimEntity():type())

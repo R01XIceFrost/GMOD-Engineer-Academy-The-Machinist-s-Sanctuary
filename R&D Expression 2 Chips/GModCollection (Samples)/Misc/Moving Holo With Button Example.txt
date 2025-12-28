@@ -1,0 +1,21 @@
+@name Moving Holo With Button Example
+@inputs Button
+@persist Val
+interval(100)
+
+if(first()){
+    holoCreate(1)
+    holoParent(1,entity())
+}
+
+if(Button){
+    if(Val<100){
+        Val+=10
+    }
+}else{
+    if(Val>0){
+        Val-=10
+    }
+}
+
+holoPos(1, entity():toWorld(vec(Val,0,15)))

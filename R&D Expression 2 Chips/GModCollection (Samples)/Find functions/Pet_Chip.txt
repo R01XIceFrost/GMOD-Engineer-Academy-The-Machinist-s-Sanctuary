@@ -1,0 +1,15 @@
+@name Inster Name Here
+@persist Alk:vector 
+interval(1)
+Alk=owner():pos()-(entity():pos()-vec(0,0,120))
+applyForce($Alk*50+Alk) 
+if(first())
+{
+holoCreate(1)
+holoModel(1,"icosphere2")
+entity():propNotSolid(1)
+entity():propFreeze(0)
+}
+
+holoPos(1,entity():pos())
+holoAng(1,entity():angles())

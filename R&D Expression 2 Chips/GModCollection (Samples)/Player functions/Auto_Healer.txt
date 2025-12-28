@@ -1,0 +1,178 @@
+@name Auto Healer
+@inputs H1:entity A1:entity
+@outputs A M R HP UP AP OP R1 Al R2 V On Num ChargeUp
+@persist 
+@trigger 
+if (first()|dupefinished()){
+    soundPurge()
+    Num=1
+    #concmd("say /me Has become the final boss! run!")
+    for(I=1,players():count()){
+        holoCreate(I+50)
+    holoAlpha(I+50,0)
+    holoPos(I+50,players()[I,entity]:pos())
+    holoEntity(I+50):soundPlay(I+50,5,"vo/mvm/mght/heavy_mvm_m_battlecry02.mp3")
+    ChargeUp=1
+}
+}
+if (changed(owner():isAlive())&owner():isAlive()==1){
+    soundPurge()
+    owner():soundPlay(1,0,"ambient/synth/amb_bts_spring_comb_lp_01.wav")
+    owner():soundPlay(0,0,"/ambient/levels/citadel/citadel_drone_loop1.wav")
+    owner():soundPlay(2,0,"/ambient/levels/citadel/field_loop1.wav")
+    owner():soundPlay(5,0,"/ambient/levels/citadel/citadel_drone_loop6.wav")
+    owner():soundPlay(20,0,"ambient/synth/amb_glados_diver_lp_01.wav")
+    soundPitch(0,90)
+    soundPitch(20,50)
+    holoCreate(1)
+    holoColor(1,vec(255,0,0))
+    holoModel(1,"hq_icosphere")
+    holoScale(1,vec(3.5,3.5,7))
+    holoPos(1,owner():weapon():pos())
+    holoParent(1,owner():weapon())
+    holoMaterial(1,"models/alyx/emptool_glow")
+    timer("a",1000)
+    OP=100
+    UP=owner():armor()
+    Al=255
+    V=1
+    On=1
+}
+runOnTick(1)
+H1:setPos(owner():pos()+vec(0,0,25))
+A1:setPos(owner():pos()+vec(0,0,25))
+H1:propNotSolid(1)
+A1:propNotSolid(1)
+H1:setAlpha(0)
+A1:setAlpha(0)
+if(On==1&ChargeUp==1){M=7
+    R=50}
+if(On==0|ChargeUp==0){M=0
+    R=0}
+
+if (clk("a")){A=1
+    timer("a2",5)
+    OP=HP
+    UP=AP
+    }
+if (clk("a2")){A=0
+    OP=HP
+    UP=AP
+    timer("a",15)}
+HP=owner():health()
+AP=owner():armor()
+if (changed(AP)&AP<UP){Al=255
+    V=1
+    Chargeup = 0
+    stoptimer("a")
+    stoptimer("a2")
+    stoptimer("Recharge")
+    timer("Recharge",4000)
+    R1=int(random(0,4)+1)
+    if (R1==1){owner():soundPlay(3,3.5,"/weapons/vaccinator_charge_tier_01.wav")
+        soundPitch(3,75)}
+    if (R1==2){owner():soundPlay(3,3.5,"/weapons/vaccinator_charge_tier_02.wav")
+        soundPitch(3,75)}
+    if (R1==3){owner():soundPlay(3,3.5,"/weapons/vaccinator_charge_tier_03.wav")
+        soundPitch(3,75)}
+    if (R1==4){owner():soundPlay(3,3.5,"/weapons/vaccinator_charge_tier_04.wav")
+        soundPitch(3,75)}
+    soundPitch(3,65)
+    OP=HP
+    A=0
+    M=0
+    R=0
+    
+}
+if (owner():isAlive()==0){soundStop(1)}
+if (On==1){
+holoAlpha(1,Al+15)
+soundPitch(1,100)
+soundVolume(1,V)
+soundVolume(0,V)
+soundVolume(2,V)
+soundVolume(5,V)
+soundVolume(20,100)
+if (Al<=20){Al=20}
+if (V<=0.1){V=0.1}
+Al-=2
+V-=0.002
+}
+if (On==0){
+holoAlpha(1,Al+10)
+soundPitch(1,0)
+soundVolume(1,0.001)
+soundVolume(0,0.001)
+soundVolume(2,0.001)
+soundVolume(5,0.001)
+soundVolume(20,0.001)
+
+if (Al<=0){Al=0}
+if (V<=0.001){V=0.001}
+Al-=10
+V-=0.005
+}
+holoColor(1,vec(255-(AP/(100*Num)*255),AP/(100*Num)*255,AP/(100*Num)*255))
+
+
+#
+if (changed(owner():frags())&owner():isAlive()==1){R2=int(random(0,18)+1)
+    if (R2==1){owner():soundPlay(4,4,"/vo/mvm/mght/heavy_mvm_domination01.mp3")}
+    if (R2==2){owner():soundPlay(4,4,"/vo/mvm/mght/heavy_mvm_domination02.mp3")}
+    if (R2==3){owner():soundPlay(4,4,"/vo/mvm/mght/heavy_mvm_domination03.mp3")}
+    if (R2==4){owner():soundPlay(4,4,"/vo/mvm/mght/heavy_mvm_domination04.mp3")}
+    if (R2==5){owner():soundPlay(4,4,"/vo/mvm/mght/heavy_mvm_domination05.mp3")}
+    if (R2==6){owner():soundPlay(4,4,"/vo/mvm/mght/heavy_mvm_domination06.mp3")}
+    if (R2==7){owner():soundPlay(4,4,"/vo/mvm/mght/heavy_mvm_domination07.mp3")}
+    if (R2==8){owner():soundPlay(4,4,"/vo/mvm/mght/heavy_mvm_domination08.mp3")}
+    if (R2==9){owner():soundPlay(4,4,"/vo/mvm/mght/heavy_mvm_domination09.mp3")}
+    if (R2==10){owner():soundPlay(4,4,"/vo/mvm/mght/heavy_mvm_domination10.mp3")}
+    if (R2==11){owner():soundPlay(4,4,"/vo/mvm/mght/heavy_mvm_domination11.mp3")}
+    if (R2==12){owner():soundPlay(4,4,"/vo/mvm/mght/heavy_mvm_domination12.mp3")}
+    if (R2==13){owner():soundPlay(4,4,"/vo/mvm/mght/heavy_mvm_domination13.mp3")}
+    if (R2==14){owner():soundPlay(4,4,"/vo/mvm/mght/heavy_mvm_domination14.mp3")}
+    if (R2==15){owner():soundPlay(4,4,"/vo/mvm/mght/heavy_mvm_domination15.mp3")}
+    if (R2==16){owner():soundPlay(4,4,"/vo/mvm/mght/heavy_mvm_domination16.mp3")}
+    if (R2==17){owner():soundPlay(4,4,"/vo/mvm/mght/heavy_mvm_domination17.mp3")}
+    if (R2==18){owner():soundPlay(4,4,"/vo/mvm/mght/heavy_mvm_domination18.mp3")}
+}
+
+if (changed(owner():armor())&owner():armor()==0&owner():isAlive()==1){
+    holoScale(1,vec(15.5,15.5,15))
+    On=0
+    Al=255
+    owner():soundPlay(14,4,"/ambient/energy/ion_cannon_shot2.wav")
+    owner():soundPlay(15,10,"/weapons/strider_buster/ol12_stickybombcreator.wav")
+    owner():soundPlay(16,7,"/weapons/crit_power.wav")
+    owner():soundPlay(-5,2,"AutoTitan/diag_gs_titan_def_shieldsoffline_02.wav")
+    owner():soundPlay(-15,10,"weapons/medi_shield_retract.wav")
+    soundPitch(-5,90)
+    soundPitch(-15,37)
+    
+    timer("regen",7000)}
+if (clk("regen")){On=1
+    Al=255
+    V=1
+    owner():soundPlay(14,4,"/ambient/machines/thumper_startup1.wav")
+    owner():soundPlay(-5,2,"AutoTitan/diag_gs_titan_def_shieldcoreactivated_01_02.wav")
+    soundPitch(-5,90)
+    holoScale(1,vec(3.5,3.5,7))
+    }
+if (owner():isAlive()==0){soundStop(14)
+    soundStop(15)
+    soundStop(16)
+    stoptimer("regen")
+}
+if(owner():isCrouch()==1&On==1){holoScale(1,vec(4,4,5))}
+if(owner():isCrouch()==0&On==1){holoScale(1,vec(3.5,3.5,7))}
+if(changed(ChargeUp)&ChargeUp==0){owner():soundPlay(-34,3,"ambient/synth/amb_glados_whoomp_03.wav")
+    soundPitch(-34,255)
+}
+if(clk("Recharge")){
+    timer("a",10)
+    ChargeUp=1
+    
+    owner():soundPlay(-35,3,"ambient/synth/amb_glados_whoomp_02.wav")
+    Al=255
+    soundPitch(-35,255)
+}

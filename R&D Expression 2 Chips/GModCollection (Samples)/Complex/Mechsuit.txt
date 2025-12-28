@@ -1,0 +1,235 @@
+@name Mechsuit
+@inputs DamageDetectorCore DamageDetectorLArm DamageDetectorRArm DamageClkCore DamageClkLArm DamageClkRArm Seat:entity LGun:entity RGun:entity
+@outputs One Core:entity LArm:entity RArm:entity Reset Fire1 Fire2
+@persist Core:entity LArm:entity RArm:entity CoreHealth LArmHealth RArmHealth
+@persist CoreReplacePercent CoreCount CoreMaxHealth ArmReplacementPercent ArmCount ArmMaxHealth
+@persist CoreModel:string ArmModel:string LArmAttached RArmAttached CoreAttached ExplosionSound:string LaunchSound:string ConnectSound:string Speed
+@trigger 
+@autoupdate
+@model models/props_phx/construct/metal_angle360.mdl
+if(first()|dupefinished()){
+    Speed=30
+    LArmAttached=1
+    RArmAttached=1
+    CoreAttached=1
+    One=1
+    Reset=1
+    CoreMaxHealth=50
+    ArmMaxHealth=25
+    CoreModel="models/props_phx/construct/windows/window_curve360x1.mdl"
+    ArmModel="models/props_borealis/bluebarrel001.mdl"
+    ExplosionSound="ambient/explosions/explode_4.wav"
+    LaunchSound="npc/env_headcrabcanister/launch.wav"
+    ConnectSound="ambient/explosions/explode_4.wav"
+    CoreHealth=CoreMaxHealth
+    LArmHealth=ArmMaxHealth
+    RArmHealth=ArmMaxHealth
+    CoreCount=1
+    ArmCount=2
+    #0-49 functionality
+    #50-200 detail
+    #300-400 projectile/effects
+    
+    holoCreate(0)#CORE
+    holoCreate(1)#LARM
+    holoCreate(2)#RARM
+    holoAng(0,entity():toWorld(ang(0,0,0)))
+    holoPos(1,holoEntity(0):toWorld(vec(-100,50,0)))
+    holoPos(2,holoEntity(0):toWorld(vec(100,50,0)))
+    holoParent(0,entity())
+    holoParent(1,holoEntity(0))
+    holoParent(2,holoEntity(0))
+    
+    holoCreate(300)
+    holoModel(300,"models/props_combine/headcrabcannister01a.mdl")
+    holoCreate(301)
+    holoModel(301,"models/props_combine/headcrabcannister01a.mdl")
+    holoCreate(302)
+    holoModel(302,"models/props_combine/headcrabcannister01a.mdl")
+}
+
+interval(100)
+if(Reset==1)
+{
+    Reset=0
+}
+holoAng(1,Seat:driver():eyeAngles())
+holoAng(2,Seat:driver():eyeAngles())
+
+if(changed(DamageClkCore)){
+    
+    CoreHealth-=(DamageDetectorCore)
+}
+if(changed(DamageClkLArm)){
+    
+    LArmHealth-=(DamageDetectorLArm)
+}
+if(changed(DamageClkRArm)){
+    
+    RArmHealth-=(DamageDetectorRArm)
+}
+
+if(CoreHealth<=0){
+    Core:propBreak()
+}
+if(LArmHealth<=0){
+    LArm:propBreak()
+}
+if(RArmHealth<=0){
+    RArm:propBreak()
+}
+
+
+if(LArmHealth>0&&LArmAttached==1){
+    
+    if(Seat:driver():keyAttack1()){
+        Fire1=1
+        
+    }else{Fire1=0}
+    
+}
+else{Fire1=0}
+
+if(RArmHealth>0&&RArmAttached==1){
+    
+    if(Seat:driver():keyAttack2()){
+        Fire2=1
+        
+    }else{Fire2=0}
+    
+}
+else{Fire2=0}
+
+if(Seat:driver():keySprint()){
+    Speed=50
+}
+else{Speed=30}
+
+holoPos(300,Core:pos())
+holoAng(300,(holoEntity(0):pos() - Core:pos()):toAngle())
+holoPos(301,LArm:pos())
+holoAng(301,(holoEntity(1):pos() - LArm:pos()):toAngle())
+holoPos(302,RArm:pos())
+holoAng(302,(holoEntity(2):pos() - RArm:pos()):toAngle())
+
+entity():setPos(entity():toWorld(vec(0,(Seat:driver():keyForward()-Seat:driver():keyBack())*Speed,(Seat:driver():keyJump()-Seat:driver():keySprint())*30)))
+entity():setAng(entity():toWorld(ang(0,(Seat:driver():keyLeft()-Seat:driver():keyRight())*10,0)))
+Seat:propFreeze(1)
+
+if(changed(CoreAttached)&&CoreAttached){
+    Core:soundPlay(3000,100,ConnectSound)
+}
+if(changed(LArmAttached)&&LArmAttached){
+    LArm:soundPlay(3001,100,ConnectSound)
+}
+if(changed(RArmAttached)&&RArmAttached){
+    RArm:soundPlay(3002,100,ConnectSound)
+}
+
+if(CoreAttached){
+Core:setAlpha(255)
+Core:setPos(holoEntity(0):pos())
+Core:setAng(holoEntity(0):angles())
+holoAlpha(300,0)
+}
+
+if(LArmAttached){
+    
+LArm:setAlpha(255)
+LArm:setPos(holoEntity(1):pos())
+LGun:setPos(holoEntity(1):toWorld(vec(50,0,0)))
+LGun:setAng(holoEntity(1):toWorld(ang(0,0,0)))
+LArm:setAng(holoEntity(1):toWorld(ang(90,0,0)))
+holoAlpha(301,0)
+}
+if(RArmAttached){
+RArm:setAlpha(255)
+RArm:setPos(holoEntity(2):pos())
+RGun:setPos(holoEntity(2):toWorld(vec(50,0,0)))
+RGun:setAng(holoEntity(2):toWorld(ang(0,0,0)))
+RArm:setAng(holoEntity(2):toWorld(ang(90,0,0)))
+holoAlpha(302,0)
+}
+Seat:setPos(entity():toWorld(vec(0,-20,10)))
+Seat:setAng(entity():angles())
+
+if(CoreReplacePercent<1){
+    CoreReplacePercent+=0.01
+}
+if(CoreReplacePercent>=1&&CoreCount<1){
+        CoreCount+=1
+        CoreReplacePercent=0
+}
+if(ArmReplacementPercent<1){
+    ArmReplacementPercent+=0.01
+}
+if(ArmReplacementPercent>=1&&ArmCount<2){
+        ArmCount+=1
+        ArmReplacementPercent=0
+}
+
+if(!CoreAttached){
+    Core:setAlpha(0)
+    Core:setAng((holoEntity(0):pos() - Core:pos()):toAngle()+ang(0,45,0))
+    Core:setPos(Core:toWorld(vec(50,0,0)))
+    holoAlpha(300,255)
+    if(Core:pos():distance(holoEntity(0):pos())<=60){
+        CoreAttached=1
+    }
+}
+if(!LArmAttached){
+    LArm:setAlpha(0)
+    LArm:setAng((holoEntity(1):pos() - LArm:pos()):toAngle())
+    LArm:setPos(LArm:toWorld(vec(50,0,0)))
+    holoAlpha(301,255)
+    if(LArm:pos():distance(holoEntity(1):pos())<=60){
+        LArmAttached=1
+    }
+}
+if(!RArmAttached){
+    RArm:setAlpha(0)
+    RArm:setAng((holoEntity(2):pos() - RArm:pos()):toAngle())
+    RArm:setPos(RArm:toWorld(vec(50,0,0)))
+    holoAlpha(302,255)
+    if(RArm:pos():distance(holoEntity(2):pos())<=60){
+        RArmAttached=1
+    }
+}
+
+if(Core:model()==""){
+    if(changed(Core:model())){
+        holoEntity(0):soundPlay(3000,100,ExplosionSound)
+    }
+    
+    if(CoreCount>0){
+        Core=propSpawn(CoreModel,holoEntity(0):toWorld(vec(0,0,5000)),holoEntity(0):toWorld(ang(0)),1)
+        holoEntity(0):soundPlay(200,100,LaunchSound)
+        CoreCount-=1
+        CoreHealth=CoreMaxHealth
+        CoreAttached=0
+    }
+}
+if(LArm:model()==""){
+    if(changed(LArm:model())){
+        holoEntity(1):soundPlay(3001,100,ExplosionSound)
+    }
+    if(ArmCount>0){
+        LArm=propSpawn(ArmModel,holoEntity(1):toWorld(vec(0,0,5000)),holoEntity(1):toWorld(ang(0)),1)
+        holoEntity(1):soundPlay(500,100,LaunchSound)
+        ArmCount-=1
+        LArmHealth=ArmMaxHealth
+        LArmAttached=0
+    }
+}
+if(RArm:model()==""){
+    if(changed(RArm:model())){
+        holoEntity(2):soundPlay(3002,100,ExplosionSound)
+    }
+    if(ArmCount>0){
+        RArm=propSpawn(ArmModel,holoEntity(2):toWorld(vec(0,0,5000)),holoEntity(2):toWorld(ang(0)),1)
+        holoEntity(2):soundPlay(800,100,LaunchSound)
+        ArmCount-=1
+        RArmHealth=ArmMaxHealth
+        RArmAttached=0
+    }
+}

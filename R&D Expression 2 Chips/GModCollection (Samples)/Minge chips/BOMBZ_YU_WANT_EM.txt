@@ -1,0 +1,12 @@
+@name BOMBZ? YU WANT EM?
+@model models/Combine_Helicopter/helicopter_bomb01.mdl
+findByClass("player")
+findIncludePlayer("Taco")
+
+Target = findClosest(owner():aimPos())
+
+runOnTick(1)
+EE=entity()
+applyForce(((Target:pos()+vec(0,0,0)-EE:pos())*10-EE:vel())*EE:mass())
+
+if((Target:pos()-EE:pos()):length()<50){P=propSpawn("models/props_phx/oildrum001_explosive.mdl",Target:pos(),0),P:propBreak()}

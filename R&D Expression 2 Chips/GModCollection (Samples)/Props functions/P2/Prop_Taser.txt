@@ -1,0 +1,105 @@
+@name Prop Taser
+@persist Prop:entity Player:entity Props:array Fired MaxAmmo Prop2:entity Prop3:entity Prop4:entity Props2:array Props3:array Props4:array
+@model models/hunter/plates/plate.mdl
+MaxAmmo = 100
+if (Fired>MaxAmmo)
+{
+    Props:propDelete()
+    Props2:propDelete()
+    Props3:propDelete()
+    Props4:propDelete()
+    timer("Fired",500)
+}
+if(clk("Fired"))
+{
+    selfDestruct()
+    hint("out of ammo",5)
+}
+if (first()){entity():setMaterial("models/props_c17/frostedglass_01a")
+    entity():setColor(random(255),random(255),random(255))
+hint("Made By XninjazXxx.",5)
+hint("100 Shots Remaining",2)
+entity():setAlpha(0) 
+entity():propNotSolid(1)
+}
+LastSaid = lastSaid()
+interval(1)
+ E = entity()
+    P = owner()
+    if(changed(P:keyAttack2())& P:keyAttack2()
+ ){
+Prop = propSpawn("models/alyx_emptool_prop.mdl", P:pos()+(vec(0,-1,60)), P:eyeAngles(), 0)
+Prop2 = propSpawn("models/alyx_emptool_prop.mdl", P:pos()+(vec(0,-2,55)), P:eyeAngles(), 0)
+Prop3 = propSpawn("models/alyx_emptool_prop.mdl", P:pos()+(vec(0,-3,50)), P:eyeAngles(), 0)
+Prop4 = propSpawn("models/alyx_emptool_prop.mdl", P:pos()+(vec(0,-4,45)), P:eyeAngles(), 0)
+, P:soundPlay(1,10, "ambient/fire/gascan_ignite1.wav")
+P:soundPlay(1,10, "ambient/fire/gascan_ignite1.wav")
+P:soundPlay(1,10, "ambient/fire/gascan_ignite1.wav")
+P:soundPlay(1,10, "ambient/fire/gascan_ignite1.wav")
+Prop:setTrails(5,5,100, "trails/laser", vec(100,100,100),250)
+Prop2:setTrails(5,5,100, "trails/laser", vec(100,100,100),250)
+Prop3:setTrails(5,5,100, "trails/laser", vec(100,100,100),250)
+Prop4:setTrails(5,5,100, "trails/laser", vec(100,100,100),250)
+Prop:setAlpha(255)
+propCanCreate()
+timer("delete",10000)
+timer("delete2",10000)
+timer("delete3",10000)
+timer("delete4",10000)
+timer("reload",750)
+timer("reload2",2500)
+timer("gone",7500)
+Fired++
+Props:pushEntity(Prop)
+Props:pushEntity(Prop2)
+Props:pushEntity(Prop3)
+Props:pushEntity(Prop4)
+}
+Prop:applyForce(Prop:forward()*9999999999)
+Prop2:applyForce(Prop2:forward()*9999999999)
+Prop3:applyForce(Prop3:forward()*9999999999)
+Prop4:applyForce(Prop4:forward()*9999999999)
+if(clk("gone")){
+    Prop:soundPlay(1,0, "beams/beamstart5.wav")
+    Prop2:soundPlay(1,0, "beams/beamstart5.wav" )
+    Prop3:soundPlay(1,0, "beams/beamstart5.wav")
+    Prop4:soundPlay(1,0, "beams/beamstart5.wav")
+}
+
+if(clk("delete") & Props:count()) {
+    Props:shiftEntity():propDelete()
+    Props:propDelete()
+}
+if(clk("delete2") & Props2:count()) {
+    Props2:shiftEntity():propDelete()
+    Props2:propDelete()
+}
+if(clk("delete3") & Props3:count()) {
+    Props3:shiftEntity():propDelete()
+    Props3:propDelete()
+}
+
+if(clk("delete4") & Props4:count()) {
+    Props4:shiftEntity():propDelete()
+    Props4:propDelete()
+}
+if(clk("reload2")){
+    Prop:soundPlay(1,10, "ambient/energy/spark6.wav")
+    Prop2:soundPlay(1,10, "ambient/energy/spark6.wav")
+    Prop3:soundPlay(1,10, "ambient/energy/spark6.wav")
+    Prop4:soundPlay(1,10, "ambient/energy/spark6.wav")
+}
+if(clk("reload"))
+{
+    Prop:soundPlay(1,0,"ambient/energy/weld2.wav")
+    Prop2:soundPlay(1,0,"ambient/energy/weld2.wav")
+    Prop3:soundPlay(1,0,"ambient/energy/weld2.wav")
+    Prop4:soundPlay(1,0,"ambient/energy/weld2.wav")
+}
+
+if (Fired==96 & changed(Fired==1)){hint("4 Shots Remaining",2)}
+if (Fired==97 & changed(Fired==2)){hint("3 Shots Remaining",2)}
+if (Fired==98 & changed(Fired==3)){hint("2 Shots Remaining",2)}
+if (Fired==99 & changed(Fired==4)){hint("1 Shots Remaining",2)}
+if(duped()){selfDestruct(),hint("You cannot duplicate this",10)}
+

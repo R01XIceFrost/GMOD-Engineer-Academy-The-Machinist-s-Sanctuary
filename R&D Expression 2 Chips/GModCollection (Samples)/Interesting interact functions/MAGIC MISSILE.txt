@@ -1,0 +1,46 @@
+@name MAGIC MISSILE
+@inputs LClick Pod:entity Pilot:entity
+@outputs Campos:vector Camang:angle Activated
+@persist P:entity Speed
+
+interval(50)
+
+findByClass("player")
+findExcludePlayer(Pod:driver())
+#findExcludeModel("models/player/police.mdl")
+#findExcludePlayer(Pilot:driver())
+#findExcludePlayer("MOOX")
+#findExcludePlayer("Fan")
+Target = findClosest(P:pos())
+
+
+EE=entity()
+if(changed(Pod:driver():keyAttack1())&Pod:driver():keyAttack1()){
+    P:propBreak()
+P=propSpawn("models/props_phx/mk-82.mdl",EE:pos()+vec(0,0,1000),0)
+timer("breakprop",40000)}
+holoCreate(1)
+holoPos(1,Target:shootPos())
+P:setPos(P:toWorld(vec(70*Speed,0,-1)))
+if(owner():keyAttack2()){P:setAng((P:pos() - Target:pos()):toAngle()+ang(180,0,0))}
+else{P:setAng(Pod:driver():eyeAngles())}
+if((Target:pos()-P:pos()):length()<80){P:propBreak(),stoptimer("breakprop")}
+
+Ranger=rangerOffset(150,P:pos(),P:forward()*vec(1))
+holoCreate(2)
+holoPos(2,Ranger:position())
+if((holoEntity(2):pos() - P:pos()):length() < 130){}
+P:propNotSolid(1)
+P:propFreeze(1)
+
+if(clk("breakprop")){P:propBreak(),stoptimer("breakprop")}
+holoAlpha(1,0)
+holoAlpha(2,0)
+
+Campos=P:toWorld(vec(20,0,0))
+Camang = P:angles()
+if(Pod:driver():model()!=""){Activated=1}
+else{Activated=0}
+if(Pod:driver():keySprint()){Speed=2}
+else{Speed=1}
+

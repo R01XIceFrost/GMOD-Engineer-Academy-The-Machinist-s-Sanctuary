@@ -1,0 +1,10 @@
+@name SetMass E2
+runOnTick(1)
+EW = entity():isConstrainedTo()
+if(first()){
+    EW:setMass(1)
+    timer("delete",1)  
+}
+if(clk("delete")){
+    selfDestruct()
+}

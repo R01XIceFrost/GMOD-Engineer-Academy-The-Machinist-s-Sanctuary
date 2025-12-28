@@ -1,0 +1,12 @@
+@name 
+@persist V:vector
+
+Chip = entity():pos()
+Me = owner():shootPos() + vec(0,0,50)
+Speed = entity():vel()
+Weight = entity():mass()
+
+interval(10)
+V = Me - Chip
+applyForce((V * 75 - Speed) * Weight)
+

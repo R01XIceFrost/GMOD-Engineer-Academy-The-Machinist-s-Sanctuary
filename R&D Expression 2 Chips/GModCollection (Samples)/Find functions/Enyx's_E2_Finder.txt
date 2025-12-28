@@ -1,0 +1,84 @@
+@name Enyx's E2 Finder
+@persist [Ar Cpu]:array Start ReturnPos:vector ChatCommand I Scan
+
+#YOU WILL NEED THE 'PLAYER FUNCTIONS E2 EXTENSIONS PACK' FOR THE TELEPORT FUNCTION TO WORK.
+
+#THE GREEN HOLO REFERS TO THE MOST CPU USING E2 ON THE SERVER.
+#THE DARKER THE SHADE OF RED, THE MORE CPU USING THAT E2 IS, IN CASES OTHER THAN THE GREEN ONE.
+
+runOnChat(1)
+interval(100)
+
+if (first()){
+
+#SETTING
+ChatCommand = 0
+#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#-#
+
+Scan = 1
+
+ReturnPos = owner():pos()
+
+findByClass("gmod_wire_expression2")
+Ar = findToArray()
+
+print("A total of "+Ar:count()+" expression 2's were found!")
+hint("Type a number from 1 to "+Ar:count()+" to teleport to that E2.",6)
+hint("Type 'close' to return to the starting position and stop the code",4)
+}
+
+if (Scan){
+
+I++
+
+holoCreate(I)
+holoVisible(I,players(),0)
+A = Ar[I,entity]:cpuUsage()
+Cpu:pushNumber(A)
+holoAlpha(I,40)
+holoScale(I,vec(2,2,2))
+holoModel(I,"hq_icosphere")
+holoMaterial(I,"phoenix_storms/fender_white")
+holoColor(I,vec(255-(Ar[I,entity]:cpuUsage()*1000000),0,0))
+holoAlpha(Cpu:maxIndex(),60)
+holoColor(Cpu:maxIndex(),vec(0,255,0))
+holoPos(I,Ar[I,entity]:pos())
+holoParent(I,Ar[I,entity])
+Ar[I,entity]:propNotSolid(0)
+
+if (I>Ar:count()){
+    I=0
+    timer("calc",300)
+    Scan=0
+}
+
+}
+
+if (clk("calc")){    
+printColor(vec(0,255,255),Ar[Cpu:maxIndex(),entity]:owner():name()+" (Index no. "+Cpu:maxIndex()+", "+round(Cpu:max()*1000000)+"us) has the highest cpu using E2")
+
+if (ChatCommand){
+    if (((Cpu:max()*1000000)>2000)&!Ar[Cpu:maxIndex(),entity]:owner():isAdmin()){concmd("say "+Ar[Cpu:maxIndex(),entity]:owner():name()+", that E2 is causing some lag, delete it please.")}
+}
+    
+timer("ovis",100)
+}
+
+if (clk("ovis")){
+
+for(I=1,Ar:count()){    
+holoVisible(I,owner(),1)  
+    }  
+}
+
+#ifdef entity:teleport(vector)
+if (chatClk(owner())) {
+        
+if ((owner():lastSaid():toNumber() > 0) & owner():lastSaid():toNumber() <= Ar:count()) {
+if (changed(owner():lastSaid())) {hideChat(1), owner():teleport(Ar[owner():lastSaid():toNumber(),entity]:pos()), print(4,"You have teleported to E2 number: "+ owner():lastSaid())}
+}
+elseif (changed(owner():lastSaid():toNumber()) & owner():lastSaid():toNumber() > Ar:count()) {hideChat(1), print(4,"That E2 index doesn't exist.")}
+
+if (changed(owner():lastSaid()) & owner():lastSaid():lower()=="close") {hideChat(1), owner():teleport(ReturnPos), print(owner():name()+", thank's for using Enyx's E2 Finder.") selfDestruct()}
+}
+#endif

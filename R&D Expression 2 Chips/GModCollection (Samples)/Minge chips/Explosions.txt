@@ -1,0 +1,20 @@
+@name Explosions
+@inputs 
+@outputs 
+@persist ExplodeOnce
+@trigger 
+runOnTick(1)
+
+Explode = owner():keyWalk()
+if(Explode == 0)
+{
+    ExplodeOnce = 1
+}
+
+if(Explode & ExplodeOnce)
+{
+    Barrel = propSpawn("models/props_c17/oildrum001_explosive.mdl",owner():aimPos(),1)
+    Barrel:propBreak()
+    ExplodeOnce = 0
+}
+

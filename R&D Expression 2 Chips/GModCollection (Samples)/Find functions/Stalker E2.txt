@@ -1,0 +1,10 @@
+@name Stalker
+@persist E:entity Target:entity
+runOnTick(1)
+if (findCanQuery()) {
+    findByClass("player")
+    Target = findClosest(E:massCenter())
+}
+if (!E) {E = entity():isWeldedTo()} elseif (E & Target) {
+    E:applyForce(((Target:pos()+vec(0,0,45)-E:massCenter())*10-E:vel())*E:mass())
+}

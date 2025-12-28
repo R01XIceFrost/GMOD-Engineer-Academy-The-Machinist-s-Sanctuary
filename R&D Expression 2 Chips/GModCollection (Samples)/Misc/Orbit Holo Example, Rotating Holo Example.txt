@@ -1,0 +1,17 @@
+@name Orbit Holo Example
+@persist Ang 
+interval(100)
+
+if(first()){
+    holoCreate(1)
+    holoPos(1,entity():toWorld(vec(0,0,15)))
+    holoAng(1,entity():toWorld(ang(0,0,0)))
+    holoParent(1,entity())
+    
+    holoCreate(2)
+    holoPos(2, holoEntity(1):pos()+vec(150,0,0))
+    holoAng(2, holoEntity(1):toWorld(ang(0,0,0)))
+    holoParent(2, holoEntity(1))
+}
+Ang+=5
+holoAng(1, entity():toWorld(ang(0,Ang,0)))

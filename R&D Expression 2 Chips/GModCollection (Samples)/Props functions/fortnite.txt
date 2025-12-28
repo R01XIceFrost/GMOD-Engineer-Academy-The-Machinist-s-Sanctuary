@@ -1,0 +1,113 @@
+@name fortnite
+@inputs 
+@outputs 
+@persist Mode PlateDistance Rotation DamageScale HoloEntity:entity
+@strict
+
+#[
+    Xandertron5000 - STEAM_0:1:42942061 - github.com/Xandertron
+    use a crowbar, mouse1 to place, mouse2 to change mode, r to rotate
+]#
+
+PlateDistance = 142.35
+Mode = 1
+DamageScale = 1
+
+propSpawnUndo(0)
+
+holoCreate(1)
+holoModel(1, "models/hunter/plates/plate3x3.mdl")
+holoColor(1, vec(170,170,255))
+holoAlpha(1, 140)
+HoloEntity = holoEntity(1)
+function vector getBuildingPos() {
+    Pos = round(owner():aimPos()/PlateDistance)*PlateDistance + vec(0,0,30)
+    switch (Mode) {
+        case 2, #wall
+            return Pos + (ang(0,-Rotation*90,0):forward() * PlateDistance/2) + vec(0,0,PlateDistance/2)
+        case 3, #ramp
+            return Pos + vec(0,0,PlateDistance/2)
+        default,
+            return Pos
+            
+    }
+}
+
+function angle getBuildingAng() {
+    switch (Mode) {
+        case 2,
+            return ang(90,Rotation*90,0)
+        case 3,
+            return ang(0,Rotation*90,45)
+        default,
+            return ang(0)
+    }
+}
+
+function string getBuildingModel() {
+    switch (Mode) {
+        case 3,
+            return "models/hunter/blocks/cube3x4x025.mdl"
+        default,
+            return "models/hunter/blocks/cube3x3x025.mdl"
+        
+    }
+}
+
+event tick() {
+    if (HoloEntity:isValid() == 0) {
+        holoCreate(1)
+        holoModel(1, getBuildingModel())
+        holoColor(1, vec(170,170,255))
+        holoAlpha(1, 140)
+        HoloEntity = holoEntity(1)
+    }
+    if ( owner():isAlive() & owner():weapon():type() == "weapon_crowbar") {
+        if (HoloEntity:isValid()) {
+            holoAlpha(1, 140)
+            holoPos(1, getBuildingPos())
+            holoAng(1, getBuildingAng())
+            holoModel(1, getBuildingModel())
+        }
+    }
+    elseif (HoloEntity:isValid()) {
+        holoAlpha(1, 0)
+    }
+}
+
+event keyPressed(Player:entity, Key:string, Down:number, KeyBind:string) {
+    if (Player == owner() & owner():isAlive() & owner():weapon():type() == "weapon_crowbar") {
+        if (KeyBind == "attack" & Down) {
+            Pos = round(owner():aimPos()/PlateDistance)*PlateDistance
+            if (propCanCreate()) {
+                Prop = propSpawn(getBuildingModel(),getBuildingPos(),getBuildingAng(),1)
+                if (Prop:isValid()) {
+                    Prop:setMaterial("phoenix_storms/wood")
+                }
+            }
+        }
+        if (KeyBind == "attack2" & Down) {
+            Mode++
+            if (Mode >= 4) {
+                Mode = 1   
+            }
+            print("mode: "+Mode)
+        }
+        if (KeyBind == "reload" & Down) {
+            Rotation++
+            if(Rotation >= 5) {
+                Rotation = 1
+            }
+            print("rotation: "+Rotation)
+        } 
+    }
+}
+
+event entityDamage(Victim:entity, Damage:damage) {
+    if (Damage & Damage:getInflictor():isValid() & Damage:getInflictor():inGodMode() == 0 & Victim:isValid() & Victim:owner() == owner() & (Victim:model() == "models/hunter/blocks/cube3x3x025.mdl" | Victim:model() == "models/hunter/blocks/cube3x4x025.mdl")) {
+        Victim:setColor(Victim:getColor()-vec(Damage:getAmount()/DamageScale))
+        if (Victim:getColor() == vec(0)) {
+            Victim:propDelete()
+        }
+    }   
+}

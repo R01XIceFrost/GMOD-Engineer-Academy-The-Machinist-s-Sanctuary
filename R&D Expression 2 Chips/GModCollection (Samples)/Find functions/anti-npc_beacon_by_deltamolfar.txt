@@ -1,0 +1,266 @@
+@name Anti-NPC Beacon by deltamolfar
+@persist SETTINGS:table
+@persist ENABLED ANGLE COLOR_PROGRESS COLOR_SWITCH SHOULD_RESTART
+@model models/hunter/blocks/cube075x075x075.mdl
+@strict
+
+#[
+    Just a minecraft beacon that kills any NPC in radius :)
+    
+    ###################################
+    ##        Anti-NPC Beacon        ##
+    ##      made by deltamolfar      ##
+    ##        Glory to Ukraine       ##
+    ###################################
+
+    SOURCE: https://github.com/deltamolfar/PublicE2/blob/main/misc/anti-npc_beacon_by_deltamolfar.txt
+    This chip can be freely distributed between anyone you want, as long, as you keep the author credits.
+    If you change anything in this code, don't expect me to help you.
+]#
+
+if( first() || duped() ){
+    SETTINGS = table()
+}
+
+function entity:smite(){
+    local Temp = propSpawn(SETTINGS["ExplosivePropClass", string], This:pos(), ang(0), 1)
+    if( Temp:isValid() ){
+        Temp:propDraw(0)
+        Temp:propBreak()
+    }
+}
+
+function run(Number:number){
+    if( Number ){
+        if( SETTINGS["SHOULD_DISABLE_ON_OBSTACLE", number] ){
+            if( !rangerOffset(50000, entity():pos(), entity():up()):hitSky() ){ return }
+        }
+        
+        if( SETTINGS["SHOULD_DISABLE_ON_TILT", number] ){
+            local Ang = entity():angles()
+            if( abs(Ang:pitch())>45 || abs(Ang:roll())>45 ){ return }
+        }
+    }
+    
+    ENABLED = Number
+    
+    if( Number ){
+        ANGLE = 0
+        COLOR_PROGRESS = 0
+        COLOR_SWITCH = 1
+        timer("ANIMATE", 100)
+        
+        holoColor(1, vec4(255))
+        holoColor(3, SETTINGS["GLOW_COLOR_1", vector])
+        holoColor(5, SETTINGS["GLOW_COLOR_1", vector])
+        holoEntity(5):propDraw(1)
+        
+        entity():emitSound(SETTINGS["SOUND", table]["START", string], 120, SETTINGS["SOUND", table]["START_Pitch", number])
+        soundVolume("HUM", SETTINGS["SOUND", table]["HUM_Volume", number])
+        
+        printColor(vec(0,255,255), "Beacon online.")
+    } else{
+        stoptimer("ANIMATE")
+        
+        holoColor(1, vec4(0))
+        holoColor(3, SETTINGS["GLOW_COLOR_DISABLED", vector])
+        holoEntity(5):propDraw(0)
+        
+        entity():emitSound(SETTINGS["SOUND", table]["STOP", string], 120, SETTINGS["SOUND", table]["STOP_Pitch", number])
+        soundVolume("HUM", 0)
+        
+        printColor(vec(255,0,0), "Beacon offline.")
+    }
+}
+
+function vector interp_Exponential(VectorFrom:vector, VectorTo:vector, Progress:number){
+    Progress = clamp(Progress, 0, 1)
+    
+    const T = Progress*Progress
+    
+    const R = VectorFrom:x() + (VectorTo:x() - VectorFrom:x()) * T
+    const G = VectorFrom:y() + (VectorTo:y() - VectorFrom:y()) * T
+    const B = VectorFrom:z() + (VectorTo:z() - VectorFrom:z()) * T
+    
+    return vec(R, G, B)
+}
+
+if( first() || dupefinished() ){
+    propSpawnUndo(0)
+    propSpawnEffect(0)
+    local Self = entity()
+    findIncludeClass("npc_*")
+    
+    rangerPersist(1)
+    rangerFilter(players())
+    rangerFilter(Self)
+    
+    SETTINGS = table(
+        "ExplosivePropClass" = "models/props_phx/cannonball.mdl", # -- Which should be used as explosive to kill npcs?
+        "RADIUS" = 512, # -- How far should the beacon reach?
+        "GLOW_COLOR_1" = vec(154,244,237), # Between which 2 colors should the beacon constantly go?
+        "GLOW_COLOR_2" = vec(73,212,203),
+        "GLOW_COLOR_DISABLED" = vec(65),
+        "GLOW_SPEED" = 0.05,
+        "SHOULD_DISABLE_ON_TILT" = 1,
+        "SHOULD_DISABLE_ON_OBSTACLE" = 0, 
+        "PROTECTED_USE" = 1, # If non-zero -> Nobody will be able to turn the beacon on or off
+        "BEAM_SPEED" = 2, # Speed of rotation of the beam
+        "BEAM_WHITENESS" = 100, # How much "whiter" should the beam be relative to the core?
+        "SOUND" = table(
+            "START" = "ambient/machines/thumper_hit.wav",
+            "START_Pitch" = 140,
+            "STOP" = "ambient/machines/thumper_shutdown1.wav",
+            "STOP_Pitch" = 255,
+            "HUM" = "ambient/machines/thumper_amb.wav", # <- MUST BE A LOOP!
+            "HUM_Pitch" = 255,
+            "HUM_Volume" = 40,
+            "HUM_SoundLevel" = 90
+        ),
+        "KILL_PLAYERS" = 0
+    )
+    
+    if( SETTINGS["KILL_PLAYERS", number] ){
+        findIncludeClass("player")
+    }
+    
+    findExcludeEntity(owner())
+    
+    Self:setAng(ang(0))
+    Self:propDraw(0)
+    Self:propShadow(0)
+    Self:soundPlay("HUM", 0, SETTINGS["SOUND", table]["HUM", string])
+        soundVolume("HUM", 0)
+        soundPitch("HUM", SETTINGS["SOUND", table]["HUM_Pitch", number])
+        soundLevel("HUM", SETTINGS["SOUND", table]["HUM_SoundLevel", number])
+    
+    ENABLED = 0                                                                                                                                                                                                                                                                                                                                                             hint("Beacon online. Made by deltamolfar.", 5) #Stole that idea from some guy. Pls don't remove it :)
+    ANGLE = 0
+    COLOR_PROGRESS = 0
+    COLOR_SWITCH = 1
+    SHOULD_RESTART = 0
+    
+    holoCreate(1, Self:toWorld(vec(0)), vec(1)*(SETTINGS["RADIUS", number]/72), ang(0), vec4(0), "models/sprops/geometry/sphere_144.mdl")# -- Display sphere
+        holoInvertModel(1, 1)
+        holoMaterial(1, "models/wireframe")
+        holoClipEnabled(1, 1, 1)
+        holoClipEnabled(1, 2, 1)
+        holoClip(1, 1, vec(0,0,SETTINGS["RADIUS", number]/36*7), vec(0,0,-1), 0)
+        holoClip(1, 2, vec(0,0,-SETTINGS["RADIUS", number]/36*7), vec(0,0,1), 0)
+    
+    holoCreate(2, Self:toWorld(vec(0,0,-18)), vec(0.75), ang(90,0,0), vec(240,255,255), "models/props_phx/construct/metal_wire1x1x1.mdl") # BoundingBox
+    holoCreate(6, Self:toWorld(vec(0,0,0)), vec(2.75), ang(0,0,0), vec4(255)) # Glass
+        holoMaterial(6, "gigaconvertedmats/glasswindow017a")
+        
+    holoCreate(3, Self:toWorld(vec(0)), vec(1.5,1.5,2), ang(0), SETTINGS["GLOW_COLOR_DISABLED", vector]) # Glowing body
+        holoDisableShading(3, 1)
+        
+    holoCreate(4, Self:toWorld(vec(0,0,-12)), vec(2.2,2.2,0.5), ang(0), vec4(62,50,90, 255)) # Obsidial platform
+    holoCreate(5, Self:toWorld(vec(0,0,500)), vec(50,0.8,0.8), ang(90,0,0), SETTINGS["GLOW_COLOR_DISABLED", vector], "models/sprops/cuboids/height12/size_1/cube_12x480x12.mdl") # Beam
+        holoAlpha(5, 210)
+        holoDisableShading(5, 1)
+        holoClipEnabled(5, 1)
+        holoClip(5, vec(500,0,0), vec(-1,0,0), 0)
+        #holoEntity(5):propDraw(0)
+        
+    for(I=1, 6){ holoParent(I, Self) }
+    for(I=2, 5){ holoMaterial(I, "holograms/hologram") }
+    
+    run(1)
+    interval(250)
+}
+elseif( clk() ){
+    interval(250)
+    
+    local CurPos = entity():pos()
+    
+    if( findCanQuery() && ENABLED && propCanCreate() ){
+        findInSphere(CurPos, SETTINGS["RADIUS", number])
+        findSortByDistance(CurPos)
+        
+        local PotentialTarget = noentity()
+        
+        foreach(_:number, V:entity = findToArray()){
+            if( !V:isValid() ){ continue }
+            #if( !V:isNPC() && (SETTINGS["KILL_PLAYERS", number] && !V:isPlayer() ) ){ continue }
+            if( !V:isNPC() ){ continue }
+            if( V:health()<=0 ){ continue }
+            
+            PotentialTarget = V
+            break
+        }
+        
+        if( PotentialTarget:isValid()){
+            PotentialTarget:smite()
+        }
+    }
+}
+elseif( clk("ANIMATE") ){
+    timer("ANIMATE", 100)
+    ANGLE += SETTINGS["BEAM_SPEED", number]
+    COLOR_PROGRESS += SETTINGS["GLOW_SPEED", number]
+    
+    if( COLOR_PROGRESS>1 ){
+        if( COLOR_SWITCH==1 ){
+            COLOR_SWITCH = 2
+        } else{
+            COLOR_SWITCH = 1
+        }
+        
+        COLOR_PROGRESS = 0
+    }
+    
+    holoAng(5, entity():toWorld(ang(90,0,ANGLE)))
+    
+    local Color = vec()
+    
+    if( COLOR_SWITCH==1 ){
+        Color = interp_Exponential(SETTINGS["GLOW_COLOR_1", vector], SETTINGS["GLOW_COLOR_2", vector], COLOR_PROGRESS)
+    } else{
+        Color = interp_Exponential(SETTINGS["GLOW_COLOR_2", vector], SETTINGS["GLOW_COLOR_1", vector], COLOR_PROGRESS)
+    }
+    
+    holoColor(3, Color)
+    holoColor(5, Color+SETTINGS["BEAM_WHITENESS", number])
+}
+
+event tick() {
+    local CurPos = entity():pos()
+    local Ang = entity():angles()
+    
+    if( !ENABLED ){
+        if( SHOULD_RESTART ){
+            if( abs(Ang:pitch())<45 && abs(Ang:roll())<45 && rangerOffset(50000, CurPos, entity():up()):hitSky() ){
+                run(1)
+                SHOULD_RESTART = 0
+            }
+        }
+        
+        exit()
+    }
+    
+    if( SETTINGS["SHOULD_DISABLE_ON_OBSTACLE", number] ){
+        if( !rangerOffset(50000, entity():pos(), entity():up()):hitSky() ){
+            run(0)
+            SHOULD_RESTART = 1
+        }
+    }
+    
+    if( SETTINGS["SHOULD_DISABLE_ON_TILT", number] ){
+        local Ang = entity():angles()
+        if( abs(Ang:pitch())>45 || abs(Ang:roll())>45 ){
+            run(0)
+            SHOULD_RESTART = 1
+        }
+    }
+}
+
+event chipUsed(Player:entity) {
+    if( SETTINGS["PROTECTED_USE", number]!=0 && Player!=owner() ){ exit() }
+
+    run(!ENABLED)
+}
+
+event playerConnected(Player:entity) {
+    rangerFilter(Player)
+}

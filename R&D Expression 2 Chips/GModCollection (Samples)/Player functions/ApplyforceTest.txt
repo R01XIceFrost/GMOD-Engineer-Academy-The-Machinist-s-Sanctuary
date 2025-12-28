@@ -1,0 +1,9 @@
+@name ApplyforceTest
+@inputs 
+@outputs 
+@persist 
+@trigger 
+
+runOnTick(1)
+
+owner():aimEntity():applyForce(vec(1,1,1) * 55555)

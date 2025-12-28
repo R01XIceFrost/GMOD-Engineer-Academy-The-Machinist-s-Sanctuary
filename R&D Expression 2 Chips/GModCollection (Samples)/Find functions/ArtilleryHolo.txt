@@ -1,0 +1,71 @@
+@name ArtilleryHolo
+@inputs 
+@outputs 
+@persist Liftoff Coords:vector Pitch Altitude P:entity
+@trigger 
+
+interval(100)
+P:propBreak()
+if(first()){holoCreate(1)
+    Altitude=1
+    Liftoff=0
+    Pitch=-90
+    holoModel(1,"models/props_phx/mk-82.mdl")
+    holoPos(1,entity():toWorld(vec(0,0,10)))
+    holoAng(1,entity():toWorld(ang(-90,0,0)))
+    holoCreate(2)
+    holoPos(2,holoEntity(1):toWorld(vec(0,0,0)))
+    holoAng(2,holoEntity(1):toWorld(ang(90,0,0)))
+    holoCreate(3)
+    
+}
+holoAng(2,holoEntity(1):toWorld(ang(0,0,0)))
+holoPos(2,holoEntity(1):toWorld(vec(0,0,0)))
+Ranger=rangerOffset(200,holoEntity(2):pos(),holoEntity(2):forward())
+holoPos(3,Ranger:position())
+
+if(owner():weapon():type()=="weapon_physcannon"&changed(owner():keyAttack1())&owner():keyAttack1()&Liftoff==0){Coords=owner():aimPos(),Liftoff=1}
+
+if(Liftoff){
+    
+ holoPos(1,holoEntity(1):toWorld(vec(140,0,0)))   
+
+    holoAng(1,ang(Pitch,(Coords - holoEntity(1):pos()):toAngle():yaw(),(Coords - holoEntity(1):pos()):toAngle():roll()))
+
+    timer("altitude",9000)
+    if(clk("altitude")){
+        Altitude=0
+
+}
+    if(!Altitude){
+        
+        if(Pitch < 260 | Pitch > -80){
+        
+        if((Pitch - (Coords - holoEntity(1):pos()):toAngle():pitch()) > 15|(Pitch - (Coords - holoEntity(1):pos()):toAngle():pitch()) < -15){
+    if(Pitch < (Coords - holoEntity(1):pos()):toAngle():pitch()){Pitch=Pitch+10}
+    if(Pitch > (Coords - holoEntity(1):pos()):toAngle():pitch()){Pitch=Pitch-10} 
+   }
+    }
+}
+}
+
+if((Ranger:position() - holoEntity(2):pos()):length() < 195&changed((Ranger:position() - holoEntity(2):pos()):length() < 175)){P=propSpawn("models/props_phx/cannonball_solid.mdl",holoEntity(1):pos(),1),P:propBreak(),timer("reset",500)}
+    if(clk("reset")){reset()}
+P:propBreak()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

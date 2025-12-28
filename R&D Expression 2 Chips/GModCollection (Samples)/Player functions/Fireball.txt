@@ -1,0 +1,40 @@
+@name Fireball
+@inputs 
+@outputs 
+@persist On Ball:entity O:entity Model:string Vec:vector RunOnce
+@trigger
+ 
+runOnTick(1)
+O = owner()
+Model = "models/sprops/geometry/sphere_6.mdl"
+
+if(O:lastSaid() == "!on")
+{
+    On = 1
+}
+elseif(O:lastSaid() == "!off")
+{
+    On = 0
+}
+
+if(owner():keyUse() & On)
+{
+    if(RunOnce)
+    {
+        Ball = propSpawn(Model,O:pos(),0)
+        Ball:propFreeze(0)
+        Ball:setMass(2500)
+        Ball:setMaterial("models/effects/splode_sheet")
+        RunOnce = 0
+    }
+Vec = (owner():aimPos() - Ball:pos()) * Ball:mass()
+Ball:applyForce(Vec)
+}
+else
+{
+    propDeleteAll()
+    RunOnce = 1
+}
+
+
+

@@ -1,0 +1,216 @@
+@outputs Status:string PreviousStatus:string HoloStartingAnim
+@persist HoloStartingAnim HoloModel:string NumPreviewRows PreviewRowLength GridCellSize UnselectedColor:vector SelectedColor:vector ButtonColor:vector AnimationRestartSecs
+@persist Status:string HoloI LastI LastJ
+@persist HoloPreviews:array #this is actually the list of selectable entities (includes buttons)
+@persist CurAimHolo:entity RunStartTime
+@trigger 
+
+interval(100)
+
+if (first()){
+    #vars
+        HoloStartingAnim = 1
+        HoloModel = "models/player/alyx.mdl"
+        NumPreviewRows = 5
+        PreviewRowLength = 20
+        GridCellSize = 25
+        UnselectedColor = vec(255, 255, 255)
+        SelectedColor = vec(0, 255, 0)
+        ButtonColor = vec(0, 0, 255)
+        AnimationRestartSecs = 5 #restart the animations every n seconds
+    #end vars
+    
+    Status = "init"
+    HoloI = 0
+    LastI = 1
+    LastJ = 1
+    
+    function number createHolo(HoloModel:string){
+        HoloI += 1
+        holoCreate(HoloI)
+        holoModel(HoloI, HoloModel)
+        
+        return HoloI
+    }
+    
+    function number createHolo(HoloModel:string, Color:vector){
+        createHolo(HoloModel)
+        holoColor(HoloI, Color)
+        
+        return HoloI
+    }
+    
+    function void animateHolo(HoloEnt:entity, AnimNumber){
+        HoloEnt["HoloAnimation", number] = AnimNumber
+        holoAnim(holoIndex(HoloEnt), AnimNumber)
+    }
+    
+    function void registerAsButton(HoloEnt:entity, ButtonStatus:string){
+        HoloEnt["isButton", number] = 1
+        HoloEnt["buttonAction", string] = ButtonStatus
+    }
+    function number isButton(HoloEnt:entity){
+        if (HoloEnt["isButton", number]){
+            Status = CurAimHolo["buttonAction", string]
+            return 1
+        }
+        
+        return 0
+    }
+    
+    function number drawGrid(){
+        for(I = LastI, NumPreviewRows){
+            for(J = LastJ, PreviewRowLength){
+                if (perf()){
+                    LastJ = 1
+                    LastI = 1
+                }else{
+                    LastJ = J
+                    LastI = I
+                    return 0
+                }
+                
+                CellPos = entity():pos() + vec((I - 1)*GridCellSize, (J - 1)*GridCellSize, 0)
+                
+                CellBase = createHolo("", vec(0,0,0))
+                holoPos(CellBase, CellPos)
+                holoScaleUnits(CellBase, vec(GridCellSize, GridCellSize, 1))
+                holoParent(CellBase, entity())
+                
+                CellContents = createHolo(HoloModel, UnselectedColor)
+                CellEnt = holoEntity(CellContents)
+                holoPos(CellContents, CellPos)
+                holoScaleUnits(CellContents, CellEnt:boxSize()*(GridCellSize/CellEnt:boxSize():z()))
+                holoParent(CellContents, entity())
+                
+                HoloPreviews:pushEntity(CellEnt)
+            }
+        }
+        
+        return 1
+    }
+    
+    function number animateGrid(){
+        for(I = 1, NumPreviewRows*PreviewRowLength){
+            animateHolo(HoloPreviews[I, entity], HoloStartingAnim)
+            HoloStartingAnim += 1
+        }
+        
+        return 1
+    }
+    
+}else{
+    FirstRun = 0
+    if (PreviousStatus != Status){
+        FirstRun = 1
+        PreviousStatus = Status
+        #print(Status)
+    }
+    
+    if (Status == "init"){
+        if (drawGrid()){
+            Status = "drawButtons"
+        }
+    }elseif (Status == "drawButtons"){
+        CenterRow = GridCellSize*(NumPreviewRows - 1)/2
+        ButtonSize = vec(GridCellSize, 1, GridCellSize)*0.8
+    
+        LeftButton = createHolo("prism", ButtonColor)
+        holoPos(LeftButton, entity():pos() + vec(CenterRow, -GridCellSize, 0))
+        holoScaleUnits(LeftButton, ButtonSize)
+        holoAng(LeftButton, ang(0, 0, 90))
+        holoParent(LeftButton, entity())
+        
+        RightButton = createHolo("prism", ButtonColor)
+        holoPos(RightButton, entity():pos() + vec(CenterRow, GridCellSize*PreviewRowLength, 0))
+        holoScaleUnits(RightButton, ButtonSize)
+        holoAng(RightButton, ang(0, 0, -90))
+        holoParent(RightButton, entity())
+        
+        LeftButtonEnt = holoEntity(LeftButton)
+        HoloPreviews:pushEntity(LeftButtonEnt)
+        registerAsButton(LeftButtonEnt, "buttonLeft")
+        
+        RightButtonEnt = holoEntity(RightButton)
+        HoloPreviews:pushEntity(RightButtonEnt)
+        registerAsButton(RightButtonEnt, "buttonRight")
+        
+        Status = "animate"
+    }elseif (Status == "buttonLeft"){
+        if (!owner():keyUse()){
+            ButtonIndex = holoIndex(CurAimHolo)
+            holoColor(ButtonIndex, ButtonColor)
+            
+            HoloStartingAnim -= (NumPreviewRows*PreviewRowLength)*2
+            if (HoloStartingAnim < 1){
+                HoloStartingAnim = 1
+            }
+            
+            CurAimHolo = noentity()
+            Status = "animate"
+        }
+    }elseif (Status == "buttonRight"){
+        if (!owner():keyUse()){
+            ButtonIndex = holoIndex(CurAimHolo)
+            holoColor(ButtonIndex, ButtonColor)
+            
+            CurAimHolo = noentity()
+            Status = "animate"
+        }
+    }elseif (Status == "animate"){
+        if (animateGrid()){
+            Status = "done"
+        }
+    }elseif (Status == "findSelectedHolo"){
+        for(I = LastI, HoloPreviews:count()){
+            if (perf()){
+                LastI = 1
+                Status = "selectHolo"
+            }else{
+                LastI = I
+                Status = "findSelectedHolo"
+                break
+            }
+            
+            AimHolo = HoloPreviews[I, entity]
+            AimHoloPos = AimHolo:pos() + vec(0, 0, GridCellSize/2)
+            
+            DistToHolo = (AimHoloPos - owner():shootPos()):length()
+            AimPos = DistToHolo*owner():eye() + owner():shootPos()
+            
+            if ((AimHoloPos - AimPos):length() < GridCellSize*0.7){
+                CurAimHolo:setColor(UnselectedColor)
+                CurAimHolo = AimHolo
+                break
+            }
+        }
+    }elseif (Status == "selectHolo"){
+        if (CurAimHolo:isValid()){
+            CurAimHolo:setColor(SelectedColor)
+            
+            if (!isButton(CurAimHolo)){ #if it is a button the status will be set
+                print("HoloAnimation: " + CurAimHolo["HoloAnimation", string])
+            }
+        }
+        
+        if (Status == "selectHolo"){
+            Status = "done"
+        }
+    }elseif (Status == "done"){ #this status represents no burden of work on the chip
+        if (changed(owner():keyUse()) && owner():keyUse()){
+            Status = "findSelectedHolo"
+        }else{
+            #some animations have a time limit so we will work on restarting them every so often
+            if (FirstRun){
+                RunStartTime = curtime()
+            }else{
+                if ((curtime() - RunStartTime) > AnimationRestartSecs){
+                    #reset animations
+                    HoloStartingAnim -= (NumPreviewRows*PreviewRowLength)
+                    Status = "animate"
+                }
+            }
+        }
+    }
+}
+

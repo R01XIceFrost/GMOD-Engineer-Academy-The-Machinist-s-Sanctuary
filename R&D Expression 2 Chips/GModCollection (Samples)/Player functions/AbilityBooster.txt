@@ -1,0 +1,61 @@
+@name AbilityBooster
+@inputs 
+@outputs LVector:vector
+@persist Jetpack Slowfall Sprintboost SprintboostMul Command:array HideChat GravMode Parkour
+@trigger 
+runOnTick(1)
+runOnChat(1)
+ 
+if(first())
+{
+    Parkour = 1
+    Y1 = 0
+}
+
+Velocity = owner():vel()
+
+if(Parkour)
+{
+    if(owner():keyJump() & Velocity:z() >= 0)
+    {
+        Z1 = 10
+    }
+    else
+    {
+        Z1 = 0
+    }
+    
+    if(owner():keyForward() & owner():keySprint())
+    {
+        if(owner():isOnGround())
+        {
+            X1 = 150
+        }
+        else
+        {
+            X1 = 10
+        }
+    }
+    else
+    {
+        X1 = 0
+    }
+    
+}
+else
+{
+    Z1 = 0
+    X1 = 0
+}
+
+X = X1
+Y = Y1
+Z = Z1
+
+LVector = vec(X,Y,Z)
+Vector = owner():toWorld(LVector)
+
+if(Y|X|Z)
+{
+    owner():plyApplyForce(Vector - owner():pos())
+}

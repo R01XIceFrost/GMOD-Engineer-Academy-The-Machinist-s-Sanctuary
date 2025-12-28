@@ -1,0 +1,84 @@
+@name Energy Shield (Press G)
+@inputs Deploy
+@persist [OS IS P]:entity DeployI [Key OModel IModel]:string OMass IMass Height
+@trigger all
+
+Chip = entity():pos()
+Me = owner():shootPos() + vec(0,0,50)
+Speed = entity():vel()
+Weight = entity():mass()
+
+interval(10)
+V = Me - Chip
+applyForce((V * 75 - Speed) * Weight)
+
+#By thewhitish
+#Deploy input is optional. It's an alternative to the internal key (M) and functions the same.
+if (first()) {
+runOnTick(1)
+#-------------------------------------------------------------------------------------------------------------------------------------Options
+Key = "G" #The key on your keyboard that will control this chip. Comment out this line to disable. http://wiki.garrysmod.com/page/Enums/KEY. Case insensitive, exclude 'KEY_'"
+OModel = "models/props_phx/construct/metal_plate_curve360x2.mdl"
+IModel = "models/props_phx/construct/metal_tubex2.mdl"
+
+OMass = 50000 # Set mass of outer shield, the heavier the shield, the more effective but dangerous it is.
+IMass = 150 # Inner shield mass
+
+Height = 20 # Very arbitrary outer shield height adjustment. 0 is almost level with ground, 20 allows you to traverse most terran.
+#-------------------------------------------------------------------------------------------------------------------------------------
+P = owner()
+}
+
+DeployI = P:keyPressed(Key)
+
+if ((DeployI & $DeployI) | (~Deploy & Deploy)) #If pressed this tick
+    {Input = 1}
+
+
+if (OS) {
+OA = OS:angles()
+OP = OA:pitch()
+OR = OA:roll()
+
+if ( (Input & OS) | (OS:pos():distance(P:pos()) > 100) | OP < -20 | OP > 20 | OR < -20 | OR > 20 ) # Break shield if out of whack or toggled
+    {OS:propBreak()}
+
+if ( (P:isCrouch()) & OS) # Adjust height if crouching and spawn inner shield
+{
+    OHeight = 27
+    if (!IS)
+    {
+        IS = propSpawn(IModel,(P:pos()),(ang()),0)
+        IS:setMaterial("models/alyx/emptool_glow")
+        IS:setMass(IMass)
+    }
+}
+    elseif (IS) {IS:propBreak()}
+
+if ( !(P:isCrouch()) ) {OHeight = 63-Height} # Adjust height if standing up. 63 matches up with ground.
+
+OS:applyForce( ( (owner():shootPos() + vec(0,0,-OHeight) - (OS:pos()) ) * 10 - OS:vel() ) * OMass ) # Move with player
+
+OS:applyAngForce( -(OA:setYaw(0) * 20 + OS:angVel()) * OS:mass()) # Maintain angle even if shot
+
+
+IA = IS:angles()
+IP = IA:pitch()
+IR = IA:roll()
+
+if ( (Input & IS) | (IS:pos():distance(P:pos()) > 50) | IP < -5 | IP > 5 | IR < -5 | IR > 5 ) # Break shield if out of whack or toggled
+    {IS:propBreak()}
+
+IS:applyForce( ( (owner():shootPos() + vec(0,0,-27) - (IS:pos()) ) * 10 - IS:vel() ) * IMass ) # Move with player
+
+IS:applyAngForce( -(IA:setYaw(0) * 20 + IS:angVel()) * IS:mass()) # Maintain angle even if shot
+}
+    elseif (IS)
+        {IS:propBreak()}
+
+if (Input & !OS) # Deploy shield
+{
+    OS = propSpawn(OModel,(P:pos()),(ang()),0)
+    OS:setMaterial("models/alyx/emptool_glow")
+    OS:setMass(OMass)
+}

@@ -1,0 +1,12 @@
+@name Water Melon
+@inputs
+@model models/props_junk/watermelon01.mdl
+@persist Prop:entity
+interval(10)
+    E = entity()
+    P = owner()
+if(changed(P:keyReload())& P:keyReload())
+ {Prop = propSpawn("models/props_c17/doll01.mdl", E:toWorld(vec(0,0,9)), E:angles(), 0)
+, soundPlay(1,0, "vo/npc/female01/pain06.wav")}
+
+if (duped()) {selfDestruct(), hint("You cannot duplicate this",10)}

@@ -1,0 +1,149 @@
+@name MCTest
+@inputs 
+@outputs 
+@persist NearestTarget:entity [MaxClamp,SlimeSize,HoloZOffset]:number PosDifference:vector Status:string Mom:entity Ball:entity
+@trigger 
+@model models/hunter/blocks/cube1x1x1.mdl
+#@model models/props_phx/cannonball_solid.mdl
+#############################################
+# THERE ARE SEVERAL MODES FOR THE SLIMES 
+# BEHAVIOR. 
+#
+#
+#
+#
+#############################################
+function void facePos(Pos:vector)
+{
+    Direction = (Pos - entity():pos()):toAngle()
+    entity():setAng(Direction:setPitch(0))
+}
+function void jumpTo(TargetPos:vector)
+{
+    #findByModel("models/props_phx/misc/soccerball.mdl")
+    #NearestTarget = findClosest(entity():pos())
+    if(rangerOffset(entity():pos(),entity():pos()-vec(0,0,40)):hit())
+    {
+        facePos(TargetPos)
+        
+        #PosDifference = NearestPlayer:pos()-entity():pos()+vec(0,0,200)+vec(randint(400)-200,randint(400)-200,0)
+        #PosDifference = (NearestTarget:pos()-entity():pos())*400
+        PosDifference = (TargetPos-entity():pos())
+        entity():applyForce(clamp(PosDifference*20,vec(-MaxClamp,-MaxClamp,-MaxClamp),vec(MaxClamp,MaxClamp,MaxClamp)))
+        entity():soundPlay(1,1,"physics/flesh/flesh_squishy_impact_hard1.wav")
+        soundPitch(1,100)
+        soundVolume(1,0.3)
+    }
+}
+function void createSlime(Size:number)
+{
+    
+    holoCreate(1,entity():pos()-vec(0,0,-Size*6+HoloZOffset),vec(Size,Size,Size),ang(0,0,0),vec(0,128,0)) #Outer Layer
+    holoAlpha(1,150)
+    holoCreate(2,entity():pos()-vec(0,0,-Size*6+HoloZOffset),vec(0.8*Size,0.8*Size,0.8*Size),ang(0,0,0),vec(0,128,0)) #Inner Layer
+    holoCreate(3,entity():pos()-vec(-3.2*Size,-4*Size,-8*Size+HoloZOffset),vec(0.3*Size,0.3*Size,0.3*Size),ang(0,0,0),vec(0,0,0)) #Left Eye
+    holoCreate(4,entity():pos()-vec(3.2*Size,-4*Size,-8*Size+HoloZOffset),vec(0.3*Size,0.3*Size,0.3*Size),ang(0,0,0),vec(0,0,0))  #Right Eye
+    holoCreate(5,entity():pos()-vec(Size,-4.8*Size,-5*Size+HoloZOffset),vec(0.1*Size,0.1*Size,0.1*Size),ang(0,0,0),vec(0,0,0)) #Mouth
+#[
+    holoCreate(1,entity():pos()-vec(0,0,0),vec(Size,Size,Size),ang(0,0,0),vec(0,128,0)) #Outer Layer
+    holoAlpha(1,150)
+    holoCreate(2,entity():pos()-vec(0,0,0),vec(0.8*Size,0.8*Size,0.8*Size),ang(0,0,0),vec(0,128,0)) #Inner Layer
+    holoCreate(3,entity():pos()-vec(-3.2*Size,-4*Size,-2*Size),vec(0.3*Size,0.3*Size,0.3*Size),ang(0,0,0),vec(0,0,0)) #Left Eye
+    holoCreate(4,entity():pos()-vec(3.2*Size,-4*Size,-2*Size),vec(0.3*Size,0.3*Size,0.3*Size),ang(0,0,0),vec(0,0,0))  #Right Eye
+    holoCreate(5,entity():pos()-vec(Size,-4.8*Size,+Size),vec(0.1*Size,0.1*Size,0.1*Size),ang(0,0,0),vec(0,0,0)) #Mouth
+        ]#
+    holoParent(1,entity())
+    holoParent(2,1)
+    holoParent(3,1)
+    holoParent(4,1)
+    holoParent(5,1)
+    holoAng(1,ang(0,-90,0))
+    #holoScale(1,vec(0.5,0.5,0.5))
+}
+function void kickTheBall()
+{
+    
+    Ball:applyForce(clamp(PosDifference*50000,vec(-1500,-1500,-150),vec(1500,1500,1500)))
+}
+function void think()
+{
+    if(Status=="jumping_around")
+    {
+        timer("jump",randint(500)+500*SlimeSize)
+        findByClass("player")
+        NearestPlayer = findClosest(entity():pos())
+        if(NearestPlayer:pos():distance(entity():pos()) < 200)
+        {
+          Status="following_mom"
+           Mom = NearestPlayer
+        }
+        findByModel("models/props_phx/misc/soccerball.mdl")
+        Ball = findClosest(entity():pos())
+        if(Ball:pos():distance(entity():pos()) < 200)
+        {
+            Status = "playing_football"
+        }
+        
+        
+    }
+    elseif(Status=="following_mom")
+    {
+        
+        if(Mom:pos():distance(entity():pos()) > 500)
+        {
+            Status = "jumping_around"
+        }
+        else
+        {
+            timer("jumpToMom",1000)
+            #timer("sayMom",6000)
+        }
+    }
+    elseif(Status=="playing_football")
+    {
+        timer("jumpToFootball",800+randint(800))
+    }
+    
+}
+if(first() || duped())
+{
+    Status = "jumping_around"
+    SlimeSize = random()*5+1
+    createSlime(SlimeSize)
+    entity():setAlpha(0)
+    entity():propFreeze(0)
+    #entity():streamStart(1,"http://kimpan.hu/livingmice.mp3")
+    MaxClamp = 6000
+    HoloZOffset = 1000
+}
+
+if(clk("jump"))
+{
+    jumpTo(entity():pos() + vec(randint(400)-200,randint(400)-200,100))
+}
+elseif(clk("jumpToMom"))
+{
+    jumpTo(Mom:pos()+vec(0,0,400))
+    
+}
+elseif(clk("sayMom"))
+{
+    MomNum = randint(3)
+    Rand = randint(3)
+    #if(Rand==1){entity():streamStart(1,"https://raw.githubusercontent.com/Metastruct/garrysmod-chatsounds/master/sound/chatsounds/autoadd/hotd2_story/mom/mom "+toString(MomNum)+".ogg")}
+    #lseif(Rand==2){entity():streamStart(1,"https://raw.githubusercontent.com/Metastruct/garrysmod-chatsounds/master/sound/chatsounds/autoadd/zelda_ww/hey/ww_medli_hey.ogg")}
+    # else
+    #{
+    #    entity():streamStart(1,"https://raw.githubusercontent.com/Metastruct/garrysmod-chatsounds/master/sound/chatsounds/autoadd/filthyfrank/hey boss/hey boss"+toString(randint(3))+".ogg")
+    #}
+}
+elseif(clk("jumpToFootball"))
+{
+    jumpTo(Ball:pos()+vec(0,0,200)+vec(randint(100)-50,randint(100-50),0))
+    if(Ball:pos():distance(entity():pos()) < 70)
+    {
+        kickTheBall()
+    }
+}
+interval(100)
+think()

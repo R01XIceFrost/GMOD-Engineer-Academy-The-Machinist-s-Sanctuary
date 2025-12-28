@@ -1,0 +1,47 @@
+@name UnfrozenPropFinder
+@persist A:array I F First
+if (first()|dupefinished()){
+    
+    #Variables
+    Anything=0
+    Range=1000
+    #
+    
+    findInSphere(entity():pos(),Range)
+    if (!Anything){
+        findClipToClass("prop_physics")
+    }
+    A=findToArray()
+    First=1
+    
+}
+
+I++
+P=A[I,entity]
+
+if (holoEntity(I)){
+    if (P:isFrozen()){
+        holoDelete(I)
+    }
+}
+
+if (!P:isFrozen()){
+    holoCreate(I,P:massCenter())
+    holoColor(I,vec(255,0,0))
+    holoAlpha(I,100)
+    holoAng(I,P:angles())
+    holoScaleUnits(I,P:aabbSize()*1.1)
+    holoParent(I,P)
+    F++
+}
+
+if (I==A:count()){
+    if (First){
+        First=0
+        print(4,F:toString()+" props found!")
+    }
+    I=0
+    interval(10)
+} else {
+    interval(10)
+}

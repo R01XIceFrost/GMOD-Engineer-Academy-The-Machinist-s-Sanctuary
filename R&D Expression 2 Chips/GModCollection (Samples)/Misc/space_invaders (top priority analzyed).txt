@@ -1,0 +1,284 @@
+@name Space_Invaders_Leghumper
+@inputs 
+@outputs [XIndex,YIndex,Zsindex]:number
+@persist [GameInterval,VerticalEnemyCount,HorizontalEnemyCount,ShipX,ShipSpeed,BulletSpeed,EKeyPressed]:number Bullet:vector [BunkerHP,EnemyTable]:array
+@persist [SideOffsets]:vector2 [EnemyDirection,EnemyMoveDelay,LeftMostEnemyX,EnemyY,SoundPitch,InGame,RKeyPressed]:number Player:entity
+@persist [StartingMoveDelay,LastMoveDelay,MoveDelayDelta]:number
+@model models/hunter/plates/plate3x4.mdl
+function void resetEnemies()
+{
+    EnemyTable = array()
+    BunkerHP = array()
+    for(I=1,VerticalEnemyCount*HorizontalEnemyCount)
+    {
+        EnemyTable:pushNumber(1)
+    }
+    for(I=1,4)
+    {
+        BunkerHP:pushNumber(255)
+    }
+}
+function vector2 getSideOffsets()
+{
+    #This function tells you if the enemies on either side are gone.
+
+    K=0 #K represents a number. It is 0 if there are no enemies in the leftmost side of the enemy grid.
+    Offset = 0
+    while(K==0)
+    {
+        for(I=1,VerticalEnemyCount)
+        {
+           if(EnemyTable[(I-1)*HorizontalEnemyCount+1+Offset,number] == 1){K=1}
+        }
+        Offset++
+    }
+    LeftSideOffset = Offset
+    K=0
+    Offset = HorizontalEnemyCount
+    while(K==0)
+    {
+        for(I=1,VerticalEnemyCount)
+        {
+           if(EnemyTable[(I-1)*HorizontalEnemyCount+Offset,number] == 1){K=1}
+        }
+        Offset--
+    }
+
+    RightSideOffset = Offset+1
+    return vec2(LeftSideOffset,RightSideOffset)
+}
+function void checkCollisions()
+{
+    for(I=8,8+(HorizontalEnemyCount*VerticalEnemyCount))
+    {
+        holoColor(I,vec(255,255,255))
+    }
+    #if(inrange(Player:aimPos():x()+7,entity():pos():x()+LeftMostEnemyX,entity():pos():x()+LeftMostEnemyX+SideOffsets:y()*15))
+    if(inrange(Bullet:x()+7,entity():pos():x()+LeftMostEnemyX,entity():pos():x()+LeftMostEnemyX+SideOffsets:y()*15))
+    {
+        #if(inrange(Player:aimPos():z()-8,entity():pos():z()+EnemyY-(VerticalEnemyCount+1)*15,entity():pos():z()+EnemyY-15))
+        if(inrange(Bullet:z()-8,entity():pos():z()+EnemyY-(VerticalEnemyCount+1)*15,entity():pos():z()+EnemyY-15))
+        {
+            XIndex = -round( (LeftMostEnemyX+entity():pos():x()-Bullet:x())/15 )+1
+            YIndex = round( (entity():pos():z()+EnemyY-Bullet:z()+7)/15 )
+            holoColor(XIndex+7+((YIndex-1)*HorizontalEnemyCount),vec(255,0,0))
+            Zsindex = XIndex+((YIndex-1)*HorizontalEnemyCount)
+            if(EnemyTable[Zsindex,number] == 1)
+            {
+                holoAlpha(Zsindex+7,0)
+                EnemyTable[Zsindex,number] = 0
+                soundPlay(3,0.5,"garrysmod/balloon_pop_cute.wav")
+                soundPitch(3,100+random(100))
+                if(EnemyTable:sum()>0){SideOffsets = getSideOffsets()}
+                else{soundPlay(5,2,"modernrewards/success.wav") stoptimer("moveEnemies") timer("newGame",3000)}
+                Bullet = vec(ShipX,entity():pos():y(),entity():pos():z()-1000)
+                holoPos(7,Bullet)
+                
+                EnemyMoveDelay -= MoveDelayDelta
+            }
+        }
+    }
+    if(Bullet:z() < entity():pos():z()-30 && Bullet:z() > entity():pos():z() - 50) #Checks if the player is a dumbfuck who shoots their own bunkers.
+    {
+        if(inrange(Bullet:x(),entity():pos():x()-63,entity():pos():x()-43) && BunkerHP[1,number] > 0)
+        {
+            BunkerHP[1,number] = BunkerHP[1,number] - 25
+            BunkerColor = vec(BunkerHP[1,number],BunkerHP[1,number],BunkerHP[1,number])
+            holoColor(3,BunkerColor)
+            soundPlay(6,0.5,"physics/metal/metal_barrel_impact_soft"+toString(randint(4))+".wav")
+            Bullet = vec(ShipX,entity():pos():y(),entity():pos():z()-1000)
+        }
+        elseif(inrange(Bullet:x(),entity():pos():x()-27,entity():pos():x()-7) && BunkerHP[2,number] > 0)
+        {
+            BunkerHP[2,number] = BunkerHP[2,number] - 25
+            BunkerColor = vec(BunkerHP[2,number],BunkerHP[2,number],BunkerHP[2,number])
+            holoColor(4,BunkerColor)
+            soundPlay(6,0.5,"physics/metal/metal_barrel_impact_soft"+toString(randint(4))+".wav")
+            Bullet = vec(ShipX,entity():pos():y(),entity():pos():z()-1000)
+        }
+        elseif(inrange(Bullet:x(),entity():pos():x()+10,entity():pos():x()+30) && BunkerHP[3,number] > 0)
+        {
+            BunkerHP[3,number] = BunkerHP[3,number] - 25
+            BunkerColor = vec(BunkerHP[3,number],BunkerHP[3,number],BunkerHP[3,number])
+            holoColor(5,BunkerColor)
+            soundPlay(6,0.5,"physics/metal/metal_barrel_impact_soft"+toString(randint(4))+".wav")
+            Bullet = vec(ShipX,entity():pos():y(),entity():pos():z()-1000)
+        }
+        elseif(inrange(Bullet:x(),entity():pos():x()+44,entity():pos():x()+64) && BunkerHP[4,number] > 0)
+        {
+            BunkerHP[4,number] = BunkerHP[4,number] - 25
+            BunkerColor = vec(BunkerHP[4,number],BunkerHP[4,number],BunkerHP[4,number])
+            holoColor(6,BunkerColor)
+            soundPlay(6,0.5,"physics/metal/metal_barrel_impact_soft"+toString(randint(4))+".wav")
+            Bullet = vec(ShipX,entity():pos():y(),entity():pos():z()-1000)
+        }
+    }
+    
+}
+function void spawnEnemies()
+{
+    Num=0
+    EnemyY = 70
+    for(I=1,VerticalEnemyCount)
+    {
+        for(J=1,HorizontalEnemyCount)
+        {
+            Num++
+            PosOffset = vec(entity():aabbSize():x()/2,0,-entity():aabbSize():x()/2)
+            holoCreate(Num+7,entity():pos()+vec(J*15,0,-I*15)-PosOffset,vec(0.8,0.8,2))
+            holoMaterial(Num+7,"engine/singlecolor")
+            holoParent(Num+7,8)
+            holoModel(Num+7,"models/hunter/triangles/025x025.mdl")
+            holoAng(Num+7,ang(45,0,90))
+        }
+    }
+    holoColor(8,vec(255,0,0))
+    EnemyPos = entity():pos()+vec(LeftMostEnemyX,0,EnemyY)+vec(0,0,entity():aabbSize():x()/2)
+    holoPos(8,EnemyPos)
+}
+
+function void moveEnemies()
+{
+    
+    ThisOldValue = (SideOffsets:y()-1)*15+LeftMostEnemyX+EnemyDirection+7
+    ThisOldValue2 = (SideOffsets:x()-1)*15+LeftMostEnemyX+EnemyDirection-7
+    if(ThisOldValue > entity():aabbSize():y()/2 || ThisOldValue2 < -entity():aabbSize():y()/2)
+    {
+        EnemyDirection = -EnemyDirection
+        EnemyY -= 10
+    }
+    else
+    {
+        LeftMostEnemyX = LeftMostEnemyX + EnemyDirection
+    }
+    EnemyPos = entity():pos()+vec(LeftMostEnemyX,0,EnemyY)
+    holoPos(8,EnemyPos)
+    timer("moveEnemies",EnemyMoveDelay)
+    if(SoundPitch <26){SoundPitch = 30}else{SoundPitch-=2}
+    soundPlay(1,0.2,"synth/saw_440.wav")
+    soundPitch(1,SoundPitch)
+}
+function resetGame()
+{
+    HorizontalEnemyCount = 6
+    VerticalEnemyCount = 3
+    EnemyDirection = 10
+    EnemyY = 70
+    EnemyMoveDelay = 800
+    LeftMostEnemyX = 0
+    StartingMoveDelay = 900
+    LastMoveDelay = 150
+    MoveDelayDelta = (StartingMoveDelay-LastMoveDelay)/(VerticalEnemyCount*HorizontalEnemyCount)
+    EntityWidth = entity():aabbSize():x()
+    InGame = 0
+    for(I=1,VerticalEnemyCount*HorizontalEnemyCount)
+    {
+        EnemyTable:pushNumber(1)
+        
+    }
+    for(I=1,4)
+    {
+        holoAlpha(I+2,255)
+    }
+    Num=0
+    EnemyY = 70
+    for(I=1,VerticalEnemyCount)
+    {
+        for(J=1,HorizontalEnemyCount)
+        {
+            Num++
+            holoAlpha(Num+7,255)
+        }
+    }
+    EnemyPos = entity():pos()+vec(LeftMostEnemyX,0,EnemyY)+vec(0,0,entity():aabbSize():x()/2)
+    holoPos(8,EnemyPos)
+    resetEnemies()
+}
+if(first())
+{
+    #Make the E2 stand upright, no matter how you place it
+    entity():setPos(entity():pos()+vec(0,0,80))
+    entity():setAng(ang(90,90,0))
+    entity():setMaterial("engine/singlecolor")
+    entity():setColor(vec(0,0,0))
+    holoCreate(1,entity():pos())
+    holoModel(1,"models/hunter/plates/plate.mdl")
+    holoMaterial(1,"engine/singlecolor")
+    holoAlpha(1,255)
+    GameInterval = 100
+    holoCreate(2,entity():pos()+vec(0,0,10),vec(1.5,1.5,1),ang(0,0,0))
+    holoModel(2,"models/sprops/misc/alphanum/alphanum_arrow_a.mdl")
+    holoMaterial(2,"engine/singlecolor")
+    holoColor(2,vec(0,255,0))
+    resetGame()
+    for(I=1,4)
+    {
+        holoCreate(I+2,entity():pos()+vec((EntityWidth/4)*I-EntityWidth/1.5+7,0,40),vec(1,2,1))
+        holoMaterial(I+2,"engine/singlecolor")
+        holoModel(I+2,"models/sprops/geometry/hdisc_18.mdl")
+    }
+    holoCreate(7,entity():pos(),vec(0.2,0.2,0.2)) #BULLET HOLOGRAM
+    holoModel(7,"models/props_phx/misc/flakshell_big.mdl")
+    holoMaterial(7,"engine/singlecolor")
+    ShipX = entity():pos():x()
+    ShipSpeed = 10
+    BulletSpeed = 10
+    Bullet = vec(ShipX,entity():pos():y(),entity():pos():z()-1000)
+    resetEnemies()
+    spawnEnemies()
+    SideOffsets = getSideOffsets()
+}
+if(clk("moveEnemies"))
+{
+    moveEnemies()
+}
+if(clk("newGame"))
+{
+    resetGame()
+}
+interval(GameInterval)
+if(!InGame)
+{
+    findByClass("player")
+    Player = findClosest(entity():pos())
+}
+if(Player:aimEntity() == entity())
+{
+    holoPos(1,Player:aimPos())
+    ShipDeltaX = clamp(Player:aimPos():x()-ShipX,-ShipSpeed,ShipSpeed)
+    ShipX = ShipX+ShipDeltaX
+    holoPos(2,vec(ShipX,entity():pos():y(),entity():pos():z()-60))
+    
+}
+if(Bullet:z()+20 < entity():pos():z()+entity():aabbSize():x()/2 && Bullet:z() > entity():pos():z()-entity():aabbSize():x()/2 )
+{
+    Bullet = Bullet + vec(0,0,BulletSpeed)
+    holoPos(7,Bullet)
+    holoAlpha(7,255)
+    holoColor(7,vec(255,255,255))
+}
+else
+{
+    #holoAlpha(7,0)
+    holoColor(7,vec(255,0,0))
+    #Bullet = entity():pos()-vec(0,0,entity():aabbSize:x()/2)
+    Bullet = vec(ShipX,entity():pos():y(),entity():pos():z()-1000)
+    holoPos(7,Bullet)
+}
+checkCollisions()
+if(Player:aimEntity() == entity() && Player:keyUse() && !EKeyPressed)
+{
+    if(!InGame){InGame = 1 timer("moveEnemies",1000) moveEnemies()}
+    elseif(Bullet:z() < entity():pos():z()-entity():aabbSize():x()/2)
+    {
+        #holoAlpha(7,255)
+        Bullet = vec(ShipX,entity():pos():y(),entity():pos():z()-70)
+        soundPlay(2,0.7,"weapons/airstrike_fire_0"+toString(round(random(3)))+".wav")
+    }
+    EKeyPressed = 1
+}elseif(Player:keyUse() != 1){EKeyPressed=0}
+if(Player:aimEntity() == entity() && Player:keyReload() && !RKeyPressed)
+{
+    RKeyPressed = 1
+    moveEnemies()
+}elseif(Player:keyReload() != 1){RKeyPressed=0}

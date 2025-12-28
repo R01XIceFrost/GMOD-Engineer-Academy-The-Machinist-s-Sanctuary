@@ -1,0 +1,176 @@
+@name TF2 Baloonicorn
+@persist Alk:vector Songs:array Models:array Prop:entity
+@model models/player/items/all_class/pet_balloonicorn.mdl
+interval(10)
+#Apply Force
+    P = owner()
+    Alk=owner():pos()-(entity():pos()-vec(0,60,200))
+    applyForce($Alk*50+Alk) 
+if (first()){
+    timer("Song",1)
+    entity():propFreeze(0)
+    entity():propNotSolid(1)
+    
+} #Music
+    Songs[1,string] = "ui/gamestartup1.mp3"
+    Songs[2,string] = "ui/gamestartup2.mp3"
+    Songs[3,string] = "ui/gamestartup3.mp3"
+    Songs[4,string] = "ui/gamestartup4.mp3"
+    Songs[5,string] = "ui/gamestartup5.mp3"
+    Songs[6,string] = "ui/gamestartup6.mp3"
+    Songs[7,string] = "ui/gamestartup7.mp3"
+    Songs[8,string] = "ui/gamestartup8.mp3"
+    Songs[9,string] = "ui/gamestartup9.mp3"
+    Songs[10,string] = "ui/gamestartup10.mp3"
+    Songs[11,string] = "ui/gamestartup11.mp3"
+    Songs[12,string] = "ui/gamestartup12.mp3"
+    Songs[13,string] = "ui/gamestartup13.mp3"
+    Songs[14,string] = "ui/gamestartup14.mp3"
+    Songs[15,string] = "ui/gamestartup15.mp3"
+    Songs[16,string] = "ui/gamestartup16.mp3"
+    #Play the song
+if (clk("Song") |changed(P:keyReload())& P:keyAttack2() ){
+    entity():soundPlay(1,0, Songs:string(round(random(16))))
+    timer("Song",150000)
+    #Spawn a random prop
+}
+    if(randint(1,500) == 1 &!Prop){
+        Prop = propSpawn("models/props_gameplay/ball001.mdl",entity():pos()+(vec(0,0,0)), entity():angles(),0 )
+timer("Delete",10000)
+}
+if (clk("Delete")){
+    Prop:propDelete()
+}
+
+    if(randint(1,600) == 1 &!Prop){
+        Prop = propSpawn("models/items/tf_gift.mdl",entity():pos()+(vec(0,0,0)), entity():angles(),0 )
+timer("Delete",10000)
+}
+if (clk("Delete")){
+    Prop:propDelete()
+}
+
+    if(randint(1,750) == 1 &!Prop){
+        Prop = propSpawn("models/items/medkit_large_bday.mdl",entity():pos()+(vec(0,0,0)), entity():angles(),0 )
+timer("Delete",10000)
+}
+if (clk("Delete")){
+    Prop:propDelete()
+}
+
+    if(randint(1,1000) == 1 &!Prop){
+        Prop = propSpawn("models/items/currencypack_small.mdl",entity():pos()+(vec(0,0,0)), entity():angles(),0 )
+timer("Delete",10000)
+}
+if (clk("Delete")){
+    Prop:propDelete()
+}
+
+    if(randint(1,1500) == 1 &!Prop){
+        Prop = propSpawn("models/items/currencypack_large.mdl",entity():pos()+(vec(0,0,0)), entity():angles(),0 )
+timer("Delete",10000)
+}
+if (clk("Delete")){
+    Prop:propDelete()
+}
+
+    if(randint(1,1750) == 1 &!Prop){
+        Prop = propSpawn("models/props_halloween/halloween_gift.mdl",entity():pos()+(vec(0,0,0)), entity():angles(),0 )
+timer("Delete",10000)
+}
+if (clk("Delete")){
+    Prop:propDelete()
+}
+
+    if(randint(1,2500) == 1 &!Prop){
+        Prop = propSpawn("models/items/plate_sandwich_xmas.mdl",entity():pos()+(vec(0,0,0)), entity():angles(),0 )
+timer("Delete",10000)
+}
+if (clk("Delete")){
+    Prop:propDelete()
+}
+
+if(randint(1,3000) == 1 &!Prop){
+        Prop = propSpawn("models/props_c17/doll01.mdl",entity():pos()+(vec(0,0,0)), entity():angles(),0 )
+timer("Delete",10000)
+}
+if (clk("Delete")){
+    Prop:propDelete()
+}
+
+if(randint(1,3250) == 1 &!Prop){
+        Prop = propSpawn("models/props_2fort/coffeepot.mdl",entity():pos()+(vec(0,0,0)), entity():angles(),0 )
+timer("Delete",10000)
+}
+if (clk("Delete")){
+    Prop:propDelete()
+}
+if(randint(1,3500) == 1 &!Prop){
+        Prop = propSpawn("models/props_mining/ingot001.mdl",entity():pos()+(vec(0,0,0)), entity():angles(),0 )
+timer("Delete",10000)
+}
+if (clk("Delete")){
+    Prop:propDelete()
+}
+if(randint(1,3750) == 1 &!Prop){
+        Prop = propSpawn("models/props_medieval/medieval_meat.mdl",entity():pos()+(vec(0,0,0)), entity():angles(),0 )
+timer("Delete",10000)
+}
+if (clk("Delete")){
+    Prop:propDelete()
+}
+if(randint(1,4000) == 1 &!Prop){
+        Prop = propSpawn("models/props_halloween/pumpkin_01.mdl",entity():pos()+(vec(0,0,0)), entity():angles(),0 )
+timer("Delete",10000)
+}
+if (clk("Delete")){
+    Prop:propDelete()
+}
+if(randint(1,5000) == 1 &!Prop){
+        Prop = propSpawn("models/props_forest/bird.mdl",entity():pos()+(vec(0,0,0)), entity():angles(),0 )
+timer("Delete",10000)
+}
+if (clk("Delete")){
+    Prop:propDelete()
+}
+if(randint(1,6000) == 1 &!Prop){
+        Prop = propSpawn("models/props_halloween/smlprop_spider.mdl",entity():pos()+(vec(0,0,0)), entity():angles(),0 )
+timer("Delete",10000)
+}
+if (clk("Delete")){
+    Prop:propDelete()
+}
+if(randint(1,7000) == 1 &!Prop){
+        Prop = propSpawn("models/props_medieval/medieval_scroll.mdl",entity():pos()+(vec(0,0,0)), entity():angles(),0 )
+timer("Delete",10000)
+}
+if (clk("Delete")){
+    Prop:propDelete()
+}
+if(randint(1,8000) == 1 &!Prop){
+        Prop = propSpawn("models/props_manor/vase_01.mdl",entity():pos()+(vec(0,0,0)), entity():angles(),0 )
+timer("Delete",10000)
+}
+if (clk("Delete")){
+    Prop:propDelete()
+}
+
+if(randint(1,9000) == 1 &!Prop){
+        Prop = propSpawn("models/props_spytech/tv001.mdl",entity():pos()+(vec(0,0,0)), entity():angles(),0 )
+timer("Delete",10000)
+}
+if (clk("Delete")){
+    Prop:propDelete()
+}
+
+if(randint(1,100000) == 1 &!Prop){
+        Prop = propSpawn("models/player/items/all_class/pet_reinballoonicorn.mdl",entity():pos()+(vec(0,0,0)), entity():angles(),0 )
+timer("Delete",40000)
+soundStop(1,0)
+soundPlay(1,0,"music/mvm_end_last_wave.wav")
+timer("Song",40000)
+}
+if (clk("Delete")){
+    Prop:propDelete()
+}
+

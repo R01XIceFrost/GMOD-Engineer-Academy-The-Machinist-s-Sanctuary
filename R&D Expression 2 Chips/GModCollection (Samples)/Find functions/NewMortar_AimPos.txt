@@ -1,0 +1,55 @@
+@name NewMortar_AimPos
+@inputs 
+@outputs 
+@persist Progress Hitpoint:vector Start P:entity B:vector UseTarget:vector Dist ForwardB:vector
+@trigger 
+
+interval(25)
+findByClass("Player")
+#findExcludePlayer(owner())
+
+#Target=findClosest(owner():aimPos())
+if(!Start){
+UseTarget=owner():aimPos()
+}
+Hitpoint=UseTarget
+
+if(first()|dupefinished()){
+ holoCreate(1)
+holoCreate(2)
+holoCreate(3)
+holoCreate(4)
+holoVisible(1,players(),0)
+holoVisible(2,players(),0)
+holoVisible(3,players(),0)
+holoVisible(4,players(),0)
+Progress=0   
+    Start=0
+}
+Dist=(Hitpoint-entity():pos()):length()
+holoPos(4,B)
+holoPos(2,holoEntity(1):toWorld(vec((Hitpoint-entity():toWorld(vec(0))):length()/2,0,(Hitpoint-entity():toWorld(vec(0))):length()/1)))
+holoPos(3,Hitpoint)
+holoAng(1,(Hitpoint-entity():toWorld(vec(0))):toAngle())
+Progress=clamp(Progress,0,1)
+B=bezier(entity():toWorld(vec(0,0,5)),holoEntity(2):pos(),Hitpoint,Progress)
+ForwardB=bezier(entity():toWorld(vec(0,0,5)),holoEntity(2):pos(),Hitpoint,Progress+0.1)
+if(owner():keyAttack2()&owner():weapon():type()=="weapon_crowbar"&Start==0){Start=1}
+if(changed(Start)&Start){holoCreate(69),holoPos(69,Hitpoint),P=propSpawn("models/props_phx/mk-82.mdl",holoEntity(1):pos()+vec(0,0,20),1),holoEntity(69):soundPlay(1001,100,"vo/npc/male01/cit_dropper04.wav")}
+if(Start){Progress+=(1.5/(Dist/20))}
+if(Progress>=1){P:propBreak(),reset()}
+P:setPos(B)
+if(changed(Progress>0.3)&Progress>0.3){P:soundPlay(1000,100,"ambient/wind/windgust_strong.wav"),holoEntity(69):soundPlay(1010,100,"ambient/alarms/apc_alarm_loop1.wav")}
+if(changed(Progress>0.7)&Progress>0.7){holoEntity(69):soundPlay(1000,100,"ambient/overhead/plane1.wav")}
+P:setAng((ForwardB-B):toAngle())
+rangerFilter(owner())
+rangerFilter(P)
+R=rangerOffset(100,P:pos(),P:toWorld(vec(1,0,0)))
+if((P:pos()-R:position()):length()<60&&Progress>0.2){P:propBreak(),reset()}
+
+holoColor(69,vec(255,100,100))
+holoScale(69,vec(9))
+holoAlpha(69,100)
+holoModel(69,"models/props_phx/construct/metal_dome360.mdl")
+holoMaterial(69,"materials/models/debug/debugwhite")
+holoPos(69,Hitpoint)

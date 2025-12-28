@@ -1,0 +1,27 @@
+@name Combine Sounds
+@persist Sounds:array 
+@model models/hunter/plates/plate.mdl
+#Hints
+if (first()){entity():setMaterial("models/props_c17/frostedglass_01a")
+    entity():setAlpha(0) 
+} 
+Stat = 1
+#Sounds
+    Sounds[0, string] = "npc/metropolice/vo/citizen.wav"
+    Sounds[1, string] = "npc/metropolice/vo/catchthatbliponstabilization.wav"
+    Sounds[2, string] = "npc/metropolice/vo/readytojudge.wav"
+    Sounds[3, string] = "npc/metropolice/vo/requestsecondaryviscerator.wav"
+    Sounds[4, string] = "npc/metropolice/vo/shotsfiredhostilemalignants.wav"
+    Sounds[5, string] = "npc/metropolice/vo/stabilizationjurisdiction.wav"
+    Sounds[6, string] = "npc/metropolice/vo/tenzerovisceratorishunting.wav"
+    Sounds[6, string] = "npc/metropolice/vo/therehegoeshesat.wav"
+
+if(Stat){
+LastSaid = lastSaid()
+interval(1)    E = entity()
+    P = owner()
+    if(randint(1,150)==1){ P:soundPlay(0,0,Sounds:string(round(random(6))))
+}
+}
+if(changed(P:keyAttack2())& P:keyUse() ){ P:soundPlay(0,0,Sounds:string(round(random(6))))
+}

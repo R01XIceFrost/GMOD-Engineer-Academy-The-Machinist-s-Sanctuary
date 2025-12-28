@@ -1,0 +1,31 @@
+@name Gravity Cube
+@outputs Target:vector Force:vector
+@model models/hunter/blocks/cube025x025x025.mdl
+
+if(first()){
+    Target = entity():pos()
+    #holoCreate(1, Target)
+    #holoCreate(2, Target)
+    entity():setMass(300)
+    entity():enableGravity(0)
+    entity():enableDrag(1)
+    entity():noCollideAll(0)
+    #entity():propNotSolid(1)
+    #entity():propFreeze(0)
+}
+
+event tick() {
+    #Force = (Target-entity():pos())*10 - entity():vel()
+    Force = (Target-entity():pos()) - entity():vel()*0.05
+    Force *= entity():mass()
+
+    #Force = -propGravity()*tickInterval()
+    #holoPos(2, Target+Force)
+    entity():applyForce(Force)
+}
+
+event keyPressed(Player:entity, Key:string, Down:number, KeyBind:string) {
+    #if(Player == owner() & KeyBind == "use" & Down) {
+    #    Target = Player:aimPos()
+    #}
+}

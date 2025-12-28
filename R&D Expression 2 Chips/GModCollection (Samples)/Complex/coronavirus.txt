@@ -1,0 +1,183 @@
+@name Gorona :DDD(pls dont spraybottle me lol)
+@inputs 
+@outputs FaceYaw:angle
+@persist [I,J,Ang,Speed,HowManyHolos,PlayedSound,N,Scale,CovidHealth,HoloNum,HoloAlpha,Time]:number OriginalColors:array
+@trigger 
+@model models/hunter/blocks/cube05x05x05.mdl
+if(first())
+{
+    HoloAlpha = 255
+    CovidHealth = 5
+    #BallObject = propSpawn("models/hunter/misc/sphere075x075.mdl",entity():pos(),ang(0,0,0),1)
+    PlayedSound = 0
+    HoloNum = 1
+    Scale = 0.2+random(1)
+    entity():setAlpha(0)
+    entity():setColor(vec(128,12,44))
+    holoCreate(HoloNum,entity():pos(),vec(0.2*Scale,0.2*Scale,0.2*Scale))
+    holoModel(HoloNum,"models/hunter/misc/shell2x2.mdl")
+    holoColor(HoloNum,vec(179,107,0))
+    OriginalColors:pushVector(vec(179,107,0))
+    holoMaterial(HoloNum,"engine/singlecolor")
+    Speed = 30
+    Ang = 0
+    for(J = 1,5)
+    {
+        for(I = 1, 6)
+        {
+            HoloNum++
+
+                holoCreate(HoloNum,entity():pos()+vec(-sin(I*60)*13*Scale,0,-cos(I*60)*13*Scale),vec(0.10*Scale,0.10*Scale,0.5*Scale))
+                holoModel(HoloNum,"models/hunter/misc/cone1x1.mdl")
+                holoAng(HoloNum,ang(I*60,0,0))
+                holoColor(HoloNum,vec(99,56,0))
+                OriginalColors:pushVector(vec(99,56,0))
+                holoParent(HoloNum,1)
+                holoMaterial(HoloNum,"engine/singlecolor")
+           
+        }
+        Ang = Ang+60
+        holoAng(1,ang(0,Ang,0))
+    }    
+    holoParent(1,entity())
+    entity():propGravity(0)
+    entity():propFreeze(0)
+    entity():propDrag(1)
+    entity():propNotSolid(0)
+    HowManyHolos = HoloNum
+    entity():soundPlay(2,0,"npc/zombie_poison/pz_breathe_loop1.wav")
+    soundVolume(2,0.1)
+    HoloNum++
+    holoCreate(HoloNum,entity():pos()+vec(3*Scale,9*Scale,2*Scale),vec(0.2*Scale,0.2*Scale,0.2*Scale))
+    holoModel(HoloNum,"models/hunter/misc/sphere025x025.mdl")
+    holoMaterial(HoloNum,"engine/singlecolor")
+    holoColor(HoloNum,vec(0,0,0))
+    OriginalColors:pushVector(vec(0,0,0))
+    holoParent(HoloNum,1)
+    
+    HoloNum++
+    holoCreate(HoloNum,entity():pos()+vec(-3*Scale,9*Scale,2*Scale),vec(0.2*Scale,0.2*Scale,0.2*Scale))
+    holoModel(HoloNum,"models/hunter/misc/sphere025x025.mdl")
+    holoMaterial(HoloNum,"engine/singlecolor")
+    holoColor(HoloNum,vec(0,0,0))
+    OriginalColors:pushVector(vec(0,0,0))
+    holoParent(HoloNum,1)
+    
+    HoloNum++
+    holoCreate(HoloNum,entity():pos()+vec(0,9*Scale,0),vec(0.2*Scale,0.2*Scale,0.2*Scale))
+    holoModel(HoloNum,"models/hunter/misc/sphere025x025.mdl")
+    holoMaterial(HoloNum,"engine/singlecolor")
+    holoColor(HoloNum,vec(0,0,0))
+    OriginalColors:pushVector(vec(0,0,0))
+    holoParent(HoloNum,1)
+    
+    HoloNum++
+    holoCreate(HoloNum,entity():pos()+vec(0,8*Scale,-3*Scale),vec(0.4*Scale,0.2*Scale,0.4*Scale))
+    holoModel(HoloNum,"models/hunter/misc/sphere025x025.mdl")
+    holoMaterial(HoloNum,"engine/singlecolor")
+    holoColor(HoloNum,vec(213,148,208))
+    OriginalColors:pushVector(vec(213,148,208))
+    holoParent(HoloNum,1)
+    
+    HoloNum++ #LeftCheek
+    holoCreate(HoloNum,entity():pos()+vec(5*Scale,9*Scale,-1*Scale),vec(0.8*Scale,0.4*Scale,0.4*Scale))
+    holoModel(HoloNum,"models/hunter/misc/sphere025x025.mdl")
+    holoMaterial(HoloNum,"engine/singlecolor")
+    holoColor(HoloNum,vec(247,255,147))
+    OriginalColors:pushVector(vec(247,255,147))
+    holoParent(HoloNum,1)
+    
+    HoloNum++ #RightCheek
+    holoCreate(HoloNum,entity():pos()+vec(-5*Scale,9*Scale,-1*Scale),vec(0.8*Scale,0.4*Scale,0.4*Scale))
+    holoModel(HoloNum,"models/hunter/misc/sphere025x025.mdl")
+    holoMaterial(HoloNum,"engine/singlecolor")
+    holoColor(HoloNum,vec(247,255,147))
+    OriginalColors:pushVector(vec(247,255,147))
+    holoParent(HoloNum,1)
+    timer("face",500)
+    #timer("multiply",10000)
+    Time=0
+}
+#if(clk("multiply"))
+#{
+#    propSpawn(entity(),0)
+#q}
+interval(100)
+findByClass("player")
+#findExcludeEntity(owner())
+ClosestPerson = findClosest(entity():pos())
+#ClosestPerson = owner()
+#HoloNum = round(random(HowManyHolos))
+#holoColor(HoloNum,vec(random(255),random(255),random(255)))
+Time+=2
+TargetPos = ClosestPerson:pos()+vec(sin(Time)*70,cos(Time)*70,0)
+Target = clamp(TargetPos+vec(0,0,70)+vec(0,0,sin(N*15)*50)-entity():pos(),vec(-Speed,-Speed,-Speed),vec(Speed,Speed,Speed))-entity():vel()*2
+entity():applyForce(Target)
+if(clk("death")){selfDestruct()}
+if(clk("cough")){soundPlay(3,0,"ambient/voices/cough"+randint(4):toString()+".wav") if(PlayedSound){timer("cough",1500+randint(1000))}}
+if(CovidHealth<0)
+{
+    HoloAlpha = HoloAlpha - 25
+    for(I=1,HoloNum)
+    {
+        holoAlpha(I,HoloAlpha)
+    }
+}
+elseif(clk("resetColor"))
+{
+    for(I=1,HoloNum)
+    {
+        holoColor(I,OriginalColors[I,vector])
+    }
+}
+if(ClosestPerson:pos():distance(entity():pos()) < 100)
+{
+    if(!PlayedSound){entity():soundPlay(1,0,"npc/zombie_poison/pz_breathe_loop2.wav") soundVolume(1,0.2) timer("cough",1000)}
+    PlayedSound = 1
+    soundStop(2)
+    if(ClosestPerson:keyAttack1() && ClosestPerson:weapon():type() == "weapon_squirtbottle" && ClosestPerson:aimEntity() == entity())
+    {
+        
+        CovidHealth = CovidHealth - 1
+        if(CovidHealth < 0)
+        {
+            timer("death",500)
+            soundPlay(3,0,"vj_flesh/alien_flesh2.wav")
+            for(I=1,HoloNum)
+            {
+                holoColor(I,vec(0,0,0))
+                
+            }
+        }
+        else
+        {
+            soundPlay(3,0,"squeek/sqk_hunt"+toString(randint(3))+".wav")
+            for(I=1,HoloNum)
+            {
+                holoColor(I,vec(51+CovidHealth*51,0,0))
+                timer("resetColor",500)
+            }
+        }
+    }
+}
+else
+{
+    if(PlayedSound)
+    {
+        entity():soundPlay(2,0,"npc/zombie_poison/pz_breathe_loop1.wav")
+        soundVolume(2,0.1)
+    }
+    PlayedSound=0
+    soundStop(1)
+}
+N++
+    #SpeedThing = entity():vel()
+    FaceYaw = angnorm( clamp((entity():pos()-ClosestPerson:pos()):toAngle()+ang(0,30,0),ang(0,-3600,0),ang(0,3600,0)) )#+ang(30,0,30)
+    holoAng(1,FaceYaw)
+    #entity():setAng(FaceYaw)
+    entity():applyAngForce(-entity():angVel()*0.5)
+    #entity():applyForce(SpeedThing)
+    #entity():applyAngForce( (FaceYaw-entity():angles())*2-entity():angVel())
+#[
+    Made by Leghumper
+]#

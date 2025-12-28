@@ -1,0 +1,150 @@
+@name Enyx's Javelin V3 -- SinTime
+@inputs 
+@outputs FadeCur Fade
+@persist FadeStart FadeDurationMultiplier FireButton:string Rocket:entity TargetPos:vector Destroy AirTime PlayerDist
+@persist PlayerDistM Launching LaunchStart NormalMarkerColour:vector TargetMarkerColour:vector
+interval(20)
+
+if (first()){
+    
+#----SETTINGS----#
+NormalMarkerColour = vec(175,0,0) #This is the colour of the marker that will follow your aimposition until firing --DEFAULT vec(175,0,0) Red
+TargetMarkerColour = vec(0,0,175) #This is the colour of the marker when a target position is given --DEFAULT vec(0,0,175) Blue
+MarkerOutlineColour = vec(0,0,0) #This is the colour of the outline of the marker --DEFAULT vec(0,0,0) Black
+FadeDurationMultiplier = 80 #Change this to suit the time you want the fade to last for
+FireButton = "e" #The button you wish to launch your attack with
+AirTime = 3 #Adjust this to the time you want the rocket to propel vertically before decending onto the target
+
+#----DO NOT CHANGE ANYTHING UNDER THIS!----#
+    Launching = 0
+    Fade = 0
+    for(I=1,10){
+    holoCreate(I)
+    holoMaterial(I,"phoenix_storms/fender_white")
+}
+holoAng(1,ang(0,0,90))
+
+    for(I=2,10){
+    holoColor(I,NormalMarkerColour)
+    holoParent(I,holoEntity(1))
+}
+holoColor(1,NormalMarkerColour-(NormalMarkerColour/7)), holoModel(1,"models/sprops/geometry/fdisc_12.mdl"), holoScale(1,vec(1,0.3,1))  
+holoColor(5,MarkerOutlineColour), holoModel(5,"models/sprops/misc/tubes/size_5/tube_96x6.mdl")
+holoColor(6,MarkerOutlineColour), holoModel(6,"models/sprops/rectangles/size_1_5/rect_6x96x3.mdl")
+holoColor(7,MarkerOutlineColour), holoModel(7,"models/sprops/rectangles/size_1_5/rect_6x96x3.mdl"), holoScale(7,vec(0.98,1.5,0.05))
+holoColor(8,MarkerOutlineColour), holoScale(8,vec(1.2,0.25,1.2)), holoModel(8,"models/sprops/geometry/fdisc_12.mdl"), holoAng(8,ang(0,0,90))
+holoScale(2,vec(1,0.1,1)), holoModel(2,"models/sprops/misc/tubes/size_5/tube_96x6.mdl"), holoAng(2,ang(0,0,90))
+holoScale(3,vec(0.98,1,0.1)), holoModel(3,"models/sprops/rectangles/size_1_5/rect_6x96x3.mdl"), holoAng(3,ang(0,90,0))
+holoScale(4,vec(0.98,1,0.1)), holoModel(4,"models/sprops/rectangles/size_1_5/rect_6x96x3.mdl")
+holoScale(5,vec(1.05,0.15,1.05)), holoAng(5,ang(0,0,90))
+holoScale(6,vec(0.98,1.5,0.05)), holoAng(6,ang(0,90,0))
+
+
+holoModel(9,"models/sprops/rectangles/size_1_5/rect_6x24x3.mdl"), holoPos(9,holoEntity(1):pos()+holoEntity(1):up()*43.5), holoAng(9,ang(0,45,0)), holoScale(9,vec(0.68,0.6,0.4)), holoParent(9,holoEntity(2))
+holoModel(10,"models/sprops/rectangles/size_1_5/rect_6x24x3.mdl"), holoPos(10,holoEntity(1):pos()+holoEntity(1):up()*52.5), holoAng(10,ang(0,-45,0)), holoScale(10,vec(0.68,0.6,0.4)), holoParent(10,holoEntity(2))
+
+}
+
+#PlayerDistance = owner():pos():distance(owner():aimPos())
+
+if(!Launching & !Fade){
+holoPos(1,owner():aimPos())
+}
+holoAng(2,holoEntity(2):angles()+ang(0,-3,0))
+
+if (!Fade & !Launching & (changed(owner():keyPressed(FireButton))& owner():keyPressed(FireButton))) {
+    hint("Launching!",3)
+    TargetPos = owner():aimPos()
+    PlayerDist = owner():pos():distance(TargetPos)
+    PlayerDistM = round(toUnit("m",PlayerDist))
+    print(4,"Target Detected at " + PlayerDistM + " meters away")
+    holoPos(1,TargetPos), holoColor(1,TargetMarkerColour-(TargetMarkerColour/7)), holoColor(9,TargetMarkerColour), holoColor(10,TargetMarkerColour)
+        for(I=2,4){
+        holoColor(I,TargetMarkerColour)
+        }
+#{ ROCKET SPAWN ###
+    Rocket = propSpawn("models/props_phx/amraam.mdl",owner():pos()+owner():up()*150,0)
+    owner():soundPlay(1,0,"acf_extra/tankfx/guns/arty_fire.wav")
+    Rocket:soundPlay(2,20,"ambient/machines/steam_loop_01.wav")
+    Rocket:setMass(500)
+    
+    # NOTE - CHANGED TRAIL (parented holo at back now)
+    holoCreate(0)
+    holoAlpha(0, 0)
+    holoPos(0, Rocket:toWorld( vec(-75,0,0)))
+    holoParent(0, Rocket)
+    holoEntity(0):setTrails(50,0,6,"trails/smoke",vec(255,255,255),255)
+    
+    Rocket:propGravity(0)
+    Rocket:setAng(ang(-90,0,0))
+    Rocket:applyForce(owner():up()*500000)
+#}###
+    Launching = 1
+    LaunchStart = curtime()
+
+}
+
+if (Launching){
+    LaunchCur = curtime() - LaunchStart
+}
+
+if (Launching){
+    
+    if( Rocket:pos():distance(TargetPos) < 100)
+    {
+        Rocket:propBreak()
+    }
+    
+    if((changed(Rocket:isValid()) & !Rocket:isValid()))
+    {
+        Launching = 0
+        Fade = 1
+    }
+}
+
+if (changed(Fade)&Fade){
+    FadeStart = curtime()
+}
+
+if (Fade){
+    FadeCur = curtime() - FadeStart
+
+for(I=1,10){
+    holoAlpha(I,255-(FadeCur*FadeDurationMultiplier))
+    }
+}
+
+if (Rocket:isValid() & (changed(LaunchCur)&LaunchCur>=AirTime)) {
+Destroy = 1
+}
+
+if (changed(Destroy)&Destroy){
+    hint("Desending!",3)
+}
+    
+if (Destroy){
+    #Rocket:setAng(((TargetPos) - Rocket:pos()):toAngle())
+    #Rocket:applyForce(Rocket:forward()*999999999)
+    
+    Torque = vec(1,0,0):cross( Rocket:toLocal( TargetPos ) ):normalized()
+    #print( "Local: " + ToTarLoc )
+    #print( "Torque: "+ Torque )
+    Rocket:applyTorque( Torque * 50000 - Rocket:angVelVector() * 1000 )
+    
+    Rocket:applyForce( Rocket:forward()*60000 - Rocket:vel() * 28)
+}
+
+if (changed(holoEntity(1):getAlpha()) & holoEntity(1):getAlpha() == 0){
+    soundStop(1,0)
+    soundStop(2,1)
+    holoColor(1,NormalMarkerColour-(NormalMarkerColour/7)), holoColor(9,NormalMarkerColour), holoColor(10,NormalMarkerColour)
+    for(I=2,4){
+    holoColor(I,NormalMarkerColour)
+    }
+    for(I=1,10){
+    holoAlpha(I,255)
+    }
+    Launching = 0
+    Destroy = 0
+    Fade = 0
+}

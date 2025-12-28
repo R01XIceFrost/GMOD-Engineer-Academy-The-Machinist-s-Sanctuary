@@ -1,0 +1,263 @@
+@name Holo miner (Alix)
+@persist Pos:vector X Y Z Tick Angle
+@trigger 
+
+function void holoSetPitch(I, N){
+    holoAng(I,ang(N,holoEntity(I):angles():yaw(),holoEntity(I):angles():roll()))
+}
+function void holoSetYaw(I, N){
+    holoAng(I,ang(holoEntity(I):angles():pitch(),N,holoEntity(I):angles():roll()))
+}
+function void holoSetRoll(I, N){
+    holoAng(I,ang(holoEntity(I):angles():pitch(),holoEntity(I):angles():yaw(),N))
+}
+function void holoCreateCore(Min,Max){
+    holoCreate(100,entity():pos() + vec(0,520,300))
+    holoAlpha(100,0)
+    for(I=Min,Max){
+        holoParent(I,100)
+    }
+}
+
+Angle = (Angle+0.5) % 360
+
+runOnTick(1)
+
+if (first() | duped())
+{   
+
+    #PowerCore
+
+    holoCreate(1, entity():pos() + vec(0,520,300), vec(6,6,6))
+    holoModel(1, "sphere3")
+    holoMaterial(1, "models/alyx/emptool_glow")
+    holoColor(1, vec(127,0,95))
+    holoCreate(16, entity():pos() + vec(0,520,390), vec(11,11,11))
+    holoModel(16, "sphere3")
+    holoMaterial(16, "models/effects/comball_tape")
+    holoAlpha(16, 100)
+    
+    holoCreate(10, entity():pos() + vec(0,520,390), vec(8,8,5))
+    holoModel(10, "torus3")
+    holoColor(10, vec(78,78,78))
+    holoMaterial(10, "phoenix_storms/metalset_1-2")
+    holoCreate(11, entity():pos() + vec(0,520,390), vec(8,8,5))
+    holoModel(11, "torus3")
+    holoColor(11, vec(78,78,78))
+    holoMaterial(11, "phoenix_storms/metalset_1-2")
+
+    #MainBody
+    
+    holoCreate(3, entity():pos() + vec(0,0,390), vec(8,8,10))
+    holoModel(3, "cylinder")
+    holoColor(3, vec(78,78,78))
+    holoMaterial(3, "models/props_combine/metal_combinebridge001")
+    holoAng(3, ang(0,0,90))
+
+    #PowerReactor
+
+    holoCreate(4, entity():pos() + vec(0,0,330), vec(10,10,5))
+    holoModel(4, "torus3")
+    holoColor(4, vec(78,78,78))
+    holoMaterial(4, "phoenix_storms/metalset_1-2")
+    holoCreate(5, entity():pos() + vec(0,0,300), vec(10,10,5))
+    holoModel(5, "torus3")
+    holoColor(5, vec(78,78,78))
+    holoMaterial(5, "phoenix_storms/metalset_1-2")
+    holoCreate(6, entity():pos() + vec(0,0,270), vec(10,10,5))
+    holoModel(6, "torus3")
+    holoColor(6, vec(78,78,78))
+    holoMaterial(6, "phoenix_storms/metalset_1-2")
+    holoCreate(7, entity():pos() + vec(0,0,240), vec(10,10,5))
+    holoModel(7, "torus3")
+    holoColor(7, vec(78,78,78))
+    holoMaterial(7, "phoenix_storms/metalset_1-2")
+    holoCreate(8, entity():pos() + vec(0,0,210), vec(10,10,5))
+    holoModel(8, "torus3")
+    holoColor(8, vec(78,78,78))
+    holoMaterial(8, "phoenix_storms/metalset_1-2")
+    
+    #LowerPilon
+
+    holoCreate(9, entity():pos() + vec(0,0,180), vec(6,6,2))
+    holoModel(9, "torus3")
+    holoColor(9, vec(78,78,78))
+    holoMaterial(9, "phoenix_storms/metalset_1-2")
+    holoAng(9, ang(0,0,90))
+    holoCreate(12, entity():pos() + vec(0,0,180), vec(0,0,0))
+    holoModel(12, "cylinder")
+    holoCreate(13, entity():pos() + vec(0,0,180), vec(0,0,0))
+    holoModel(13, "cylinder")
+    holoCreate(14, entity():pos() + vec(0,0,180), vec(0,0,0))
+    holoModel(14, "cylinder")
+    holoCreate(15, entity():pos() + vec(0,0,180), vec(0,0,0))
+    holoModel(15, "cylinder")
+    holoEntity(12):setTrails(40,40,6,"trails/electric",vec(0,225,225),255)
+    holoEntity(13):setTrails(40,40,6,"trails/electric",vec(0,225,225),255)
+    holoEntity(14):setTrails(40,40,6,"trails/electric",vec(0,225,225),255)
+    holoEntity(15):setTrails(40,40,6,"trails/electric",vec(0,225,225),255)
+   
+    #laser
+    
+    holoCreate(2, entity():pos() + vec(0,0,300), vec(2.5,2.5,20))
+    holoColor(2, vec(78,78,78))
+    holoModel(2, "cylinder")
+    holoColor(2, vec(78,78,78))
+    holoAng(2, ang(0,0,90))
+    #holoMaterial(2, "phoenix_storms/stripes")
+    holoColor(2, vec(225,0,0))
+    
+    holoCreate(17, entity():pos() + vec(0,0,10), vec(2.5,2.5,20) , ang(0,0,270) ,vec(225,0,0), "cone")
+    #holoMaterial(17, "phoenix_storms/stripes") 
+    holoCreate(18, entity():pos() + vec(0,0,10), vec(2.5,2.5,20), ang(0,0,270), vec(225,0,0), "cylinder")
+    
+    #Default Pos/Angs
+    HZ = 90
+    HY = -300
+    holoPos(1, entity():pos()+ vec(0,-420-HY,HZ))
+    holoPos(2, entity():pos()+ vec(0,-110-HY,HZ))
+    holoPos(3, entity():pos()+ vec(0,-290-HY,HZ))
+    holoPos(4, entity():pos()+ vec(0,-230-HY,HZ))
+    holoPos(5, entity():pos()+ vec(0,-200-HY,HZ))
+    holoPos(6, entity():pos()+ vec(0,-170-HY,HZ))
+    holoPos(7, entity():pos()+ vec(0,-140-HY,HZ))
+    holoPos(8, entity():pos()+ vec(0,-110-HY,HZ))
+    holoPos(9, entity():pos()+ vec(0,-80-HY,HZ))
+    holoPos(10, entity():pos()+ vec(0,-420-HY,HZ))
+    holoPos(11, entity():pos()+ vec(0,-420-HY,HZ))
+    holoPos(12, entity():pos()+ vec(0,-80-HY,HZ))
+    holoPos(13, entity():pos()+ vec(0,-80-HY,HZ))
+    holoPos(14, entity():pos()+ vec(0,-80-HY,HZ))
+    holoPos(15, entity():pos()+ vec(0,-80-HY,HZ))
+    holoPos(16, entity():pos()+ vec(0,-420-HY,HZ))
+    holoPos(17, entity():pos() + vec(0,370-HY,HZ))
+    holoPos(18, entity():pos() + vec(0,130-HY,HZ))
+    holoPos(19, entity():pos() + vec(0,-45-HY,20+ HZ))
+    
+    holoAng(4, ang(Tick,0,90))
+    holoAng(5, ang(-Tick,0,90))
+    holoAng(6, ang(Tick,0,90))
+    holoAng(7, ang(-Tick,0,90))
+    holoAng(8, ang(Tick,0,90))
+    
+    holoAng(1, ang(Tick,Tick,0))
+    holoAng(10, ang(Tick,Tick,Tick))
+    holoAng(11, ang(-Tick,-Tick,-Tick))
+    holoAng(16, ang(-Tick,-Tick,-Tick))
+    
+    holoAng(9, ang(Tick,0,90))
+    
+    Pos = entity():pos()
+    Size = 60
+    C = 100
+
+    X = Pos:x() + sin(Tick) * -Size
+    Y = Pos:y() + -15 + C
+    Z = Pos:z() + cos(Tick) * -Size
+    holoPos(12, vec(X,Y,Z+HZ))
+    holoAng(12, ang(0,0,90))
+    
+    X = Pos:x() + sin(Tick) * -Size
+    Y = Pos:y() + 46 + C
+    Z = Pos:z() + cos(Tick) * -Size
+    holoPos(13, vec(X,Y,Z+HZ))
+    holoAng(13, ang(0,0,90))
+    
+    X = Pos:x() + sin(Tick) * Size
+    Y = Pos:y() + 15 + C
+    Z = Pos:z() + cos(Tick) * Size
+    holoPos(14, vec(X,Y,Z+HZ))
+    holoAng(14, ang(0,0,90))
+    
+    X = Pos:x() + sin(Tick) * Size
+    Y = Pos:y() + 75 + C
+    Z = Pos:z() + cos(Tick) * Size
+    holoPos(15, vec(X,Y,Z+HZ))
+    holoAng(15, ang(0,0,90))
+    
+    holoCreateCore(1,18)
+    holoParent(12,4)
+    holoParent(13,5)
+    holoParent(14,6)
+    holoParent(15,7)
+    holoParent(100,entity():owner())
+}
+
+
+
+Tick += 4
+
+
+#PowerReactor
+holoSetPitch(4, Tick)
+holoSetPitch(5, -Tick)
+holoSetPitch(6, Tick)
+holoSetPitch(7, -Tick)
+holoSetPitch(8, Tick)
+
+
+#PowerCore
+holoSetPitch(1, Tick)
+holoSetYaw(1, Tick)
+holoAng(10, ang(Tick,Tick,Tick))
+holoAng(11, ang(-Tick,-Tick,-Tick))
+holoAng(16, ang(-Tick,-Tick,-Tick))
+
+#LowerPilon
+holoSetPitch(9, Tick)
+
+
+#[
+C = 100
+
+X = Pos:x() + sin(Tick) * -Size
+Y = Pos:y() + -15 + C
+Z = Pos:z() + cos(Tick) * -Size
+holoPos(12, vec(X,Y,Z+HZ))
+
+
+X = Pos:x() + sin(Tick) * -Size
+Y = Pos:y() + 46 + C
+Z = Pos:z() + cos(Tick) * -Size
+holoPos(13, vec(X,Y,Z+HZ))
+
+
+X = Pos:x() + sin(Tick) * Size
+Y = Pos:y() + 15 + C
+Z = Pos:z() + cos(Tick) * Size
+holoPos(14, vec(X,Y,Z+HZ))
+
+
+X = Pos:x() + sin(Tick) * Size
+Y = Pos:y() + 75 + C
+Z = Pos:z() + cos(Tick) * Size
+holoPos(15, vec(X,Y,Z+HZ))
+
+
+#Lazer
+#+ ang(Angle,0,0)
+
+Size = 120
+
+X = Pos:x() + sin(-Angle) * Size
+Y = Pos:y() + cos(Angle) * Size
+Z = Pos:z() + 150
+holoPos(2, vec(X,Y,Z+130))
+holoAng(2, ang(0,Angle,270))
+
+Size = 600
+
+X = Pos:x() + sin(-Angle) * Size
+Y = Pos:y() + cos(Angle) * Size
+Z = Pos:z() + 150
+holoPos(17, vec(X,Y,Z+130))
+holoAng(17, ang(0,Angle,270))
+
+Size = 360
+
+X = Pos:x() + sin(Angle) * Size
+Y = Pos:y() + cos(Angle) * Size
+Z = Pos:z() + 150
+holoPos(18, vec(X,Y,Z+130))
+holoAng(18, ang(0,Angle,270))
+]#

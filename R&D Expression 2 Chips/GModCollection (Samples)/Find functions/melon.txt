@@ -1,0 +1,17 @@
+@name Melon
+@model models/props_junk/watermelon01.mdl
+@inputs 
+@outputs Melon:entity Target:entity
+@persist 
+@trigger 
+
+interval(20)
+
+if(first()){
+    Melon=entity()
+    Melon:propFreeze(0)
+}
+
+findByClass("player")
+Target=findClosest(entity():pos())
+Melon:applyForce((Target:pos()-Melon:pos()):toAngle():forward()*100)

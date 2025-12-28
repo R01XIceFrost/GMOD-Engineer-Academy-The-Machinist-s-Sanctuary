@@ -1,0 +1,78 @@
+@name Sniper Rifle
+@persist Prop:entity Player:entity Props:array Fired MaxAmmo
+@model models/hunter/plates/plate.mdl
+MaxAmmo = 5
+if (Fired>MaxAmmo)
+{
+    hint("Out Of Ammo",10)
+    Fired = 0
+}
+if (first()){entity():setMaterial("models/props_c17/frostedglass_01a")
+    entity():setColor(random(255),random(255),random(255))
+hint("[!target] [name] remotely target player, reload to fire.",10)
+hint("[!reset] to reset.",5)
+hint("[keyAttack2] shoot freely.",5)
+hint("[!E2help] to see this menu again.",5)
+hint("Made By XninjazXxx.",5)
+hint("5 Shots Remaining",2)
+entity():setAlpha(0) 
+Fired==1
+}
+LastSaid=owner():lastSaid()
+A = owner():lastSaid():explode(" ")    
+if (A:string(1)=="!target"){
+runOnChat(1) 
+if (chatClk(owner())) { 
+    if (lastSaid():left(1) == "!target") {
+        hideChat(1) 
+    }
+}
+Target = findPlayerByName(A:string(2))
+if (Target:isPlayer()){
+Player = Target
+}
+}
+LastSaid = lastSaid()
+interval(1)
+Prop:applyForce(Prop:forward()*99999999999) 
+ E = entity()
+    P = owner()
+    if(changed(P:keyAttack1())& P:keyAttack2()&!Prop
+     ){Prop = propSpawn("models/Items/AR2_Grenade.mdl", P:pos()+(vec(0,0,60)), P:eyeAngles(), 0)
+, P:soundPlay(1,0, "weapons/scout/scout_fire-1.wav")
+Prop:setTrails(0,1,0.5, "trails/smoke", vec(100,100,100),250)
+Prop:setAlpha(255)
+Prop:propNotSolid(0)
+Prop:setMaterial("phoenix_storms/black_chrome")
+timer("prop",5000)
+timer("recharge",5000)
+timer("reload",599)
+timer("reload2",700)
+hint("Reloading",10)
+Fired++
+}
+if(clk("reload2")){
+    P:soundPlay(1,0, "weapons/scout/scout_clipin.wav")
+}
+if(clk("reload"))
+{
+    P:soundPlay(1,0,"weapons/scout/scout_bolt.wav")
+}
+if(clk("prop")){
+Prop:propDelete()
+}
+if (Fired==1 & changed(Fired==1)){hint("4 Shots Remaining",3)}
+if (Fired==2 & changed(Fired==2)){hint("3 Shots Remaining",3)}
+if (Fired==3 & changed(Fired==3)){hint("2 Shots Remaining",3)}
+if (Fired==4 & changed(Fired==4)){hint("1 Shots Remaining",3)}
+if(duped()){reset()}
+if((LastSaid=="!E2help" & changed(LastSaid=="!E2help"))){
+print("[!reset] to reset")
+print("[Attack2] shoot freely")
+print("[!E2help] to see this menu again")
+}
+
+    if(clk("recharge"))
+    {hint("Reloaded",10)
+        P:soundPlay(1,0, "buttons/blip1.wav")}
+    

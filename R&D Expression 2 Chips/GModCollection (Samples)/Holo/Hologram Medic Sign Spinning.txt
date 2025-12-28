@@ -1,0 +1,41 @@
+@name Hologram Base
+@persist PrevTime Dir Offset
+
+#INIT
+interval(100)
+if(first()){
+    holoCreate(1)
+    holoModel(1,"hq_rcube")
+    holoShadow(1,1)
+    holoColor(1,vec(0,220,0))
+    holoScale(1,vec(4,8,24))
+    holoCreate(2)
+    holoModel(2,"hq_rcube")
+    holoShadow(2,1)
+    holoColor(2,vec(0,220,0))
+    holoScale(2,vec(4,24,8))
+    holoCreate(3)
+    holoModel(3,"hq_torus_thin")
+    holoShadow(3,1)
+    holoColor(3,vec(0,0,220))
+    holoScale(3,vec(30,30,30))
+}
+
+#Hover Oscillation
+holoPos(1,entity():pos() + vec(0,0,700 + Offset))
+holoPos(2,holoEntity(1):pos())
+holoPos(3,holoEntity(1):pos())
+if(Dir) {
+    Offset += 5
+} else {
+    Offset -= 5
+}
+if(PrevTime + 1 < curtime()) {
+    Dir = !Dir
+    PrevTime = curtime()
+}
+
+#Rotate
+holoAng(1,holoEntity(1):angles() + ang(vec(0,5,0)))
+holoAng(2,holoEntity(1):angles())
+holoAng(3,ang(0,holoEntity(1):angles():yaw()+90,90))

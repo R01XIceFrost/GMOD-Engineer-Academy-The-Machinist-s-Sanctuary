@@ -1,0 +1,80 @@
+@name sm3dl cannon
+@inputs 
+@outputs 
+@persist R E:entity
+@trigger
+runOnTick(1) 
+if(first()){
+    E = entity()
+    Height = 20
+    holoCreate(1)
+    holoScale(1,vec(0.5))
+    holoCreate(2)
+    holoModel(2,"sphere2")
+    holoPos(2,E:toWorld(vec(0,0,Height)))
+    holoScale(2,vec(3))
+    holoColor(2,vec(40))
+    holoCreate(3)
+    holoModel(3,"cylinder")
+    holoScale(3,vec(2.25))
+    holoAng(3,E:toWorld(ang(0,0,90)))
+    holoPos(3,E:toWorld(vec(0,12,Height)))
+    holoColor(3,vec(40))
+    holoCreate(4)
+    holoModel(4,"torus2")
+    holoScale(4,vec(2))
+    holoAng(4,E:toWorld(ang(0,0,90)))
+    holoPos(4,E:toWorld(vec(0,23,Height)))
+    holoColor(4,vec(255,255,0))
+    holoCreate(5)
+    holoModel(5,"octagon")
+    holoScale(5,vec(4,4,0.3))
+    holoAng(5,E:toWorld(ang(0,22.5,0)))
+    holoPos(5,E:toWorld(vec(0,0,1)))
+    holoColor(5,vec(40))
+    holoCreate(6)
+    holoScale(6,vec(0.2,1,2.25))
+    holoPos(6,E:toWorld(vec(-18,0,14)))
+    holoColor(6,vec(40))
+    holoCreate(7)
+    holoScale(7,vec(0.2,1,2.25))
+    holoPos(7,E:toWorld(vec(18,0,14)))
+    holoColor(7,vec(40))
+    holoCreate(8)
+    holoModel(8,"octagon")
+    holoScale(8,vec(0.75,0.75,3.4))
+    holoAng(8,ang(90,0,0))
+    holoPos(8,E:toWorld(vec(0,0,Height)))
+    holoColor(8,vec(255,255,0))
+    holoCreate(9)
+    holoPos(9,E:toWorld(vec(0,0,Height)))
+    holoParent(8,9)
+    for(I=1,3){
+        holoParent(I+1,9)
+    }
+    for(I=1,6){
+        holoParent(I+4,1)
+    }
+    holoParent(1,E)
+    E:soundPlay(1,0,"vehicles/tank_turret_loop1.wav")
+    soundPitch(1,0)
+}
+R++
+TP = owner():aimPos()
+TA = (holoEntity(9):pos()-TP):toAngle()
+holoAng(9,E:toWorld(TA+ang(-90,0,90)))
+holoAng(1,E:toWorld(ang(0,TA:yaw()+90,0)))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
