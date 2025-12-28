@@ -1,0 +1,47 @@
+@name E2 Wallhack v1.1 [NPC]
+@persist State:string CLASS:string T ENT:entity A:array
+
+
+#Source: https://youtu.be/BlVzUDaznso?si=KhmXz5ZhNo0rM4sD
+
+CLASS="NPC"
+T+=1 
+interval(100)
+if(first()){
+    #runOnTick(1)
+    runOnLast(1)
+    State="ON"
+    print(""),print(""),print(""),print(""),print("")
+    printColor(vec(128,128,128),"[",vec(128,128,255),CLASS,vec(128,128,128),"] ","E2 Wallhack: ",vec(0,255,0),State)
+}
+
+findByClass("npc*") #npc* ; prop_physics*
+A=findToArray()
+for(I=1,A:count()){
+    ENT=A[I,entity]
+    if(first()){
+        holoCreate(I)
+        holoModel(I,ENT:model())
+        holoMaterial(I,"pp/sub")
+        holoScale(I,vec(1,1,1)*1.05)
+        ENT:setMaterial("skybox/sky_fake_white")
+        holoAnim(I,1) #<-- This requires holoAnim extension!
+    }
+    ENT:setColor(hsv2rgb(T%360,0.7,1))
+    ENT:setAlpha(120)
+    holoPos(I,ENT:pos())
+    holoAng(I,ENT:angles())
+    holoShadow(I,0)
+    
+    if(last()){
+        ENT:setMaterial("")
+        ENT:setColor(vec(255,255,255))
+        ENT:setAlpha(255)
+    }
+}
+
+if(last()){
+    State="OFF"
+    print(""),print(""),print(""),print(""),print("")
+    printColor(vec(128,128,128),"[",vec(128,128,255),CLASS,vec(128,128,128),"] ","E2 Wallhack: ",vec(255,0,0),State)
+}

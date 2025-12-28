@@ -1,0 +1,97 @@
+@name Death Prop by Rhino_Aus 
+@persist E:entity O:entity Hold Attack Dest:vector Vec:vector Ang:angle
+
+#Source: https://youtu.be/9F-jhFiPPvQ?si=rPtbQBCY_0bx3MbL
+
+#[
+
+INFO:
+
+
+Death Prop
+The death drop chip make a 50,000 weight prop to slam into the ground where the user clicks, or follows where they are right clicking.
+
+]#
+
+
+if(first()){
+    #Make the angle for the death ball to spin randomly
+    A = 45
+    Ang = ang(randint(-A,A),randint(-A,A),randint(-A,A)) * 50000
+    #Hide the chip
+    entity():setColor(0,0,0,0)
+    O = owner()
+    runOnTick(1)
+}
+
+Pos=E:pos()
+#Spin the ball randomly
+E:applyAngForce(Ang+$Ang*5)
+#Only hover if the owner is alive
+if(O:isAlive()){
+    #If holding, then move the chip above the owners head
+    if(Hold){
+        #Set Destination
+        Dest=O:pos()+vec(0,0,(200+E:radius()))
+        #If the ball is close, move slowly and accurately
+        if(Pos:distance(Dest)<50){
+            Attack = 0
+            Vec=(Dest-Pos)*E:mass()
+            E:applyForce(Vec+$Vec*5)
+        }
+        #If its far away, move quickly
+        else{
+            Vec=(Dest-Pos)*E:mass()*Pos:distance(Dest)*50000
+            E:applyForce(Vec)
+        }
+    }
+    #If the owner left clicks, start the attack sequence
+    if(Attack==0&O:keyAttack1()&E&O:aimEntity()!=E){
+        #Just incase it gets stuck
+        stoptimer("ManualReset")
+        timer("ManualReset",3000)
+        Dest=O:aimPos()
+        Hold=0
+        Attack=1
+    }
+    #Attack Code - Strikes the spot once
+    if(Attack==1){
+        Vec=(Dest-Pos)*E:mass()*50000*Pos:distance(Dest)
+        E:applyForce(Vec)
+        #When the ball reaches its target, go back to holding
+        if((Pos:distance(Dest)<20)){
+            Attack=2
+            Hold=1
+        }
+    }
+    #Attack 2 code - Flys constantly at the spot
+    if(O:keyAttack2()&E&O:aimEntity()!=E){
+        Attack=0
+        Hold=1
+        Dest=O:aimPos()
+        Vec=(Dest-Pos)*E:mass()*50000*Pos:distance(Dest)
+        E:applyForce(Vec)
+    }
+    if((O:keyUse()|O:keyAttack1()|O:keyAttack2())&!E){
+        print("ERROR: No prop selected")
+    }
+    #If porp is stuck, return to owner
+    if(clk("ManualReset")){
+        Attack=0
+        Hold=1
+    }
+    #Prop selection code
+    if(O:keyUse()&O:aimEntity()&O:aimEntity()!=E){
+        #Set the old prop to 5 mass and remove the trail
+        E:setMass(5)
+        E:removeTrails()
+        #Designate the new prop and play with its properties
+        E=O:aimEntity()
+        E:setTrails(130,0,0.2,"trails/electric",vec(255,255,255),255)
+        E:setMaterial("models/alyx/emptool_glow")
+        #E:setMaterial("models/props_combine/metal_combinebridge001")
+        E:setMass(50000)
+        print("Prop selected")
+        Hold=1
+    }
+}

@@ -1,0 +1,200 @@
+@name InfoEGP-MZ 
+@persist [E EE O User CurPly]:entity [Cur]:vector2 [Plys]:array [E1]:wirelink [Page N PPs Update Adm US]:number
+
+#Source: https://youtu.be/987W-Iua74c?si=KN7d8vr9xqp-bI8S
+
+interval(50)
+ 
+if(first()){
+    runOnChat(1)
+    runOnKeys(owner(),1)
+ 
+    E = entity()
+    Page = 1
+    O = owner()
+ 
+    function number wirelink:button(Cursor:vector2,ID:number){
+    local BPos = This:egpPos(ID)
+    local BSize = This:egpSize(ID)/2
+    local Pressed = inrange(Cursor,BPos-BSize,BPos+BSize)
+    return Pressed
+}
+}
+ 
+if(O:keyPressed("b") & keyClk(O)){
+    if(O:aimEntity():type() == "gmod_wire_egp" & !EE){
+        E1 = O:aimEntity():wirelink()
+        E1:egpClear()
+        EE = E1:entity()
+    }
+}
+ 
+if(changed(players():count())){
+    Plys = players()
+    Adm = playersAdmins():count()
+}
+ 
+User = E1["User",entity]
+Cur = E1:egpCursor(User)
+ 
+if(changed(Page) | Update | US |changed(EE) & EE  ){
+ 
+    E1:egpBox(1,vec2(512/2),vec2(512))
+    E1:egpMaterial(1,"gui/gradient_up")
+    E1:egpColor(1,vec(75))
+ 
+ 
+    E1:egpBoxOutline(2,vec2(512/2,25),vec2(512,50))
+    E1:egpColor(2,vec(100))
+ 
+    E1:egpText(3,"MZombie's Player Info Expression 2",E1:egpPos(2))
+    E1:egpAlign(3,1,1) 
+ 
+    E1:egpText(4,"Choose A Player By Press E",vec2(109,65))
+    E1:egpAlign(4,1,1)
+ 
+    E1:egpRoundedBoxOutline(100,vec2(480,512/2),vec2(50,360))
+    E1:egpAngle(100,180)
+ 
+    E1:egpText(101,"Server Info",E1:egpPos(100))
+    E1:egpAngle(101,90)
+    E1:egpFont(101,"Times New Roman",30)
+    E1:egpAlign(101,1,1)
+ 
+    if(Page == 1){
+    for(I=1,Plys:count()){
+        E1:egpRoundedBox(5+I,vec2(512/2,80+27*I),vec2(300,26))
+        E1:egpColor(5+I,vec(100))
+ 
+        E1:egpText(Plys:count()+6+I,Plys[I,entity]:name(),E1:egpPos(5+I))
+        E1:egpAlign(Plys:count()+6+I,1,1)
+        E1:egpFont(Plys:count()+6+I,"Times New Roman")
+    }
+}    
+ 
+    if(Page == 2){
+    for(I=1,50){E1:egpRemove(I+3)}
+    ###############Back###############
+    E1:egpRoundedBoxOutline(5,vec2(450,470),vec2(100,50))
+    E1:egpColor(5,vec(50))
+    E1:egpText(6,"Back",E1:egpPos(5))
+    E1:egpAlign(6,1,1)
+    ###############Info###############
+    E1:egpTextLayout(7,"Player Name: "+CurPly:name()+".",vec2(10,60),vec2(502,60))
+    E1:egpFont(7,"Times New Roman",20)
+ 
+    E1:egpTextLayout(8,"Player Kills: "+CurPly:frags()+".",vec2(10,80),vec2(502,60))
+    E1:egpFont(8,"Times New Roman",20)
+ 
+    E1:egpTextLayout(15,"Player Death: "+CurPly:deaths()+".",vec2(10,100),vec2(502,60))
+    E1:egpFont(15,"Times New Roman",20)
+ 
+    E1:egpTextLayout(9,"Player SteamID: "+CurPly:steamID()+".",vec2(10,120),vec2(502,60))
+    E1:egpFont(9,"Times New Roman",20) 
+ 
+    E1:egpTextLayout(10,"Player Ping: "+CurPly:ping()+".",vec2(10,140),vec2(502,60))
+    E1:egpFont(10,"Times New Roman",20) 
+ 
+    E1:egpTextLayout(11,"Player Team: "+CurPly:team():teamName()+".",vec2(10,160),vec2(502,60))
+    E1:egpFont(11,"Times New Roman",20) 
+ 
+    E1:egpTextLayout(12,"Player Health: "+CurPly:health()+".",vec2(10,180),vec2(502,60))
+    E1:egpFont(12,"Times New Roman",20)
+ 
+    E1:egpTextLayout(13,"Player Armor: "+CurPly:armor()+".",vec2(10,200),vec2(502,60))
+    E1:egpFont(13,"Times New Roman",20)
+ 
+    E1:egpTextLayout(14,"Player Current Weapon: "+CurPly:weapon():type()+".",vec2(10,220),vec2(502,60))
+    E1:egpFont(14,"Times New Roman",20) 
+ 
+    E1:egpTextLayout(16,"Player Velocity: "+round(CurPly:velL())+".",vec2(10,240),vec2(502,60))
+    E1:egpFont(16,"Times New Roman",20)
+ 
+    E1:egpTextLayout(17,"Player Props Count: "+PPs+".",vec2(10,260),vec2(502,60))
+    E1:egpFont(17,"Times New Roman",20) 
+ 
+ 
+ 
+ 
+ 
+}
+if(Page == 3){
+    E1:egpBox(1,vec2(512/2),vec2(512))
+    E1:egpMaterial(1,"gui/gradient_up")
+    E1:egpColor(1,vec(75))
+    E1:egpBoxOutline(2,vec2(512/2,25),vec2(512,50))
+    E1:egpColor(2,vec(100))
+    E1:egpText(3,"MZombie's Player Info Expression 2",E1:egpPos(2))
+    E1:egpAlign(3,1,1) 
+    E1:egpRoundedBoxOutline(4,vec2(450,470),vec2(100,50))
+    E1:egpColor(4,vec(50))
+    E1:egpText(5,"Back",E1:egpPos(4))
+    E1:egpAlign(5,1,1)
+ 
+    E1:egpRemove(100)
+    E1:egpRemove(101)
+############################################info############################################
+    E1:egpTextLayout(7,"Server Name: "+hostname()+".",vec2(10,60),vec2(700,70))
+    E1:egpFont(7,"Times New Roman",20) 
+ 
+    E1:egpTextLayout(8,"Gamemode: "+gamemode()+".",vec2(10,80),vec2(502,60))
+    E1:egpFont(8,"Times New Roman",20)
+ 
+    E1:egpTextLayout(9,"Map: "+map()+".",vec2(10,100),vec2(502,60))
+    E1:egpFont(9,"Times New Roman",20) 
+ 
+    E1:egpTextLayout(10,"Current Players Number: "+numPlayers()+".",vec2(10,120),vec2(502,60))
+    E1:egpFont(10,"Times New Roman",20)
+ 
+    E1:egpTextLayout(11,"Max Players: "+maxPlayers()+".",vec2(10,140),vec2(502,60))
+    E1:egpFont(11,"Times New Roman",20) 
+ 
+    E1:egpTextLayout(12,"Gravity: "+gravity()+".",vec2(10,160),vec2(502,60))
+    E1:egpFont(12,"Times New Roman",20)
+ 
+    foreach(I,K:entity=playersAdmins()){
+    E1:egpTextLayout(13+I,"Admin "+I+":  "+K:name()+".",vec2(10,180*I),vec2(502,60))
+    E1:egpFont(13+I,"Times New Roman",20)
+} 
+}
+}
+ 
+if(Page == 2){
+findByClass("prop_*")
+findIncludePlayerProps(CurPly)
+findAllowPlayerProps(CurPly)
+PPs = findToArray():count()
+#print(PPs)
+}
+ 
+if(changed(CurPly) & CurPly){
+    findClearWhiteList()
+    findClearWhitePlayerPropList()
+    findClearBlackList()
+    findClearBlackPlayerPropList()
+}
+ 
+if(changed(User) & User){
+    for(I=1,Plys:count()){
+        K = Plys[I,entity]
+        if(E1:button(Cur,5+I) & Page == 1){
+            Page = 2 CurPly = K
+            print(Page,CurPly)
+        }
+    }
+        if(E1:button(Cur,5) & Page == 2 | Page == 3){
+            E1:egpClear()
+            Page = 1
+        } 
+        if(E1:button(Cur,100)){
+            E1:egpClear()
+            Page = 3
+        }
+ 
+ 
+}
+ 
+if(Page == 2 & changed(CurPly:health()) | changed(CurPly:armor()) | changed(Plys:count()) | changed(CurPly:team()) | changed(CurPly:vel()) | changed(CurPly:frags()) | changed(CurPly:name()) | changed(CurPly:ping()) | changed(CurPly:weapon():type()) | changed(PPs) & CurPly:isPlayer()){Update = 1}
+else{Update = 0}
+if(Page == 3 & changed(numPlayers()) | changed(gravity()) | changed(playersAdmins():count()) | changed(playersSuperAdmins():count())){US= 1}
+else{US = 0}

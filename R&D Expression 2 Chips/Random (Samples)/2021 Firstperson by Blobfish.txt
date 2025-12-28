@@ -1,0 +1,276 @@
+@name FPS v4
+@inputs Cam:wirelink EGP:wirelink
+#@inputs EGP:wirelink
+#@outputs Array:array Name:string Pos:vector Ang:angle 
+@persist Parent:entity Active H FOV # Filter:array
+@persist ExcludeOwner:array J Alive
+@persist OffsetX 
+@outputs HeadPos:vector Corpse:array Dead DeadScreen A ScreenMid:vector2
+@persist CrossHairSize CrossHairSpace CrossHairWidth CrossHairDotSize CrossHairOn DeadDark
+@trigger 
+
+#https://youtu.be/VJEzfyhQN6Y?si=NrQv2uB_qCnVV_Hd
+
+#[
+
+INSTRUCTIONS:
+
+Spawn Cam Controller & EGP (HUD) then wire E2 chip from those inputs (Cam wirelink & EGP wirelink)
+
+Press H to activate just like in the video 
+
+]#
+
+interval(50)
+
+
+CamPos=Cam["CamPos",vector]
+
+
+if(first()||dupefinished())
+{
+
+
+    OffsetX=1
+    DeadScreen=1
+    Dead=0
+    CrossHairOn=0
+    DeadDark=1
+    #Name=owner():name()
+    
+    #Array=owner():attachments()
+    
+    Pos=owner():attachmentPos("eyes") + owner():attachmentAng("eyes"):forward() * OffsetX
+    Ang=owner():toWorld(ang(0))
+    
+    holoCreate(1)
+    holoScale(1, vec(0.1))
+    holoAlpha(1, 0)
+    holoPos(1, owner():attachmentPos("eyes")#[ + owner():attachmentAng("eyes"):forward() * OffsetX ]#)
+    holoAng(1, owner():attachmentAng("eyes"))
+    
+    Parent=holoEntity(1)
+    
+    holoParentAttachment(1, owner(), "eyes")
+    
+    #[
+    holoCreate(2)
+    holoScale(2, vec(1))
+    holoAlpha(2, 255)
+    ]#
+    #holoCreate(5)
+    #holoScale(5, vec(0.2))
+    #holoShadow(5, 0)
+    #holoColor(5, vec(0))
+    #holoModel(5, "models/holograms/hq_torus.mdl")
+    #holoParent(5, owner())
+    
+    ScreenMid=egpScrSize(owner())/2
+    
+    CrossHairSize=20
+    CrossHairSpace=10
+    CrossHairWidth=2
+    CrossHairDotSize=2
+    
+    FOV=100
+}
+
+
+H=owner():keyPressed("h")
+Alive=owner():isAlive()
+
+
+if(changed(H)&H)
+{
+    Corpse=array()
+    Active=-Active+1
+    Cam["Activated",number]=Active
+}
+
+
+if(changed(Active)&CrossHairOn)
+{
+    if(Active)
+    {
+        holoCreate(3)
+        holoScale(3, vec(0.1))
+        holoAlpha(3, 0)
+    
+        EGP:egp3DTracker(1, vec(0))
+        EGP:egpBox(2, vec2(0), vec2(CrossHairDotSize) + vec2(CrossHairDotSize/2, 0))
+        EGP:egpBox(3, vec2(0 + CrossHairDotSize, 0), vec2(CrossHairDotSize) + vec2(CrossHairDotSize/2, 0))
+        EGP:egpBox(4, vec2(0, (CrossHairSpace + CrossHairSize/2)), vec2(CrossHairWidth, CrossHairSize))
+        EGP:egpBox(5, vec2((CrossHairSpace + CrossHairSize/2), 0), vec2(CrossHairSize, CrossHairWidth))
+        EGP:egpBox(6, vec2(0, -(CrossHairSpace + CrossHairSize/2)), vec2(CrossHairWidth, CrossHairSize))
+        EGP:egpBox(7, vec2(-(CrossHairSpace + CrossHairSize/2), 0), vec2(CrossHairSize, CrossHairWidth))
+        
+        EGP:egpBox(8, vec2(0 + CrossHairWidth, (CrossHairSpace + CrossHairSize/2)), vec2(CrossHairWidth, CrossHairSize))
+        EGP:egpBox(9, vec2((CrossHairSpace + CrossHairSize/2), 0 + CrossHairWidth), vec2(CrossHairSize, CrossHairWidth))
+        EGP:egpBox(10, vec2(0 + CrossHairWidth, -(CrossHairSpace + CrossHairSize/2)), vec2(CrossHairWidth, CrossHairSize))
+        EGP:egpBox(11, vec2(-(CrossHairSpace + CrossHairSize/2), 0 + CrossHairWidth), vec2(CrossHairSize, CrossHairWidth))
+        
+        for(I=2,11)
+        {
+            EGP:egpParent(I,2)
+            if(I==3||I>=8)
+            {
+                EGP:egpColor(I, vec(0))
+            }
+        }
+        EGP:egpParent(2, 1)
+    }
+    if(!Active)
+    {
+        EGP:egpClear()     
+    }        
+}
+if(Active)
+{
+    holoPos(3, owner():aimPos())
+    EGP:egpParent(1, holoEntity(3))
+}
+
+
+
+
+if(owner():keyPressed("b")#[keyZoom]#)
+{
+    FOV=clamp(FOV-100, 15, 100) #4
+}
+else
+{
+    FOV=clamp(FOV+100, 15, 100) #4
+}
+
+
+#holoPos(1, owner():attachmentPos("eyes")#[ + owner():attachmentAng("eyes"):forward() * OffsetX ]#)
+#holoAng(1, (owner():aimPos()-Pos):toAngle())
+    
+#holoParentAttachment(1, owner(), "eyes")
+#holoPos(1, Pos + owner():eyeAngles():forward() * OffsetX )
+#holoAng(1, Ang)
+if(Alive)
+{
+    Pos=owner():attachmentPos("eyes") + owner():attachmentAng("eyes"):forward() * OffsetX
+    Ang=owner():attachmentAng("eyes")
+}
+if(!Alive)
+{
+    Pos=Corpse[1,entity]:attachmentPos("eyes") + owner():attachmentAng("eyes"):forward() * OffsetX
+    Ang=Corpse[1,entity]:attachmentAng("eyes")
+}
+
+
+if(changed(Alive))
+{
+    Corpse=array()
+    holoDelete(2)
+    findIncludePlayerProps(owner())
+    findExcludeClass("weapon*")
+    findExcludeClass("none*")
+    findExcludeClass("ammo*")
+    findExcludeClass("cw*")
+    findExcludeClass("tfa*")
+    findExcludeClass("gmod*")
+    findExcludeClass("npc*")
+    findExcludeClass("vehicle*")
+    findExcludeClass("acf")
+    findExcludeClass("prop*")
+    findIncludeClass("hl2mp*")
+    findInSphere(owner():pos(), 5000)
+    Corpse=findToArray()
+    if(Alive)
+    {
+        Pos=owner():attachmentPos("eyes") + owner():attachmentAng("eyes"):forward() * OffsetX
+        Ang=owner():attachmentAng("eyes")
+    }
+    if(!Alive)
+    {
+        Pos=Corpse[1,entity]:attachmentPos("eyes") + owner():attachmentAng("eyes"):forward() * OffsetX
+        Ang=Corpse[1,entity]:attachmentAng("eyes")
+        
+        if(DeadDark)
+        {
+            holoCreate(2)
+            holoModel(2,"models/holograms/hq_sphere.mdl")
+            holoScale(2, vec(-1))
+            holoColor(2,vec(0))
+            holoPos(2, Corpse[1,entity]:attachmentPos("eyes") + owner():attachmentAng("eyes"):forward() * OffsetX)
+            holoParentAttachment(2, Corpse[1,entity], "eyes")
+        }
+    }
+    
+    holoCreate(1)
+    holoPos(1, Pos#[ + owner():attachmentAng("eyes"):forward() * OffsetX ]#)
+    holoAng(1, Ang)
+    holoScale(1, vec(0.1))
+    holoAlpha(1, 0)
+    
+    Parent=holoEntity(1)
+    
+    holoParentAttachment(1, Corpse[1,entity], "eyes")
+    
+    if(!first())
+    {
+        Dead=-Dead+1
+    }
+}
+
+
+if(Dead)
+{
+    A=clamp(A+1, 0, 4)
+    DeadScreen=clamp(DeadScreen+A, 0, 255)
+}
+else
+{
+    A=0
+    DeadScreen=0
+}
+holoAlpha(2,DeadScreen)
+
+
+holoPos(5, CamPos + (owner():aimPos()-CamPos):toAngle():forward() * 50 )
+holoAng(5, (owner():aimPos()-CamPos):toAngle()+ang(90, 0, 0))
+
+
+if(changed(players():count()))
+{
+    J=1
+    ExcludeOwner=array()
+    for(I=1,players():count())
+    {
+        if(players()[I,entity]:name()!=owner():name())
+        {
+            ExcludeOwner[J,entity]=players()[I,entity]
+            J++
+        }
+    }
+    holoVisible(2, ExcludeOwner, 0)
+    holoVisible(5, ExcludeOwner, 0)
+}
+
+
+holoVisible(2, ExcludeOwner, 0)
+
+
+Cam["Position",vector]=Pos
+Cam["Angle",angle]=Ang
+Cam["Parent",entity]=Parent
+Cam["FOV",number]=FOV
+
+
+#holoCreate(2)
+#holoPos(2, Corpse[1,entity]:pos())
+
+
+#[
+findIncludeClass("vehicle*")
+findInSphere(owner():pos(), 300)
+Filter=findToArray()
+Cam["Activated",number]=Active
+Cam["Parent",entity]=Parent
+Cam["Position",vector]=holoEntity(1):pos()
+Cam["Angle",angle]=Ang
+Cam["FOV",number]=FOV
+]#

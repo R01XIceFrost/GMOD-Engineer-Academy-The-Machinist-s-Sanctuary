@@ -1,0 +1,92 @@
+@name Anti-gravgun Attack 2
+@persist Defender:entity Vec:vector
+
+
+#Source: https://youtu.be/9F-jhFiPPvQ?si=rPtbQBCY_0bx3MbL
+
+#[
+
+INFO:
+
+Anti grav-gun Attack
+This chip uses a prop to defect all props that are going to collide with the owner. Not 100% effective, especially at close range, but its better than nothing :P
+
+]#
+
+#Start up code
+if(first()){
+    #if this is 0 the blocker will be invisible, else it will be a glowing sphere
+    Visible = 1
+    findExcludeEntity(entity())
+    entity():setColor(0,0,0,0)
+    runOnTick(1)
+    #Prevent players walking towards me being crushed. Or you could comment out this line :P
+    findExcludeClass("player")
+    #Find all combine bombs
+    findByModel("models/Combine_Helicopter/helicopter_bomb01.mdl")
+    Defender=findClosest(entity():pos())
+    #Play with the chosen defenders properties
+    if(Defender!=noentity() & Defender != entity()){
+        hint("Defender located! Pos: "+Defender:pos(),3)
+        if(Visible){
+            Defender:setTrails(130,0,0.2,"trails/electric",vec(255,255,255),255)
+            Defender:setMaterial("models/alyx/emptool_glow")
+        }
+        else{
+            Defender:setColor(0,0,0,0)
+        }
+        Defender:setMass(50000)
+        #Exclude the owners props
+        findExcludePlayerProps(owner())  
+    }
+}
+
+#Find all the props that are within 750 of the owner
+findInSphere(owner():shootPos(),750)
+findClipToClass("prop_physics") 
+findSortByDistance(owner():shootPos())
+
+Targets = findToArray()
+A = 1
+#For wach of the targets...
+while(A<=Targets:count()){
+    if(minquota() <100){
+        hint("Breaking!",3)
+        break
+    }
+    Target = Targets[A,entity]
+    #Find teh direction it is heading in
+    Heading = (floor(Target:vel())):normalized()
+    #Find Position is will be in if it travels the distance to the player
+    Loc = Heading * owner():shootPos():distance(Target:pos()) + Target:pos()
+    #Check if that position will hit the player
+    if(abs(floor(Target:vel():length())) > 15 & owner():shootPos():distance(Loc) < Target:radius()*2){
+        #If so, break the loop and combat the prop
+        hint("",3)
+        Threat = 1
+        break
+    }
+    A++
+}
+#Combating the incoming prop code
+if(Threat){
+    #Check to make sure the defender will not hit the owner :P
+    Trace = rangerOffset(Defender:pos(),Target:pos())
+    if(Trace:entity() == owner()){
+        Dest=owner():pos() + vec(0,0,150)#Target:shootPos()
+        Vec=(Dest-Defender:pos())*Defender:mass()*20
+        Defender:applyForce(Vec+$Vec*5)
+    }
+    #Else, slam into the prop
+    else{
+        Dest=Target:pos()
+        Vec=(Dest-Defender:pos())*Defender:mass()*20
+        Defender:applyForce(Vec*5000000)
+    }
+}
+#If there is no threat, hover above the owner
+else{
+    Dest=owner():pos() + vec(0,0,150)#Target:shootPos()
+    Vec=(Dest-Defender:pos())*Defender:mass()*20
+    Defender:applyForce(Vec+$Vec*5)
+}
