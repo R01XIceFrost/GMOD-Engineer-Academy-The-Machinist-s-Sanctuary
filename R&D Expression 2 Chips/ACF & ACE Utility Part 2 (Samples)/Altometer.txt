@@ -1,8 +1,0 @@
-@name Altometer
-@inputs GroundlevelGPS:vector
-@outputs Altitude
-@persist 
-@trigger 
-runOnTick(1)
-
-Altitude = entity():pos():z() - GroundlevelGPS:z()
