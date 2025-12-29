@@ -9,7 +9,7 @@
 @persist CrossHairSize CrossHairSpace CrossHairWidth CrossHairDotSize CrossHairOn DeadDark
 @trigger 
 
-#https://youtu.be/VJEzfyhQN6Y?si=NrQv2uB_qCnVV_Hd
+#Source: https://youtu.be/VJEzfyhQN6Y?si=NrQv2uB_qCnVV_Hd
 
 #[
 
@@ -274,3 +274,4 @@ Cam["Position",vector]=holoEntity(1):pos()
 Cam["Angle",angle]=Ang
 Cam["FOV",number]=FOV
 ]#
+
