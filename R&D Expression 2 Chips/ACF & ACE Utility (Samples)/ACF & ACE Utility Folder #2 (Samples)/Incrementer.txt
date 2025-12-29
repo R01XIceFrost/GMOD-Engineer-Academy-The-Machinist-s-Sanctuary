@@ -1,0 +1,48 @@
+@name Incrementer
+@inputs Up Down Reset Max Min Default Interval
+@outputs Number
+@persist Number
+@trigger 
+runOnTick(1)
+if(->Default == 0)
+{
+    Default = Min
+}
+
+if(->Interval == 0)
+{
+    Interval = 1
+}
+
+if(->Min == 0)
+{
+    Min = Number - Interval - 10
+}
+
+if(->Max == 0)
+{
+    Max = Number + Interval + 10
+}
+
+if(first() | dupefinished())
+{
+    Number = Default
+}
+
+Mod = Up - Down
+
+if(Mod == 1 & Number < Max)
+{
+    Number += Interval
+}
+elseif(Mod == -1 & Number > Min)
+{
+    Number -= Interval
+}   
+Number = clamp(Number,Min,Max)
+
+if(Reset)
+{
+    Number = Default
+}
+

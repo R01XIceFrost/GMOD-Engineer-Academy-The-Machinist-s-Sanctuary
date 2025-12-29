@@ -1,0 +1,33 @@
+@name Tank Powered Steering
+@inputs Pod:wirelink [Left Right]:entity
+@outputs Throttle W A S D Mod LeftGear RightGear
+@persist RightGear LeftGear
+@trigger 
+runOnTick(1)
+W = Pod["W",normal]
+A = Pod["A",normal]
+S = Pod["S",normal]
+D = Pod["D",normal]
+
+Mod = A - D
+
+if(Mod == 1)
+{
+    LeftGear = 2
+    RightGear = 1
+}
+elseif(Mod == -1)
+{
+    LeftGear = 1
+    RightGear = 2
+}
+else
+{
+    LeftGear = 1
+    RightGear = 1
+}
+
+Left:acfShift(LeftGear)
+Right:acfShift(RightGear)
+
+Throttle = ((W + A + S + D) * 100)

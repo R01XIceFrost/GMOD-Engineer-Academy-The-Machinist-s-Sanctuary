@@ -1,0 +1,154 @@
+@name Anti-GravitE2 2.0 TEST
+@inputs [Base Drivers_Seat_OooOooh]:entity W A S D Space Alt Shift Mouse1 Mouse2
+@outputs Ranger_Pitch Ranger_Roll Ranger_Height Speed_Mul Roll Lean Holo_Local_Z Holo_Roll Holo_Roll_Angle
+@outputs KMH Ranger_Height_Mul Ranger_Height_Mul_Neg Tract Steer Holo_Local_Y
+@persist Ranger_Length Ranger_Pitch Ranger_Roll Pitch_Force Roll_Force Hover_Height Hover_Strength Hovering
+@persist AngVel_Dampening_Strength Steering_Strength Thrust_Strength Leaning_Strength X_Drag_Strength Z_Drag_Strength
+@persist Level_Out_Strength Brake_Strength Width Length Ranger_Clamp Ranger_Height Gravity Sound_Pitch_Starts_At
+@persist Delta Y_Drag_Strength Y_Drag_Strength_While_Braking Steering_Strength_While_Braking Added_Pitch_Is_Speed_Divided_By
+@trigger none
+
+if(first() | dupefinished())
+{
+  
+  
+    # The default settings are tweaked for a 250kg models/sprops/rectangles/size_60/rect_60x144x3.mdl plate.
+    # Set the base plate angles to 0,90,0 using Precision Alignment. This way the vehicle faces north.
+    # Reload the E2 after wiring, or disable gravity manually using the Physical Properties tool before use.
+    # Everything should be parented to the base directly or via a gate.
+    # Attaching physical objects results in unwanted pitch/yaw/roll movement.
+    # If you have any questions or need help you can contact me at https://steamcommunity.com/id/ELNO_Metacore.
+    # That should be it?    
+
+    Length_Of_Base_In_Units = 144
+    Width_Of_Base_In_Units = 60
+    
+    Base_Inertia = 750
+    
+    Hover_Height = 70
+    Hover_Strength = 750
+    Delta = 5
+    Gravity = 5
+    
+    Thrust_Strength = 12000
+    Steering_Strength = 40
+    Steering_Strength_While_Braking = 60
+    Brake_Strength = 5
+ 
+    Leaning_Strength = 50
+    Pitch_Force = 5000
+    Roll_Force = 5000
+    Level_Out_Strength = 5000
+
+    X_Drag_Strength = 2.5    
+    Y_Drag_Strength = 50
+    Y_Drag_Strength_While_Braking = 20
+    Z_Drag_Strength = 1
+    AngVel_Dampening_Strength = 4000
+    
+    Hover_Sound = "ambient/atmosphere/city_rumble_loop1.wav"
+    Sound_Pitch_Starts_At = 50
+    Added_Pitch_Is_Speed_Divided_By = 25
+
+
+    holoCreate(5)
+    holoParent(5,Base)
+    holoPos(5,Base:pos() - Base:forward()*43)
+    holoAlpha(5,0)
+    rangerPersist(1)
+    rangerHitEntities(0)
+    rangerHitWater(0)
+    Width = Width_Of_Base_In_Units/2
+    Length = Length_Of_Base_In_Units/2
+    Ranger_Clamp = Hover_Height + Gravity
+    Ranger_Length = 30000
+    Base:soundPlay(1,0,Hover_Sound)   
+    Base:propInertia(vec(Base_Inertia))
+    Base:propGravity(0)
+
+}
+
+###### Steering wheel section - Remove if you don't wanna use this. ########
+
+if(first() | dupefinished())
+{
+ 
+    Steering_Wheel_Pos_Relative_To_Seat = vec(0,32.5,21)
+    
+    holoCreate(6)
+    holoParent(6,Drivers_Seat_OooOooh)
+    holoModel(6,"models/sprops/trans/stwheels/stwheel_7.mdl")
+    holoPos(6,Drivers_Seat_OooOooh:toWorld(Steering_Wheel_Pos_Relative_To_Seat))
+    holoSkin(6,3)
+    
+}
+
+    Steering_Wheel_Ang = ang(-10,-90,Base:angVel():yaw())
+    holoAng(6,Drivers_Seat_OooOooh:toWorld(Steering_Wheel_Ang))
+
+###################### End of steering wheel section. ######################
+
+
+interval(30)
+
+KMH = round(toUnit("km/h",Base:vel():length()))
+
+if(changed(Space) & Space){Tract = Y_Drag_Strength_While_Braking Steer = Steering_Strength_While_Braking}
+if(changed(Space) & !Space){Tract = Y_Drag_Strength Steer = Steering_Strength} 
+
+Ranger_Height_Mul = clamp((Ranger_Height - Hover_Height)/250 + Alt,0,1)
+Ranger_Height_Mul_Neg = clamp(1 - Ranger_Height_Mul - Alt,0,1)
+
+Roll = -(Ranger_Roll + $Ranger_Roll*5)*Ranger_Height_Mul_Neg - Base:angles():roll()*Level_Out_Strength*Ranger_Height_Mul
+Pitch = (Ranger_Pitch + $Ranger_Pitch*5)*Ranger_Height_Mul_Neg - Base:angles():pitch()*Level_Out_Strength*Ranger_Height_Mul
+Hover_Direction = holoEntity(5):up()*Ranger_Height_Mul_Neg + vec(0,0,Ranger_Height_Mul)
+Y_Drag = Tract*clamp(Ranger_Height_Mul_Neg,0.25,1)
+Z_Drag = Z_Drag_Strength*Ranger_Height_Mul_Neg
+
+Ranger_Front_Left = rangerOffset(Ranger_Length,Base:pos() + Base:forward()*Length - Base:right()*Width,-Hover_Direction)
+Ranger_Front_Right = rangerOffset(Ranger_Length,Base:pos() + Base:forward()*Length + Base:right()*Width,-Hover_Direction)
+Ranger_Rear_Left = rangerOffset(Ranger_Length,Base:pos() - Base:forward()*Length - Base:right()*Width,-Hover_Direction)
+Ranger_Rear_Right = rangerOffset(Ranger_Length,Base:pos() - Base:forward()*Length + Base:right()*Width,-Hover_Direction)
+
+Ranger_Front_Left_Dist = Ranger_Front_Left:distance()
+Ranger_Front_Right_Dist = Ranger_Front_Right:distance()
+Ranger_Rear_Left_Dist = Ranger_Rear_Left:distance()
+Ranger_Rear_Right_Dist = Ranger_Rear_Right:distance()
+
+Ranger_Pitch = ((clamp(Ranger_Front_Left_Dist,0,Ranger_Clamp) + clamp(Ranger_Front_Right_Dist,0,Ranger_Clamp)) - (clamp(Ranger_Rear_Left_Dist,0,Ranger_Clamp) + clamp(Ranger_Rear_Right_Dist,0,Ranger_Clamp)))*Pitch_Force
+Ranger_Roll = ((clamp(Ranger_Front_Left_Dist,0,Ranger_Clamp) + clamp(Ranger_Rear_Left_Dist,0,Ranger_Clamp)) - (clamp(Ranger_Front_Right_Dist,0,Ranger_Clamp) + clamp(Ranger_Rear_Right_Dist,0,Ranger_Clamp)))*Roll_Force
+Ranger_Height = (Ranger_Front_Left_Dist + Ranger_Front_Right_Dist + Ranger_Rear_Left_Dist + Ranger_Rear_Right_Dist)/4
+
+Hovering = (Hover_Height - clamp(Ranger_Height,0,Ranger_Clamp))*Hover_Strength
+
+Base_Vel = Base:vel()
+Base_VelL = Base:velL()
+Base_VelL_X = Base_VelL:x()
+Base_VelL_Y = Base_VelL:y()
+Base_VelL_Z = Base_VelL:z()
+Speed = Base_Vel:length()
+Speed_Mul = clamp(Speed/1000,0,1)
+Ang_Vel = Base:angVel()
+
+Holo_Local_Z = holoEntity(5):up():dot(Base_Vel)/25
+Holo_Local_Y = holoEntity(5):right():dot(Base_Vel)
+
+Holo_Roll = (Base:toLocal((Ranger_Front_Left:pos() + Ranger_Rear_Left:pos())/2) - Base:toLocal((Ranger_Front_Right:pos() + Ranger_Rear_Right:pos())/2)):toAngle():pitch()
+if(Holo_Roll > 180){Holo_Roll_Angle = Holo_Roll - 360}
+else{Holo_Roll_Angle = Holo_Roll}
+
+holoAng(5,Base:toWorld(ang(0,0,-Holo_Roll_Angle*Ranger_Height_Mul_Neg - Base:angles():roll()*Ranger_Height_Mul)))
+soundPitch(1,Sound_Pitch_Starts_At + Speed/Added_Pitch_Is_Speed_Divided_By)
+
+Steering = (A-D)*Steer
+Leaning = (A-D)*Leaning_Strength*Speed_Mul
+Thrust = (W-S/4)*Thrust_Strength
+Brake = Space*(Brake_Strength + Brake_Strength*3*(1-Speed_Mul))
+
+if(Base_VelL_X > 0){Lean_Direction = -holoEntity(5):right()}
+else{Lean_Direction = holoEntity(5):right()}
+
+Base:applyAngForce(ang(Pitch,0,Roll) - Ang_Vel*AngVel_Dampening_Strength)
+Base:applyForce(Hover_Direction*(Hovering + $Hovering*Delta) + Base:forward()*(Thrust - Base_VelL_X*(X_Drag_Strength + Brake)) - holoEntity(5):right()*Holo_Local_Y*Y_Drag - Base:up()*Base_VelL_Z*Z_Drag)
+Base:applyOffsetForce(-holoEntity(5):right()*Steering + holoEntity(5):up()*Holo_Local_Z,holoEntity(5):pos() + holoEntity(5):forward()*5000)
+Base:applyOffsetForce(Lean_Direction*(Leaning*clamp(Ranger_Height_Mul_Neg,0.5,1)),holoEntity(5):pos() + holoEntity(5):up()*5000)

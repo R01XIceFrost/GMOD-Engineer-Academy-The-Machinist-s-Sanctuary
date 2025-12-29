@@ -1,0 +1,30 @@
+@name Angle Lock
+@inputs A D Toggle Base:entity
+@outputs Output
+@persist State Target
+@trigger 
+interval(20)
+if(~Toggle & Toggle)
+{
+    if(State == 0)
+    {
+        Target = round(Base:angles():yaw() / 45) * 45
+        State = 1
+    }
+    else
+    {
+        State = 0
+    }
+}
+
+if(State)
+{
+    Yaw = quat(Base:angles() - ang(0,Target,0)):toAngle():yaw()
+    Output = clamp((-Yaw - $Yaw) * 0.01,-1,1)
+}
+else
+{
+    Output = A - D
+}
+
+

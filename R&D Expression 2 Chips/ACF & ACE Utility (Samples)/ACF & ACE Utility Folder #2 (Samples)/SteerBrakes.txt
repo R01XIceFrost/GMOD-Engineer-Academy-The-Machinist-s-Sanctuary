@@ -1,0 +1,14 @@
+@name SteerBrakes
+@inputs A D TURN Brake
+@outputs Activated
+@persist 
+@trigger 
+runOnTick(1)
+if(!A & !D & !TURN & Brake)
+{
+    Activated = 1
+}
+else
+{
+    Activated = 0
+}

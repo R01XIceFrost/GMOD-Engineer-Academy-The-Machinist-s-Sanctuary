@@ -1,0 +1,16 @@
+@name Steering Regulator for RWD Cars
+@inputs A D Base:entity
+@outputs Output Vel Test:angle
+@persist 
+@trigger 
+runOnTick(1)
+Test = Base:angVel()
+Vel = Base:angVel():yaw()
+if(sign(A - D) == 0)
+{
+    Output = clamp((-Vel - $Vel) * 0.0015,-1,1)
+}
+else
+{
+    Output = 0
+}
