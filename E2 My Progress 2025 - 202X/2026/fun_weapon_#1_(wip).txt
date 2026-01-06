@@ -1,0 +1,92 @@
+@name Fun Weapon #1 (WIP)
+@inputs 
+@outputs 
+@persist Owner:entity Speed Ent:entity [ShootPos Eye]:vector #I
+@trigger none 
+@strict
+
+#Dec 29 2025 - Jan 6 2026
+
+#[ 
+
+Addons required: 
+
+3D Trails https://steamcommunity.com/sharedfiles/filedetails/?id=118646662 by Panthera Tigris
+[E2] SpriteCore https://steamcommunity.com/sharedfiles/filedetails/?id=811333794 by N!kO
+
+]#
+
+if(first()|duped()) { #Spawn 3D trail first before anything else!
+    
+    findByModel("models/props_lab/tpplug.mdl") #3d trail addon
+    Ent = findResult(1)
+
+#----variable stuff---------#
+Active = 0 
+FIRE = 0
+JUMP = "space"
+LMB = "mouse_left" 
+Owner = owner()
+PlySpeed = 25 #Speed
+Hight = 6 #Hight for the jump
+Active = 0 
+#---------------------------#
+
+}
+
+
+event keyPressed(Ply:entity, Key:string, Down:number, _:string) {
+    
+        #if (Ply != Owner) { exit() } #I don't know why != works but not ply == Owner
+            
+        if (Down & Key == JUMP) { # 1 if space pressed
+            Active = 1
+            
+            #I++ For future reference if I want to shoot multiple projectiles
+            #print(I)
+        
+    } elseif (!Down & Key == JUMP) { # 0 if space NOT pressed
+            
+            Active = 0
+    }
+    
+        if (Down & Key == LMB) { # 1 if left mouse button pressed
+     
+            FIRE = 1
+            Index = 1
+            ShootPos = owner():shootPos() #Update current ShootPos per Click
+            spriteSpawn(Index,"sprites/light_ignorez.vmt") 
+            spriteSetColor(Index,vec(0,255,0))
+            spriteSetAlpha(Index,255) #max transparency for visibility
+            spriteSetPos(Index,ShootPos + vec(0,0,0))  #Current Owner ShootPos
+            Eye = owner():eyeAngles():forward() #Current Owner EyeAngles for aiming stuff, different than ShootPos!
+            Speed = 0 #RESET Speed
+            
+    } elseif (!Down & Key == LMB) { # 0 if left mouse button NOT pressed
+        
+            FIRE = 0
+        
+    }
+}
+
+
+event tick() {
+
+Speed += 0.5 #Speed Sprite Projectile 
+   
+Vec = (owner():pos() + vec(0,0,-50) ) #player current position 3D trail
+Ent:setPos(Vec) #3D TRAIL follow me at all times
+   
+    if (Active == 1) { # Fly!
+        Eye = owner():eyeAngles():forward()
+        Jump = Eye:z() + vec(0,0,Hight)   
+        Owner:plyApplyForce(Eye:normalized() * PlySpeed + Jump)
+    
+    } elseif (FIRE == 0) {
+        
+        spriteSetPos(Index,ShootPos + Eye:normalized()*Speed) #the main logic
+        
+    }
+    
+}
+

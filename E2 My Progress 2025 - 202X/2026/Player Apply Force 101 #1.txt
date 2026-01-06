@@ -1,0 +1,47 @@
+@name Player Apply Force 101 #1
+@inputs 
+@outputs 
+@persist Player:entity Speed Ent:entity
+@trigger none 
+@strict
+
+#Dec 29, 2025
+
+
+
+if(first()|duped()) { #Spawn 3D trail first before anything else!
+    
+    findByModel("models/props_lab/tpplug.mdl") #3d trail addon
+    Ent = findResult(1)
+    print(Ent)
+    
+}
+
+Speed = 25 #Speed
+Hight = 6 #Hight for the jump
+
+
+Player = owner()
+
+event tick() {
+    
+    
+Vec = (Player:pos() + vec(0,0,-30) )
+Ent:setPos(Vec)
+
+
+    Eye = owner():eyeAngles():forward()
+    Jump = Eye:z() + vec(0,0,Hight)   
+    Player:plyApplyForce(Eye:normalized() * Speed + Jump)
+ 
+#entity:setTrails(number startSize,number endSize,number length,string material)
+#entity:plyApplyForce(vector force)
+
+}
+
+
+
+
+
+
+    
