@@ -1,0 +1,36 @@
+@name Array 101 #2
+@inputs 
+@outputs Arr:array
+@persist 
+@trigger none 
+@strict
+
+#Jan 18 
+
+
+Arr = array(5,10,15)
+
+
+
+event tick() {
+
+if (6 > Arr[1,number]) { #if 6 greater than 5 (from the array index of 1)
+
+print("1")
+
+    }
+}
+
+
+#[
+
+example #2
+
+Arr = array(vec(1,1,1),vec(2,2,2))
+
+Arr[1,vector] = vec(3,3,3) #overwrites index of 1 to vec 3,3,3 instead of vec 1,1,1
+
+print(Arr[1,vector]) 
+
+]#
+

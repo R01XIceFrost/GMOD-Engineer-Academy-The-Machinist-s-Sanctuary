@@ -1,0 +1,35 @@
+@name 
+@inputs Button
+@outputs A
+@persist Models:array
+ 
+#Jan 19, 2026
+
+A = 0 
+Range = 200
+Models = array("models/props_borealis/bluebarrel001.mdl",
+               "models/props_c17/canister_propane01a.mdl")
+
+
+
+if (Button) {
+    A++
+}
+
+
+
+timer("Find", 1, 0, function() {
+
+
+E2Pos = entity():pos()
+    
+findInSphere(E2Pos,Range)
+
+findByModel(Models[A,string])
+
+ if (find()) {   
+    print(1)    
+}
+    
+})
+

@@ -1,0 +1,25 @@
+@name Array 101 #1
+@inputs 
+@outputs Arr:array O1 O2 O3 O4 Result
+@persist 
+@trigger none 
+@strict
+
+
+#Jan 18 , 2025
+
+#Source: https://youtu.be/jfn1BHDgqpI?si=5lObd3VQhyGDpozi
+#by Omni Games
+
+
+Arr = array(2,4,6,8,10)
+
+O1 = Arr[1, number]
+O2 = Arr[2, number]
+O3 = Arr[3, number]
+O4 = Arr[4, number]
+
+
+Result = Arr:maxIndex()
+
+print(Result)
