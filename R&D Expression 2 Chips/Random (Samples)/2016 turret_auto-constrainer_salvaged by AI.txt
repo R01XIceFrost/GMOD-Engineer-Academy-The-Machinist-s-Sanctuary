@@ -88,91 +88,107 @@ if (last()) {
 
 #[
 
-@name Turret Auto-constrainer
-@inputs 
-@outputs 
-@persist [Col Mat Ents]:array
-@trigger 
 
 
-
-if (first()) {    
-    runOnChat(1)
-    runOnLast(1)
-
-    hint("Type /turret, /turretbase or /base while looking at the entity in question, then type /finish when all 3 are marked.", 8)
-
-    function number isSelected(Ent:entity, Num:number) {
-        QueryEnts = Ents:clone()
-        QueryEnts:removeEntity(Num)
-        if (Ent != QueryEnts[1, entity]) {
-            if (Ent != QueryEnts[2, entity]) {
-                return 1    
-            } else {
+    @name Turret Auto-constrainer
+    @inputs 
+    @outputs 
+    @persist [Col Mat Ents]:array
+    @trigger 
+     
+    if (first()){    
+        runOnChat(1)
+        runOnLast(1)
+     
+        hint("Type /turret, /turretbase or /base while looking at the entity in question, then type /finish when all 3 are marked.",8)
+     
+        function number isSelected(Ent:entity, Num:number){
+            QueryEnts = Ents:clone()
+            QueryEnts:removeEntity(Num)
+            if (Ent!=QueryEnts[1,entity]){
+                if (Ent!=QueryEnts[2,entity]){
+                    return 1    
+                }
+                else{
+                    return 0    
+                }   
+            }
+            else{
                 return 0    
-            }   
-        } else {
-            return 0    
-        }  
-    }
-
-    function void returnVisual(Num:number) {
-        Ents[Num, entity]:setColor(Col[Num, vector])  
-        Ents[Num, entity]:setMaterial(Mat[Num, string]) 
-        Ents[Num, entity] = noentity()      
-    }
-
-    function void markUp(Num:number) {
-        Ent = owner():aimEntity()
-        if (isSelected(Ent, Num) & !Ent:isWorld()) {
-            returnVisual(Num)
-
-            Col[Num, vector] = Ent:getColor()
-            Mat[Num, string] = Ent:getMaterial()
-            Ents[Num, entity] = Ent
-
-            Ent:setMaterial("models/debug/debugwhite")
-            SetCol = vec()
-            SetCol[Num] = 255
-            Ent:setColor(SetCol)
-        } else {
-            printColor(vec(0, 255, 255), "[E2] That entity is already selected as another part.")
+            }  
         }
-    }
-}
-
-if (chatClk(owner())) {
-    if (lastSaid():lower() == "/turret") {
-        markUp(1)   
-    } 
-    if (lastSaid():lower() == "/turretbase") {
-        markUp(2)   
-    }
-    if (lastSaid():lower() == "/base") {
-        markUp(3)   
-    }
-    if (lastSaid():lower() == "/finish") {
-        if (Ents[1, entity]:isValid()) {
-            if (Ents[2, entity]:isValid()) {
-                if (Ents[3, entity]:isValid()) {
-                    printColor(vec(0, 255, 255), "[E2] Please disable gravity on the turret and remember to set the weights of the turret base and base.")
-
-                    # Use axis/ballsocket manually via constraints or Wiremod tool  E2 does not support axisTo or advBallsocketTo without external extensions
-
-                    printColor(vec(255, 0, 0), "[E2] Constraints would need to be done via tools or other methods. This is a placeholder.")
-                    selfDestruct()
+     
+        function void returnVisual(Num:number){
+            Ents[Num,entity]:setColor(Col[Num,vector])  
+            Ents[Num,entity]:setMaterial(Mat[Num,string]) 
+            Ents[Num,entity]=noentity()      
+        }
+     
+        function void markUp(Num:number){
+            Ent = owner():aimEntity()
+     
+            if (isSelected(Ent,Num)==1){
+                if (!Ent:isWorld()){
+                    returnVisual(Num)
+     
+                    Col[Num,vector]=Ent:getColor()
+                    Mat[Num,string]=Ent:getMaterial()
+                    Ents[Num,entity]=Ent
+     
+                    Ent:setMaterial("models/debug/debugwhite")
+                    SetCol=vec()
+                    SetCol[Num]=255
+                    Ent:setColor(SetCol)
                 }
             }
-        }    
+            else {printColor(vec(0,255,255),"[E2] That entity is already selected as another part.")}
+     
+        } 
+     
     }
-}
+     
+    if (chatClk(owner())){
+        if (lastSaid():lower()=="/turret"){
+            markUp(1)   
+        } 
+        if (lastSaid():lower()=="/turretbase"){
+            markUp(2)   
+        }
+        if (lastSaid():lower()=="/base"){
+            markUp(3)   
+        }
+        if (lastSaid():lower()=="/finish"){
+            if (Ents[1,entity]:isValid()){
+                if (Ents[2,entity]:isValid()){
+                    if (Ents[3,entity]:isValid()){
+                        printColor(vec(0,255,255),"[E2] Please disable gravity on the turret and remember to set the weights of the turret base and base.")
+     
+                        if ((abs(90-abs((Ents[2,entity]:angles():roll()))))<5){
+                            Ents[2,entity]:axisTo(1,Ents[3,entity],0,0,vec(),Ents[3,entity]:toLocal(Ents[3,entity]:pos()),0,0,0,0,vec(0,1,0)) 
+                            Constraint = 1
+                        }
+                        else{
+                            Ents[2,entity]:axisTo(1,Ents[3,entity],0,0,vec(),Ents[3,entity]:toLocal(Ents[3,entity]:pos()),0,0,0,0,vec(0,0,1))
+                        }
+                        Ents[2,entity]:advBallsocketTo(2,Ents[3,entity],0,0,vec(),Ents[3,entity]:toLocal(Ents[3,entity]:pos()),0,0,vec(-180),vec(180),vec(0),1,0)
+                        Ents[1,entity]:axisTo(1,Ents[2,entity],0,0,vec(),Ents[2,entity]:toLocal(Ents[2,entity]:pos()),0,0,0,0,vec(0,1,0))
+                        Ents[1,entity]:advBallsocketTo(2,Ents[2,entity],0,0,vec(),Ents[2,entity]:toLocal(Ents[2,entity]:pos()),0,0,vec(-180),vec(180),vec(0),1,0)
+     
+                        printColor(vec(0,255,255),"[E2] Turret constraints have been successfully made. Removing E2.")
+                        selfDestruct()
+                    }
+                }
+            }    
+        }
+    }
+     
+    if (last()){
+        returnVisual(1) 
+        returnVisual(2) 
+        returnVisual(3)      
+    }
 
-if (last()) {
-    returnVisual(1) 
-    returnVisual(2) 
-    returnVisual(3)      
-}
+
 
 
 #[
-
