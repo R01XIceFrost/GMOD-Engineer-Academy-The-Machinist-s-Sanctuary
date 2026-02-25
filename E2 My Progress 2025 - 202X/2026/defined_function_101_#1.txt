@@ -1,0 +1,42 @@
+@name Defined function 101 #1
+@inputs 
+@outputs 
+@persist 
+@trigger none 
+@strict
+
+#Jan 27, 2026
+
+#Example 1
+
+function number playee() {
+
+    return owner():health()
+
+
+}
+
+print(playee())
+
+
+#Example 2
+
+function number total(Num:number,Num2:number,Num3:number) {
+    
+    return Num + Num2 + Num3
+    
+}
+
+  print(total(1,1,1))
+
+
+
+#Example 3
+
+
+function void sayHello() {
+    print("Hello world")
+}
+
+sayHello()
+

@@ -1,0 +1,46 @@
+@name Array 101 #4 
+@inputs 
+@outputs Angle:angle
+@persist 
+@trigger none 
+@strict
+
+#Jan 26 - Feb 3 2026
+
+event tick() {
+
+    if (findCanQuery()) { 
+            findByClass("prop_physics") #Find all props
+    Props = findToArray()  #[ Add all the props you find & 
+                            put it in the array after FindbyClass execution!
+                            ]#  
+}                          
+
+foreach(_:number,Prop:entity = Props) { 
+  
+    Aim = owner():eyeAngles() #Aim the direction according to the owner's angle!
+    Prop:setAng(Aim) #Make all the prop turn according to your Eye Angles
+    print(Prop) #debug
+    
+    }
+}
+    
+#[
+
+event tick() {
+
+Aim = owner():eyeAngles()
+Pitch = Aim:pitch()
+Yaw = Aim:yaw()
+Roll = Aim:roll()
+
+Look = owner():aimEntity()
+
+
+Look:setAng(Aim)
+
+print(Look)
+
+
+]#
+

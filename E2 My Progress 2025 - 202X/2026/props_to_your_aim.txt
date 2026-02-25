@@ -1,0 +1,30 @@
+@name Props To Your Aim
+@inputs 
+@outputs Angle:angle
+@persist 
+@trigger none 
+@strict
+
+#Feb 4 - 10
+
+event tick() {
+
+    if (findCanQuery()) { 
+    findByModel("models/props_borealis/bluebarrel001.mdl") 
+    Props = findToArray()    #Put all props found into an array!                                             
+    CountArr = Props:count() #Count all the props according to the model string
+    
+    }                          
+
+foreach(_:number,Prop:entity = Props) { 
+  
+    Aim = owner():eyeAngles() #Aim the direction according to the owner's angle!
+    Prop:setAng(Aim) #Make all the prop turn according to your Eye Angles
+    
+    if (CountArr == 5) { #Execute this condtion if prop is equal to 5
+        
+        print("1") #debug
+             
+        }
+    }
+}
