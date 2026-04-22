@@ -1,0 +1,107 @@
+@name Tracker 101 #1 (FINAL)
+@inputs Target:entity 
+@persist 
+@trigger none 
+@strict
+@model models/weapons/w_smg1.mdl
+
+
+#April 18 - 21 2026
+
+#### Reference ###############################
+
+#Number = entity:bearing(vector pos)
+#Angle=entity:angles()
+#entity:setEyeTarget(vector pos)
+#entity:setAng(angle rot)
+#Vector=entity:aimPos()
+#Angle=entity:angles()
+#entity:setAng(angle rot)
+#Angle=ang(vector rv1)
+#entity:applyAngForce(angle angForce)
+
+################################################
+
+event tick() {
+    
+if (Target:isValid()) { #if Target is found then do the following below!
+    
+PosTarget = Target:pos() #Target Current Pos in VECTOR
+
+E2Pos = entity():pos() #E2 Chip Current Pos in VECTOR
+
+Aim = (PosTarget - E2Pos):toAngle() #Converts VECTOR to ANGLES
+
+E2Entity = entity() #Your E2 model as a turret
+
+Pitch = Aim:pitch() #Gets Pitch from the Target
+Yaw = Aim:yaw()     #Gets Yaw from the Target
+Roll = Aim:roll()   #Gets Roll from the Target
+
+OffsetAng = ang(Pitch - 30 ,Yaw - 5, Roll) #OffsetAng stuff
+E2Entity:setAng(OffsetAng) #Set the Turret Offset angles according to the target's angles! 
+#Or use default Aim angles
+
+print(OffsetAng) #Print the results aka my debugging tool
+
+    }
+    
+}
+
+
+#entity:applyForce(vector force)
+
+
+
+
+
+
+#[
+
+@name Tracker 101 #1 (WIP1)
+@inputs Target:entity 
+@persist 
+@trigger none 
+@strict
+@model models/weapons/w_rif_m4a1_silencer.mdl
+
+
+#April 15 - 18
+
+
+#Number = entity:bearing(vector pos)
+#Angle=entity:angles()
+
+event tick() {
+    
+
+if (Target:isValid()) {
+
+E2Entity = entity() 
+E2Pos = entity():pos()
+
+Distance = Target:pos():distance(E2Pos)
+
+print(Distance)
+
+
+#entity:applyForce(vector force)
+
+
+
+if (Distance < 300) {
+
+E2Entity:applyForce(E2Entity:forward()*10)
+
+
+}
+
+    }
+
+    
+    
+    
+}
+
+]#
+

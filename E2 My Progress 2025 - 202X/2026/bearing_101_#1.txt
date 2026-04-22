@@ -1,0 +1,98 @@
+@name Bearing 101 #1 (FINAL) 
+@inputs TargetE:entity
+@outputs 
+@persist 
+@trigger none 
+@model models/props_lab/huladoll.mdl
+
+##Feel free to change model!
+
+
+#April 18 2026
+
+event tick() {
+    
+#Number=entity:bearing(vector pos)  
+
+if (TargetE:isValid()) {
+  
+Target = TargetE:pos() #Your Target
+
+E2Pos = entity() #E2 current position
+
+Bearing = E2Pos:bearing(Target) #Get the bearing from my E2 position to the Target!
+
+print(Bearing) #Result
+
+    }
+
+}
+
+
+
+#[
+
+@name Bearing 101 #1 (WIP2)
+@inputs TargetV:entity
+@outputs 
+@persist 
+@trigger none 
+
+
+#April 18 2026
+
+event tick() {
+    
+#Number=entity:bearing(vector pos)  
+  
+TargetV:pos()
+
+E2Pos = entity():pos()
+
+
+Bearing = TargetV:bearing(E2Pos)
+
+print(Bearing)
+
+
+}
+
+
+
+
+]#
+
+#[
+
+@name Bearing 101 #1 (WIP1)
+@inputs Base:entity
+@persist 
+@trigger none 
+@strict
+
+
+
+#April 11 - 15 2026
+
+
+#Number = entity:bearing(vector pos)
+#Entity=findClosest(vector position)
+
+
+
+
+event tick() {
+    
+
+if (Base:isValid()) {
+
+Pos = -Base:bearing(Base:eye())
+
+print(Pos)
+
+    }
+}
+
+
+
+]#
