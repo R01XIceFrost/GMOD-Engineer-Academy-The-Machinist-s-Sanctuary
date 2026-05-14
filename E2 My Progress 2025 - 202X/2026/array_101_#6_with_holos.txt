@@ -7,8 +7,11 @@
 
 #[
 
-type this console commmand wire_holograms_max 500
+type this in console commmand wire_holograms_max 200
 to remove the hard cap by default
+
+Warning: do not type wire_holograms_max 1000 or more
+unless you want to put stress test on your PC parts!
 
 ]#
 
@@ -18,7 +21,7 @@ if( first() ){
     
 #Initialize stuff
     Holos = 0
-    MaxHolo = 32
+    MaxHolo = 200
     VecArray = array()
 }
 
@@ -26,13 +29,13 @@ if( first() ){
     E2Pos = entity():pos()
     Holos++
 
-#ClampHolo = clamp(Holos,0,32)
+#ClampHolo = clamp(Holos,0,32) #tempoary fix (bandage) for my loops
 
     if (Holos <= MaxHolo & holoCanCreate()) {
 
         holoCreate(Holos)
         holoModel(Holos,"hq_torus_thin")
-        #print(Holos)
+        print("Holos Totals:" +  Holos)
 }
     if (Holos == MaxHolo) {
         Trigger = 1
@@ -45,21 +48,22 @@ if( first() ){
 
     }        
 }
-        if (Trigger == 1) {
+        if (Trigger == 1) { #Update Holos Posiion
             
             for (Holos = 1, MaxHolo)  {
             
                 holoPos(Holos,E2Pos + VecArray[Holos,vector])
-                print("1")    
+                #print("1")    
 }
 }
   
     
 })
 
+
 #[
 
-@name Array 101 #6 Holos (Bad Loop)
+@name Array 101 #6 Holos (Error Loop)
 @inputs 
 @outputs 
 @persist Holos VecArray:array
