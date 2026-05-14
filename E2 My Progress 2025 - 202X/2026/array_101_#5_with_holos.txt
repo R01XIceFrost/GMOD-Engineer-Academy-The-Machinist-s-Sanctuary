@@ -1,0 +1,45 @@
+@name Array 101 #5
+@inputs 
+@outputs 
+@persist VecArray:array
+@strict
+
+#May 4 - 5 2026
+
+
+if(first()) {
+
+VecArray = array()
+
+
+timer("timer",0.01,0, function() { #Unoptimized E2 Ops theheh timer per 0.01 sec
+
+
+for (I = 1, 5) {
+    
+    #print(I)
+    
+VecArray[1,vector] = vec(0,0,5) 
+VecArray[2,vector] = vec(0,0,10)
+VecArray[3,vector] = vec(0,0,15)
+VecArray[4,vector] = vec(0,0,20)
+VecArray[5,vector] = vec(0,0,25)
+
+E2Pos = entity():pos()
+Scale = vec(5,5,5)
+holoCreate(I)
+holoModel(I,"hq_torus_thin")
+holoPos(I,E2Pos + VecArray[I,vector])
+holoScale(I,Scale)
+
+
+print(VecArray)
+        
+    }
+
+}) #Unoptimized timer function E2 Ops end of block  theheh 
+
+
+}
+
+

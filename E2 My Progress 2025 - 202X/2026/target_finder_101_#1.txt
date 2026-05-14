@@ -1,0 +1,46 @@
+@name Target Finder 101 #1 
+@inputs 
+@persist 
+@trigger none 
+@strict
+
+
+#April 22 - 29 2026
+
+event tick() {
+    
+#Array=findToArray()
+#Formats the query as an array, R[Index,entity] to get an entity
+#Array=findToArray()
+
+if (findCanQuery()) {
+    
+E2Pos = entity():pos()
+Found = findByClass("npc_*")
+Nearest = findClosest(E2Pos)   
+Targets = findToArray(Found)
+
+#T1 = Targets[1,entity]
+
+#NPC_Pos1 = T1:pos() #
+
+#print(NPC_Pos1)
+
+foreach(_:number, Targets:entity = findToArray()) {
+
+Target_Found = Targets:setColor(255,0,0)
+
+print(Targets:pos() - E2Pos)
+    
+    }
+    
+}
+    
+    
+
+    
+}
+
+
+
+

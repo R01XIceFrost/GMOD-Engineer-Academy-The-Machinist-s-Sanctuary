@@ -1,0 +1,122 @@
+@name Array 101 #6 Holos (Fixed Loop)
+@inputs 
+@outputs 
+@persist Holos VecArray:array
+@trigger none 
+@strict
+
+#[
+
+type this console commmand wire_holograms_max 500
+to remove the hard cap by default
+
+]#
+
+#May 11 - 14
+
+if( first() ){ 
+    
+#Initialize stuff
+    Holos = 0
+    MaxHolo = 32
+    VecArray = array()
+}
+
+    timer("timer",00.1,0, function() {
+    E2Pos = entity():pos()
+    Holos++
+
+#ClampHolo = clamp(Holos,0,32)
+
+    if (Holos <= MaxHolo & holoCanCreate()) {
+
+        holoCreate(Holos)
+        holoModel(Holos,"hq_torus_thin")
+        #print(Holos)
+}
+    if (Holos == MaxHolo) {
+        Trigger = 1
+    
+        for (Holos = 1, MaxHolo) {
+        
+            VecArray[Holos,vector] = vec(0,0,5)     
+            holoPos(Holos,E2Pos + VecArray[Holos,vector])
+        
+
+    }        
+}
+        if (Trigger == 1) {
+            
+            for (Holos = 1, MaxHolo)  {
+            
+                holoPos(Holos,E2Pos + VecArray[Holos,vector])
+                print("1")    
+}
+}
+  
+    
+})
+
+#[
+
+@name Array 101 #6 Holos (Bad Loop)
+@inputs 
+@outputs 
+@persist Holos VecArray:array
+@trigger none 
+@strict
+
+
+
+type this console commmand wire_holograms_max 500
+to remove the hard cap by default
+
+]#
+
+#May 11 - 14
+
+
+#[
+
+if( first() ){ 
+    
+#Initialize stuff
+    Holos = 0
+    MaxHolo = 32
+    VecArray = array()
+}
+
+    timer("timer",00.1,0, function() {
+    E2Pos = entity():pos()
+    Holos++
+
+#Number=clamp(number n,number low,number high)
+
+    if (Holos <= MaxHolo & holoCanCreate()) {
+
+        holoCreate(Holos)
+        holoModel(Holos,"hq_torus_thin")
+        #print(Holos)
+}
+    if (Holos == MaxHolo) {
+        Trigger = 1
+    
+    for (Holos = 1, MaxHolo) {
+        
+        VecArray[Holos,vector] = vec(0,0,5)     
+        holoPos(Holos,E2Pos + VecArray[Holos,vector])
+        
+
+    }        
+}
+        while (Trigger == 1 & perf(50)) {
+        holoPos(Holos,E2Pos + VecArray[Holos,vector])
+
+   print("1")    
+}
+  
+    
+})
+
+
+]#
