@@ -1,0 +1,114 @@
+@name Railgun WIP 2
+@inputs 
+@outputs 
+@persist 
+@trigger none 
+@strict
+
+
+#June 24 - 
+
+
+for (Holo_I = 1, 80) {
+holoCreate(Holo_I)
+holoModel(Holo_I,"hq_rcylinder_thin")
+
+}
+
+
+E2Pos = entity():pos()
+X = E2Pos:x()
+Y = E2Pos:y()
+Z = E2Pos:z()
+
+
+for (Gap_I = 1, 80) {
+    A = Gap_I * 5
+    holoPos(Gap_I, vec(X + Gap_I * -15,Y,Z))
+    
+    
+}
+
+
+#[
+
+June 21 - 24
+
+Best models?
+*hq_hdome_thin
+*rcylinder_thick
+*hq_rcylinder_thin
+
+]#
+
+
+#[
+
+
+@name Railgun WIP 1
+@inputs Button 
+@outputs 
+@persist Tick
+@strict
+
+
+#worldToLocal() Takes something relative to an entity converts it into world space
+
+Tick = 0    
+
+
+for (Holo_I = 1, 10) {
+holoCreate(Holo_I)
+holoModel(Holo_I,"hq_rcylinder_thin")
+
+}
+
+#Tick += 0.1
+
+E2Pos = entity():pos()
+X = E2Pos:x()
+Y = E2Pos:y()
+Z = E2Pos:z()
+
+#print(Tick)
+
+#holoPos(1, entity():pos())
+#holoScale(1,vec(1,1,1))
+
+
+# trailSC(holoEntity(200+I),50,0,0.3-I*0.02,"trails/laser",vec(150,160+I*10,255),75)
+
+Array_I = array()
+for (Gap_I = 1, 20) {
+    Array_I[Gap_I] = Gap_I * 15
+    Gap1 = Array_I[1,number]
+    Gap2 = Array_I[2,number]
+    Gap3 = Array_I[3,number]
+    Gap4 = Array_I[4,number]
+   
+   
+holoPos(1,vec(X,Y,Z))
+holoPos(2,holoEntity(1):toWorld(vec(0,0,Gap1)))
+holoPos(3,holoEntity(1):toWorld(vec(0,0,Gap2)))
+holoPos(4,holoEntity(1):toWorld(vec(0,0,Gap3)))
+holoPos(5,holoEntity(1):toWorld(vec(0,0,Gap4)))
+
+
+
+#Entity=holoEntity(number index)
+#holoScale(number index,vector scale)
+#A = holoEntity(1):setAng(ang(5,5,Tick))
+#print(A)
+
+
+}
+
+
+]#
+
+
+
+
+
+
+
