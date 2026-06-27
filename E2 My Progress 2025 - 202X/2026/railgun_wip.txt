@@ -1,34 +1,79 @@
-@name Railgun WIP 2
+@name Railgun WIP 2 (rough draft)
 @inputs 
-@outputs 
-@persist 
+@outputs AimPos:vector 
+@persist IndexHolo Distance
 @trigger none 
 @strict
 
 
-#June 24 - 
+#June 24 - 27 2026
 
+#type console wire_holograms_max 500
 
-for (Holo_I = 1, 80) {
-holoCreate(Holo_I)
-holoModel(Holo_I,"hq_rcylinder_thin")
+if (first()) {
+    
+#initialization stuff 
+Owner = owner()
+IndexHolo = 0
+Distance = 0
 
 }
 
 
-E2Pos = entity():pos()
-X = E2Pos:x()
-Y = E2Pos:y()
-Z = E2Pos:z()
-
-
-for (Gap_I = 1, 80) {
-    A = Gap_I * 5
-    holoPos(Gap_I, vec(X + Gap_I * -15,Y,Z))
+event keyPressed(Ply:entity, Key:string, _:number, _:string) {
+    if (Ply != Owner) { exit() }
+    if (Key == "mouse_right") {
+        
+        ShootPos = owner():shootPos()   
+        EyePos = owner():eye()
+        EyeAngle = owner():eyeAngles()
+        Pitch_EyeAngle = EyeAngle:pitch()
+        Yaw_EyeAngle = EyeAngle:yaw() 
+        Roll_EyeAngle = EyeAngle:roll() 
+        
+        Fire = 1
+        #print(EyePos)
+        #X_ShootPos = ShootPos:x()
+        #Y_ShootPos = ShootPos:y()
+        #Z_ShootPos = ShootPos:z()
+        
+        #X_Eyepos = EyePos:x()
+        #Y_Eyepos = EyePos:y()
+        #Z_Eyepos = EyePos:z()
+       
+        #print(ShootPos)
+        #holoPos(1, ShootPos )
+        #print("s")
     
+    }
     
+
 }
 
+event tick() {
+    
+    if (Fire == 1 & !timerExists("B")) {
+        
+    timer("B", 0.07, 0, function() {
+              
+            IndexHolo++
+            Distance++
+            Gap = Distance * 15
+            MaxHolo = clamp(IndexHolo,0,500)  #band aid solution 
+            print("Holo Count:" + MaxHolo)
+            holoCreate(MaxHolo)
+            holoModel(MaxHolo, "hqtube3")
+            #holoAng(number index,angle ang)
+            holoAng(MaxHolo,ang(Pitch_EyeAngle + 100,Yaw_EyeAngle,Roll_EyeAngle))
+            holoPos(MaxHolo, ShootPos + EyePos * Gap  )  
+            #holoPos(1,AimPos)
+            
+            
+        })
+            
+    }
+    
+}
 
 #[
 
