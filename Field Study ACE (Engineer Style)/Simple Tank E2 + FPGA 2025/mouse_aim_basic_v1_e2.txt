@@ -9,6 +9,7 @@
 # *New Feature Smoothing Aim Implemented in Mouse Aim Basic V1!
 
 #[
+
 #Gimbal Required!
 #Wire E2 "Gimbal [WIRELINK]" input to Gimbal Tool (Plug & Play!)
 
@@ -26,7 +27,8 @@ Output = vec(0) #initialized
 Limit_1 = -1.0  #Variable stuff
 Limit_2 = -0.3  #Variable stuff
 
-if(first()) {
+if(first()) { 
+    
     Origin = propSpawn("models/sprops/misc/origin.mdl",1) #spawns origin prop of sprop
     Origin:parentTo(entity()) #parent prop to E2 chip
     holoCreate(1,entity():pos() + vec(2,0,0.5), vec(0.09,0.09,0.1), ang(0,0,0),vec(0,255,0),"cone")  
@@ -34,7 +36,45 @@ if(first()) {
 
 }
 
-event tick() { #replacement deprecated function runOnTick()
+#[ 
+
+band aid solution for tick quota exceeded this whole code below (sometimes it happens):
+   
+    if (owner():inVehicle() & owner():keyAttack2()) {       
+    Gimbal["On", number] = 1 #Turns on Gimbal when Player is seated
+}
+  else {
+    Gimbal["On", number] = 0 #Turns off Gimbal when Player is not seated    }
+}
+
+]#
+
+#The solution below event keyPressed my logic:
+#June 6, 2026
+
+event keyPressed(Player:entity, Key:string, Down:number, KeyBind:string) {
+    #print(Player)
+    if (Player:inVehicle()) {
+        if (Down & Key == "mouse_right") {
+        Gimbal["On", number] = 1 #Turns on Gimbal when Player is seated or holding right click
+        Active = 1                
+        } elseif (!Down & Key == "mouse_right") { ##Turns off Gimbal when Player is not holding right click or not seated
+        Active = 0 
+        #elseif (!Player:inVehicle() & Stop == 0) { 
+         # Gimbal["On", number] = 0 #Turns off Gimbal when Player is not seated
+         # print("exit")
+            
+        }
+       
+    
+    }
+}
+
+event tick() {
+    
+    if (Active == 1) {
+    
+     #replacement deprecated function runOnTick()
     Eye = entity():toLocalAxis(owner():eye()) #Grabs your eye angle coordinates based on the E2 position (beware of positioning the chip!)
     Clamps_XYZ = vec(
         clamp(Eye:x(), Limit_1, abs(Limit_1)), #Clamps X -1.0 deg & 1.0 deg
@@ -45,16 +85,7 @@ event tick() { #replacement deprecated function runOnTick()
     Rate = 0.6 #Smooth the number according to this number which is 0.6
     Output += clamp((Clamps_XYZ - Output) / _TICKINTERVAL, -Rate, Rate) * _TICKINTERVAL  #Special thanks to Darmagon's example logic for smoothing vectors from Wiremod Discord!    
     Gimbal["Direction", vector] = Output
-    Player = owner():inVehicle()
     
-    
-if (Player) {       
-    Gimbal["On", number] = 1 #Turns on Gimbal when Player is seated
-}
-  else {
-    Gimbal["On", number] = 0 #Turns off Gimbal when Player is not seated
     }
+    
 }
-
-
-
