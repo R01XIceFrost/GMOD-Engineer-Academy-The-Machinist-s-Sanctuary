@@ -1,14 +1,17 @@
 @name Mouse Aim Basic V1
-@inputs Gimbal:wirelink
+@inputs Gimbal:wirelink Gun:wirelink
 @outputs #Eye:vector #Output:vector
 @trigger none
 @strict
 
-#July 20 2025 - Septembre 1 2025
+#July 20 2025 - Septembre 1 2025 Project
 
-# *New Feature Smoothing Aim Implemented in Mouse Aim Basic V1!
+# *New Feature Smoothing Aim Implemented in Mouse Aim Basic V1! (Aug 19, 2025)
+# *Fixed tick quota exceeded (June 27, 2026)
+# *Added Auto Calibration Command (July 11, 2026)
 
 #[
+
 #Gimbal Required!
 #Wire E2 "Gimbal [WIRELINK]" input to Gimbal Tool (Plug & Play!)
 
@@ -23,17 +26,35 @@ If aligned correctly, you can delete the origin prop.
 ]#
 
 Output = vec(0) #initialized
-Limit_1 = -1.0  #Variable stuff
-Limit_2 = -0.3  #Variable stuff
+Limit_1 = -1.0  #Variable stuff for clamping Gimbal direction
+Limit_2 = -0.3  #Variable stuff for clamping Gimbal direction
+AngleZero = ang(0,0,0) #Auto calibration stuff
+Owner = owner() 
+E2Pos = entity()
+Prop_Origin = propSpawn("models/sprops/misc/origin.mdl",1) #spawns origin prop of sprop
 
 if(first()) { 
     
-    Origin = propSpawn("models/sprops/misc/origin.mdl",1) #spawns origin prop of sprop
-    Origin:parentTo(entity()) #parent prop to E2 chip
+    Prop_Origin:setAng(AngleZero)
+    #OriginProp:parentTo(entity()) #parent prop to E2 chip
     holoCreate(1,entity():pos() + vec(2,0,0.5), vec(0.09,0.09,0.1), ang(0,0,0),vec(0,255,0),"cone")  
     holoParent(1, entity())  
 
 }
+
+event chat(Player:entity, Message:string, _:number) {
+
+    if (Player == Owner & Message == "/Zero") { 
+       #soundPlay(number index,number duration,string path)
+        soundPlay("1",5,"garrysmod/save_load1.wav")
+        E2Pos:setAng(AngleZero) 
+        print(AngleZero)
+        print(_HUD_PRINTCENTER,"E2 Chip Calibrated!")
+        
+    }
+    
+}
+
 
 #[ 
 
@@ -49,28 +70,34 @@ band aid solution for tick quota exceeded this whole code below (sometimes it ha
 ]#
 
 #The solution below event keyPressed my logic:
-#June 6, 2026
+
 
 event keyPressed(Player:entity, Key:string, Down:number, KeyBind:string) {
     #print(Player)
     if (Player:inVehicle()) {
-        if (Down & Key == "mouse_right") {
-        Gimbal["On", number] = 1 #Turns on Gimbal when Player is seated or holding right click
+        if (Down & Key == "mouse_right") { #Turns on Gimbal when player is seated and holding LMB
+        Gimbal["On", number] = 1 
         Active = 1                
-        } elseif (!Down & Key == "mouse_right") { ##Turns off Gimbal when Player is not holding right click or not seated
+        } elseif (!Down & Key == "mouse_right") { #Turns off Gimbal when player is not seated and holding RMB
         Active = 0 
-        #elseif (!Player:inVehicle() & Stop == 0) { 
-         # Gimbal["On", number] = 0 #Turns off Gimbal when Player is not seated
-         # print("exit")
+         #elseif (!Player:inVehicle() & Stop == 0) { 
+         #Gimbal["On", number] = 0 #Turns off Gimbal when Player is not seated
+         #print("exit")
             
         }
-       
+            if (Down & Key == "mouse_left") { #Start Firing Gun when LMB is press
+                Gun["Fire",number] = 1
+        }
+                
+            elseif (!Down & Key == "mouse_left") { #Stop Firing Gun when LMB is not press
+                Gun["Fire",number] = 0
+        }
     
     }
 }
 
 event tick() {
-    
+ 
     if (Active == 1) {
     
      #replacement deprecated function runOnTick()
@@ -85,8 +112,6 @@ event tick() {
     Output += clamp((Clamps_XYZ - Output) / _TICKINTERVAL, -Rate, Rate) * _TICKINTERVAL  #Special thanks to Darmagon's example logic for smoothing vectors from Wiremod Discord!    
     Gimbal["Direction", vector] = Output
     
-    }
+    }  
     
 }
-
-
