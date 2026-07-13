@@ -1,14 +1,16 @@
 @name Mouse Aim Basic V1
-@inputs Gimbal:wirelink Gun:wirelink
-@outputs #Eye:vector #Output:vector
+@inputs Gimbal:wirelink Gun_WL:wirelink 
+@outputs Guns_SPLITTER #Eye:vector #Output:vector 
 @trigger none
 @strict
 
 #July 20 2025 - Septembre 1 2025 Project
 
-# *New Feature Smoothing Aim Implemented in Mouse Aim Basic V1! (Aug 19, 2025)
+# *New Feature Smoothing Aim Implemented in Mouse Aim Basic V1! (Aug 19, 2025) Special Thanks to Darmagon for providing logic example 3 smoothers individually handling the vector components
 # *Fixed tick quota exceeded (June 27, 2026)
 # *Added Auto Calibration Command (July 11, 2026)
+# *Added Guns Splitter (July 13, 2026)
+# *Prints all the instructions in the chat (July 13, 2026)
 
 #[
 
@@ -34,6 +36,9 @@ E2Pos = entity()
 Prop_Origin = propSpawn("models/sprops/misc/origin.mdl",1) #spawns origin prop of sprop
 
 if(first()) { 
+    print("*Left Click to trigger guns")
+    print("*Hold Right Click to trigger Gimbal/turret")
+    print("Type /Zero for auto calibration Gimbal/turret")
     
     Prop_Origin:setAng(AngleZero)
     #OriginProp:parentTo(entity()) #parent prop to E2 chip
@@ -48,8 +53,8 @@ event chat(Player:entity, Message:string, _:number) {
        #soundPlay(number index,number duration,string path)
         soundPlay("1",5,"garrysmod/save_load1.wav")
         E2Pos:setAng(AngleZero) 
-        print(AngleZero)
-        print(_HUD_PRINTCENTER,"E2 Chip Calibrated!")
+        #print(AngleZero) #Debug stuff
+        print(_HUD_PRINTCENTER,"Gimbal/Turret E2 Chip Calibrated!")
         
     }
     
@@ -85,12 +90,15 @@ event keyPressed(Player:entity, Key:string, Down:number, KeyBind:string) {
          #print("exit")
             
         }
-            if (Down & Key == "mouse_left") { #Start Firing Gun when LMB is press
-                Gun["Fire",number] = 1
+            if (Down & Key == "mouse_left") { #Start Firing Gun/Guns when LMB is press
+                Gun_WL["Fire",number] = 1
+                Guns_SPLITTER = 1
+                 
         }
                 
-            elseif (!Down & Key == "mouse_left") { #Stop Firing Gun when LMB is not press
-                Gun["Fire",number] = 0
+            elseif (!Down & Key == "mouse_left") { #Stop Firing Gun/Guns when LMB is not press
+                Gun_WL["Fire",number] = 0
+                Guns_SPLITTER = 0
         }
     
     }
