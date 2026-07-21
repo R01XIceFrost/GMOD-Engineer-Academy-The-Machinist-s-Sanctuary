@@ -7,11 +7,12 @@
 #July 20 2025 - Septembre 1 2025 Project
 
 # *New Feature Smoothing Aim Implemented in Mouse Aim Basic V1! (Aug 19, 2025) Special Thanks to Darmagon for providing logic example 3 smoothers individually handling the vector components
-
 # *Fixed tick quota exceeded (June 27, 2026)
 # *Added Auto Calibration Command (July 11, 2026)
 # *Added Guns Splitter (July 13, 2026)
 # *Prints all the instructions in the chat (July 13, 2026)
+# *Added NOT Equals opperator != Owner to reject everyone who isn't owner (July 21, 2026)
+# *More comments (July 21, 2026)
 
 #[
 
@@ -19,6 +20,8 @@
 #Wire E2 "Gimbal [WIRELINK]" input to Gimbal Tool (Plug & Play!)
 
 INFO:
+
+*** this comment below is before the auto calibration command!
 
 Place the E2 chip on the ground, ensuring its arrow/dash (small red modern E2 skin) is aligned with the green arrow of the origin XYZ prop. 
 This helps achieve proper calibration.
@@ -50,10 +53,11 @@ if(first()) {
 
 event chat(Player:entity, Message:string, _:number) {
 
+    if (Player != Owner)  { exit() } #Reject everyone who isn't owner
     if (Player == Owner & Message == "/Zero") { 
-       #soundPlay(number index,number duration,string path)
+        #soundPlay(number index,number duration,string path)
         soundPlay("1",5,"garrysmod/save_load1.wav")
-        E2Pos:setAng(AngleZero) 
+        E2Pos:setAng(AngleZero) #Sets E2 Chip 0,0,0 angle to calibrate ply:eye because I'm not math guy....
         #print(AngleZero) #Debug stuff
         print(_HUD_PRINTCENTER,"Gimbal/Turret E2 Chip Calibrated!")
         
@@ -80,8 +84,9 @@ band aid solution for tick quota exceeded this whole code below (sometimes it ha
 
 event keyPressed(Player:entity, Key:string, Down:number, KeyBind:string) {
     #print(Player)
-    if (Player:inVehicle()) {
-        if (Down & Key == "mouse_right") { #Turns on Gimbal when player is seated and holding LMB
+    if (Player != Owner) { exit() } #Reject everyone who isn't owner
+    if (Owner:inVehicle()) {
+        if (Down & Key == "mouse_right") { #Turns Gimbal when player is seated and holding LMB
         Gimbal["On", number] = 1 
         Active = 1                
         } elseif (!Down & Key == "mouse_right") { #Turns off Gimbal when player is not seated and holding RMB
@@ -92,18 +97,19 @@ event keyPressed(Player:entity, Key:string, Down:number, KeyBind:string) {
             
         }
             if (Down & Key == "mouse_left") { #Start Firing Gun/Guns when LMB is press
-                Gun_WL["Fire",number] = 1
-                Guns_SPLITTER = 1
+                Gun_WL["Fire",number] = 1 #Wirelink for single gun use this if you're feeling lazy to use pod controller outputs
+                Guns_SPLITTER = 1 #Outputs 1 to all attached guns when wired, use this if you have multiple guns
                  
         }
                 
             elseif (!Down & Key == "mouse_left") { #Stop Firing Gun/Guns when LMB is not press
-                Gun_WL["Fire",number] = 0
-                Guns_SPLITTER = 0
+                Gun_WL["Fire",number] = 0 #Stops firing single gun when LMB is not pressing
+                Guns_SPLITTER = 0 #Outputs 0 to all attached guns when LMB is not press
         }
     
     }
 }
+
 
 event tick() {
  
