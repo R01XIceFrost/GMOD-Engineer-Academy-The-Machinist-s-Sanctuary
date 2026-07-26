@@ -1,0 +1,126 @@
+@name Ranger 101 #1
+@inputs 
+@outputs 
+@persist Speed 
+@trigger none 
+@strict
+
+#July 23 - 25 2026
+
+#Initialization stuff
+Speed = 0
+holoCreate(1)
+Owner = owner()
+#--------------
+
+event keyPressed(Ply:entity, Key:string, _:number, _:string) {
+    
+    if (Ply != Owner) { exit() } #reject everyone who isn't owner
+    if (Key == "e") { #press e to fire projectile
+        
+    
+    ShootPos = owner():shootPos()   
+    #EyePos = owner():eye()
+    EyeAngle = owner():eyeAngles():forward()
+    #AimPos = owner():aimPos()
+    Fire = 1
+    Speed = 0
+    
+   
+    }
+    
+}
+    
+event tick() {
+    
+    
+    if (Fire == 1) {
+        
+        Speed += 0.5 #Speed of the projectile
+        holoPos(1, ShootPos + EyeAngle:normalized() * Speed)
+        Holo1 = holoEntity(1):pos() #Get 1st Holo Pos!
+        #rangerFilter(entity()) 
+        rangerFilter(owner()) #Ignore owner from the ranger!
+        #rangerFilter(world())
+        Ranger = rangerOffset(10,Holo1, EyeAngle) #How far, what vector from and what direction from?
+        #holoPos(1,Ranger:position())
+        Hit = Ranger:hit() # 1 or 0 if we hit anything
+        Type = Ranger:entity() #Detect what type of entity we hit?
+        #Type:isValid() #Is entity valid? Ignore this, this is redundant
+    
+       # print(Type)
+        
+        #Distance = Ranger:distance()
+        #print("Fire")
+        #print(Holo1)
+      # print("Hit Detected: "+Hit)
+    
+    }
+    
+    if (Hit & Type:isValid()) { #Did we hit anything? And is it valid?
+        
+        #Class = findByClass("prop_physics")
+        #Scan = findClosest(Holo1)
+        Type:ignite() #Ignite the thing we hit!
+        print("1")
+    }
+    #print(Hit)
+    
+    
+}
+
+
+#[
+
+#prototype 1 below
+
+@name Ranger 101 #1
+@inputs 
+@outputs 
+@persist Speed
+@trigger none 
+@strict
+
+
+E2Pos = entity():pos()
+E2Entity = entity()
+X = E2Pos:x()
+Y = E2Pos:y()
+Z = E2Pos:z()
+
+Forwad = E2Entity:forward()
+
+
+
+
+Vec = vec(X,Y,Z)
+
+print(E2Pos)
+
+
+Bullet = holoCreate(1,E2Pos)
+event tick() {
+
+holoModel(1,"rcylinder")
+
+
+
+    
+#Speed += 0.1   
+    
+
+
+#Ranger = rangerOffset(number distance,vector from,vector direction)
+rangerFilter(entity())
+Ranger = rangerOffset(200,entity():pos(), entity():forward())
+
+holoPos(1,Ranger:position())
+
+Hit = Ranger:hit()
+
+print(Hit)
+
+    
+}
+
+]#
