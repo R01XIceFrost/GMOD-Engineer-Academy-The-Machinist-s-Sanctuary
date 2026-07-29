@@ -1,6 +1,6 @@
 @name Main Engine Simple Tank
 @inputs Engine_WL:wirelink Fuel_WL:wirelink
-@outputs Turn Reverse #Throttle #Fuel #Engine 
+@outputs Turn Reverse Throttle_Output #Throttle #Fuel #Engine 
 @trigger none
 @strict
 
@@ -15,6 +15,7 @@ Logs:
 
 * Added NOT Equals opperator != Owner to reject everyone who isn't owner (July 21, 2026)
 * More comments (July 21, 2026)
+* Display Throttle Output (July 28, 2026)
 
 ]#
 
@@ -53,12 +54,15 @@ event keyPressed(Player:entity, Key:string, Down:number, KeyBind:string) { #I us
             
 event tick() {
     
+
 Throttle += Direction * MAGNITUDE #Ask Marquis Denneisk (one of developer) from Wiremod Discord how this line of code works (my head hurts...)
 Turn = Result 
 Throttle = clamp(Throttle, MINIMUM, MAX) #Clamps the Speed -10 to 100 according to the settings
+Throttle_Output = Throttle
 
     if (Throttle < 0) { #Activate the back thruster(s) if speed is below 0! NOTE: One thruster is not enough to turn the wheel I just realized during phrase finalizing docs -July 21, 2026
         Reverse = -1 # (Modify this code -1 to 1 if it's not reversing the back of baseplate direction properly)
+        
      } else {
         Reverse = 0
     }   
