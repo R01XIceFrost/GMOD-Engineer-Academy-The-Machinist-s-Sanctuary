@@ -1,3 +1,5 @@
+**Abandoned: too much work (documentation), not worth it long term compared with E2**
+
 where to put the FPGA chip ace_simple_tank_fpga?
 
 C:\Program Files (x86)\Steam\steamapps\common\GarrysMod\garrysmod\data\fpgachip
