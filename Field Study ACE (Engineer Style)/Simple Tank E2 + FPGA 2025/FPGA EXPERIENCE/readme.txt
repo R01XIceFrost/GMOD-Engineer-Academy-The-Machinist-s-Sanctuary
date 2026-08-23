@@ -1,4 +1,5 @@
-**Abandoned: too much work (documentation), not worth it long term compared with E2**
+**Abandoned: too much work (documentation), not worth it long term compared with E2 (FPGA chip included for reference)
+**
 
 where to put the FPGA chip ace_simple_tank_fpga?
 
