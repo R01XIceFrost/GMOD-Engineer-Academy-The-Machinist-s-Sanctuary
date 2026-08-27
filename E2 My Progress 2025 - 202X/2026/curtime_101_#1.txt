@@ -1,0 +1,40 @@
+@name Curtime 101 #1
+@inputs  
+@outputs Timer1 Timer2 Result
+@persist 
+@trigger none 
+@strict
+
+#Aug 26 - 27 2026
+
+
+Timer1 = curtime() + 10 #Starts at 10
+
+Cooldown = 5
+
+
+event tick() {
+
+
+Timer2 = curtime()
+
+Result = Timer1 - Timer2
+
+print(Result)
+
+if (Cooldown > Result) {
+    
+    
+    
+    #print("Triggered condition after 5 cooldown!")
+    
+#Number=round(number n) 
+
+#CurtRound = round(Curt)
+
+#print(Timer2)
+    
+    
+    }
+}
+    

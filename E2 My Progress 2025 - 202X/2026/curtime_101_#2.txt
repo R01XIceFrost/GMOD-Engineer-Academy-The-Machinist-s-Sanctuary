@@ -1,0 +1,58 @@
+@name Curtime 101 #2
+@inputs  
+@outputs Timer1 Timer2 Result
+@persist 
+@trigger none 
+@strict
+
+#Aug 27 2026
+
+
+Timer1 = curtime() 
+
+event tick() {
+
+
+Elapse = curtime() - Timer1  #Stopwatch starts!
+
+print(Elapse)
+
+} 
+
+
+#[
+
+@name Curtime 101 #2
+@inputs  
+@outputs Timer1 Timer2 Result
+@persist 
+@trigger none 
+@strict
+
+#Aug 27 2026
+
+Timer1 = curtime() 
+
+
+Timer2 = curtime() 
+
+Elapse = Timer1 - Timer2 
+
+event tick() {
+
+
+Elapse = curtime()
+
+print(Elapse)
+
+
+}
+
+    
+    
+    }
+    
+#]
+
+    
+
