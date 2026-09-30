@@ -1,0 +1,27 @@
+@name Curtime 101 #3
+@inputs 
+@outputs 
+@persist 
+@trigger none 
+@strict
+
+
+#September 7 - 12 2026
+
+Interval = 2
+
+UPDATE_NEXT = curtime() + Interval
+
+event tick() {
+
+
+if (curtime() >= UPDATE_NEXT) {
+    
+    Interval -= 0.1
+    Interval = max(Interval,0.05) #Clamp Interval according to this number
+    UPDATE_NEXT = curtime() + Interval
+    print(Interval)
+    
+    }
+
+}
