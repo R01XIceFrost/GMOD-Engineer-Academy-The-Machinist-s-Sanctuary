@@ -6,7 +6,7 @@
 @model models/props_junk/PlasticCrate01a.mdl
 
 #Source: https://youtu.be/3GDZAvniC0o?si=HuPmtJS4VysMydMk
-
+#type in the console wire_holograms_modelany 1
 
 runOnTick(1)
 runOnChat(1)
